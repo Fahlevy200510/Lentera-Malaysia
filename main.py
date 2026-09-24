@@ -16,6 +16,41 @@ def run_ws_server(ws_server):
     loop = asyncio.new_event_loop()
     ws_server.start_server(loop)
 
+global_frame = None
+
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import cv2
+
+class MJPEGStreamHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/stream':
+            self.send_response(200)
+            self.send_header('Age', 0)
+            self.send_header('Cache-Control', 'no-cache, private')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
+            self.end_headers()
+            try:
+                while True:
+                    if global_frame is not None:
+                        ret, buffer = cv2.imencode('.jpg', global_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+                        if ret:
+                            self.wfile.write(b'--FRAME\r\n')
+                            self.send_header('Content-Type', 'image/jpeg')
+                            self.send_header('Content-Length', len(buffer))
+                            self.end_headers()
+                            self.wfile.write(buffer.tobytes())
+                            self.wfile.write(b'\r\n')
+                    time.sleep(1/15)
+            except Exception as e:
+                pass
+        else:
+            self.send_error(404)
+
+def run_mjpeg_server():
+    server = HTTPServer(('0.0.0.0', 8766), MJPEGStreamHandler)
+    server.serve_forever()
+
 def main():
     print("Memulai LENTERA MVP...")
     
@@ -34,6 +69,9 @@ def main():
     ws = WSServer(port=8765)
     ws_thread = threading.Thread(target=run_ws_server, args=(ws,), daemon=True)
     ws_thread.start()
+    
+    mjpeg_thread = threading.Thread(target=run_mjpeg_server, daemon=True)
+    mjpeg_thread.start()
     
     # Beri tahu siap (Sesuai PRD 18.2)
     audio.enqueue_narration("Observer system is ready to use.")
@@ -59,6 +97,9 @@ def main():
                 cv2.polylines(frame, [np.int32(corners)], True, (0, 255, 0), 2)
                 cx, cy = calculate_centroid(corners)
                 cv2.putText(frame, f"ID: {m_id}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                
+            global global_frame
+            global_frame = frame.copy()
                 
             # Tampilkan window kamera HANYA jika berjalan di Windows (laptop)
             if os.name == 'nt':
