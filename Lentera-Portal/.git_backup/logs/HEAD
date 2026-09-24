@@ -1,0 +1,6 @@
+0000000000000000000000000000000000000000 6091998260fc305040f9d938d2797effa17eabf6 Fikri Ridhlo Fahlevy <fikrifahlevy4@gmail.com> 1790252984 +0700	clone: from https://github.com/BirelaMP/Lentera-Portal.git
+6091998260fc305040f9d938d2797effa17eabf6 5297b31ef8385c258902482189773d3f22f7c0df Fikri Ridhlo Fahlevy <fikrifahlevy4@gmail.com> 1790259102 +0700	commit: Update Dashboard and Dynamic Circuit Diagram
+5297b31ef8385c258902482189773d3f22f7c0df 712eb3557006c583cb2bf091d8980dd8112feb8b Fikri Ridhlo Fahlevy <fikrifahlevy4@gmail.com> 1790261354 +0700	commit: Add Dynamic SVG Circuit Diagram and WebSocket Calibration
+712eb3557006c583cb2bf091d8980dd8112feb8b 712eb3557006c583cb2bf091d8980dd8112feb8b Fikri Ridhlo Fahlevy <fikrifahlevy4@gmail.com> 1790261471 +0700	reset: moving to HEAD
+712eb3557006c583cb2bf091d8980dd8112feb8b d86827c4f30f236c3f8ecb873fdbde9de0ae8fe6 Fikri Ridhlo Fahlevy <fikrifahlevy4@gmail.com> 1790261541 +0700	commit (merge): Merge updated-23-sept keeping new backend integration
+d86827c4f30f236c3f8ecb873fdbde9de0ae8fe6 712eb3557006c583cb2bf091d8980dd8112feb8b Fikri Ridhlo Fahlevy <fikrifahlevy4@gmail.com> 1790261810 +0700	reset: moving to 712eb35
