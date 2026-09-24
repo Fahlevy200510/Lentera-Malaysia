@@ -75,6 +75,15 @@ def main():
     # Beri tahu siap (Sesuai PRD 18.2)
     audio.enqueue_narration("Observer system is ready to use.")
     
+    last_raw_detections = {}
+    def handle_calibrate():
+        print("[CALIBRATION] Menerima perintah auto-calibrate dari UI...")
+        success, msg = mapper.auto_calibrate(last_raw_detections)
+        print(f"[CALIBRATION] {msg}")
+        audio.enqueue_narration(msg)
+        
+    ws.on_calibrate = handle_calibrate
+    
     print("Memasuki loop utama...")
     prev_circuit_status = None
     frame_count = 0
@@ -87,6 +96,8 @@ def main():
             
             # b. Deteksi Marker
             raw_detections = vision.detect_markers(frame)
+            nonlocal last_raw_detections
+            last_raw_detections = raw_detections
             
             # (Opsional Debug) Gambar deteksi ArUco ke frame
             import cv2

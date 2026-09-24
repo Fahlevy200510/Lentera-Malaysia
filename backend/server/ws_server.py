@@ -15,7 +15,13 @@ class WSServer:
         try:
             # Tetap terhubung menunggu pesan dari client (jika ada)
             async for message in websocket:
-                pass
+                try:
+                    data = json.loads(message)
+                    if data.get("type") == "command" and data.get("action") == "calibrate":
+                        if hasattr(self, 'on_calibrate'):
+                            self.on_calibrate()
+                except Exception as e:
+                    print(f"[WS] Error parsing message: {e}")
         except websockets.exceptions.ConnectionClosed:
             pass
         finally:

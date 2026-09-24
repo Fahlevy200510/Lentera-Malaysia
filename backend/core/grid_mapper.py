@@ -63,3 +63,53 @@ class GridMapper:
                 best_cell = cell_name
                 
         return best_cell
+
+    def auto_calibrate(self, raw_detections):
+        """
+        Melakukan kalibrasi otomatis berdasarkan deteksi marker di 4 sudut.
+        Diasumsikan pengguna meletakkan 4 komponen di sudut terluar: A1, E1, A5, E5.
+        """
+        if len(raw_detections) < 4:
+            return False, "Please place 4 components at the four corners of the board to calibrate."
+            
+        centroids = []
+        for corners in raw_detections.values():
+            # Hitung centroid dari 4 titik
+            cx = sum(p[0] for p in corners[0]) / 4
+            cy = sum(p[1] for p in corners[0]) / 4
+            centroids.append((cx, cy))
+            
+        # Urutkan sudut:
+        # TL (Top-Left): x+y terkecil
+        tl = min(centroids, key=lambda c: c[0] + c[1])
+        # BR (Bottom-Right): x+y terbesar
+        br = max(centroids, key=lambda c: c[0] + c[1])
+        # TR (Top-Right): x-y terbesar
+        tr = max(centroids, key=lambda c: c[0] - c[1])
+        # BL (Bottom-Left): y-x terbesar
+        bl = max(centroids, key=lambda c: c[1] - c[0])
+        
+        cols = ['A', 'B', 'C', 'D', 'E']
+        for r in range(5):
+            left_x = tl[0] + (bl[0] - tl[0]) * (r / 4.0)
+            left_y = tl[1] + (bl[1] - tl[1]) * (r / 4.0)
+            
+            right_x = tr[0] + (br[0] - tr[0]) * (r / 4.0)
+            right_y = tr[1] + (br[1] - tr[1]) * (r / 4.0)
+            
+            for c in range(5):
+                cx = left_x + (right_x - left_x) * (c / 4.0)
+                cy = left_y + (right_y - left_y) * (c / 4.0)
+                
+                cell_name = f"{cols[c]}{r+1}"
+                dist_x = math.hypot(right_x - left_x, right_y - left_y) / 4.0
+                
+                self.grid_rois[cell_name] = {
+                    "centroid": [cx, cy],
+                    "radius": dist_x * 0.4
+                }
+                
+        with open(self.roi_file, 'w') as f:
+            json.dump(self.grid_rois, f, indent=2)
+            
+        return True, "Calibration successful. The board is now mapped."
