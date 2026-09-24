@@ -35,12 +35,11 @@ class MJPEGStreamHandler(BaseHTTPRequestHandler):
                     if global_frame is not None:
                         ret, buffer = cv2.imencode('.jpg', global_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                         if ret:
-                            self.wfile.write(b'--FRAME\r\n')
-                            self.send_header('Content-Type', 'image/jpeg')
-                            self.send_header('Content-Length', len(buffer))
-                            self.end_headers()
+                            header = f"--FRAME\r\nContent-Type: image/jpeg\r\nContent-Length: {len(buffer)}\r\n\r\n"
+                            self.wfile.write(header.encode('utf-8'))
                             self.wfile.write(buffer.tobytes())
                             self.wfile.write(b'\r\n')
+                            self.wfile.flush()
                     time.sleep(1/15)
             except Exception as e:
                 pass
