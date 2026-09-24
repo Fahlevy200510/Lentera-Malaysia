@@ -51,17 +51,19 @@ def main():
             # b. Deteksi Marker
             raw_detections = vision.detect_markers(frame)
             
-            # (Opsional Debug) Gambar deteksi ArUco ke frame agar bisa dilihat di layar
+            # (Opsional Debug) Gambar deteksi ArUco ke frame
             import cv2
             import numpy as np
+            import os
             for m_id, corners in raw_detections.items():
                 cv2.polylines(frame, [np.int32(corners)], True, (0, 255, 0), 2)
                 cx, cy = calculate_centroid(corners)
                 cv2.putText(frame, f"ID: {m_id}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
-            # Tampilkan window kamera (hanya untuk testing/debug di laptop)
-            cv2.imshow("LENTERA - Webcam Preview", frame)
-            cv2.waitKey(1)
+            # Tampilkan window kamera HANYA jika berjalan di Windows (laptop)
+            if os.name == 'nt':
+                cv2.imshow("LENTERA - Webcam Preview", frame)
+                cv2.waitKey(1)
             
             # c. Undistort & Map to Grid
             cell_observations = {}
