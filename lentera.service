@@ -1,0 +1,18 @@
+[Unit]
+Description=LENTERA Circuit Detection Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+# Sesuaikan Path dengan direktori tujuan LENTERA di dalam Raspberry Pi Anda
+ExecStart=/usr/bin/python3 /home/pilentera/lentera_cv/main.py
+WorkingDirectory=/home/pilentera/lentera_cv
+Restart=on-failure
+RestartSec=5
+User=pilentera
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

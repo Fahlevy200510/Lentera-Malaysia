@@ -1,0 +1,177 @@
+{
+  "A1": {
+    "centroid": [
+      160,
+      80
+    ],
+    "radius": 32.0
+  },
+  "B1": {
+    "centroid": [
+      240,
+      80
+    ],
+    "radius": 32.0
+  },
+  "C1": {
+    "centroid": [
+      320,
+      80
+    ],
+    "radius": 32.0
+  },
+  "D1": {
+    "centroid": [
+      400,
+      80
+    ],
+    "radius": 32.0
+  },
+  "E1": {
+    "centroid": [
+      480,
+      80
+    ],
+    "radius": 32.0
+  },
+  "A2": {
+    "centroid": [
+      160,
+      160
+    ],
+    "radius": 32.0
+  },
+  "B2": {
+    "centroid": [
+      240,
+      160
+    ],
+    "radius": 32.0
+  },
+  "C2": {
+    "centroid": [
+      320,
+      160
+    ],
+    "radius": 32.0
+  },
+  "D2": {
+    "centroid": [
+      400,
+      160
+    ],
+    "radius": 32.0
+  },
+  "E2": {
+    "centroid": [
+      480,
+      160
+    ],
+    "radius": 32.0
+  },
+  "A3": {
+    "centroid": [
+      160,
+      240
+    ],
+    "radius": 32.0
+  },
+  "B3": {
+    "centroid": [
+      240,
+      240
+    ],
+    "radius": 32.0
+  },
+  "C3": {
+    "centroid": [
+      320,
+      240
+    ],
+    "radius": 32.0
+  },
+  "D3": {
+    "centroid": [
+      400,
+      240
+    ],
+    "radius": 32.0
+  },
+  "E3": {
+    "centroid": [
+      480,
+      240
+    ],
+    "radius": 32.0
+  },
+  "A4": {
+    "centroid": [
+      160,
+      320
+    ],
+    "radius": 32.0
+  },
+  "B4": {
+    "centroid": [
+      240,
+      320
+    ],
+    "radius": 32.0
+  },
+  "C4": {
+    "centroid": [
+      320,
+      320
+    ],
+    "radius": 32.0
+  },
+  "D4": {
+    "centroid": [
+      400,
+      320
+    ],
+    "radius": 32.0
+  },
+  "E4": {
+    "centroid": [
+      480,
+      320
+    ],
+    "radius": 32.0
+  },
+  "A5": {
+    "centroid": [
+      160,
+      400
+    ],
+    "radius": 32.0
+  },
+  "B5": {
+    "centroid": [
+      240,
+      400
+    ],
+    "radius": 32.0
+  },
+  "C5": {
+    "centroid": [
+      320,
+      400
+    ],
+    "radius": 32.0
+  },
+  "D5": {
+    "centroid": [
+      400,
+      400
+    ],
+    "radius": 32.0
+  },
+  "E5": {
+    "centroid": [
+      480,
+      400
+    ],
+    "radius": 32.0
+  }
+}
