@@ -12,8 +12,9 @@ function App() {
   const [audioEnabled, setAudioEnabled] = useState(false);
 
   useEffect(() => {
-    // Koneksi WebSocket
-    const ws = new WebSocket('ws://localhost:8765');
+    // Koneksi WebSocket secara dinamis menyesuaikan IP server (Raspi)
+    const wsUrl = `ws://${window.location.hostname}:8765`;
+    const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => setWsConnected(true);
     ws.onclose = () => setWsConnected(false);
