@@ -16,8 +16,8 @@ class AudioNarrator:
             rate = self.engine.getProperty('rate')
             self.engine.setProperty('rate', 150)
             self.has_tts = True
-        except ImportError:
-            print("Peringatan: pyttsx3 tidak terinstall. Audio lokal akan menggunakan print.")
+        except Exception as e:
+            print(f"Peringatan: Gagal memuat pyttsx3 ({e}). Audio lokal akan menggunakan print.")
             self.has_tts = False
 
     def start(self):
