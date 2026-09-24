@@ -96,7 +96,6 @@ def main():
             
             # b. Deteksi Marker
             raw_detections = vision.detect_markers(frame)
-            nonlocal last_raw_detections
             last_raw_detections = raw_detections
             
             # (Opsional Debug) Gambar deteksi ArUco ke frame
