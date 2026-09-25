@@ -9,10 +9,6 @@ class VisionCore:
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         
-        # Setup CLAHE (Contrast Limited Adaptive Histogram Equalization)
-        # Filter ini akan mencerahkan bagian gelap dan meredam silau
-        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)
         self.dist_coeffs = np.zeros(4)
@@ -29,16 +25,13 @@ class VisionCore:
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Terapkan CLAHE untuk memaksa kontras marker jadi tajam meski di tempat gelap
-        enhanced_gray = self.clahe.apply(gray)
+        corners, ids, rejected = self.detector.detectMarkers(gray)
         
-        corners, ids, rejected = self.detector.detectMarkers(enhanced_gray)
-        
-        results = {}
+        results = []
         if ids is not None:
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
-                results[int(flat_ids[i])] = corners[i][0]
+                results.append((int(flat_ids[i]), corners[i][0]))
         return results
 
     def undistort_corners(self, corners):
