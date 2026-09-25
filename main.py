@@ -106,11 +106,6 @@ def main():
             # a. Ambil frame
             frame = camera.get_frame()
             
-            # Membalik gambar secara vertikal (Flip Vertical)
-            # Ini karena kamera berada di bawah menghadap ke atas, 
-            # sehingga kita perlu membaliknya agar A1 berada di kiri bawah
-            frame = cv2.flip(frame, 0)
-            
             # b. Deteksi Marker
             raw_detections = vision.detect_markers(frame)
             last_raw_detections = raw_detections
