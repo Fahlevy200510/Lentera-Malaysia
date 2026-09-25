@@ -5,6 +5,8 @@ from datetime import datetime
 import json
 import signal
 import sys
+import os
+import numpy as np
 
 from backend.core.camera import get_camera
 from backend.core.vision import VisionCore, calculate_centroid, get_marker_rotation_state
@@ -114,9 +116,6 @@ def main():
             last_raw_detections = raw_detections
             
             # (Opsional Debug) Gambar deteksi ArUco ke frame
-            import cv2
-            import numpy as np
-            import os
             for m_id, corners in raw_detections.items():
                 cv2.polylines(frame, [np.int32(corners)], True, (0, 255, 0), 2)
                 cx, cy = calculate_centroid(corners)
