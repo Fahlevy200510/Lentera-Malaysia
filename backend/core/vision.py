@@ -9,6 +9,10 @@ class VisionCore:
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         
+        # Setup CLAHE (Contrast Limited Adaptive Histogram Equalization)
+        # Filter ini akan mencerahkan bagian gelap dan meredam silau
+        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)
         self.dist_coeffs = np.zeros(4)
@@ -24,7 +28,11 @@ class VisionCore:
         Sesuai PRD (Strategi A), ini dipanggil di frame mentah.
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejected = self.detector.detectMarkers(gray)
+        
+        # Terapkan CLAHE untuk memaksa kontras marker jadi tajam meski di tempat gelap
+        enhanced_gray = self.clahe.apply(gray)
+        
+        corners, ids, rejected = self.detector.detectMarkers(enhanced_gray)
         
         results = {}
         if ids is not None:
