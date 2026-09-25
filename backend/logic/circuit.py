@@ -41,16 +41,24 @@ def get_open_sides(component, rotation):
             return ["Atas", "Bawah"]
             
     elif component == "l_cable":
-        if rotation == 0: return ["Atas", "Kanan"]
-        elif rotation == 90: return ["Kanan", "Bawah"]
-        elif rotation == 180: return ["Bawah", "Kiri"]
-        elif rotation == 270: return ["Kiri", "Atas"]
+        # Fisik 0 deg (ArUco normal): Sudut L ada di Kanan Atas -> Buka Kiri & Bawah
+        if rotation == 0: return ["Kiri", "Bawah"]
+        # Diputar 90 CW -> Buka Atas & Kiri
+        elif rotation == 90: return ["Atas", "Kiri"]
+        # Diputar 180 CW -> Buka Kanan & Atas
+        elif rotation == 180: return ["Kanan", "Atas"]
+        # Diputar 270 CW -> Buka Bawah & Kanan
+        elif rotation == 270: return ["Bawah", "Kanan"]
         
     elif component == "t_cable":
-        if rotation == 0: return ["Kiri", "Kanan", "Atas"]
-        elif rotation == 90: return ["Atas", "Bawah", "Kanan"]
-        elif rotation == 180: return ["Kiri", "Kanan", "Bawah"]
-        elif rotation == 270: return ["Atas", "Bawah", "Kiri"]
+        # Fisik 0 deg (ArUco normal): Bentuk |- -> Buka Atas, Bawah, Kanan
+        if rotation == 0: return ["Atas", "Bawah", "Kanan"]
+        # 90 CW: Bentuk T terbalik -> Buka Kiri, Kanan, Bawah
+        elif rotation == 90: return ["Kiri", "Kanan", "Bawah"]
+        # 180 CW: Bentuk -| -> Buka Atas, Bawah, Kiri
+        elif rotation == 180: return ["Atas", "Bawah", "Kiri"]
+        # 270 CW: Bentuk T normal -> Buka Kiri, Kanan, Atas
+        elif rotation == 270: return ["Kiri", "Kanan", "Atas"]
         
     return []
 

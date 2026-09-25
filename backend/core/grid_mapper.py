@@ -73,7 +73,7 @@ class GridMapper:
             return False, "Please place 4 components at the four corners of the board to calibrate."
             
         centroids = []
-        for corners in raw_detections.values():
+        for m_id, corners in raw_detections:
             # Hitung centroid dari 4 titik
             cx = sum(p[0] for p in corners[0]) / 4
             cy = sum(p[1] for p in corners[0]) / 4

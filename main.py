@@ -111,7 +111,7 @@ def main():
             last_raw_detections = raw_detections
             
             # (Opsional Debug) Gambar deteksi ArUco ke frame
-            for m_id, corners in raw_detections.items():
+            for m_id, corners in raw_detections:
                 cv2.polylines(frame, [np.int32(corners)], True, (0, 255, 0), 2)
                 cx, cy = calculate_centroid(corners)
                 cv2.putText(frame, f"ID: {m_id}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
@@ -136,7 +136,7 @@ def main():
             
             # c. Undistort & Map to Grid
             cell_observations = {}
-            for m_id, corners in raw_detections.items():
+            for m_id, corners in raw_detections:
                 undistorted_corners = vision.undistort_corners(corners)
                 cx, cy = calculate_centroid(undistorted_corners)
                 
