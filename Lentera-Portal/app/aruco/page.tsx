@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi } from "lucide-react";
+import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen } from "lucide-react";
 import CircuitDiagram from "@/components/aruco/CircuitDiagram";
 import ArUcoDetector from "@/components/aruco/ArUcoDetector";
+import VoiceGuide from "@/components/aruco/VoiceGuide";
 
 const wiringPoints = [
   {
@@ -51,7 +52,11 @@ export default function ArucoPage() {
             <div className="mt-8 space-y-2">
               <Link href="/" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-cs-text/60 transition-colors hover:bg-cs-text/5 hover:text-cs-text">
                 <ArrowLeft className="h-4 w-4" />
-                Back to Portal
+                Back to Dashboard
+              </Link>
+              <Link href="/dashboard" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-cs-text/60 transition-colors hover:bg-cs-text/5 hover:text-cs-text">
+                <BookOpen className="h-4 w-4" />
+                Lentera Learn
               </Link>
               <div className="flex items-center gap-3 rounded-xl bg-cs-primary/10 px-4 py-3 text-sm font-bold text-cs-primaryDeep shadow-sm">
                 <ScanEye className="h-4 w-4" />
@@ -87,7 +92,8 @@ export default function ArucoPage() {
             {/* ArUcoDetector (yang sudah support Grid 5x5 + Input IP) */}
             <ArUcoDetector />
             
-            <div className="hidden"></div>
+            {/* Voice Guide — Panduan suara langkah demi langkah */}
+            <VoiceGuide />
           </div>
 
           {/* Right: Circuit Diagram & Tech Stack */}

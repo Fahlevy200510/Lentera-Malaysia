@@ -55,8 +55,14 @@ export default function ArUcoDetector() {
     }
     
     setDetections((prev) => ({ ...prev, status: "connecting" }));
-    const websocket = new WebSocket(`ws://${ip}:8765`);
-    wsRef.current = websocket;
+    
+    try {
+      // Jika pengguna memasukkan URL lengkap (misal dari Ngrok/Pinggy)
+      const wsUrl = ip.startsWith("ws://") || ip.startsWith("wss://") ? ip : `ws://${ip}:8765`;
+      
+      const websocket = new WebSocket(wsUrl);
+      wsRef.current = websocket;
+
 
     websocket.onopen = () => setDetections((prev) => ({ ...prev, status: "connected" }));
     
@@ -91,15 +97,26 @@ export default function ArUcoDetector() {
     };
 
     websocket.onclose = () => {
+        setDetections((prev) => ({ ...prev, status: "disconnected" }));
+      };
+    } catch (err) {
+      console.error("WebSocket connection blocked:", err);
       setDetections((prev) => ({ ...prev, status: "disconnected" }));
-    };
+      showToast("Koneksi ditolak oleh browser. Gunakan localhost.");
+    }
   };
 
   useEffect(() => {
-    // Detect host for initial connection (useful if hosted on Raspi itself)
     const defaultIp = window.location.hostname;
     setIpAddress(defaultIp);
-    connectWebSocket(defaultIp);
+    
+    // Jangan auto-connect jika di-hosting di public domain (seperti netlify)
+    // Auto-connect hanya jika berjalan di localhost atau IP lokal.
+    if (defaultIp === "localhost" || defaultIp === "127.0.0.1" || defaultIp.startsWith("192.168.")) {
+      connectWebSocket(defaultIp);
+    } else {
+      setDetections((prev) => ({ ...prev, status: "disconnected" }));
+    }
     
     return () => {
       wsRef.current?.close();

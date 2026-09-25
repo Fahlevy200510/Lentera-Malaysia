@@ -1,90 +1,141 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const ROLES = new Set(["student", "teacher", "parent"]);
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const { email, password, role } = await req.json();
 
-    const role = String(body?.role ?? "");
-    const email = String(body?.email ?? "").trim();
-    const password = String(body?.password ?? "");
+    // ============================================================
+    // 1. VALIDATE INPUT
+    // ============================================================
 
-    if (!ROLES.has(role)) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: "Invalid user role." },
+        { error: "Email and password are required." },
         { status: 400 }
       );
     }
 
-    if (!email) {
+    if (!role || !["student", "teacher", "parent"].includes(role)) {
       return NextResponse.json(
-        { error: "Email is required." },
+        { error: "Invalid role." },
         { status: 400 }
       );
     }
 
-    if (!password) {
+    // ============================================================
+    // 2. CHECK SUPABASE CONFIGURATION
+    // ============================================================
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Supabase environment variables are missing.");
+
       return NextResponse.json(
-        { error: "Password is required." },
-        { status: 400 }
+        {
+          error: "Supabase configuration is missing on the server.",
+        },
+        { status: 500 }
       );
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const supabase = createClient(
+      supabaseUrl,
+      supabaseKey
+    );
 
-    if (error || !data.user) {
+    // ============================================================
+    // 3. AUTHENTICATE USER
+    // ============================================================
+
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+    if (authError || !authData.user || !authData.session) {
+      console.error("Authentication error:", authError);
+
       return NextResponse.json(
-        { error: "Invalid email or password." },
+        {
+          error:
+            authError?.message ||
+            "Invalid email or password.",
+        },
         { status: 401 }
       );
     }
 
-    // Read the role assigned to this Supabase account.
-    const userRole = data.user.app_metadata?.role;
+    const user = authData.user;
 
-    if (!userRole) {
-      return NextResponse.json(
-        { error: "This account has no assigned role." },
-        { status: 403 }
-      );
-    }
+    // ============================================================
+    // 4. GET REAL ROLE FROM SUPABASE AUTH METADATA
+    // ============================================================
 
-    // Prevent users from signing in under a different role.
-    if (userRole !== role) {
+    const realRole = user.app_metadata?.role;
+
+    if (
+      !realRole ||
+      !["student", "teacher", "parent"].includes(realRole)
+    ) {
       return NextResponse.json(
         {
-          error: `This account is registered as ${userRole}, not ${role}.`,
+          error: "The account role is not configured correctly.",
         },
         { status: 403 }
       );
     }
 
+    // ============================================================
+    // 5. PREVENT WRONG ROLE LOGIN
+    // ============================================================
+
+    if (realRole !== role) {
+      return NextResponse.json(
+        {
+          error: `This account is registered as ${realRole}, not ${role}.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    // ============================================================
+    // 6. GET USER NAME
+    // ============================================================
+
+    const realName =
+      user.user_metadata?.name ||
+      user.user_metadata?.full_name ||
+      user.email?.split("@")[0] ||
+      "User";
+
+    // ============================================================
+    // 7. RETURN VERIFIED SESSION
+    // ============================================================
+
     return NextResponse.json({
-      ok: true,
+      success: true,
       session: {
-        name:
-          data.user.user_metadata?.name ??
-          email.split("@")[0],
-        email: data.user.email,
-        role: userRole,
-        issuedAt: new Date().toISOString(),
-        mode: "supabase",
+        id: user.id,
+        email: user.email,
+        name: realName,
+        role: realRole,
+        access_token: authData.session.access_token,
+        refresh_token: authData.session.refresh_token,
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("Login error:", error);
+
     return NextResponse.json(
-      { error: "Invalid login payload." },
-      { status: 400 }
+      {
+        error: "An unexpected server error occurred.",
+      },
+      { status: 500 }
     );
   }
 }

@@ -33,7 +33,7 @@ const destinations: Destination[] = [
     title: "LENTERA Lab",
     tagline: "Real-time Circuit Detection",
     description:
-      "Connect to Lentera Edge (Raspberry Pi), detect physical circuits in real-time, and monitor their status from a single unified web workspace.",
+      "Connect the ESP32-CAM, detect components, and monitor circuit status from one workspace.",
     accent: "#67E8F9",
     accentSoft: "rgba(103,232,249,.12)",
     Icon: ScanEye,
