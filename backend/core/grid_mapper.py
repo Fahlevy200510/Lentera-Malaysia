@@ -91,11 +91,13 @@ class GridMapper:
         
         cols = ['A', 'B', 'C', 'D', 'E']
         for r in range(5):
-            left_x = tl[0] + (bl[0] - tl[0]) * (r / 4.0)
-            left_y = tl[1] + (bl[1] - tl[1]) * (r / 4.0)
+            # r=0 (Baris 1) harusnya di BAWAH (bl, br)
+            # r=4 (Baris 5) harusnya di ATAS (tl, tr)
+            left_x = bl[0] + (tl[0] - bl[0]) * (r / 4.0)
+            left_y = bl[1] + (tl[1] - bl[1]) * (r / 4.0)
             
-            right_x = tr[0] + (br[0] - tr[0]) * (r / 4.0)
-            right_y = tr[1] + (br[1] - tr[1]) * (r / 4.0)
+            right_x = br[0] + (tr[0] - br[0]) * (r / 4.0)
+            right_y = br[1] + (tr[1] - br[1]) * (r / 4.0)
             
             for c in range(5):
                 cx = left_x + (right_x - left_x) * (c / 4.0)
