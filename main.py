@@ -117,6 +117,16 @@ def main():
                 cx, cy = calculate_centroid(corners)
                 cv2.putText(frame, f"ID: {m_id}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
+            # (Opsional Debug) Gambar Grid 5x5 ke frame
+            if hasattr(mapper, 'grid_rois') and mapper.grid_rois:
+                for cell_name, roi in mapper.grid_rois.items():
+                    gcx, gcy = int(roi["centroid"][0]), int(roi["centroid"][1])
+                    gr = int(roi["radius"])
+                    # Gambar lingkaran pembatas
+                    cv2.circle(frame, (gcx, gcy), gr, (255, 0, 0), 1)
+                    # Tulis nama sel (A1, B2, dst)
+                    cv2.putText(frame, cell_name, (gcx - 12, gcy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                
             global global_frame
             global_frame = frame.copy()
                 
