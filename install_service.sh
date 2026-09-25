@@ -16,10 +16,13 @@ After=network.target
 [Service]
 Type=simple
 User=pilentera
-WorkingDirectory=/home/pilentera/lentera_cv
-ExecStart=/usr/bin/python3 main.py
-Restart=always
+WorkingDirectory=/home/pilentera/Lentera-Malaysia
+ExecStart=/home/pilentera/Lentera-Malaysia/lentera_env/bin/python3 main.py
+# Proteksi Bootloop: Hanya restart jika error, maksimal 3 kali dalam 30 detik
+Restart=on-failure
 RestartSec=5
+StartLimitIntervalSec=30
+StartLimitBurst=3
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=lentera
