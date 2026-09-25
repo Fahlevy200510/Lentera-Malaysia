@@ -172,6 +172,9 @@ def evaluate_circuit(grid_state_cells):
     if not loops_with_lamp:
         return {"status": "open_circuit", "narration": "The circuit is open and has not formed a closed loop."}
         
+    # Klasifikasi topologi: Seri (1 loop), Paralel (>1 loop)
+    graph_type = "series" if len(loops_with_lamp) == 1 else "parallel"
+    
     # Cek status Switch
     best_loop = None
     min_off_switches = float('inf')
@@ -185,7 +188,11 @@ def evaluate_circuit(grid_state_cells):
                 off_switches.append(cell)
                 
         if len(off_switches) == 0:
-            return {"status": "success", "narration": "Circuit successful, the lamp is on."}
+            return {
+                "status": "success", 
+                "graph_type": graph_type,
+                "narration": f"Circuit successful, the lamp is on. Topology: {graph_type}."
+            }
             
         if len(off_switches) < min_off_switches:
             min_off_switches = len(off_switches)
