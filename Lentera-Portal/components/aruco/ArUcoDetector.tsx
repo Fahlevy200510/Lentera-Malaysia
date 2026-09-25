@@ -83,7 +83,15 @@ export default function ArUcoDetector() {
 
         window.dispatchEvent(
           new CustomEvent("circuit-update", {
-            detail: { isBattery, isLamp, isSwitch, isComplete: complete, cells: data.cells },
+            detail: { 
+              isBattery, 
+              isLamp, 
+              isSwitch, 
+              isComplete: complete, 
+              cells: data.cells,
+              status: data.circuit_status?.status || "unknown",
+              graph_type: data.circuit_status?.graph_type || "unknown"
+            },
           })
         );
       }
@@ -124,6 +132,15 @@ export default function ArUcoDetector() {
     };
   }, []);
 
+  const handleDisconnect = () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    setDetections((prev) => ({ ...prev, status: "disconnected" }));
+    showToast("Kamera diputuskan.");
+  };
+
   const handleCalibrate = () => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: "command", action: "calibrate" }));
@@ -145,14 +162,24 @@ export default function ArUcoDetector() {
             />
             Status: {STATUS_LABEL[detections.status]}
           </span>
-          <button
-            onClick={handleCalibrate}
-            disabled={isCalibrating}
-            className="navitem flex items-center gap-1.5 rounded-lg bg-cs-primary/10 px-3 py-1.5 text-xs font-bold text-cs-primaryDeep hover:bg-cs-primary/20 disabled:opacity-50"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            {isCalibrating ? "Calibrating…" : "Calibrate"}
-          </button>
+          <div className="flex gap-2">
+            {detections.status === "connected" && (
+              <button
+                onClick={handleDisconnect}
+                className="navitem flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-500/20"
+              >
+                Disconnect
+              </button>
+            )}
+            <button
+              onClick={handleCalibrate}
+              disabled={isCalibrating || detections.status !== "connected"}
+              className="navitem flex items-center gap-1.5 rounded-lg bg-cs-primary/10 px-3 py-1.5 text-xs font-bold text-cs-primaryDeep hover:bg-cs-primary/20 disabled:opacity-50"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              {isCalibrating ? "Calibrating…" : "Calibrate"}
+            </button>
+          </div>
         </div>
         
         {/* Input IP if accessed from another device on the network */}
