@@ -3,6 +3,8 @@ import threading
 import asyncio
 from datetime import datetime
 import json
+import signal
+import sys
 
 from backend.core.camera import get_camera
 from backend.core.vision import VisionCore, calculate_centroid, get_marker_rotation_state
@@ -11,6 +13,14 @@ from backend.logic.grid_state import GridState
 from backend.logic.circuit import evaluate_circuit
 from backend.server.audio import AudioNarrator
 from backend.server.ws_server import WSServer
+
+# Tangani sinyal dari systemd untuk mencegah hang saat shutdown
+def signal_handler(sig, frame):
+    print(f"Menerima sinyal {sig}, menutup LENTERA dengan aman...")
+    raise KeyboardInterrupt
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 def run_ws_server(ws_server):
     loop = asyncio.new_event_loop()

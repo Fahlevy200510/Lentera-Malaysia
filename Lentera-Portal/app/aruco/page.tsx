@@ -38,23 +38,38 @@ export default function ArucoPage() {
         />
       </div>
 
-      <section className="mx-auto flex min-h-screen max-w-7xl flex-col gap-8 px-5 py-8 lg:px-10 lg:py-10">
-        <div className="rise flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cs-text/10 bg-white/70 px-5 py-3.5 shadow-[0_10px_30px_rgba(46,42,94,0.06)] backdrop-blur-md">
-          <Link
-            href="/"
-            prefetch
-            className="navitem flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-bold text-cs-text/70 hover:bg-cs-text/5 hover:text-cs-primaryDeep"
-          >
-            <ArrowLeft className="h-4 w-4" strokeWidth={2.4} />
-            LENTERA Dashboard
-          </Link>
-          <span className="flex items-center gap-2 rounded-full bg-cs-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-cs-primaryDeep">
-            <ScanEye className="h-3.5 w-3.5" strokeWidth={2.4} />
-            LENTERA EDGE LAB
-          </span>
+      <section className="mx-auto flex min-h-screen max-w-screen-2xl flex-col md:flex-row gap-8 px-5 py-8 lg:px-10 lg:py-10">
+        <div className="rise flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-64 md:flex-shrink-0">
+          <div>
+            <div className="flex items-center gap-3 font-heading text-xl font-extrabold tracking-tight text-cs-text">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-primary text-white shadow-lg shadow-cs-primary/30">
+                <ScanEye className="h-5 w-5" />
+              </div>
+              Edge Lab
+            </div>
+            
+            <div className="mt-8 space-y-2">
+              <Link href="/" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-cs-text/60 transition-colors hover:bg-cs-text/5 hover:text-cs-text">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Portal
+              </Link>
+              <div className="flex items-center gap-3 rounded-xl bg-cs-primary/10 px-4 py-3 text-sm font-bold text-cs-primaryDeep shadow-sm">
+                <ScanEye className="h-4 w-4" />
+                Live Camera
+              </div>
+            </div>
+          </div>
+          
+          <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+            <p className="text-xs font-bold uppercase tracking-wider text-cs-text/50">Connection</p>
+            <div className="mt-2 flex items-center gap-2">
+              <Wifi className="h-4 w-4 text-cs-green" />
+              <span className="text-sm font-bold text-cs-text">Local Network</span>
+            </div>
+          </div>
         </div>
 
-        <div className="grid flex-1 gap-8 lg:grid-cols-2">
+        <div className="flex-1 grid gap-8 lg:grid-cols-2">
           {/* Left: Edge Info + Detector */}
           <div className="space-y-6">
             <div className="rise space-y-4" style={{ animationDelay: ".05s" }}>
