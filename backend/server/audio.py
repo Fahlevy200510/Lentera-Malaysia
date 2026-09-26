@@ -9,16 +9,14 @@ class AudioNarrator:
         self.running = True
         self.thread = threading.Thread(target=self._worker, daemon=True)
         
-        # Inisialisasi engine TTS (Opsional, gunakan print jika gagal)
+        # Inisialisasi engine TTS dengan subprocess espeak (lebih robust di Linux)
+        import subprocess
         try:
-            import pyttsx3
-            self.engine = pyttsx3.init()
-            # Set kecepatan bicara agak cepat agar responsif
-            rate = self.engine.getProperty('rate')
-            self.engine.setProperty('rate', 150)
+            # Cek apakah espeak terinstal
+            subprocess.run(['espeak', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
             self.has_tts = True
         except Exception as e:
-            print(f"Peringatan: Gagal memuat pyttsx3 ({e}). Audio lokal akan menggunakan print.")
+            print(f"Peringatan: Gagal menemukan espeak ({e}). Audio lokal akan menggunakan print.")
             self.has_tts = False
 
     def start(self):
@@ -57,8 +55,8 @@ class AudioNarrator:
                 
                 print(f"[LOCAL AUDIO] {text}")
                 if self.has_tts:
-                    self.engine.say(text)
-                    self.engine.runAndWait()
+                    import subprocess
+                    subprocess.run(['espeak', '-s', '150', text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     
                 self.q.task_done()
             except queue.Empty:
