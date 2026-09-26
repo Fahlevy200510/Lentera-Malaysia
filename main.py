@@ -15,6 +15,7 @@ from backend.logic.grid_state import GridState
 from backend.logic.circuit import evaluate_circuit
 from backend.server.audio import AudioNarrator
 from backend.server.ws_server import WSServer
+from backend.hardware.led_controller import LEDController
 
 # Tangani sinyal dari systemd untuk mencegah hang saat shutdown
 def signal_handler(sig, frame):
@@ -72,6 +73,9 @@ def main():
     vision = VisionCore()
     mapper = GridMapper("grid_roi.json")
     grid_state = GridState()
+    
+    # Inisialisasi Hardware (Lampu Fisik di PIN BCM 18)
+    led = LEDController(pin=18)
     
     # 3. Inisialisasi Server Audio & WebSocket
     audio = AudioNarrator()
@@ -154,6 +158,12 @@ def main():
             # Selalu evaluasi kelayakan untuk heartbeat
             circuit_eval = evaluate_circuit(grid_state.cells)
             status_code = circuit_eval["status"]
+            
+            # Kontrol Lampu Fisik via GPIO
+            if status_code == "success":
+                led.turn_on()
+            else:
+                led.turn_off()
             
             # e. Jika ada perubahan status sirkuit, tambahkan ke list event
             if status_code != prev_circuit_status:
