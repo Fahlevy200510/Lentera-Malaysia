@@ -13,9 +13,9 @@ MARKER_ID_MAP = {
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
 
 # Kompensasi jika ada stiker ArUco yang ditempel tidak searah dengan Baterai.
-# Berdasarkan observasi, Lampu terbalik 180 derajat secara fisik.
+# Lampu memiliki offset 90 derajat secara fisik dibandingkan dengan standar (+ Kanan).
 COMPONENT_ROTATION_OFFSET = {
-    "lamp": 180
+    "lamp": 90
 }
 
 class GridState:
