@@ -140,19 +140,20 @@ function renderComponent(type: string, isComplete: boolean) {
     case "straight_cable":
       return <line x1="-40" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
     case "l_cable":
-      // Buka Kiri dan Bawah (Bentuk L normal pada ArUco 0 deg)
-      return <path d="M -40 0 L 0 0 L 0 40" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      // Buka Kanan dan Bawah (ArUco 0 deg)
+      return <path d="M 0 40 L 0 0 L 40 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
     case "t_cable":
       // Buka Atas, Bawah, Kanan (Bentuk |- pada ArUco 0 deg)
       return <path d="M 0 -40 L 0 0 M 0 40 L 0 0 M 40 0 L 0 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
     case "battery":
       return (
         <g>
-          {/* Digambar Vertikal: Tinggi 50, Lebar 30. Kutub + di atas */}
-          <rect x="-15" y="-25" width="30" height="50" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
-          <line x1="-8" y1="-12" x2="8" y2="-12" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
-          <line x1="0" y1="-20" x2="0" y2="-4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
-          <text x="0" y="-35" fill={isComplete ? "#c084fc" : dim} fontSize="14" textAnchor="middle" fontWeight="bold">+</text>
+          {/* Digambar Horizontal (ArUco 0 deg). + di Kanan */}
+          <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
+          <line x1="10" y1="-8" x2="10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
+          <line x1="-10" y1="-4" x2="-10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
+          <text x="35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold">+</text>
+          <text x="-35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold">-</text>
         </g>
       );
     case "lamp":
@@ -160,9 +161,9 @@ function renderComponent(type: string, isComplete: boolean) {
         <g>
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
-          {/* Label + dan - */}
-          <text x="-32" y="5" fill={dim} fontSize="16" fontWeight="bold">+</text>
-          <text x="32" y="4" fill={dim} fontSize="18" fontWeight="bold">-</text>
+          {/* Label + di Atas, - di Bawah (pada ArUco 0 deg) */}
+          <text x="-5" y="-28" fill={dim} fontSize="16" fontWeight="bold">+</text>
+          <text x="-5" y="38" fill={dim} fontSize="18" fontWeight="bold">-</text>
         </g>
       );
     case "switch":
