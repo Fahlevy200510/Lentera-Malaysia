@@ -17,6 +17,9 @@ After=network.target
 Type=simple
 User=pilentera
 WorkingDirectory=/home/pilentera/Lentera-Malaysia
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+ExecStartPre=-/usr/bin/pulseaudio -D
+ExecStartPre=-/usr/bin/bluetoothctl connect DF:7F:21:02:F8:59
 ExecStart=/home/pilentera/Lentera-Malaysia/lentera_env/bin/python3 main.py
 # Proteksi Bootloop: Hanya restart jika error, maksimal 3 kali dalam 30 detik
 Restart=on-failure
