@@ -51,13 +51,14 @@ class GridState:
                         if prev_state and prev_state.get("component") == comp_name:
                             prev_bucket = prev_state.get("rotation")
                             
-                        rot = discretize_rotation(raw_angle, prev_bucket)
-                        
                         # Rumus final berdasarkan kalibrasi empiris (A1):
                         # Fisik 0 (Kanan) -> Kamera 270
                         # Fisik 90 (Bawah) -> Kamera 180
-                        # Oleh karena itu: rotasi_asli = (270 - rotasi_kamera) % 360
-                        rot = (270 - rot) % 360
+                        # Oleh karena itu, kita ubah raw_angle ke ruang koordinat akhir:
+                        transformed_angle = (270 - raw_angle) % 360
+                        
+                        rot = discretize_rotation(transformed_angle, prev_bucket)
+                        
                         if comp_name in ["switch", "straight_cable"]:
                             rot = rot % 180
                             
