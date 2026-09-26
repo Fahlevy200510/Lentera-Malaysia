@@ -7,6 +7,19 @@ import signal
 import sys
 import os
 import numpy as np
+import socket
+
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = 'unknown'
+    finally:
+        s.close()
+    return IP
+
 
 from backend.core.camera import get_camera
 from backend.core.vision import VisionCore, calculate_centroid, get_marker_rotation_state
@@ -88,8 +101,10 @@ def main():
     mjpeg_thread = threading.Thread(target=run_mjpeg_server, daemon=True)
     mjpeg_thread.start()
     
-    # Beri tahu siap (Sesuai PRD 18.2)
-    audio.enqueue_narration("Observer system is ready to use.")
+    # Beri tahu siap (Sesuai PRD 18.2) dan sebutkan IP-nya!
+    ip_addr = get_ip()
+    ip_spoken = ip_addr.replace('.', ' dot ')
+    audio.enqueue_narration(f"Observer system is ready to use. My IP address is {ip_spoken}")
     
     last_raw_detections = {}
     def handle_calibrate():
