@@ -124,7 +124,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
          
          return (
            <g key={cell} transform={`translate(${x}, ${y}) rotate(${rotation})`} className="transition-all duration-500">
-              {renderComponent(component, state.isComplete)}
+              {renderComponent(component, state.isComplete, rotation)}
            </g>
          );
       })}
@@ -132,7 +132,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
   )
 }
 
-function renderComponent(type: string, isComplete: boolean) {
+function renderComponent(type: string, isComplete: boolean, rotation: number = 0) {
   const stroke = isComplete ? "#8b5cf6" : "#475569";
   const dim = "#475569";
   
@@ -167,12 +167,13 @@ function renderComponent(type: string, isComplete: boolean) {
         </g>
       );
     case "switch":
+      const isSwitchOn = rotation === 90 || rotation === 270;
       return (
         <g>
           <circle cx="-20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
           <circle cx="20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
-          {/* Garis saklar yang menutup jika komplit, atau terbuka 30 derajat jika belum */}
-          <line x1="-20" y1="0" x2="16" y2={isComplete ? "0" : "-15"} stroke={isComplete ? "#ec4899" : dim} strokeWidth="4" strokeLinecap="round" />
+          {/* Garis saklar menutup jika secara fisik ON, warnanya mengikuti kelengkapan sirkuit */}
+          <line x1="-20" y1="0" x2="16" y2={isSwitchOn ? "0" : "-15"} stroke={isComplete ? "#ec4899" : dim} strokeWidth="4" strokeLinecap="round" />
         </g>
       );
     case "resistor":
