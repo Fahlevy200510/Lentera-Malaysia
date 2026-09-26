@@ -24,6 +24,7 @@ class GridState:
     def __init__(self):
         self.cells = {}
         self.debouncers = {}
+        self.cell_history = {}
         
         # Inisialisasi 25 sel kosong A1-E5
         cols = ['A', 'B', 'C', 'D', 'E']
