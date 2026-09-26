@@ -74,8 +74,8 @@ def main():
     mapper = GridMapper("grid_roi.json")
     grid_state = GridState()
     
-    # Inisialisasi Hardware (Lampu Fisik di PIN BCM 18)
-    led = LEDController(pin=18)
+    # Inisialisasi Hardware (4 Lampu Fisik di PIN BCM 18, 23, 24, 25)
+    led = LEDController()
     
     # 3. Inisialisasi Server Audio & WebSocket
     audio = AudioNarrator()
