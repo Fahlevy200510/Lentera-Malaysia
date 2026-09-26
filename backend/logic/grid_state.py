@@ -32,6 +32,7 @@ class GridState:
                 cell_name = f"{c}{r}"
                 self.cells[cell_name] = None
                 self.debouncers[cell_name] = CellDebouncer()
+                self.cell_history[cell_name] = None
                 
     def process_frame_detections(self, cell_observations):
         """
@@ -88,25 +89,30 @@ class GridState:
                 
                 # Buat event sederhana dulu
                 if confirmed_state is None:
-                    events.append({
-                        "type": "component_removed",
-                        "cell": cell_name,
-                        "narration": f"Component at {cell_name} removed."
-                    })
+                    # Supress 'removed' narration for switch to avoid double talk when they are just turning it on
+                    was_switch = self.cell_history[cell_name] and self.cell_history[cell_name].get("component") == "switch"
+                    if not was_switch:
+                        events.append({
+                            "type": "component_removed",
+                            "cell": cell_name,
+                            "narration": f"Component at {cell_name} removed."
+                        })
                 else:
                     comp = confirmed_state["component"]
                     rot = confirmed_state["rotation"]
                     
                     # Bedakan diletakkan vs diubah (toggle)
+                    history_state = self.cell_history.get(cell_name)
+                    
                     if old_state is not None and old_state.get("component") == comp:
-                        # Berarti hanya rotasinya yang berubah
+                        # Berarti hanya rotasinya yang berubah selagi di papan
                         if comp == "switch":
-                            status = "ON" if rot == 90 else "OFF"
+                            status = "ON" if (rot == 90 or rot == 270) else "OFF"
                             events.append({
                                 "type": "switch_toggled",
                                 "cell": cell_name,
                                 "state": status,
-                                "narration": f"Switch at {cell_name} toggled to {status}."
+                                "narration": f"Switch at {cell_name} turned {status}."
                             })
                         else:
                             events.append({
@@ -116,6 +122,15 @@ class GridState:
                                 "rotation": rot,
                                 "narration": f"Rotation of {comp.replace('_', ' ')} at {cell_name} changed."
                             })
+                    elif history_state is not None and history_state.get("component") == comp and comp == "switch":
+                        # Komponen diangkat lalu diletakkan lagi (Toggling tuas)
+                        status = "ON" if (rot == 90 or rot == 270) else "OFF"
+                        events.append({
+                            "type": "switch_toggled",
+                            "cell": cell_name,
+                            "state": status,
+                            "narration": f"Switch at {cell_name} turned {status}."
+                        })
                     else:
                         # Komponen baru diletakkan
                         events.append({
@@ -125,5 +140,9 @@ class GridState:
                             "rotation": rot,
                             "narration": f"{comp.replace('_', ' ').capitalize()} placed at {cell_name}."
                         })
+                        
+                # Update history jika tidak kosong (sehingga kita ingat komponen terakhir yang ada di sini)
+                if confirmed_state is not None:
+                    self.cell_history[cell_name] = confirmed_state
                         
         return events
