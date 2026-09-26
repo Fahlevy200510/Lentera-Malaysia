@@ -15,9 +15,13 @@ COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "
 # Kompensasi jika ada stiker ArUco yang ditempel tidak searah dengan Baterai.
 # Lampu memiliki offset 90 derajat secara fisik dibandingkan dengan standar (+ Kanan).
 # Switch memiliki offset 270 derajat (berdasarkan tes putaran tuas).
+# T-Cable memiliki offset 180 derajat (stiker terpasang terbalik).
+# Straight Cable memiliki offset 90 derajat.
 COMPONENT_ROTATION_OFFSET = {
     "lamp": 90,
-    "switch": 270
+    "switch": 270,
+    "t_cable": 180,
+    "straight_cable": 90
 }
 
 class GridState:
