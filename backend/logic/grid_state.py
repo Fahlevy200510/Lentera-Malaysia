@@ -12,6 +12,12 @@ MARKER_ID_MAP = {
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
 
+# Kompensasi jika ada stiker ArUco yang ditempel tidak searah dengan Baterai.
+# Berdasarkan observasi, Lampu terbalik 180 derajat secara fisik.
+COMPONENT_ROTATION_OFFSET = {
+    "lamp": 180
+}
+
 class GridState:
     def __init__(self):
         self.cells = {}
@@ -56,6 +62,10 @@ class GridState:
                         # Fisik 90 (Bawah) -> Kamera 180
                         # Oleh karena itu, kita ubah raw_angle ke ruang koordinat akhir:
                         transformed_angle = (270 - raw_angle) % 360
+                        
+                        # Tambahkan offset spesifik per komponen jika stikernya menempel terbalik
+                        offset = COMPONENT_ROTATION_OFFSET.get(comp_name, 0)
+                        transformed_angle = (transformed_angle + offset) % 360
                         
                         rot = discretize_rotation(transformed_angle, prev_bucket)
                         

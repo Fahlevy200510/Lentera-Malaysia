@@ -161,9 +161,9 @@ function renderComponent(type: string, isComplete: boolean) {
         <g>
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
-          {/* Label + di Kiri, - di Kanan (mengkompensasi orientasi stiker fisik) */}
-          <text x="-35" y="5" fill={dim} fontSize="16" fontWeight="bold">+</text>
-          <text x="35" y="5" fill={dim} fontSize="18" fontWeight="bold">-</text>
+          {/* Standarisasi: 0 derajat = arah KANAN (+ Kanan, - Kiri) sama seperti Baterai */}
+          <text x="35" y="5" fill={dim} fontSize="16" fontWeight="bold">+</text>
+          <text x="-35" y="5" fill={dim} fontSize="18" fontWeight="bold">-</text>
         </g>
       );
     case "switch":
