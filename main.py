@@ -140,17 +140,31 @@ def main():
             
             # c. Undistort & Map to Grid
             cell_observations = {}
-            for m_id, corners in raw_detections:
-                undistorted_corners = vision.undistort_corners(corners)
-                cx, cy = calculate_centroid(undistorted_corners)
-                
-                cell_name = mapper.map_to_cell(cx, cy)
-                if cell_name:
+            if not mapper.grid_rois:
+                # TEST MODE: Jika belum dikalibrasi, petakan setiap marker ke baris tengah berurutan dari kiri ke kanan.
+                sorted_detections = sorted(raw_detections, key=lambda d: calculate_centroid(d[1])[0])
+                cols = ['A', 'B', 'C', 'D', 'E']
+                for idx, (m_id, corners) in enumerate(sorted_detections):
+                    if idx >= 5: break
+                    undistorted_corners = vision.undistort_corners(corners)
                     rot = get_marker_rotation_state(undistorted_corners)
+                    cell_name = f"{cols[idx]}3"
                     cell_observations[cell_name] = {
                         "id": m_id,
                         "raw_angle": rot
                     }
+            else:
+                for m_id, corners in raw_detections:
+                    undistorted_corners = vision.undistort_corners(corners)
+                    cx, cy = calculate_centroid(undistorted_corners)
+                    
+                    cell_name = mapper.map_to_cell(cx, cy)
+                    if cell_name:
+                        rot = get_marker_rotation_state(undistorted_corners)
+                        cell_observations[cell_name] = {
+                            "id": m_id,
+                            "raw_angle": rot
+                        }
                     
             # d. Update Grid State & Hasilkan Event
             events = grid_state.process_frame_detections(cell_observations)
