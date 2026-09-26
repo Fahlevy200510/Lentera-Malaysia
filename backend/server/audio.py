@@ -4,7 +4,8 @@ import time
 
 class AudioNarrator:
     def __init__(self):
-        self.q = queue.Queue(maxsize=5)
+        # maxsize=1 agar tidak menumpuk antrean suara lama
+        self.q = queue.Queue(maxsize=1)
         self.running = True
         self.thread = threading.Thread(target=self._worker, daemon=True)
         
