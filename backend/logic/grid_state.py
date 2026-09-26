@@ -53,6 +53,11 @@ class GridState:
                             
                         rot = discretize_rotation(raw_angle, prev_bucket)
                         
+                        # KOREKSI ROTASI (Cermin Kamera Bawah):
+                        # Kamera dari bawah membalikkan Sumbu Y, yang artinya
+                        # putaran fisik Searah Jarum Jam (CW) terbaca sebagai Berlawanan (CCW).
+                        rot = (360 - rot) % 360
+                        
                         # Untuk komponen 2-state yang simetris penuh (switch, straight),
                         # kita bisa memetakan 180->0 dan 270->90 agar konsisten.
                         if comp_name in ["switch", "straight_cable"]:
