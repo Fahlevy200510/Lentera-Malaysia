@@ -53,8 +53,11 @@ class GridState:
                             
                         rot = discretize_rotation(raw_angle, prev_bucket)
                         
-                        # Untuk komponen 2-state yang simetris penuh (switch, straight),
-                        # kita bisa memetakan 180->0 dan 270->90 agar konsisten.
+                        # Rumus final berdasarkan kalibrasi empiris (A1):
+                        # Fisik 0 (Kanan) -> Kamera 270
+                        # Fisik 90 (Bawah) -> Kamera 180
+                        # Oleh karena itu: rotasi_asli = (270 - rotasi_kamera) % 360
+                        rot = (270 - rot) % 360
                         if comp_name in ["switch", "straight_cable"]:
                             rot = rot % 180
                             
