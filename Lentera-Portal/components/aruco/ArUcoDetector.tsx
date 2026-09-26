@@ -22,11 +22,11 @@ const KOMPONEN_INFO: Record<string, { icon: React.ReactNode; color: string }> = 
 
 // SUSUNAN GRID 5x5
 const GRID_CELLS = [
-  "A1", "B1", "C1", "D1", "E1",
-  "A2", "B2", "C2", "D2", "E2",
-  "A3", "B3", "C3", "D3", "E3",
-  "A4", "B4", "C4", "D4", "E4",
   "A5", "B5", "C5", "D5", "E5",
+  "A4", "B4", "C4", "D4", "E4",
+  "A3", "B3", "C3", "D3", "E3",
+  "A2", "B2", "C2", "D2", "E2",
+  "A1", "B1", "C1", "D1", "E1",
 ];
 
 const STATUS_LABEL: Record<DetectionData["status"], string> = {
