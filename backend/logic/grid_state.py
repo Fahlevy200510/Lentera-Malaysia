@@ -71,13 +71,32 @@ class GridState:
                         
                         rot = discretize_rotation(transformed_angle, prev_bucket)
                         
-                        if comp_name in ["switch", "straight_cable"]:
+                        if comp_name == "straight_cable":
                             rot = rot % 180
+                            
+                        # State Machine Khusus Switch
+                        base_rotation = rot
+                        switch_on = False
+                        
+                        if comp_name == "switch":
+                            if prev_state and prev_state.get("component") == "switch" and "base_rotation" in prev_state:
+                                base_rotation = prev_state["base_rotation"]
+                                diff = (rot - base_rotation) % 360
+                                if diff == 90 or diff == 270:
+                                    switch_on = True
+                                else:
+                                    switch_on = False
+                            else:
+                                base_rotation = rot % 180 # Normalisasi rotasi saat pertama kali diletakkan (0 atau 90)
+                                switch_on = False
                             
                     parsed_obs = {
                         "component": comp_name,
-                        "rotation": rot
+                        "rotation": base_rotation if comp_name == "switch" else rot
                     }
+                    if comp_name == "switch":
+                        parsed_obs["base_rotation"] = base_rotation
+                        parsed_obs["switch_on"] = switch_on
             
             # Update debouncer
             is_changed, confirmed_state = self.debouncers[cell_name].update(parsed_obs)

@@ -186,7 +186,7 @@ def evaluate_circuit(grid_state_cells):
         off_switches = []
         for cell in loop:
             state = grid_state_cells[cell]
-            if state["component"] == "switch" and state["rotation"] == 0: # 0 = OFF, 90 = ON
+            if state["component"] == "switch" and not state.get("switch_on", False): # OFF
                 off_switches.append(cell)
                 
         if len(off_switches) == 0:
