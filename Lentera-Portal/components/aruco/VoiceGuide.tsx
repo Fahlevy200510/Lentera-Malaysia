@@ -8,7 +8,8 @@ type CellData = { component: string; rotation: number };
 type StepDef = {
   instruction: string;
   voice: string;
-  targetCells: Record<string, string>; // cell -> expected component
+  targetCells?: Record<string, string>; // cell -> expected component
+  validator?: (cells: Record<string, any>, status: string, graphType?: string) => boolean;
   hint?: string;
 };
 
@@ -97,9 +98,52 @@ const PARALLEL_STEPS: StepDef[] = [
   }
 ];
 
+
+const ADAPTIVE_SERIES_STEPS: StepDef[] = [
+  {
+    instruction: "Place the Battery anywhere",
+    voice: "Let's build a freeform series circuit! Start by placing the battery anywhere on the board.",
+    validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "battery"),
+    hint: "Place the battery block anywhere you like.",
+  },
+  {
+    instruction: "Place two Lamps anywhere",
+    voice: "Great! Now place two lamps anywhere else on the board.",
+    validator: (cells) => Object.values(cells).filter((c: any) => c && c.component === "lamp").length >= 2,
+    hint: "Place two lamps anywhere.",
+  },
+  {
+    instruction: "Connect them in a single path",
+    voice: "Now, use cables to connect the battery and the two lamps so that they form one single continuous loop. There should be only one path for the electricity!",
+    validator: (cells, status, graphType) => status === "success" && graphType === "series",
+    hint: "Connect them so there are no branching paths.",
+  },
+];
+
+const ADAPTIVE_PARALLEL_STEPS: StepDef[] = [
+  {
+    instruction: "Place the Battery anywhere",
+    voice: "Let's build a freeform parallel circuit! Start by placing the battery anywhere on the board.",
+    validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "battery"),
+    hint: "Place the battery block anywhere you like.",
+  },
+  {
+    instruction: "Place two Lamps anywhere",
+    voice: "Great! Now place two lamps anywhere else on the board.",
+    validator: (cells) => Object.values(cells).filter((c: any) => c && c.component === "lamp").length >= 2,
+    hint: "Place two lamps anywhere.",
+  },
+  {
+    instruction: "Connect them with multiple paths",
+    voice: "Now, use cables to connect the battery and the two lamps so that each lamp has its own separate path. You will need T-junction cables to split the electricity!",
+    validator: (cells, status, graphType) => status === "success" && graphType === "parallel",
+    hint: "Connect them so the circuit branches into multiple paths.",
+  },
+];
+
 /* ---------------------------------------------------------------- Component */
 export default function VoiceGuide() {
-  const [mode, setMode] = useState<"idle" | "series" | "parallel">("idle");
+  const [mode, setMode] = useState<"idle" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel">("idle");
   const [currentStep, setCurrentStep] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -108,7 +152,7 @@ export default function VoiceGuide() {
   const [stepCompleted, setStepCompleted] = useState(false);
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
-  const steps = mode === "series" ? SERIES_STEPS : mode === "parallel" ? PARALLEL_STEPS : [];
+  const steps = mode === "series" ? SERIES_STEPS : mode === "parallel" ? PARALLEL_STEPS : mode === "adaptive_series" ? ADAPTIVE_SERIES_STEPS : mode === "adaptive_parallel" ? ADAPTIVE_PARALLEL_STEPS : [];
   const step = steps[currentStep];
   const totalSteps = steps.length;
   const isFinished = currentStep >= totalSteps;
@@ -148,16 +192,21 @@ export default function VoiceGuide() {
       const cells = detail?.cells || {};
       
       const newCompleted = new Set<string>();
-      const targets = step.targetCells;
       let allFound = true;
-
-      for (const [cell, expectedComponent] of Object.entries(targets)) {
-        const placed = cells[cell];
-        if (placed && placed.component === expectedComponent) {
-          newCompleted.add(cell);
-        } else {
-          allFound = false;
+      if (step.targetCells) {
+        for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
+          const placed = cells[cell];
+          if (placed && placed.component === expectedComponent) {
+            newCompleted.add(cell);
+          } else {
+            allFound = false;
+          }
         }
+      }
+      
+      if (step.validator) {
+        // Asumsikan event kita kirimkan status dan graph_type di detail
+        allFound = step.validator(cells, detail?.status, detail?.graph_type);
       }
       
       setCompletedCells(newCompleted);
@@ -189,7 +238,7 @@ export default function VoiceGuide() {
     }
   }, [currentStep, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startGuide = (guideMode: "series" | "parallel") => {
+  const startGuide = (guideMode: "series" | "parallel" | "adaptive_series" | "adaptive_parallel") => {
     setMode(guideMode);
     setCurrentStep(0);
     setStepCompleted(false);
@@ -241,24 +290,38 @@ export default function VoiceGuide() {
           Choose a circuit type below. The voice assistant will guide you through each step of building the circuit on your board.
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-3">
           <button
             onClick={() => startGuide("series")}
             className="group relative overflow-hidden rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 p-4 text-left transition-all hover:border-violet-400 hover:shadow-lg hover:shadow-violet-100"
           >
-            <div className="text-xs font-bold uppercase tracking-wider text-violet-400 mb-1">Guide</div>
-            <div className="font-heading text-sm font-extrabold text-cs-text">Series Circuit</div>
-            <p className="text-[10px] text-cs-text/50 mt-1 leading-4">8 steps • 2 lamps • 1 switch</p>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-violet-400 mb-1">Step-by-step</div>
+            <div className="font-heading text-sm font-extrabold text-cs-text">Series</div>
             <Play className="absolute bottom-3 right-3 h-4 w-4 text-violet-300 group-hover:text-violet-500 transition-colors" />
           </button>
           <button
             onClick={() => startGuide("parallel")}
             className="group relative overflow-hidden rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 p-4 text-left transition-all hover:border-sky-400 hover:shadow-lg hover:shadow-sky-100"
           >
-            <div className="text-xs font-bold uppercase tracking-wider text-sky-400 mb-1">Guide</div>
-            <div className="font-heading text-sm font-extrabold text-cs-text">Parallel Circuit</div>
-            <p className="text-[10px] text-cs-text/50 mt-1 leading-4">7 steps • 2 lamps • 1 switch</p>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-sky-400 mb-1">Step-by-step</div>
+            <div className="font-heading text-sm font-extrabold text-cs-text">Parallel</div>
             <Play className="absolute bottom-3 right-3 h-4 w-4 text-sky-300 group-hover:text-sky-500 transition-colors" />
+          </button>
+          <button
+            onClick={() => startGuide("adaptive_series")}
+            className="group relative overflow-hidden rounded-xl border-2 border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-pink-50 p-4 text-left transition-all hover:border-fuchsia-400 hover:shadow-lg hover:shadow-fuchsia-100"
+          >
+            <div className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 mb-1">Freeform</div>
+            <div className="font-heading text-sm font-extrabold text-cs-text">Series</div>
+            <Play className="absolute bottom-3 right-3 h-4 w-4 text-fuchsia-300 group-hover:text-fuchsia-500 transition-colors" />
+          </button>
+          <button
+            onClick={() => startGuide("adaptive_parallel")}
+            className="group relative overflow-hidden rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 text-left transition-all hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-100"
+          >
+            <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1">Freeform</div>
+            <div className="font-heading text-sm font-extrabold text-cs-text">Parallel</div>
+            <Play className="absolute bottom-3 right-3 h-4 w-4 text-emerald-300 group-hover:text-emerald-500 transition-colors" />
           </button>
         </div>
       </div>
@@ -290,7 +353,7 @@ export default function VoiceGuide() {
           </div>
           <div>
             <h3 className="text-xs font-extrabold text-white">
-              {mode === "series" ? "Series" : "Parallel"} Circuit Guide
+              {mode.includes("series") ? "Series" : "Parallel"} {mode.includes("adaptive") ? "Freeform" : "Guide"}
             </h3>
             <p className="text-[10px] text-white/70">
               {isFinished ? "Completed! 🎉" : `Step ${currentStep + 1} of ${totalSteps}`}
@@ -356,7 +419,7 @@ export default function VoiceGuide() {
                 {/* Target cells visual */}
                 {step && (
                   <div className="flex flex-wrap gap-1.5 mt-2.5">
-                    {Object.entries(step.targetCells).map(([cell, comp]) => {
+                    {step.targetCells && Object.entries(step.targetCells).map(([cell, comp]) => {
                       const done = completedCells.has(cell);
                       return (
                         <span

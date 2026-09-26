@@ -10,7 +10,7 @@ MARKER_ID_MAP = {
     7: "switch"
 }
 
-COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch"]
+COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
 
 class GridState:
     def __init__(self):
@@ -53,9 +53,9 @@ class GridState:
                             
                         rot = discretize_rotation(raw_angle, prev_bucket)
                         
-                        # Untuk komponen 2-state (battery, switch, straight),
+                        # Untuk komponen 2-state yang simetris penuh (switch, straight),
                         # kita bisa memetakan 180->0 dan 270->90 agar konsisten.
-                        if comp_name in ["battery", "switch", "straight_cable"]:
+                        if comp_name in ["switch", "straight_cable"]:
                             rot = rot % 180
                             
                     parsed_obs = {

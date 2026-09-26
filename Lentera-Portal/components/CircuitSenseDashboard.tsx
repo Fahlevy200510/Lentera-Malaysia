@@ -1569,13 +1569,23 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
                 </div>
               )}
 
-              <button type="submit" disabled={submitting} style={{ marginTop: 3, background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, color: "#fff", border: "none", padding: "12px 18px", borderRadius: 13, fontWeight: 800, fontSize: 13.5, boxShadow: C.shadowSm, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: submitting ? .65 : 1 }}>
-                {submitting ? "Signing in…" : roleCopy.cta} <ChevronRight size={16} />
-              </button>
+              <div className="flex" style={{ gap: 8, marginTop: 3 }}>
+                <button type="submit" disabled={submitting} style={{ flex: 1, background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, color: "#fff", border: "none", padding: "12px 18px", borderRadius: 13, fontWeight: 800, fontSize: 13.5, boxShadow: C.shadowSm, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: submitting ? .65 : 1 }}>
+                  {submitting ? "Signing in…" : roleCopy.cta} <ChevronRight size={16} />
+                </button>
+                <button type="button" onClick={() => onLogin(role, roleCopy.placeholder, "lentera123")} disabled={submitting} style={{ background: C.pinkSoft, color: "#DB2777", border: "none", padding: "12px 18px", borderRadius: 13, fontWeight: 800, fontSize: 13.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <Sparkles size={16} /> Demo
+                </button>
+              </div>
             </form>
 
-            <div className="flex items-center" style={{ gap: 7, marginTop: 14, fontSize: 11, color: C.textSoft }}>
-              <Info size={13} /> Secure sign-in powered by LENTERA
+            <div className="flex items-center justify-between" style={{ marginTop: 14 }}>
+              <div className="flex items-center" style={{ gap: 7, fontSize: 11, color: C.textSoft }}>
+                <Info size={13} /> Secure sign-in powered by LENTERA
+              </div>
+              <a href="/" style={{ fontSize: 11, fontWeight: 700, color: C.primaryDeep, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+                <ArrowLeft size={12} /> Back to Portal
+              </a>
             </div>
           </div>
         </div>

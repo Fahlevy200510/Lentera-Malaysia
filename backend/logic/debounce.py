@@ -1,5 +1,5 @@
-PRESENCE_CONFIRM_FRAMES = 8   # ~360ms pada 22 FPS - penempatan
-REMOVAL_CONFIRM_FRAMES = 15   # ~680ms pada 22 FPS - pelepasan
+PRESENCE_CONFIRM_FRAMES = 5   # ~200ms pada 22 FPS - penempatan
+REMOVAL_CONFIRM_FRAMES = 5    # ~200ms pada 22 FPS - pelepasan
 ROTATION_DEADZONE_DEG = 20    # +/- 20 derajat dari batas kuadran diabaikan
 
 def discretize_rotation(raw_angle_deg, previous_bucket):

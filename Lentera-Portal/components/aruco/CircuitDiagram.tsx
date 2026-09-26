@@ -140,11 +140,11 @@ function renderComponent(type: string, isComplete: boolean) {
     case "straight_cable":
       return <line x1="-40" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
     case "l_cable":
-      // Buka Atas dan Kanan (Bentuk L)
-      return <path d="M 0 -40 L 0 0 L 40 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      // Buka Kiri dan Bawah (Bentuk L normal pada ArUco 0 deg)
+      return <path d="M -40 0 L 0 0 L 0 40" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
     case "t_cable":
-      // Buka Kiri, Kanan, Bawah
-      return <path d="M -40 0 L 0 0 M 40 0 L 0 0 M 0 0 L 0 40" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      // Buka Atas, Bawah, Kanan (Bentuk |- pada ArUco 0 deg)
+      return <path d="M 0 -40 L 0 0 M 0 40 L 0 0 M 40 0 L 0 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
     case "battery":
       return (
         <g>
