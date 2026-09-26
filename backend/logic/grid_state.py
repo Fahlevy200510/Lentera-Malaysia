@@ -71,7 +71,7 @@ class GridState:
                         
                         rot = discretize_rotation(transformed_angle, prev_bucket)
                         
-                        if comp_name == "straight_cable":
+                        if comp_name in ["switch", "straight_cable"]:
                             rot = rot % 180
                             
                     parsed_obs = {
