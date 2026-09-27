@@ -28,7 +28,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "E4": { component: "straight_cable", rotation: 90 },
         
         "A3": { component: "straight_cable", rotation: 90 },
-        "E3": { component: "straight_cable", rotation: 90 },
+        "E3": { component: "switch", rotation: 90 },
         
         "A2": { component: "straight_cable", rotation: 90 },
         "E2": { component: "straight_cable", rotation: 90 },
@@ -128,7 +128,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
          
          return (
            <g key={cell} transform={`translate(${x}, ${y}) rotate(${rotation})`} className="transition-all duration-500">
-              {renderComponent(component, state.isComplete, rotation)}
+              {renderComponent(component, state.isComplete, rotation, variant)}
            </g>
          );
       })}
@@ -136,7 +136,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
   )
 }
 
-function renderComponent(type: string, isComplete: boolean, rotation: number = 0) {
+function renderComponent(type: string, isComplete: boolean, rotation: number = 0, variant: string = "live") {
   const stroke = isComplete ? "#8b5cf6" : "#475569";
   const dim = "#475569";
   
@@ -180,7 +180,14 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
       );
       break;
     case "switch":
-      const isSwitchOn = rotation === 90 || rotation === 270;
+      let isSwitchOn = false;
+      if (variant === "live") {
+        isSwitchOn = rotation === 90 || rotation === 270;
+      } else if (variant === "closed") {
+        isSwitchOn = true;
+      } else {
+        isSwitchOn = false; // "series", "parallel", "open" templates force NO (Open) visual
+      }
       content = (
         <g>
           <circle cx="-20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
