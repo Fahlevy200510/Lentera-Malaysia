@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { CheckCircle2, Sparkles, Zap, Lightbulb, ToggleLeft } from "lucide-react";
+import { Zap, Lightbulb, ToggleLeft } from "lucide-react";
 
 type ComponentData = { component: string; rotation: number; id: number };
 type DetectionData = {
