@@ -6,6 +6,7 @@ class GridMapper:
     def __init__(self, roi_file="grid_roi.json"):
         self.roi_file = roi_file
         self.grid_rois = {} # { "A1": {"centroid": (x,y), "radius": r}, ... }
+        self.H = None
         self.load_roi()
 
     def load_roi(self):
@@ -13,6 +14,9 @@ class GridMapper:
             try:
                 with open(self.roi_file, 'r') as f:
                     self.grid_rois = json.load(f)
+                if "_camera_corners" in self.grid_rois:
+                    from backend.core.vision import compute_homography
+                    self.H = compute_homography(self.grid_rois["_camera_corners"])
             except Exception as e:
                 print(f"Gagal memuat {self.roi_file}: {e}")
         else:
@@ -55,6 +59,8 @@ class GridMapper:
         min_dist = float('inf')
         
         for cell_name, roi in self.grid_rois.items():
+            if cell_name == "_camera_corners":
+                continue
             cx, cy = roi["centroid"]
             radius = roi["radius"]
             
@@ -111,6 +117,13 @@ class GridMapper:
                     "centroid": [cx, cy],
                     "radius": dist_x * 0.4
                 }
+                
+        self.grid_rois["_camera_corners"] = {
+            "tl": tl, "tr": tr, "br": br, "bl": bl
+        }
+        
+        from backend.core.vision import compute_homography
+        self.H = compute_homography(self.grid_rois["_camera_corners"])
                 
         with open(self.roi_file, 'w') as f:
             json.dump(self.grid_rois, f, indent=2)

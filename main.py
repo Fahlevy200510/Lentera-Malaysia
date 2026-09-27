@@ -148,7 +148,7 @@ def main():
                 for idx, (m_id, corners) in enumerate(sorted_detections):
                     if idx >= 5: break
                     undistorted_corners = vision.undistort_corners(corners)
-                    rot = get_marker_rotation_state(undistorted_corners)
+                    rot = get_marker_rotation_state(undistorted_corners, mapper.H)
                     cell_name = f"{cols[idx]}3"
                     cell_observations[cell_name] = {
                         "id": m_id,
@@ -161,7 +161,7 @@ def main():
                     
                     cell_name = mapper.map_to_cell(cx, cy)
                     if cell_name:
-                        rot = get_marker_rotation_state(undistorted_corners)
+                        rot = get_marker_rotation_state(undistorted_corners, mapper.H)
                         cell_observations[cell_name] = {
                             "id": m_id,
                             "raw_angle": rot

@@ -54,13 +54,18 @@ def calculate_centroid(corners):
     y = sum([c[1] for c in corners]) / 4
     return (x, y)
 
-def get_marker_rotation_state(corners):
+def get_marker_rotation_state(corners, H=None):
     """
     Menghitung rotasi marker berdasarkan sudut corner.
-    Corners ArUco selalu terurut: Top-Left, Top-Right, Bottom-Right, Bottom-Left relatif terhadap orientasi asli marker.
-    Kita gunakan vektor Top-Left -> Top-Right untuk menentukan sudut.
+    Jika ada matriks Homografi (H), unwarp perspektifnya dulu.
     """
-    tl, tr, br, bl = corners
+    if H is not None:
+        pts = np.array(corners, dtype=np.float32).reshape(-1, 1, 2)
+        transformed_pts = cv2.perspectiveTransform(pts, H)
+        tl, tr, br, bl = transformed_pts.reshape(4, 2)
+    else:
+        tl, tr, br, bl = corners
+        
     dx = tr[0] - tl[0]
     dy = tr[1] - tl[1]
     
@@ -69,3 +74,26 @@ def get_marker_rotation_state(corners):
     angle_deg = math.degrees(angle_rad) % 360
     
     return angle_deg
+
+def compute_homography(camera_corners_dict):
+    """
+    Menghitung matriks Homography dari 4 sudut fisik ke persegi sempurna.
+    camera_corners_dict: {"tl": [x,y], "tr": [x,y], "bl": [x,y], "br": [x,y]}
+    """
+    src_pts = np.array([
+        camera_corners_dict["tl"],
+        camera_corners_dict["tr"],
+        camera_corners_dict["br"],
+        camera_corners_dict["bl"]
+    ], dtype=np.float32)
+    
+    # Map ke bidang 500x500
+    dst_pts = np.array([
+        [0, 0],
+        [500, 0],
+        [500, 500],
+        [0, 500]
+    ], dtype=np.float32)
+    
+    H, _ = cv2.findHomography(src_pts, dst_pts)
+    return H

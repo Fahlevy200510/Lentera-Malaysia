@@ -144,7 +144,7 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
     "l_cable": 90,
     "t_cable": -90,
     "switch": 90,
-    "lamp": -90,
+    "lamp": 90,
   };
   const offset = svgOffset[type] || 0;
 
