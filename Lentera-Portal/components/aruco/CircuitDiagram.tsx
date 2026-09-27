@@ -136,19 +136,32 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
   const stroke = isComplete ? "#8b5cf6" : "#475569";
   const dim = "#475569";
   
+  // Offset untuk mensinkronkan bentuk SVG awal (0-deg) dengan orientasi fisik ArUco.
+  // Didapatkan dari kalibrasi empiris pengguna.
+  const svgOffset: Record<string, number> = {
+    "battery": -90,
+    "straight_cable": 0,
+    "l_cable": 90,
+    "t_cable": -90,
+    "switch": 90,
+    "lamp": -90,
+  };
+  const offset = svgOffset[type] || 0;
+
+  let content = null;
   switch(type) {
     case "straight_cable":
-      return <line x1="-40" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      content = <line x1="-40" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      break;
     case "l_cable":
-      // Buka Kanan dan Bawah (ArUco 0 deg)
-      return <path d="M 0 40 L 0 0 L 40 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      content = <path d="M 0 40 L 0 0 L 40 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      break;
     case "t_cable":
-      // Buka Atas, Bawah, Kanan (Bentuk |- pada ArUco 0 deg)
-      return <path d="M 0 -40 L 0 0 M 0 40 L 0 0 M 40 0 L 0 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      content = <path d="M 0 -40 L 0 0 M 0 40 L 0 0 M 40 0 L 0 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      break;
     case "battery":
-      return (
+      content = (
         <g>
-          {/* Digambar Horizontal (ArUco 0 deg). + di Kanan */}
           <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
           <line x1="10" y1="-8" x2="10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           <line x1="-10" y1="-4" x2="-10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
@@ -156,33 +169,41 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           <text x="-35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold">-</text>
         </g>
       );
+      break;
     case "lamp":
-      return (
+      content = (
         <g>
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
-          {/* Standarisasi: 0 derajat = arah KANAN (+ Kanan, - Kiri) sama seperti Baterai */}
           <text x="35" y="5" fill={dim} fontSize="16" fontWeight="bold">+</text>
           <text x="-35" y="5" fill={dim} fontSize="18" fontWeight="bold">-</text>
         </g>
       );
+      break;
     case "switch":
       const isSwitchOn = rotation === 90 || rotation === 270;
-      return (
+      content = (
         <g>
           <circle cx="-20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
           <circle cx="20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
-          {/* Garis saklar menutup jika secara fisik ON, warnanya mengikuti kelengkapan sirkuit */}
           <line x1="-20" y1="0" x2="16" y2={isSwitchOn ? "0" : "-15"} stroke={isComplete ? "#ec4899" : dim} strokeWidth="4" strokeLinecap="round" />
         </g>
       );
+      break;
     case "resistor":
-      return (
+      content = (
         <g>
           <path d="M -40 0 L -20 0 L -15 -10 L -5 10 L 5 -10 L 15 10 L 20 0 L 40 0" fill="none" stroke={stroke} strokeWidth="3" strokeLinecap="round" />
         </g>
       );
+      break;
     default:
-      return null;
+      content = null;
   }
+
+  return (
+    <g transform={`rotate(${offset})`}>
+      {content}
+    </g>
+  );
 }

@@ -12,18 +12,9 @@ MARKER_ID_MAP = {
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
 
-# Kompensasi jika ada stiker ArUco yang ditempel tidak searah dengan Baterai.
-# Lampu memiliki offset 90 derajat secara fisik dibandingkan dengan standar (+ Kanan).
-# Switch memiliki offset 270 derajat (berdasarkan tes putaran tuas).
-# T-Cable memiliki offset 180 derajat (stiker terpasang terbalik).
-# Straight Cable memiliki offset 90 derajat.
-COMPONENT_ROTATION_OFFSET = {
-    "lamp": 90,
-    "switch": 270,
-    "t_cable": 180,
-    "straight_cable": 90
-}
-
+# Penghapusan COMPONENT_ROTATION_OFFSET:
+# Semua kompensasi rotasi kini dipindahkan murni ke UI (CircuitDiagram.tsx) 
+# agar sinkron dan standar dengan native ArUco angle.
 class GridState:
     def __init__(self):
         self.cells = {}
@@ -68,12 +59,8 @@ class GridState:
                         # Rumus final berdasarkan kalibrasi empiris (A1):
                         # Fisik 0 (Kanan) -> Kamera 270
                         # Fisik 90 (Bawah) -> Kamera 180
-                        # Oleh karena itu, kita ubah raw_angle ke ruang koordinat akhir:
+                        # Transformasi dari rotasi kamera ke rotasi UI standar (0 = Kanan)
                         transformed_angle = (270 - raw_angle) % 360
-                        
-                        # Tambahkan offset spesifik per komponen jika stikernya menempel terbalik
-                        offset = COMPONENT_ROTATION_OFFSET.get(comp_name, 0)
-                        transformed_angle = (transformed_angle + offset) % 360
                         
                         rot = discretize_rotation(transformed_angle, prev_bucket)
                         
