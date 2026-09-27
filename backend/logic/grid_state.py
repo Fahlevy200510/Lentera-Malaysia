@@ -12,9 +12,15 @@ MARKER_ID_MAP = {
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
 
-# Penghapusan COMPONENT_ROTATION_OFFSET:
-# Semua kompensasi rotasi kini dipindahkan murni ke UI (CircuitDiagram.tsx) 
-# agar sinkron dan standar dengan native ArUco angle.
+COMPONENT_ROTATION_OFFSET = {
+    "battery": -90,
+    "straight_cable": 0,
+    "l_cable": 90,
+    "t_cable": -90,
+    "switch": 90,
+    "lamp": 90
+}
+
 class GridState:
     def __init__(self):
         self.cells = {}
@@ -60,7 +66,8 @@ class GridState:
                         # Fisik 0 (Kanan) -> Kamera 270
                         # Fisik 90 (Bawah) -> Kamera 180
                         # Transformasi dari rotasi kamera ke rotasi UI standar (0 = Kanan)
-                        transformed_angle = (270 - raw_angle) % 360
+                        offset = COMPONENT_ROTATION_OFFSET.get(comp_name, 0)
+                        transformed_angle = (270 - raw_angle + offset) % 360
                         
                         rot = discretize_rotation(transformed_angle, prev_bucket)
                         
