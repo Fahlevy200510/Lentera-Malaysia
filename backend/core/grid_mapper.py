@@ -31,8 +31,9 @@ class GridMapper:
         for r in range(5):
             for c in range(5):
                 cell_name = f"{cols[c]}{r+1}"
+                # Jika A1 di bawah, maka r=0 posisinya di bawah (y besar)
                 cx = start_x + (c * cell_w) + (cell_w // 2)
-                cy = start_y + (r * cell_h) + (cell_h // 2)
+                cy = start_y + ((4 - r) * cell_h) + (cell_h // 2)
                 self.grid_rois[cell_name] = {
                     "centroid": [cx, cy],
                     "radius": min(cell_w, cell_h) * 0.4
@@ -91,14 +92,19 @@ class GridMapper:
         
         cols = ['A', 'B', 'C', 'D', 'E']
         for r in range(5):
-            # Berdasarkan view kamera dari bawah meja:
-            # Row 1 (r=0) dekat dengan siswa -> di kamera berada di ATAS (tl, tr)
-            # Row 5 (r=4) jauh dari siswa -> di kamera berada di BAWAH (bl, br)
-            left_x = tl[0] + (bl[0] - tl[0]) * (r / 4.0)
-            left_y = tl[1] + (bl[1] - tl[1]) * (r / 4.0)
+            # Berdasarkan instruksi user: A1 ada di kiri-bawah.
+            # Row 1 (r=0) dekat dengan siswa -> di kamera berada di BAWAH (bl, br)
+            # Row 5 (r=4) jauh dari siswa -> di kamera berada di ATAS (tl, tr)
+            # Karena r=0 harus di bawah, kita balik interpolasinya:
+            # Saat r=0, porsinya 1.0 dari tl/tr (yaitu bl/br)
+            # Saat r=4, porsinya 0.0 dari tl/tr (yaitu tl/tr)
+            frac = 1.0 - (r / 4.0)
             
-            right_x = tr[0] + (br[0] - tr[0]) * (r / 4.0)
-            right_y = tr[1] + (br[1] - tr[1]) * (r / 4.0)
+            left_x = tl[0] + (bl[0] - tl[0]) * frac
+            left_y = tl[1] + (bl[1] - tl[1]) * frac
+            
+            right_x = tr[0] + (br[0] - tr[0]) * frac
+            right_y = tr[1] + (br[1] - tr[1]) * frac
             
             for c in range(5):
                 cx = left_x + (right_x - left_x) * (c / 4.0)
