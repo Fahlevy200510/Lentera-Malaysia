@@ -28,7 +28,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "E4": { component: "straight_cable", rotation: 90 },
         
         "A3": { component: "straight_cable", rotation: 90 },
-        "E3": { component: "switch", rotation: 90 },
+        "E3": { component: "straight_cable", rotation: 90 },
         
         "A2": { component: "straight_cable", rotation: 90 },
         "E2": { component: "straight_cable", rotation: 90 },
@@ -160,8 +160,10 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
           <line x1="10" y1="-8" x2="10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           <line x1="-10" y1="-4" x2="-10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
-          <text x="35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold">+</text>
-          <text x="-35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold">-</text>
+          <g transform={`rotate(${-rotation})`}>
+            <text x="0" y="-22" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle">+</text>
+            <text x="0" y="32" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle">-</text>
+          </g>
         </g>
       );
       break;
@@ -170,8 +172,10 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
         <g>
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
-          <text x="35" y="5" fill={dim} fontSize="16" fontWeight="bold">+</text>
-          <text x="-35" y="5" fill={dim} fontSize="18" fontWeight="bold">-</text>
+          <g transform={`rotate(${-rotation})`}>
+            <text x="25" y="4" fill={dim} fontSize="14" fontWeight="bold">+</text>
+            <text x="-32" y="4" fill={dim} fontSize="16" fontWeight="bold">-</text>
+          </g>
         </g>
       );
       break;
