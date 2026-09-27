@@ -202,7 +202,7 @@ export default function ArUcoDetector() {
         )}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {/* Video Stream dari Raspi */}
         <div className="card flex flex-col items-center justify-center rounded-2xl border border-cs-text/10 bg-white/80 p-4 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md overflow-hidden min-h-[300px]">
           {detections.status === "connected" ? (
@@ -221,40 +221,10 @@ export default function ArUcoDetector() {
               <p className="text-sm font-semibold">Waiting for Camera Feed...</p>
             </div>
           )}
-        </div>
-
-        {/* Grid 5x5 */}
-        <div className="card rounded-2xl border border-cs-text/10 bg-white/80 p-5 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md flex flex-col justify-center">
-          <div className="grid grid-cols-5 gap-2">
-            {GRID_CELLS.map((cell) => {
-              const detectedComp = detections.cells[cell];
-              const isHighlight = detections.circuit_status?.cells?.includes(cell);
-              return (
-                <div
-                  key={cell}
-                  className={`relative flex aspect-square flex-col items-center justify-center rounded-xl border ${
-                    isHighlight ? "border-cs-green bg-cs-green/10" : "border-cs-text/10 bg-cs-bg"
-                  }`}
-                >
-                  <span className="absolute left-1.5 top-1.5 text-[9px] font-semibold text-cs-text/35">{cell}</span>
-                  {detectedComp && (
-                    <div className="flex flex-col items-center gap-1 text-center">
-                      <span className={KOMPONEN_INFO[detectedComp.component]?.color ?? "text-cs-primary"}>
-                        {KOMPONEN_INFO[detectedComp.component]?.icon}
-                      </span>
-                      <span className="text-[9px] font-bold text-cs-text truncate px-1 max-w-full">
-                        {detectedComp.component.replace("_", " ")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
           
           {/* Circuit Status Narration */}
           {detections.circuit_status && (
-            <div className={`mt-4 p-3 rounded-xl border text-xs font-semibold ${
+            <div className={`mt-4 p-3 rounded-xl border text-xs font-semibold w-full text-center ${
               detections.circuit_status.status === "success" 
                 ? "bg-cs-green/10 border-cs-green/20 text-cs-green"
                 : "bg-amber-50 border-amber-200 text-amber-700"
