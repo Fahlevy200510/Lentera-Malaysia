@@ -34,9 +34,9 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "E2": { component: "straight_cable", rotation: 90 },
         
         "A1": { component: "l_cable", rotation: 270 },
-        "B1": { component: "lamp", rotation: 90 },
+        "B1": { component: "lamp", rotation: 270 },
         "C1": { component: "switch", rotation: 0 },
-        "D1": { component: "lamp", rotation: 90 },
+        "D1": { component: "lamp", rotation: 270 },
         "E1": { component: "l_cable", rotation: 180 },
       };
     } else if (variant === "parallel") {
@@ -52,7 +52,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         
         "A3": { component: "t_cable", rotation: 0 },
         "B3": { component: "switch", rotation: 0 },
-        "C3": { component: "lamp", rotation: 90 },
+        "C3": { component: "lamp", rotation: 270 },
         "D3": { component: "straight_cable", rotation: 0 },
         "E3": { component: "t_cable", rotation: 180 },
         
@@ -61,7 +61,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         
         "A1": { component: "l_cable", rotation: 270 },
         "B1": { component: "switch", rotation: 0 },
-        "C1": { component: "lamp", rotation: 90 },
+        "C1": { component: "lamp", rotation: 270 },
         "D1": { component: "straight_cable", rotation: 0 },
         "E1": { component: "l_cable", rotation: 180 },
       };
