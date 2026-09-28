@@ -13,12 +13,16 @@ class GridMapper:
         if os.path.exists(self.roi_file):
             try:
                 with open(self.roi_file, 'r') as f:
-                    self.grid_rois = json.load(f)
+                    content = f.read().strip()
+                    if content:
+                        self.grid_rois = json.loads(content)
                 if "_camera_corners" in self.grid_rois:
                     from backend.core.vision import compute_homography
                     self.H = compute_homography(self.grid_rois["_camera_corners"])
             except Exception as e:
                 print(f"Gagal memuat {self.roi_file}: {e}")
+                self.grid_rois = {}
+                self.H = None
         else:
             # Fallback mock ROI jika belum dikalibrasi (khusus testing lokal)
             print("Peringatan: grid_roi.json tidak ditemukan. Menggunakan mock ROI.")
@@ -114,12 +118,15 @@ class GridMapper:
                 dist_x = math.hypot(right_x - left_x, right_y - left_y) / 4.0
                 
                 self.grid_rois[cell_name] = {
-                    "centroid": [cx, cy],
-                    "radius": dist_x * 0.4
+                    "centroid": [float(cx), float(cy)],
+                    "radius": float(dist_x * 0.4)
                 }
                 
         self.grid_rois["_camera_corners"] = {
-            "tl": tl, "tr": tr, "br": br, "bl": bl
+            "tl": [float(tl[0]), float(tl[1])], 
+            "tr": [float(tr[0]), float(tr[1])], 
+            "br": [float(br[0]), float(br[1])], 
+            "bl": [float(bl[0]), float(bl[1])]
         }
         
         from backend.core.vision import compute_homography
