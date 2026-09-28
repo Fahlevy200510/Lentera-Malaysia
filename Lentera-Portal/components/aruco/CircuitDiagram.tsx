@@ -107,7 +107,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
           <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
-        <filter id="wireGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <filter id="wireGlow" filterUnits="userSpaceOnUse" x="-50" y="-50" width="100" height="100">
           <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
           <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
         </filter>
