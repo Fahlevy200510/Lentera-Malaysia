@@ -157,12 +157,17 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
     case "battery":
       content = (
         <g>
+          {/* Wire stubs connecting to cell edges */}
+          <line x1="-40" y1="0" x2="-25" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
+          <line x1="25" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
+          
           <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
           <line x1="10" y1="-8" x2="10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           <line x1="-10" y1="-4" x2="-10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           <g transform={`rotate(${-rotation})`}>
-            <text x="0" y="-22" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle">+</text>
-            <text x="0" y="32" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle">-</text>
+            {/* Polarity labels placed above the wire stubs so they don't overlap */}
+            <text x="-32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle">-</text>
+            <text x="32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle">+</text>
           </g>
         </g>
       );
@@ -170,11 +175,16 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
     case "lamp":
       content = (
         <g>
+          {/* Wire stubs connecting to cell edges (native vertical) */}
+          <line x1="0" y1="-40" x2="0" y2="-18" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
+          <line x1="0" y1="18" x2="0" y2="40" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
+          
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
           <g transform={`rotate(${-rotation})`}>
-            <text x="25" y="4" fill={dim} fontSize="14" fontWeight="bold">+</text>
-            <text x="-32" y="4" fill={dim} fontSize="16" fontWeight="bold">-</text>
+            {/* Polarity labels placed beside the wires. Since native is Top(-), Bottom(+). Wait, let's just place them logically based on screen layout for Series/Parallel. For series/parallel, Lamp is rotated 90. So native Top becomes Left. Let's put text on Left and Right. */}
+            <text x="-25" y="-15" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle">+</text>
+            <text x="25" y="-15" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle">-</text>
           </g>
         </g>
       );
