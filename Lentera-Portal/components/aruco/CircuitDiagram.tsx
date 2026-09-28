@@ -34,7 +34,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "E2": { component: "straight_cable", rotation: 90 },
         
         "A1": { component: "l_cable", rotation: 270 },
-        "B1": { component: "lamp", rotation: 270 },
+        "B1": { component: "lamp", rotation: 90 },
         "C1": { component: "switch", rotation: 0 },
         "D1": { component: "lamp", rotation: 90 },
         "E1": { component: "l_cable", rotation: 180 },
@@ -157,33 +157,25 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
     case "battery":
       content = (
         <g>
-          {/* Wire stubs connecting to cell edges */}
-          <line x1="-40" y1="0" x2="-25" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
-          <line x1="25" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
-          
           <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
-          <line x1="10" y1="-8" x2="10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
-          <line x1="-10" y1="-4" x2="-10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
+          {/* Positive (Long) on Left */}
+          <line x1="-10" y1="-8" x2="-10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
+          {/* Negative (Short) on Right */}
+          <line x1="10" y1="-4" x2="10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           
-          {/* Polarity labels placed above the wire stubs. Counter-rotated individually around their own center so they stay upright but physically move when the block is rotated! */}
-          <text x="-32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -32, -10)`}>-</text>
-          <text x="32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 32, -10)`}>+</text>
+          <text x="-35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -35, 5)`}>+</text>
+          <text x="35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 35, 5)`}>-</text>
         </g>
       );
       break;
     case "lamp":
       content = (
         <g>
-          {/* Wire stubs connecting to cell edges (native vertical) */}
-          <line x1="0" y1="-40" x2="0" y2="-18" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
-          <line x1="0" y1="18" x2="0" y2="40" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
-          
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
           
-          {/* Polarity labels placed beside the wires (Native Top/Bottom). Counter-rotated individually around their own center so they stay upright but physically move when the block is rotated! */}
-          <text x="-12" y="-28" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -12, -28)`}>+</text>
-          <text x="-12" y="32" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -12, 32)`}>-</text>
+          <text x="0" y="-25" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, -25)`}>+</text>
+          <text x="0" y="25" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, 25)`}>-</text>
         </g>
       );
       break;
