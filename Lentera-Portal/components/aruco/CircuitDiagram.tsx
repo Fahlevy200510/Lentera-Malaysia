@@ -34,7 +34,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "E2": { component: "straight_cable", rotation: 90 },
         
         "A1": { component: "l_cable", rotation: 270 },
-        "B1": { component: "lamp", rotation: 90 },
+        "B1": { component: "lamp", rotation: 270 },
         "C1": { component: "switch", rotation: 0 },
         "D1": { component: "lamp", rotation: 90 },
         "E1": { component: "l_cable", rotation: 180 },
@@ -128,7 +128,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
          
          return (
            <g key={cell} transform={`translate(${x}, ${y}) rotate(${rotation})`} className="transition-all duration-500">
-              {renderComponent(component, state.isComplete, rotation, variant)}
+              {renderComponent(component, isComplete, rotation, variant)}
            </g>
          );
       })}
@@ -164,11 +164,10 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
           <line x1="10" y1="-8" x2="10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           <line x1="-10" y1="-4" x2="-10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
-          <g transform={`rotate(${-rotation})`}>
-            {/* Polarity labels placed above the wire stubs so they don't overlap */}
-            <text x="-32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle">-</text>
-            <text x="32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle">+</text>
-          </g>
+          
+          {/* Polarity labels placed above the wire stubs. Counter-rotated individually around their own center so they stay upright but physically move when the block is rotated! */}
+          <text x="-32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -32, -10)`}>-</text>
+          <text x="32" y="-10" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 32, -10)`}>+</text>
         </g>
       );
       break;
@@ -181,11 +180,10 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
-          <g transform={`rotate(${-rotation})`}>
-            {/* Polarity labels placed beside the wires. Since native is Top(-), Bottom(+). Wait, let's just place them logically based on screen layout for Series/Parallel. For series/parallel, Lamp is rotated 90. So native Top becomes Left. Let's put text on Left and Right. */}
-            <text x="-25" y="-15" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle">+</text>
-            <text x="25" y="-15" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle">-</text>
-          </g>
+          
+          {/* Polarity labels placed beside the wires (Native Top/Bottom). Counter-rotated individually around their own center so they stay upright but physically move when the block is rotated! */}
+          <text x="-12" y="-28" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -12, -28)`}>+</text>
+          <text x="-12" y="32" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -12, 32)`}>-</text>
         </g>
       );
       break;
