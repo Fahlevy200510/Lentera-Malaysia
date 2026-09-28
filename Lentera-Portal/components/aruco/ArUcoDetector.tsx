@@ -60,13 +60,6 @@ export default function ArUcoDetector() {
       // Jika pengguna memasukkan URL lengkap (misal dari Ngrok/Pinggy)
       const wsUrl = ip.startsWith("ws://") || ip.startsWith("wss://") ? ip : `ws://${ip}:8765`;
       
-      // Peringatan eksplisit untuk Mixed Content
-      if (typeof window !== "undefined" && window.location.protocol === "https:" && wsUrl.startsWith("ws://")) {
-        alert("🚨 BROWSER MEMBLOKIR KONEKSI! 🚨\n\nAnda membuka website aman (HTTPS/Netlify), tetapi mencoba terhubung ke IP Lokal (ws://).\nBrowser (Chrome/Safari) sangat melarang hal ini karena aturan 'Mixed Content'.\n\nSOLUSI:\n1. Buka website ini via localhost:3000 di laptop Anda (npm run dev)\n2. ATAU gunakan Ngrok/Pinggy di Raspberry Pi untuk mendapatkan alamat 'wss://'");
-        setDetections((prev) => ({ ...prev, status: "disconnected" }));
-        return;
-      }
-      
       const websocket = new WebSocket(wsUrl);
       wsRef.current = websocket;
 
