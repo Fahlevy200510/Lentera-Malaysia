@@ -188,12 +188,14 @@ export default function ArUcoDetector() {
             <input 
               type="text" 
               value={ipAddress} 
-              onChange={(e) => setIpAddress(e.target.value)} 
+              onChange={(e) => setIpAddress(e.target.value)}
+              onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); connectWebSocket(ipAddress); } }}
               placeholder="IP Raspberry Pi (ex: 192.168.1.5)"
               className="text-xs border border-slate-300 px-2 py-1.5 rounded w-full bg-white text-slate-800 focus:outline-none focus:border-cs-primary"
             />
             <button 
-              onClick={() => connectWebSocket(ipAddress)}
+              type="button"
+              onClick={(e) => { e.preventDefault(); connectWebSocket(ipAddress); }}
               className="bg-cs-primary text-white text-xs px-3 py-1.5 rounded font-bold hover:bg-cs-primaryDeep transition-colors whitespace-nowrap"
             >
               Connect
