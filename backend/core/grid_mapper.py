@@ -81,7 +81,7 @@ class GridMapper:
         Diasumsikan pengguna meletakkan 4 komponen di sudut terluar: A1, E1, A5, E5.
         """
         if len(raw_detections) < 4:
-            return False, "Please place 4 components at the four corners of the board to calibrate."
+            return False, "Silakan letakkan 4 komponen di keempat sudut papan untuk kalibrasi."
             
         centroids = []
         for m_id, corners in raw_detections:
@@ -135,4 +135,4 @@ class GridMapper:
         with open(self.roi_file, 'w') as f:
             json.dump(self.grid_rois, f, indent=2)
             
-        return True, "Calibration successful. The board is now mapped."
+        return True, "Kalibrasi berhasil. Papan sudah terpetakan."

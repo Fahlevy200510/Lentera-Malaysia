@@ -11,17 +11,17 @@ import { NextRequest, NextResponse } from "next/server";
 //    ensuring Netlify deployment and LIDM jury review never fails.
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You are LENTERA AI ASSISTANT — an adaptive, inclusive science lab tutor for blind and visually impaired learners at the special junior high school level, developed for LIDM 2026.
+const SYSTEM_PROMPT = `Kamu adalah LENTERA AI ASSISTANT — tutor lab sains yang adaptif dan inklusif untuk siswa tunanetra dan low vision di tingkat SMPLB, dikembangkan untuk LIDM 2026.
 
-PEDAGOGICAL ROLE & PRINCIPLES:
-1. "Explain Before Answer": Never give an instant answer or directly fix a circuit. Ask reflective prompts and guide the learner step by step.
-2. Tactile Vocabulary: NEVER rely on visual-only instructions such as "look at the picture" or "notice the wire color". Use tactile and spatial language such as "feel", "sense", "trace the path", "left/right side", "raised/indented texture", and "listen for the click".
-3. Language: Always respond in warm, supportive, inclusive, concise English (2–4 sentences) that is comfortable for screen readers and text-to-speech.
-4. Interaction Modes:
-   - Exploration Mode: Explore components and tactile analogies for electrical flow.
-   - Troubleshooting Mode: Systematically trace circuit faults using sensor data.
-   - Concept Reflection: Reflect on why a phenomenon occurs.
-   - Evaluation Mode: Use formative tactile questions to check independent understanding.`;
+PERAN & PRINSIP PEDAGOGIS:
+1. "Jelaskan Sebelum Menjawab": Jangan pernah memberi jawaban instan atau langsung memperbaiki rangkaian. Ajukan pertanyaan reflektif dan bimbing siswa langkah demi langkah.
+2. Kosakata Taktil: JANGAN PERNAH memakai instruksi visual seperti "lihat gambar" atau "perhatikan warna kabel". Gunakan bahasa taktil dan spasial seperti "raba", "rasakan", "telusuri jalurnya", "sisi kiri/kanan", "tekstur timbul/cekung", dan "dengarkan bunyi klik".
+3. Bahasa: Selalu jawab dalam Bahasa Indonesia yang hangat, suportif, inklusif, dan ringkas (2–4 kalimat) yang nyaman untuk pembaca layar dan text-to-speech.
+4. Mode Interaksi:
+   - Mode Eksplorasi: Mengenal komponen dan analogi taktil untuk aliran listrik.
+   - Mode Pemecahan Masalah: Menelusuri kesalahan rangkaian secara sistematis menggunakan data sensor.
+   - Refleksi Konsep: Merenungkan mengapa suatu fenomena terjadi.
+   - Mode Evaluasi: Memberi pertanyaan taktil formatif untuk mengecek pemahaman mandiri.`;
 
 interface ChatTurn {
   role: "ai" | "user";
@@ -49,101 +49,104 @@ function generateCLEFallbackResponse(
   const m = message.toLowerCase();
   const cs = normalizeCircuit(circuitState);
 
-  if (m.includes("parent")) {
-    if (m.includes("series") || m.includes("parallel")) {
+  // Kata kunci Indonesia + Inggris agar tetap kompatibel
+  const isSeriesParallel = /seri|paralel|parallel/.test(m);
+
+  if (/orang tua|parent/.test(m)) {
+    if (isSeriesParallel) {
       return {
-        text: "You can explain it with a road analogy: a series circuit is like one road with no branches, while a parallel circuit is like roads that branch. Ask the learner to feel two wires arranged in sequence and then in branches, and describe the difference in their own words.",
-        note: "Parent Guide: Series & Parallel Circuits",
+        text: "Kamu bisa menjelaskannya dengan analogi jalan: rangkaian seri seperti satu jalan tanpa cabang, sedangkan rangkaian paralel seperti jalan yang bercabang. Ajak siswa meraba dua kabel yang disusun berurutan lalu bercabang, dan minta mereka menceritakan perbedaannya dengan kata-kata sendiri.",
+        note: "Panduan Orang Tua: Rangkaian Seri & Paralel",
       };
     }
     return {
-      text: "At home, invite the learner to safely explore an electrical object such as a wall-light switch, then ask what they feel when the lever is pressed. Give them time to answer before explaining so their curiosity can grow.",
-      note: "Parent Guide: Tactile Activity at Home",
+      text: "Di rumah, ajak siswa menjelajahi benda listrik dengan aman, misalnya saklar lampu dinding, lalu tanyakan apa yang mereka rasakan saat tuasnya ditekan. Beri waktu untuk menjawab sebelum menjelaskan agar rasa ingin tahunya tumbuh.",
+      note: "Panduan Orang Tua: Aktivitas Taktil di Rumah",
     };
   }
 
   const isOtherIntent =
     mode === "reflection" || mode === "evaluation" ||
-    /concept|difference|quiz|test|evaluation|question|what is|what does|function|how does|explain|series|parallel/.test(m);
-  const mentionsFault = /broken|dead|off|not working|doesn't work|does not work|wrong|error|dim|won't light|will not light/.test(m);
+    /konsep|beda|kuis|tes|evaluasi|pertanyaan|apa itu|apa fungsi|fungsi|bagaimana|jelaskan|concept|difference|quiz|test|evaluation|question|what is|explain|seri|paralel|parallel/.test(m);
+  const mentionsFault = /rusak|mati|tidak menyala|ga nyala|gak nyala|nggak nyala|tidak berfungsi|salah|error|redup|broken|dead|not working|wrong|dim/.test(m);
   const wantsDiagnosis = mode === "troubleshooting" || mentionsFault || !isOtherIntent;
 
   if (cs && wantsDiagnosis && (cs.lampReversed || cs.switchOpen || cs.pathOpen)) {
     if (cs.lampReversed) {
       return {
-        text: "Feel the lamp component holder at grid B1. Can you sense the raised positive terminal facing the battery? Rotate the lamp block 180 degrees and feel the difference again.",
-        note: "CLE Diagnosis: Reversed lamp polarity (Explain-Before-Answer)",
+        text: "Raba dudukan komponen lampu di petak B1. Bisakah kamu merasakan kutub positif yang timbul menghadap ke baterai? Putar balok lampu 180 derajat lalu rasakan lagi perbedaannya.",
+        note: "Diagnosis CLE: Polaritas lampu terbalik (Jelaskan-Sebelum-Menjawab)",
       };
     }
     if (cs.switchOpen) {
       return {
-        text: "Touch the mechanical switch at grid A2 on the right side of your board. Is the lever raised, or has it been pressed down until you hear a click?",
-        note: "CLE Diagnosis: Open switch (Open Circuit)",
+        text: "Sentuh saklar mekanis di petak A2 di sisi kanan papanmu. Apakah tuasnya masih terangkat, atau sudah ditekan sampai terdengar bunyi klik?",
+        note: "Diagnosis CLE: Saklar terbuka (Rangkaian Terbuka)",
       };
     }
     return {
-      text: "Let’s investigate together. Trace the tactile wire from the battery’s positive terminal with your fingertip. Is there a path that feels disconnected or loose before it reaches the lamp?",
-      note: "CLE Diagnosis: Open circuit path",
+      text: "Ayo kita selidiki bersama. Telusuri kabel taktil dari kutub positif baterai dengan ujung jarimu. Adakah jalur yang terasa terputus atau longgar sebelum sampai ke lampu?",
+      note: "Diagnosis CLE: Jalur rangkaian terbuka",
     };
   }
-  if (cs && !mentionsFault && wantsDiagnosis && cs.allGood && (mode === "troubleshooting" || /correct|done|lit|working|finished|check|verify/.test(m))) {
+  if (cs && !mentionsFault && wantsDiagnosis && cs.allGood && (mode === "troubleshooting" || /benar|selesai|nyala|menyala|berhasil|cek|periksa|correct|done|lit|working|check/.test(m))) {
     return {
-      text: "Great, the path from the battery through the switch to the lamp is connected with the correct polarity. Now for a challenge: if you add one more lamp in series, do you think the first lamp would feel brighter or dimmer?",
-      note: "CLE: Circuit closed successfully",
+      text: "Hebat, jalur dari baterai melalui saklar ke lampu sudah tersambung dengan polaritas yang benar. Sekarang tantangannya: jika kamu menambah satu lampu lagi secara seri, menurutmu lampu pertama akan terasa lebih terang atau lebih redup?",
+      note: "CLE: Rangkaian berhasil tertutup",
     };
   }
 
   if (mode === "troubleshooting" || mentionsFault) {
     return {
-      text: "Let’s investigate together. First, trace the tactile wire from the battery’s positive terminal with your fingertip. Is there a path that feels disconnected or loose before it reaches the lamp?",
-      note: "CLE Diagnosis: Independent tactile path tracing",
+      text: "Ayo kita selidiki bersama. Pertama, telusuri kabel taktil dari kutub positif baterai dengan ujung jarimu. Adakah jalur yang terasa terputus atau longgar sebelum sampai ke lampu?",
+      note: "Diagnosis CLE: Penelusuran jalur taktil mandiri",
     };
   }
 
-  if (mode === "reflection" || m.includes("why") || m.includes("concept") || m.includes("difference") || m.includes("series") || m.includes("parallel")) {
-    if (m.includes("series") || m.includes("parallel")) {
+  if (mode === "reflection" || /kenapa|mengapa|konsep|beda|why|concept|difference/.test(m) || isSeriesParallel) {
+    if (isSeriesParallel) {
       return {
-        text: "Imagine a series circuit as a single school hallway where everyone must walk in sequence, so if one person stops, everyone is held up. A parallel circuit is like having two separate hallways. If one lamp is removed from a parallel circuit, what do you think you would feel at the other lamp?",
-        note: "Concept Reflection: Tactile Path Analogy",
+        text: "Bayangkan rangkaian seri seperti satu lorong sekolah di mana semua orang harus berjalan berurutan, jadi jika satu orang berhenti, semua ikut tertahan. Rangkaian paralel seperti memiliki dua lorong terpisah. Jika satu lampu dilepas dari rangkaian paralel, menurutmu apa yang akan kamu rasakan pada lampu lainnya?",
+        note: "Refleksi Konsep: Analogi Jalur Taktil",
       };
     }
     return {
-      text: "That is a great question to reflect on! When electric current passes through a lamp filament, electrical energy is transformed into heat and light. Feel the bulb surface after it has been on for a while — does it feel warm?",
-      note: "Concept Reflection: Electrical Energy Transformation",
+      text: "Itu pertanyaan yang bagus untuk direnungkan! Saat arus listrik melewati filamen lampu, energi listrik berubah menjadi panas dan cahaya. Raba permukaan bohlam setelah menyala beberapa saat, apakah terasa hangat?",
+      note: "Refleksi Konsep: Perubahan Energi Listrik",
     };
   }
 
-  if (mode === "evaluation" || m.includes("quiz") || m.includes("test") || m.includes("evaluation") || m.includes("question")) {
+  if (mode === "evaluation" || /kuis|tes|evaluasi|pertanyaan|quiz|test|evaluation|question/.test(m)) {
     return {
-      text: "Tactile Quiz Challenge: You have 1 battery and 2 lamps arranged in sequence along a single wire with no branches. If the switch is pressed, is this a series or parallel circuit? Answer based on the path you can trace by touch.",
-      note: "Formative Evaluation: Understanding Series Circuits",
+      text: "Tantangan Kuis Taktil: Kamu punya 1 baterai dan 2 lampu yang disusun berurutan dalam satu kabel tanpa cabang. Jika saklar ditekan, apakah ini rangkaian seri atau paralel? Jawab berdasarkan jalur yang bisa kamu telusuri dengan rabaan.",
+      note: "Evaluasi Formatif: Memahami Rangkaian Seri",
     };
   }
 
-  if (m.includes("battery")) {
+  if (/baterai|battery/.test(m)) {
     return {
-      text: "The battery is our electrical energy source. Feel both ends: the side with the small raised bump is the positive terminal, while the flat side is negative. Current flows out from the raised positive terminal.",
-      note: "Tactile Exploration: Identifying Battery Polarity",
+      text: "Baterai adalah sumber energi listrik kita. Raba kedua ujungnya: sisi dengan tonjolan kecil adalah kutub positif, sedangkan sisi yang datar adalah kutub negatif. Arus mengalir keluar dari kutub positif yang timbul.",
+      note: "Eksplorasi Taktil: Mengenali Polaritas Baterai",
     };
   }
 
-  if (m.includes("switch")) {
+  if (/saklar|sakelar|switch/.test(m)) {
     return {
-      text: "A switch works like a lifting bridge. When you press the lever down, the bridge closes and current can pass. When you raise it, the path opens and the current stops.",
-      note: "Tactile Exploration: Switch Mechanics",
+      text: "Saklar bekerja seperti jembatan angkat. Saat kamu menekan tuasnya ke bawah, jembatan tertutup dan arus bisa lewat. Saat kamu mengangkatnya, jalur terbuka dan arus berhenti.",
+      note: "Eksplorasi Taktil: Cara Kerja Saklar",
     };
   }
 
-  if (m.includes("lamp") || m.includes("light")) {
+  if (/lampu|cahaya|lamp|light/.test(m)) {
     return {
-      text: "The lamp is a load that converts electrical energy. The lamp component on our board has a raised tactile marker on its side to help you match the current direction correctly.",
-      note: "Tactile Exploration: Identifying the Lamp Load",
+      text: "Lampu adalah beban yang mengubah energi listrik. Komponen lampu di papan kita memiliki penanda taktil timbul di sisinya untuk membantumu menyesuaikan arah arus dengan benar.",
+      note: "Eksplorasi Taktil: Mengenali Beban Lampu",
     };
   }
 
   return {
-    text: "Hello! I’m LENTERA AI Assistant. I’m ready to support your science lab today. You can feel the components on your tactile board or ask about electrical circuit concepts you want to explore.",
-    note: "Inclusive Learning Support Active",
+    text: "Halo! Aku LENTERA AI Assistant. Aku siap menemani lab sainsmu hari ini. Kamu bisa meraba komponen di papan taktilmu atau bertanya tentang konsep rangkaian listrik yang ingin kamu jelajahi.",
+    note: "Dukungan Belajar Inklusif Aktif",
   };
 }
 
@@ -171,10 +174,10 @@ export async function POST(req: NextRequest) {
       : [];
 
     if (!message) {
-      return NextResponse.json({ error: "Message cannot be empty." }, { status: 400 });
+      return NextResponse.json({ error: "Pesan tidak boleh kosong." }, { status: 400 });
     }
     if (message.length > 1200) {
-      return NextResponse.json({ error: "Message is too long. Maximum 1,200 characters." }, { status: 400 });
+      return NextResponse.json({ error: "Pesan terlalu panjang. Maksimal 1.200 karakter." }, { status: 400 });
     }
 
     const apiKey = process.env.GROQ_API_KEY;
@@ -192,8 +195,8 @@ export async function POST(req: NextRequest) {
 
     // If Groq API key is provided, use LLaMA 3.3 70B
     const contextBlock = circuitState
-      ? `\n\nCurrent physical circuit sensor telemetry:\n${JSON.stringify(circuitState, null, 2)}\nCurrent mode: ${mode}`
-      : `\n\nCurrent mode: ${mode}`;
+      ? `\n\nData sensor rangkaian fisik saat ini:\n${JSON.stringify(circuitState, null, 2)}\nMode saat ini: ${mode}`
+      : `\n\nMode saat ini: ${mode}`;
 
     const messages = [
       { role: "system", content: `${SYSTEM_PROMPT}${contextBlock}` },
@@ -232,7 +235,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
           text: fallback.text,
-          note: `Groq error ${groqRes.status} — using CLE fallback`,
+          note: `Groq error ${groqRes.status} — memakai CLE cadangan`,
           mode,
           engine: "CLE-Rule-Engine-Local (Groq-Failover)",
           groqError: errorText,
@@ -242,13 +245,13 @@ export async function POST(req: NextRequest) {
       const data = await groqRes.json();
       const text: string =
         data?.choices?.[0]?.message?.content?.trim() ||
-        "Try feeling the components on your board again. What do you notice?";
+        "Coba raba lagi komponen di papanmu. Apa yang kamu rasakan?";
 
       let note = `Mode: ${mode.toUpperCase()}`;
       if (circuitState) {
-        if (circuitState.polarity_correct === false) note = "CLE: Reversed Polarity Detected";
-        else if (circuitState.circuit_closed === false) note = "CLE: Open Circuit Path";
-        else if (circuitState.circuit_closed === true) note = "CLE: Circuit Closed Successfully";
+        if (circuitState.polarity_correct === false) note = "CLE: Polaritas Terbalik Terdeteksi";
+        else if (circuitState.circuit_closed === false) note = "CLE: Jalur Rangkaian Terbuka";
+        else if (circuitState.circuit_closed === true) note = "CLE: Rangkaian Berhasil Tertutup";
       }
 
       return NextResponse.json({ text, note, mode, engine: "Groq-LLaMA-3.3-70B" });

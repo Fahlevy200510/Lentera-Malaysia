@@ -24,6 +24,35 @@ export async function POST(req: Request) {
     }
 
     // ============================================================
+    // 1.5. CHECK DEMO CREDENTIALS (OFFLINE / EXHIBITION FALLBACK)
+    // ============================================================
+    const trimmedEmail = email.trim().toLowerCase();
+    if (
+      trimmedEmail.endsWith("@lentera.demo") ||
+      trimmedEmail === "siswa@lentera.id" ||
+      trimmedEmail === "guru@lentera.id" ||
+      trimmedEmail === "ortu@lentera.id"
+    ) {
+      const demoNames: Record<string, string> = {
+        student: "Siswa Kai",
+        teacher: "Bu Sari (Guru)",
+        parent: "Bpk/Ibu Hendra (Orang Tua)",
+      };
+
+      return NextResponse.json({
+        success: true,
+        session: {
+          id: `demo-${role}-${Date.now()}`,
+          email: trimmedEmail,
+          name: demoNames[role] || "Pengguna Lentera",
+          role: role,
+          access_token: "demo-token",
+          refresh_token: "demo-refresh-token",
+        },
+      });
+    }
+
+    // ============================================================
     // 2. CHECK SUPABASE CONFIGURATION
     // ============================================================
 

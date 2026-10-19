@@ -21,9 +21,9 @@ const destinations: Destination[] = [
   {
     href: "/dashboard",
     title: "LENTERA Learn",
-    tagline: "Adaptive Learning Dashboard",
+    tagline: "Dashboard Pembelajaran Adaptif",
     description:
-      "Skill mapping, adaptive learning paths, AI Tutor, and Learning Analytics for students, teachers, and parents.",
+      "Pemetaan keterampilan, jalur belajar adaptif, AI Tutor, dan Analitik Pembelajaran untuk siswa, guru, dan orang tua.",
     accent: "#A78BFA",
     accentSoft: "rgba(167,139,250,.14)",
     Icon: LayoutDashboard,
@@ -31,9 +31,9 @@ const destinations: Destination[] = [
   {
     href: "/aruco",
     title: "LENTERA Lab",
-    tagline: "Real-time Circuit Detection",
+    tagline: "Deteksi Rangkaian Real-time",
     description:
-      "Connect the ESP32-CAM, detect components, and monitor circuit status from one workspace.",
+      "Hubungkan kamera, deteksi komponen, dan pantau status rangkaian dari satu ruang kerja.",
     accent: "#67E8F9",
     accentSoft: "rgba(103,232,249,.12)",
     Icon: ScanEye,
@@ -43,8 +43,49 @@ const destinations: Destination[] = [
 export default function PortalHome() {
   const [open, setOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [session, setSession] = useState<{ name: string; role: string } | null>(null);
+  const [ready, setReady] = useState(false);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("lentera-session");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.name && parsed?.role) {
+          setSession(parsed);
+        }
+      }
+    } catch {
+      setSession(null);
+    } finally {
+      setReady(true);
+    }
+
+    const handleAuth = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSession(detail || null);
+    };
+    window.addEventListener("lentera-auth-update", handleAuth);
+    window.addEventListener("storage", () => {
+      try {
+        const s = localStorage.getItem("lentera-session");
+        setSession(s ? JSON.parse(s) : null);
+      } catch {
+        setSession(null);
+      }
+    });
+    return () => {
+      window.removeEventListener("lentera-auth-update", handleAuth);
+    };
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem("lentera-session");
+    setSession(null);
+    window.dispatchEvent(new Event("storage"));
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -72,15 +113,17 @@ export default function PortalHome() {
       return;
     }
     const utterance = new SpeechSynthesisUtterance(
-      "LENTERA is an adaptive science lab companion for blind and visually impaired learners. Touch, understand, learn independently. Choose LENTERA Learn for learning or LENTERA Lab for circuit detection."
+      "LENTERA adalah pendamping lab sains adaptif untuk siswa tunanetra dan low vision. Sentuh, pahami, belajar mandiri. Silakan masuk terlebih dahulu untuk mengakses LENTERA Learn dan deteksi blok di LENTERA Lab."
     );
-    utterance.lang = "en-US";
+    utterance.lang = "id-ID";
     utterance.rate = 0.94;
     utterance.onend = () => setSpeaking(false);
     setSpeaking(true);
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };
+
+  const roleLabel = session?.role === "student" ? "Siswa" : session?.role === "teacher" ? "Guru" : "Orang Tua";
 
   return (
     <main className="portal-page relative min-h-screen overflow-hidden font-body text-white">
@@ -92,19 +135,42 @@ export default function PortalHome() {
       </div>
 
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
-        <Link href="/" className="flex items-center gap-3" aria-label="LENTERA Home">
+        <Link href="/" className="flex items-center gap-3" aria-label="Beranda LENTERA">
           <img src="/logo-lentera.png" alt="Logo LENTERA" className="h-11 w-11 rounded-xl object-cover shadow-lg" />
           <div>
             <div className="font-heading text-lg font-extrabold tracking-tight">LENTERA</div>
-            <div className="text-[10px] font-semibold tracking-[0.24em] text-violet-200">TOUCH · UNDERSTAND · LEARN INDEPENDENTLY</div>
+            <div className="text-[10px] font-semibold tracking-[0.24em] text-violet-200">SENTUH · PAHAMI · BELAJAR MANDIRI</div>
           </div>
         </Link>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <button onClick={readIntro} className="portal-ghost-btn">
             <Volume2 className="h-4 w-4" />
-            {speaking ? "Turn off voice" : "Listen"}
+            {speaking ? "Matikan suara" : "Dengarkan"}
           </button>
+
+          {ready && session ? (
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-violet-400/30 bg-violet-500/20 px-3.5 py-1.5 text-xs font-bold text-violet-100 backdrop-blur-md">
+                👤 {session.name} ({roleLabel})
+              </span>
+              <button
+                onClick={logout}
+                className="portal-ghost-btn text-rose-300 hover:text-rose-200 hover:bg-rose-500/20"
+                title="Keluar dari akun"
+              >
+                Keluar
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:from-violet-400 hover:to-purple-500 active:scale-95"
+            >
+              Masuk / Login <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
+
           <button onClick={() => setOpen(true)} className="portal-menu-btn">
             <Menu className="h-4 w-4" />
             Menu
@@ -117,7 +183,7 @@ export default function PortalHome() {
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-controls="portal-sidebar"
-          aria-label="Open portal menu"
+          aria-label="Buka menu portal"
           className="portal-menu-btn md:hidden"
         >
           <Menu className="h-5 w-5" />
@@ -128,36 +194,57 @@ export default function PortalHome() {
         <div className="rise max-w-2xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold tracking-wide text-violet-100 backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
-            Inclusive science learning ecosystem
+            Ekosistem pembelajaran sains inklusif
           </div>
 
           <h1 className="font-heading text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-            Learn through
+            Belajar melalui
             <span className="block bg-gradient-to-r from-violet-200 via-fuchsia-200 to-cyan-200 bg-clip-text text-transparent">
-              touch.
+              sentuhan.
             </span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-7 text-violet-100/75 sm:text-lg">
-            LENTERA connects the Smart Tactile Experiment Board with a learning app,
-            AI Tutor, voice, and Learning Analytics so blind and visually impaired learners can
-            explore science experiments more independently.
+            LENTERA menghubungkan Smart Tactile Experiment Board dengan aplikasi belajar,
+            AI Tutor, suara, dan Analitik Pembelajaran agar siswa tunanetra dan low vision dapat
+            menjelajahi eksperimen sains dengan lebih mandiri.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/dashboard" className="portal-primary-btn">
-              Open LENTERA Learn <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href="/aruco" className="portal-secondary-btn">
-              Explore LENTERA Lab <ScanEye className="h-4 w-4" />
-            </Link>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            {ready && session ? (
+              <>
+                <Link href="/dashboard" className="portal-primary-btn">
+                  Buka LENTERA Learn <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="/aruco" className="portal-secondary-btn">
+                  Jelajahi LENTERA Lab (Deteksi Blok) <ScanEye className="h-4 w-4" />
+                </Link>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/login"
+                    className="portal-primary-btn text-base py-3.5 px-7 shadow-xl shadow-violet-500/30"
+                  >
+                    Masuk ke LENTERA <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <button onClick={readIntro} className="portal-secondary-btn text-base py-3.5 px-6">
+                    <Volume2 className="h-4 w-4" /> Dengarkan Panduan
+                  </button>
+                </div>
+                <p className="text-xs text-violet-200/65 font-medium">
+                  💡 Silakan masuk sesuai peran Anda (Siswa, Guru, Orang Tua) untuk mengakses materi dan deteksi rangkaian.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
             {[
-              ["AI Tutor", "adaptive guidance"],
-              ["Voice", "voice interaction"],
-              ["Analytics", "data-driven progress"],
+              ["AI Tutor", "bimbingan adaptif"],
+              ["Suara", "interaksi suara"],
+              ["Analitik", "progres berbasis data"],
             ].map(([title, sub]) => (
               <div key={title} className="portal-mini-card">
                 <CheckCircle2 className="h-4 w-4 text-cyan-200" />
@@ -169,7 +256,7 @@ export default function PortalHome() {
         </div>
 
         <div className="relative rise lg:pl-8" style={{ animationDelay: ".12s" }}>
-          <div className="portal-visual" aria-label="LENTERA learning visualization">
+          <div className="portal-visual" aria-label="Visualisasi pembelajaran LENTERA">
             <div className="portal-visual-glow portal-visual-glow-a" />
             <div className="portal-visual-glow portal-visual-glow-b" />
 
@@ -177,7 +264,7 @@ export default function PortalHome() {
               className="portal-orbit-scene"
               viewBox="0 0 620 620"
               role="img"
-              aria-label="Visualization of touch, voice, and learning interaction"
+              aria-label="Visualisasi interaksi sentuhan, suara, dan pembelajaran"
             >
               <defs>
                 <radialGradient id="coreGradient" cx="50%" cy="45%" r="60%">
@@ -241,7 +328,7 @@ export default function PortalHome() {
 
             <div className="portal-visual-caption">
               <span className="portal-caption-dot" />
-              <span>Touch · Understand · Learn Independently</span>
+              <span>Sentuh · Pahami · Belajar Mandiri</span>
             </div>
           </div>
         </div>
@@ -260,7 +347,7 @@ export default function PortalHome() {
         id="portal-sidebar"
         role="dialog"
         aria-modal="true"
-        aria-label="LENTERA portal menu"
+        aria-label="Menu portal LENTERA"
         className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l border-white/15 bg-[#17103D]/95 p-6 shadow-2xl backdrop-blur-2xl transition-transform duration-500 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
@@ -270,48 +357,79 @@ export default function PortalHome() {
             <img src="/logo-lentera.png" alt="" className="h-9 w-9 rounded-xl" />
             <div>
               <div className="font-heading font-extrabold">LENTERA</div>
-              <div className="text-[10px] tracking-[.2em] text-violet-200/55">ECOSYSTEM</div>
+              <div className="text-[10px] tracking-[.2em] text-violet-200/55">EKOSISTEM</div>
             </div>
           </div>
-          <button ref={closeBtnRef} onClick={() => setOpen(false)} aria-label="Close menu" className="portal-close-btn">
+          <button ref={closeBtnRef} onClick={() => setOpen(false)} aria-label="Tutup menu" className="portal-close-btn">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <p className="mt-5 text-sm leading-6 text-violet-100/60">
-          Choose the workspace you want to use.
+          Pilih ruang kerja yang ingin kamu gunakan.
         </p>
 
         <nav className="mt-7 grid gap-3">
-          {destinations.map((d) => (
-            <Link
-              key={d.href}
-              href={d.href}
-              onClick={() => setOpen(false)}
-              className="portal-destination group"
-            >
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl" style={{ background: d.accentSoft, color: d.accent }}>
-                <d.Icon className="h-5 w-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center justify-between gap-2">
-                  <span className="font-heading text-[15px] font-bold">{d.title}</span>
-                  <ArrowUpRight className="h-4 w-4 text-white/30 transition group-hover:translate-x-1 group-hover:text-white" />
+          {destinations.map((d) => {
+            const targetHref = session ? d.href : `/login?redirect=${encodeURIComponent(d.href)}`;
+            return (
+              <Link
+                key={d.href}
+                href={targetHref}
+                onClick={() => setOpen(false)}
+                className="portal-destination group"
+              >
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl" style={{ background: d.accentSoft, color: d.accent }}>
+                  <d.Icon className="h-5 w-5" />
                 </span>
-                <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-violet-200/45">{d.tagline}</span>
-                <span className="mt-2 block text-[13px] leading-5 text-violet-100/55">{d.description}</span>
-              </span>
-            </Link>
-          ))}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-heading text-[15px] font-bold">{d.title}</span>
+                    <ArrowUpRight className="h-4 w-4 text-white/30 transition group-hover:translate-x-1 group-hover:text-white" />
+                  </span>
+                  <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-violet-200/45">{d.tagline}</span>
+                  <span className="mt-2 block text-[13px] leading-5 text-violet-100/55">{d.description}</span>
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="mt-auto rounded-2xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
-            <div>
-              <div className="text-sm font-bold">Built for accessibility</div>
-              <div className="mt-1 text-xs leading-5 text-violet-100/50">
-                Voice, keyboard, Braille, and tactile learning support.
+        <div className="mt-auto space-y-3">
+          {session ? (
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-white">👤 {session.name}</div>
+                <div className="text-[10px] text-violet-200/60 font-semibold uppercase">{roleLabel}</div>
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                className="text-xs text-rose-300 font-bold hover:underline"
+              >
+                Keluar
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 p-3.5 text-xs font-bold text-white shadow-lg transition-all hover:from-violet-400 hover:to-purple-500"
+            >
+              Masuk / Login Sekarang
+            </Link>
+          )}
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
+              <div>
+                <div className="text-sm font-bold">Dirancang untuk aksesibilitas</div>
+                <div className="mt-1 text-xs leading-5 text-violet-100/50">
+                  Dukungan suara, keyboard, Braille, dan pembelajaran taktil.
+                </div>
               </div>
             </div>
           </div>

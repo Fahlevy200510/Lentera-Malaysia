@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
+import { getStudentProgress, type StudentProgress } from "@/utils/progress";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
   Battery, Cable, Lightbulb, ToggleRight, Bell, ChevronRight, Play,
@@ -71,7 +72,7 @@ function Stars({ n, max = 5, size = 15, color = C.primary }: {
   n: number; max?: number; size?: number; color?: string;
 }) {
   return (
-    <span style={{ display: "inline-flex", gap: 2 }} aria-label={`${n} of ${max} stars`}>
+    <span style={{ display: "inline-flex", gap: 2 }} aria-label={`${n} dari ${max} bintang`}>
       {Array.from({ length: max }).map((_, i) => (
         <Star
           key={i}
@@ -123,7 +124,7 @@ function Ring({ value, size = 132, stroke = 13, color = C.primary }: {
           <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 26, color: C.text, lineHeight: 1 }}>
             {value}%
           </div>
-          <div style={{ fontSize: 11, color: C.textSoft, marginTop: 3, fontWeight: 600 }}>to Engineer</div>
+          <div style={{ fontSize: 11, color: C.textSoft, marginTop: 3, fontWeight: 600 }}>menuju Insinyur</div>
         </div>
       </div>
     </div>
@@ -171,7 +172,7 @@ const LOOP =
 
 function LiveCircuit() {
   return (
-    <svg viewBox="0 0 320 168" style={{ width: "100%", maxWidth: 360 }} role="img" aria-label="Animated circuit with flowing current">
+    <svg viewBox="0 0 320 168" style={{ width: "100%", maxWidth: 360 }} role="img" aria-label="Animasi rangkaian dengan arus yang mengalir">
       <defs>
         <linearGradient id="wire" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={C.primary} />
@@ -215,42 +216,104 @@ function LiveCircuit() {
 /* =============================================================== STUDENT */
 interface Skill { name: string; icon: LucideIcon; level: number; color: string; locked?: boolean; }
 const skills: Skill[] = [
-  { name: "Battery", icon: Battery, level: 5, color: C.green },
-  { name: "Cable", icon: Cable, level: 4, color: C.blue },
-  { name: "Switch", icon: ToggleRight, level: 4, color: "#F59E0B" },
-  { name: "Current Flow", icon: Zap, level: 2, color: C.pink },
-  { name: "Series Circuit", icon: CircuitBoard, level: 3, color: C.primary },
-  { name: "Parallel Circuit", icon: Lightbulb, level: 1, color: C.primaryDeep, locked: true },
+  { name: "Baterai", icon: Battery, level: 5, color: C.green },
+  { name: "Kabel", icon: Cable, level: 4, color: C.blue },
+  { name: "Saklar", icon: ToggleRight, level: 4, color: "#F59E0B" },
+  { name: "Aliran Arus", icon: Zap, level: 2, color: C.pink },
+  { name: "Rangkaian Seri", icon: CircuitBoard, level: 3, color: C.primary },
+  { name: "Rangkaian Paralel", icon: Lightbulb, level: 1, color: C.primaryDeep, locked: true },
 ];
 
 const weekly = [
-  { day: "Mon", min: 22, c: C.primary }, { day: "Tue", min: 34, c: C.pink },
-  { day: "Wed", min: 16, c: C.blue }, { day: "Thu", min: 41, c: C.green },
-  { day: "Fri", min: 28, c: "#F59E0B" }, { day: "Sat", min: 12, c: C.primaryDeep },
-  { day: "Sun", min: 25, c: C.primary },
+  { day: "Sen", min: 22, c: C.primary }, { day: "Sel", min: 34, c: C.pink },
+  { day: "Rab", min: 16, c: C.blue }, { day: "Kam", min: 41, c: C.green },
+  { day: "Jum", min: 28, c: "#F59E0B" }, { day: "Sab", min: 12, c: C.primaryDeep },
+  { day: "Min", min: 25, c: C.primary },
 ];
 
 interface Achievement { name: string; desc: string; icon: LucideIcon; color: string; earned: boolean; }
 const achievements: Achievement[] = [
-  { name: "First Light", desc: "Built your first working circuit", icon: Lightbulb, color: "#F59E0B", earned: true },
-  { name: "Bright Spark", desc: "7-day practice streak", icon: Flame, color: C.pink, earned: true },
-  { name: "Series Solver", desc: "Mastered a series circuit", icon: CircuitBoard, color: C.primary, earned: true },
-  { name: "No Peeking", desc: "Solved with zero hints", icon: Target, color: C.green, earned: true },
-  { name: "Voltage Voyager", desc: "Reach Engineer level", icon: Trophy, color: C.blue, earned: false },
-  { name: "Circuit Master", desc: "Complete every module", icon: Award, color: C.primaryDeep, earned: false },
+  { name: "Cahaya Pertama", desc: "Membuat rangkaian pertamamu yang berfungsi", icon: Lightbulb, color: "#F59E0B", earned: true },
+  { name: "Percikan Terang", desc: "Berlatih 7 hari berturut-turut", icon: Flame, color: C.pink, earned: true },
+  { name: "Ahli Seri", desc: "Menguasai rangkaian seri", icon: CircuitBoard, color: C.primary, earned: true },
+  { name: "Tanpa Petunjuk", desc: "Selesai tanpa petunjuk sama sekali", icon: Target, color: C.green, earned: true },
+  { name: "Penjelajah Tegangan", desc: "Mencapai level Insinyur", icon: Trophy, color: C.blue, earned: false },
+  { name: "Master Rangkaian", desc: "Menyelesaikan semua modul", icon: Award, color: C.primaryDeep, earned: false },
 ];
 
 function StudentHome() {
   const [lessonStarted, setLessonStarted] = useState(false);
+  const [progress, setProgress] = useState<StudentProgress>(() => getStudentProgress());
+
+  useEffect(() => {
+    const handleUpdate = () => setProgress(getStudentProgress());
+    window.addEventListener("lentera-progress-update", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("lentera-progress-update", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
+  const dynamicSkills: Skill[] = [
+    { name: "Baterai", icon: Battery, level: progress.skills.battery, color: C.green },
+    { name: "Kabel", icon: Cable, level: progress.skills.cable, color: C.blue },
+    { name: "Saklar", icon: ToggleRight, level: progress.skills.switch, color: "#F59E0B" },
+    { name: "Aliran Arus", icon: Zap, level: progress.skills.flow, color: C.pink },
+    {
+      name: "Rangkaian Seri",
+      icon: CircuitBoard,
+      level: progress.skills.series,
+      color: C.primary,
+      locked: !progress.modules.component_recognition,
+    },
+    {
+      name: "Rangkaian Paralel",
+      icon: Lightbulb,
+      level: progress.skills.parallel,
+      color: C.primaryDeep,
+      locked: !progress.modules.series_circuit,
+    },
+  ];
+
+  const dynamicAchievements: Achievement[] = achievements.map((a) => ({
+    ...a,
+    earned: progress.achievements.includes(a.name),
+  }));
+
+  const earnedAchievementsCount = dynamicAchievements.filter((a) => a.earned).length;
+  const xpPercent = Math.min(100, Math.round((progress.xp / 1000) * 100));
+
+  let currentLessonTitle = "Rangkaian Seri";
+  let currentLessonSub = "Pelajaran 7 dari 12";
+  let currentLessonDesc = "Raba papan, letakkan komponen, dan rasakan arus mengalir. Kami akan berhenti sejenak saat ada yang terputus.";
+  let focusTag = "Fokus hari ini · Aliran Arus";
+
+  if (!progress.modules.component_recognition) {
+    currentLessonTitle = "Pengenalan Komponen";
+    currentLessonSub = "Pelajaran 1 dari 12 • Dasar";
+    currentLessonDesc = "Kenali bentuk taktil balok baterai, saklar, lampu, dan kabel di papan Lentera sebelum mulai merakit.";
+    focusTag = "Fokus hari ini · Bentuk Komponen";
+  } else if (!progress.modules.series_circuit) {
+    currentLessonTitle = "Rangkaian Seri";
+    currentLessonSub = "Pelajaran 2 dari 12 • Menengah";
+    currentLessonDesc = "Hubungkan baterai ke saklar dan lampu dalam satu lintasan tertutup searah.";
+    focusTag = "Fokus hari ini · Rangkaian Seri";
+  } else {
+    currentLessonTitle = "Rangkaian Paralel";
+    currentLessonSub = "Pelajaran 3 dari 12 • Lanjutan";
+    currentLessonDesc = "Gunakan kabel cabang T untuk membagi aliran listrik ke dua lampu mandiri.";
+    focusTag = "Fokus hari ini · Rangkaian Paralel";
+  }
 
   const startLesson = () => setLessonStarted(true);
   const readLesson = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(
-      "Today’s lesson is about series circuits. Feel the board, place the components, and trace the current path from the battery to the switch and then to the lamp."
+      `Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`
     );
-    u.lang = "en-US";
+    u.lang = "id-ID";
     u.rate = 0.94;
     window.speechSynthesis.speak(u);
   };
@@ -269,27 +332,30 @@ function StudentHome() {
           <div style={{ position: "absolute", right: -30, bottom: -30, width: 190, height: 190, borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
           <div className="flex items-center" style={{ gap: 8, marginBottom: 14 }}>
             <span style={{ background: "rgba(255,255,255,0.22)", padding: "5px 12px", borderRadius: 99, fontSize: 12.5, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Sparkles size={14} /> Chosen for you by Lentera
+              <Sparkles size={14} /> Dipilihkan Lentera untukmu
             </span>
           </div>
-          <div style={{ fontSize: 13.5, opacity: 0.85, fontWeight: 600 }}>Today&apos;s lesson · Lesson 7 of 12</div>
+          <div style={{ fontSize: 13.5, opacity: 0.85, fontWeight: 600 }}>Pelajaran hari ini · {currentLessonSub}</div>
           <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 34, lineHeight: 1.05, margin: "6px 0 10px" }}>
-            Series Circuits
+            {currentLessonTitle}
           </div>
           <p style={{ fontSize: 14, opacity: 0.9, maxWidth: 340, lineHeight: 1.5, position: "relative" }}>
-            Feel the board, place your components, and watch the current flow. We&apos;ll pause the moment something breaks.
+            {currentLessonDesc}
           </p>
           <div className="flex items-center" style={{ gap: 10, marginTop: 18, flexWrap: "wrap", position: "relative" }}>
-            <button onClick={startLesson} aria-pressed={lessonStarted} style={{ background: "#fff", color: C.primaryDeep, border: "none", padding: "12px 22px", borderRadius: 99, fontWeight: 800, fontSize: 14.5, display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
-              <Play size={17} fill={C.primaryDeep} /> {lessonStarted ? "Lesson started" : "Start lesson"}
-            </button>
+            <Link
+              href="/aruco"
+              style={{ background: "#fff", color: C.primaryDeep, border: "none", padding: "12px 22px", borderRadius: 99, fontWeight: 800, fontSize: 14.5, display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
+            >
+              <Play size={17} fill={C.primaryDeep} /> Buka di Edge Lab
+            </Link>
             <button onClick={readLesson} style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", padding: "12px 18px", borderRadius: 99, fontWeight: 700, fontSize: 14, display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <Volume2 size={17} /> Read aloud
+              <Volume2 size={17} /> Bacakan
             </button>
           </div>
           {lessonStarted && (
             <div style={{ marginTop: 12, fontSize: 12.5, fontWeight: 700, color: "rgba(255,255,255,.88)" }}>
-              ✓ Lesson active — continue exploring the tactile board.
+              ✓ Pelajaran aktif — lanjutkan menjelajahi papan taktil.
             </div>
           )}
           <div style={{ position: "absolute", right: 18, top: 14, opacity: 0.95 }}>
@@ -300,14 +366,18 @@ function StudentHome() {
         {/* level ring */}
         <Card delay={80} style={{ padding: 24, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: C.primarySoft, color: C.primaryDeep, padding: "5px 13px", borderRadius: 99, fontWeight: 800, fontSize: 13, marginBottom: 16 }}>
-            <Zap size={15} fill={C.primaryDeep} /> Level 2 · Electrician
+            <Zap size={15} fill={C.primaryDeep} /> Level {progress.xp >= 1000 ? "3 · Insinyur" : progress.xp >= 500 ? "2 · Teknisi" : "1 · Penjelajah"}
           </div>
-          <Ring value={64} />
+          <Ring value={xpPercent} />
           <div style={{ marginTop: 16, fontSize: 13, color: C.textSoft, fontWeight: 600 }}>
-            <span style={{ color: C.text, fontWeight: 800 }}>640</span> / 1000 XP
+            <span style={{ color: C.text, fontWeight: 800 }}>{progress.xp}</span> / 1000 XP
           </div>
           <div style={{ display: "flex", gap: 6, marginTop: 12, fontSize: 11.5, color: C.textSoft, fontWeight: 700 }}>
-            <span>Explorer</span><ChevronRight size={14} /><span style={{ color: C.primaryDeep }}>Electrician</span><ChevronRight size={14} /><span style={{ opacity: 0.5 }}>Engineer</span>
+            <span style={{ color: progress.xp < 500 ? C.primaryDeep : C.textSoft }}>Penjelajah</span>
+            <ChevronRight size={14} />
+            <span style={{ color: progress.xp >= 500 && progress.xp < 1000 ? C.primaryDeep : C.textSoft }}>Teknisi</span>
+            <ChevronRight size={14} />
+            <span style={{ color: progress.xp >= 1000 ? C.primaryDeep : "rgba(124,119,166,0.5)" }}>Insinyur</span>
           </div>
         </Card>
       </div>
@@ -315,12 +385,12 @@ function StudentHome() {
       {/* skill map */}
       <Card delay={140} style={{ padding: 24 }}>
         <SectionTitle
-          icon={CircuitBoard} title="Your skill map"
-          sub="How well Lentera thinks you understand each concept"
-          right={<Pill tone="warn">Focus today · Current Flow</Pill>}
+          icon={CircuitBoard} title="Peta keterampilanmu"
+          sub="Seberapa paham kamu pada setiap konsep menurut Lentera"
+          right={<Pill tone="warn">{focusTag}</Pill>}
         />
         <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
-          {skills.map((s) => (
+          {dynamicSkills.map((s) => (
             <div key={s.name} style={{ padding: 15, borderRadius: 18, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(139,92,246,0.1)", position: "relative" }}>
               {s.locked && (
                 <div style={{ position: "absolute", right: 12, top: 12, color: C.textSoft }}><Lock size={15} /></div>
@@ -341,7 +411,7 @@ function StudentHome() {
       {/* activity + streak */}
       <div className="row2 row2-a">
         <Card delay={200} style={{ padding: 24 }}>
-          <SectionTitle icon={TrendingUp} title="This week" sub="Minutes on the board, per day" />
+          <SectionTitle icon={TrendingUp} title="Minggu ini" sub="Menit belajar di papan, per hari" />
           <div style={{ height: 190 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weekly} margin={{ top: 8, right: 6, left: -22, bottom: 0 }}>
@@ -360,8 +430,8 @@ function StudentHome() {
         <Card delay={260} style={{ padding: 24, background: `linear-gradient(140deg, ${C.pinkSoft}, #FFF5FB)` }}>
           <div className="flex items-center justify-between">
             <div>
-              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 17, color: C.text }}>Streak</div>
-              <div style={{ fontSize: 12.5, color: C.textSoft, marginTop: 2 }}>Keep the current flowing</div>
+              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 17, color: C.text }}>Runtutan</div>
+              <div style={{ fontSize: 12.5, color: C.textSoft, marginTop: 2 }}>Jaga arusnya tetap mengalir</div>
             </div>
             <div style={{ width: 46, height: 46, borderRadius: 14, background: "#fff", display: "grid", placeItems: "center", boxShadow: C.shadowSm }}>
               <Flame size={24} color={C.pink} fill={C.pink} />
@@ -369,10 +439,10 @@ function StudentHome() {
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, margin: "18px 0 4px" }}>
             <span style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 46, color: C.text, lineHeight: 1 }}>7</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: C.textSoft }}>days</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: C.textSoft }}>hari</span>
           </div>
           <div className="flex" style={{ gap: 6, marginTop: 14 }}>
-            {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+            {["S", "S", "R", "K", "J", "S", "M"].map((d, i) => (
               <div key={i} style={{ flex: 1, textAlign: "center" }}>
                 <div style={{ height: 34, borderRadius: 10, background: i < 6 ? C.pink : "rgba(249,168,212,0.25)", display: "grid", placeItems: "center" }}>
                   {i < 6 && <CheckCircle2 size={16} color="#fff" />}
@@ -386,9 +456,9 @@ function StudentHome() {
 
       {/* achievements */}
       <Card delay={320} style={{ padding: 24 }}>
-        <SectionTitle icon={Trophy} title="Achievements" sub="4 of 6 unlocked" right={<Pill tone="purple">Circuit Master path</Pill>} />
+        <SectionTitle icon={Trophy} title="Pencapaian" sub={`${earnedAchievementsCount} dari ${dynamicAchievements.length} terbuka`} right={<Pill tone="purple">Jalur Master Rangkaian</Pill>} />
         <div style={{ display: "grid", gap: 13, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-          {achievements.map((a) => (
+          {dynamicAchievements.map((a) => (
             <div key={a.name} style={{ padding: 15, borderRadius: 18, textAlign: "center", background: a.earned ? "rgba(255,255,255,0.65)" : "rgba(240,239,247,0.6)", border: "1px solid rgba(139,92,246,0.1)", opacity: a.earned ? 1 : 0.6 }}>
               <div style={{ width: 52, height: 52, borderRadius: 16, margin: "0 auto 10px", background: a.earned ? `${a.color}22` : "rgba(124,119,166,0.12)", display: "grid", placeItems: "center", position: "relative" }}>
                 <a.icon size={26} color={a.earned ? a.color : C.textSoft} fill={a.earned ? a.color : "none"} strokeWidth={a.earned ? 1.5 : 2} />
@@ -406,38 +476,38 @@ function StudentHome() {
 
 /* =============================================================== TEACHER */
 const masteryTrend = [
-  { week: "W1", mastery: 42 }, { week: "W2", mastery: 48 }, { week: "W3", mastery: 55 },
-  { week: "W4", mastery: 61 }, { week: "W5", mastery: 65 }, { week: "W6", mastery: 68 },
+  { week: "M1", mastery: 42 }, { week: "M2", mastery: 48 }, { week: "M3", mastery: 55 },
+  { week: "M4", mastery: 61 }, { week: "M5", mastery: 65 }, { week: "M6", mastery: 68 },
 ];
 const skillRadar = [
-  { skill: "Battery", value: 90 }, { skill: "Cable", value: 82 }, { skill: "Switch", value: 76 },
-  { skill: "Current", value: 54 }, { skill: "Series", value: 63 }, { skill: "Parallel", value: 38 },
+  { skill: "Baterai", value: 90 }, { skill: "Kabel", value: 82 }, { skill: "Saklar", value: 76 },
+  { skill: "Arus", value: 54 }, { skill: "Seri", value: 63 }, { skill: "Paralel", value: 38 },
 ];
 
 interface Student { name: string; level: string; mastery: number; status: [string, string]; }
 const students: Student[] = [
-  { name: "Amara S.", level: "Engineer", mastery: 88, status: ["blue", "Ready to advance"] },
-  { name: "Sinta A.", level: "Engineer", mastery: 91, status: ["blue", "Ready to advance"] },
-  { name: "Lina W.", level: "Electrician", mastery: 72, status: ["green", "On track"] },
-  { name: "Kai R.", level: "Electrician", mastery: 64, status: ["green", "On track"] },
-  { name: "Dimas P.", level: "Explorer", mastery: 41, status: ["warn", "Needs help"] },
-  { name: "Bagas T.", level: "Explorer", mastery: 38, status: ["warn", "Needs help"] },
+  { name: "Amara S.", level: "Insinyur", mastery: 88, status: ["blue", "Siap naik level"] },
+  { name: "Sinta A.", level: "Insinyur", mastery: 91, status: ["blue", "Siap naik level"] },
+  { name: "Lina W.", level: "Teknisi", mastery: 72, status: ["green", "Sesuai target"] },
+  { name: "Kai R.", level: "Teknisi", mastery: 64, status: ["green", "Sesuai target"] },
+  { name: "Dimas P.", level: "Penjelajah", mastery: 41, status: ["warn", "Perlu bantuan"] },
+  { name: "Bagas T.", level: "Penjelajah", mastery: 38, status: ["warn", "Perlu bantuan"] },
 ];
 
 interface Insight { icon: LucideIcon; tone: string; tag: string; text: string; }
 const insights: Insight[] = [
-  { icon: AlertTriangle, tone: "warn", tag: "Media alert", text: "82% of students misplace the cable on the right terminal. The right-side tactile marker may be too subtle — consider revising the board layout." },
-  { icon: Brain, tone: "purple", tag: "Misconception", text: "Current Flow is the class's weakest concept (54%). Kai and 5 others confuse the + and − terminals." },
-  { icon: TrendingUp, tone: "blue", tag: "Ready to advance", text: "3 students have mastered series circuits and are ready to unlock parallel circuits." },
-  { icon: Sparkles, tone: "green", tag: "Auto-adapted", text: "The learning path was personalised for 6 students overnight based on last session's performance." },
+  { icon: AlertTriangle, tone: "warn", tag: "Peringatan media", text: "82% siswa salah meletakkan kabel di terminal kanan. Penanda taktil sisi kanan mungkin terlalu samar — pertimbangkan merevisi tata letak papan." },
+  { icon: Brain, tone: "purple", tag: "Miskonsepsi", text: "Aliran Arus adalah konsep terlemah kelas (54%). Kai dan 5 siswa lain tertukar antara kutub + dan −." },
+  { icon: TrendingUp, tone: "blue", tag: "Siap naik level", text: "3 siswa telah menguasai rangkaian seri dan siap membuka rangkaian paralel." },
+  { icon: Sparkles, tone: "green", tag: "Adaptasi otomatis", text: "Jalur belajar 6 siswa telah dipersonalisasi semalam berdasarkan performa sesi terakhir." },
 ];
 
 interface Stat { label: string; value: string; icon: LucideIcon; color: string; sub: string; }
 const tStats: Stat[] = [
-  { label: "Students", value: "24", icon: GraduationCap, color: C.primary, sub: "in Class 8B" },
-  { label: "Avg mastery", value: "68%", icon: Target, color: C.green, sub: "+6% this month" },
-  { label: "Active today", value: "19", icon: Zap, color: C.blue, sub: "of 24 students" },
-  { label: "Lessons done", value: "142", icon: CheckCircle2, color: C.pink, sub: "this week" },
+  { label: "Siswa", value: "24", icon: GraduationCap, color: C.primary, sub: "di Kelas 8B" },
+  { label: "Rata-rata penguasaan", value: "68%", icon: Target, color: C.green, sub: "+6% bulan ini" },
+  { label: "Aktif hari ini", value: "19", icon: Zap, color: C.blue, sub: "dari 24 siswa" },
+  { label: "Pelajaran selesai", value: "142", icon: CheckCircle2, color: C.pink, sub: "minggu ini" },
 ];
 
 function TeacherOverview() {
@@ -471,7 +541,7 @@ function TeacherOverview() {
       {/* trend + radar */}
       <div className="row2 row2-b">
         <Card delay={200} style={{ padding: 24 }}>
-          <SectionTitle icon={TrendingUp} title="Class mastery over time" sub="Average understanding across the class" right={<Pill tone="green">Trending up</Pill>} />
+          <SectionTitle icon={TrendingUp} title="Penguasaan kelas dari waktu ke waktu" sub="Rata-rata pemahaman seluruh kelas" right={<Pill tone="green">Tren naik</Pill>} />
           <div style={{ height: 230 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={masteryTrend} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
@@ -492,7 +562,7 @@ function TeacherOverview() {
         </Card>
 
         <Card delay={260} style={{ padding: 24 }}>
-          <SectionTitle icon={CircuitBoard} title="Skill profile" sub="Class average per concept" />
+          <SectionTitle icon={CircuitBoard} title="Profil keterampilan" sub="Rata-rata kelas per konsep" />
           <div style={{ height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={skillRadar} outerRadius="72%">
@@ -508,7 +578,7 @@ function TeacherOverview() {
 
       {/* AI insights — the novelty */}
       <Card delay={320} style={{ padding: 24, background: `linear-gradient(140deg, ${C.primarySoft}, #FBFAFF)` }}>
-        <SectionTitle icon={Brain} title="AI insights" sub="Lentera doesn't just grade — it diagnoses the class and the board" right={<Pill tone="purple">Live</Pill>} />
+        <SectionTitle icon={Brain} title="Wawasan AI" sub="Lentera tidak hanya menilai — tapi juga mendiagnosis kelas dan papan" right={<Pill tone="purple">Langsung</Pill>} />
         <div style={{ display: "grid", gap: 13, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
           {insights.map((ins, i) => {
             const tones: Record<string, [string, string]> = {
@@ -535,14 +605,14 @@ function TeacherOverview() {
       <Card delay={380} style={{ padding: 24 }}>
         <SectionTitle
           icon={GraduationCap}
-          title="Students"
-          sub="Class 8B · Electricity"
+          title="Siswa"
+          sub="Kelas 8B · Kelistrikan"
           right={
             <button
               onClick={() => setShowAllStudents((v) => !v)}
               style={{ background: C.primary, color: "#fff", border: "none", padding: "9px 16px", borderRadius: 99, fontWeight: 700, fontSize: 13 }}
             >
-              {showAllStudents ? "Collapse" : "View all"}
+              {showAllStudents ? "Ciutkan" : "Lihat semua"}
             </button>
           }
         />
@@ -551,8 +621,8 @@ function TeacherOverview() {
           <input
             value={studentQuery}
             onChange={(e) => setStudentQuery(e.target.value)}
-            placeholder="Search by student name or status..."
-            aria-label="Search students"
+            placeholder="Cari nama siswa atau status..."
+            aria-label="Cari siswa"
             style={{ flex: 1, border: "none", outline: "none", fontSize: 13, color: C.text, fontFamily: BODY }}
           />
         </div>
@@ -582,21 +652,21 @@ function TeacherOverview() {
 /* =============================================================== PARENT */
 interface TeacherNote { date: string; text: string; tag: string; tone: string; }
 const teacherNotes: TeacherNote[] = [
-  { date: "8 Jul 2026", text: "Kai has mastered series circuits and can build them without any help.", tag: "Improving rapidly", tone: "green" },
-  { date: "3 Jul 2026", text: "Still often confuses the battery + and − terminals. More practice feeling the terminal textures at home is needed.", tag: "Needs practice", tone: "warn" },
-  { date: "28 Jun 2026", text: "Very active in asking the AI Tutor questions and persistent when the circuit does not work.", tag: "Positive note", tone: "purple" },
-  { date: "20 Jun 2026", text: "Just learning the basic components. Needs close guidance during the first lab session.", tag: "Getting started", tone: "blue" },
+  { date: "8 Jul 2026", text: "Kai sudah menguasai rangkaian seri dan bisa merakitnya tanpa bantuan.", tag: "Berkembang pesat", tone: "green" },
+  { date: "3 Jul 2026", text: "Masih sering tertukar kutub + dan − baterai. Perlu lebih banyak latihan meraba tekstur kutub di rumah.", tag: "Perlu latihan", tone: "warn" },
+  { date: "28 Jun 2026", text: "Sangat aktif bertanya kepada AI Tutor dan pantang menyerah saat rangkaian tidak berfungsi.", tag: "Catatan positif", tone: "purple" },
+  { date: "20 Jun 2026", text: "Baru mengenal komponen dasar. Perlu bimbingan dekat di sesi lab pertama.", tag: "Baru mulai", tone: "blue" },
 ];
 
 const childProgress = [
-  { week: "W1", mastery: 28 }, { week: "W2", mastery: 40 }, { week: "W3", mastery: 51 },
-  { week: "W4", mastery: 58 }, { week: "W5", mastery: 64 }, { week: "W6", mastery: 72 },
+  { week: "M1", mastery: 28 }, { week: "M2", mastery: 40 }, { week: "M3", mastery: 51 },
+  { week: "M4", mastery: 58 }, { week: "M5", mastery: 64 }, { week: "M6", mastery: 72 },
 ];
 
 const parentTips = [
-  "Ask Kai to feel the battery + and − terminals again before moving on to parallel circuits — this is an area that still needs reinforcement according to the teacher’s notes.",
-  "Listen together to the AI Tutor recording/conversation from the completed lesson and ask Kai what they still remember.",
-  "Celebrate small achievements (such as a new badge) to keep Kai motivated to practice independently at home.",
+  "Ajak Kai meraba kembali kutub + dan − baterai sebelum lanjut ke rangkaian paralel — bagian ini masih perlu diperkuat menurut catatan guru.",
+  "Dengarkan bersama rekaman/percakapan AI Tutor dari pelajaran yang sudah selesai, lalu tanyakan apa yang masih Kai ingat.",
+  "Rayakan pencapaian kecil (seperti lencana baru) agar Kai tetap termotivasi berlatih mandiri di rumah.",
 ];
 
 function AskAIParent() {
@@ -616,12 +686,12 @@ function AskAIParent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `(This question is from a student’s parent, not directly from the student) ${question}`,
+          message: `(Pertanyaan ini dari orang tua siswa, bukan langsung dari siswa) ${question}`,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setErr(data.error ?? "An unexpected error occurred.");
+        setErr(data.error ?? "Terjadi kesalahan yang tidak terduga.");
         return;
       }
       setAnswer(data.text);
@@ -639,7 +709,7 @@ function AskAIParent() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") ask(); }}
-          placeholder="e.g. How can I help Kai practice parallel circuits at home?"
+          placeholder="contoh: Bagaimana cara membantu Kai berlatih rangkaian paralel di rumah?"
           disabled={loading}
           style={{ flex: 1, border: "1px solid rgba(139,92,246,0.2)", background: "#fff", borderRadius: 12, padding: "11px 14px", fontSize: 13.5, color: C.text, fontFamily: BODY, outline: "none" }}
         />
@@ -662,9 +732,9 @@ function AskAIParent() {
 }
 
 const parentStats: Stat[] = [
-  { label: "Overall progress", value: "72%", icon: TrendingUp, color: C.primary, sub: "+8% from last week" },
-  { label: "Badges earned", value: "4 / 6", icon: Award, color: "#F59E0B", sub: "2 more to reach Circuit Master" },
-  { label: "Learning streak", value: "7 days", icon: Flame, color: C.pink, sub: "current streak" },
+  { label: "Progres keseluruhan", value: "72%", icon: TrendingUp, color: C.primary, sub: "+8% dari minggu lalu" },
+  { label: "Lencana diraih", value: "4 / 6", icon: Award, color: "#F59E0B", sub: "2 lagi untuk mencapai Master Rangkaian" },
+  { label: "Runtutan belajar", value: "7 hari", icon: Flame, color: C.pink, sub: "runtutan saat ini" },
 ];
 
 function ParentDashboard() {
@@ -687,7 +757,7 @@ function ParentDashboard() {
       <div className="row2 row2-a">
         {/* teacher notes */}
         <Card delay={160} style={{ padding: 24 }}>
-          <SectionTitle icon={BookOpen} title="Teacher Report" sub="Kai’s progress notes from Ms. Sari" />
+          <SectionTitle icon={BookOpen} title="Laporan Guru" sub="Catatan progres Kai dari Bu Sari" />
           <div style={{ display: "grid", gap: 12, marginTop: 6 }}>
             {teacherNotes.map((n, i) => (
               <div key={i} style={{ padding: 15, borderRadius: 16, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(139,92,246,0.1)" }}>
@@ -703,7 +773,7 @@ function ParentDashboard() {
 
         {/* progress chart */}
         <Card delay={220} style={{ padding: 24 }}>
-          <SectionTitle icon={TrendingUp} title="Child Learning Progress" sub="Kai’s average understanding per week" right={<Pill tone="green">Trending up</Pill>} />
+          <SectionTitle icon={TrendingUp} title="Progres Belajar Anak" sub="Rata-rata pemahaman Kai per minggu" right={<Pill tone="green">Tren naik</Pill>} />
           <div style={{ height: 230 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={childProgress} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
@@ -726,7 +796,7 @@ function ParentDashboard() {
 
       {/* AI suggestions for parent */}
       <Card delay={280} style={{ padding: 24 }}>
-        <SectionTitle icon={Sparkles} title="AI Suggestions for Parents" sub="Ways to support Kai’s learning at home based on recent progress" />
+        <SectionTitle icon={Sparkles} title="Saran AI untuk Orang Tua" sub="Cara mendampingi belajar Kai di rumah berdasarkan progres terkini" />
         <div style={{ display: "grid", gap: 10, marginBottom: 20, marginTop: 4 }}>
           {parentTips.map((tip, i) => (
             <div key={i} className="flex items-start" style={{ gap: 10 }}>
@@ -739,7 +809,7 @@ function ParentDashboard() {
         </div>
         <div style={{ borderTop: "1px solid rgba(139,92,246,0.1)", paddingTop: 18 }}>
           <div className="flex items-center" style={{ gap: 8, marginBottom: 10, fontSize: 13, fontWeight: 800, color: C.text }}>
-            <Mic size={15} color={C.primaryDeep} /> Ask AI Tutor
+            <Mic size={15} color={C.primaryDeep} /> Tanya AI Tutor
           </div>
           <AskAIParent />
         </div>
@@ -761,30 +831,30 @@ interface Scenario { id: string; label: string; icon: LucideIcon; state: Circuit
 const scenarios: Scenario[] = [
   {
     id: "polarity",
-    label: "Reversed Polarity",
+    label: "Polaritas Terbalik",
     icon: AlertTriangle,
     state: { battery_connected: true, switch_state: "on", lamp_connected: true, circuit_closed: true, polarity_correct: false },
-    prompt: "I connected all the wires, but the lamp is not turning on. Why?",
+    prompt: "Saya sudah menyambungkan semua kabel, tapi lampu tidak menyala. Mengapa?",
   },
   {
     id: "open",
-    label: "Open Circuit",
+    label: "Rangkaian Terbuka",
     icon: Unlink2,
     state: { battery_connected: true, switch_state: "off", lamp_connected: true, circuit_closed: false, polarity_correct: true },
-    prompt: "I moved the switch, but the lamp is still off.",
+    prompt: "Saya sudah menggerakkan saklar, tapi lampu masih mati.",
   },
   {
     id: "closed",
-    label: "Working Circuit",
+    label: "Rangkaian Berfungsi",
     icon: CheckCircle2,
     state: { battery_connected: true, switch_state: "on", lamp_connected: true, circuit_closed: true, polarity_correct: true },
-    prompt: "I have finished building the circuit. Please check whether it is correct.",
+    prompt: "Saya sudah selesai merakit rangkaian. Tolong periksa apakah sudah benar.",
   },
 ];
 
 function AITutor() {
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "ai", text: "Hi! Ready to build a circuit today? Feel the board anytime, or try the simulation buttons below to test a few scenarios.", note: null },
+    { role: "ai", text: "Halo! Siap merakit rangkaian hari ini? Raba papanmu kapan saja, atau coba tombol simulasi di bawah untuk menguji beberapa skenario.", note: null },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -809,21 +879,21 @@ function AITutor() {
     };
   }, []);
 
-  // Prefer an English voice for the international version.
-  const enVoice =
-    voices.find((v) => v.lang.toLowerCase() === "en-us") ||
-    voices.find((v) => v.lang.toLowerCase().startsWith("en")) ||
+  // Utamakan suara Bahasa Indonesia
+  const idVoice =
+    voices.find((v) => v.lang.toLowerCase() === "id-id") ||
+    voices.find((v) => v.lang.toLowerCase().startsWith("id")) ||
     null;
 
   const speak = (text: string) => {
     if (!voiceOn || typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    if (enVoice) {
-      utter.voice = enVoice;
-      utter.lang = enVoice.lang;
+    if (idVoice) {
+      utter.voice = idVoice;
+      utter.lang = idVoice.lang;
     } else {
-      utter.lang = "en-US";
+      utter.lang = "id-ID";
     }
     utter.rate = 0.95;
     window.speechSynthesis.speak(utter);
@@ -844,13 +914,13 @@ function AITutor() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setMessages((m) => [...m, { role: "ai", text: `Could not connect to AI: ${data.error ?? "unknown error"}. Check whether GROQ_API_KEY is configured in .env.local.`, error: true }]);
+        setMessages((m) => [...m, { role: "ai", text: `Tidak dapat terhubung ke AI: ${data.error ?? "kesalahan tidak diketahui"}. Periksa apakah GROQ_API_KEY sudah terkonfigurasi di .env.local.`, error: true }]);
         return;
       }
       setMessages((m) => [...m, { role: "ai", text: data.text, note: data.note }]);
       speak(data.text);
     } catch (err) {
-      setMessages((m) => [...m, { role: "ai", text: `Failed to contact the server: ${(err as Error).message}`, error: true }]);
+      setMessages((m) => [...m, { role: "ai", text: `Gagal menghubungi server: ${(err as Error).message}`, error: true }]);
     } finally {
       setLoading(false);
     }
@@ -868,7 +938,7 @@ function AITutor() {
     callTutor(s.prompt, s.state);
   };
 
-  const chips = ["Guide me step by step", "Explain the direction of current", "I’m done! 🎉"];
+  const chips = ["Pandu saya langkah demi langkah", "Jelaskan arah arus listrik", "Saya sudah selesai! 🎉"];
 
   return (
     <div style={{ display: "grid", gap: 20 }}>
@@ -888,13 +958,13 @@ function AITutor() {
           </div>
           <div className="flex items-center" style={{ gap: 10 }}>
             {voiceOn && (
-              <div className="hidden lg:flex items-center" style={{ gap: 6, fontSize: 11, fontWeight: 700, color: enVoice ? C.green : "#DB2777", background: enVoice ? C.greenSoft : C.pinkSoft, padding: "5px 10px", borderRadius: 99 }}>
-                {enVoice ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-                {enVoice ? `English voice: ${enVoice.name}` : "No English voice available"}
+              <div className="hidden lg:flex items-center" style={{ gap: 6, fontSize: 11, fontWeight: 700, color: idVoice ? C.green : "#DB2777", background: idVoice ? C.greenSoft : C.pinkSoft, padding: "5px 10px", borderRadius: 99 }}>
+                {idVoice ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
+                {idVoice ? `Suara Indonesia: ${idVoice.name}` : "Suara default (id-ID)"}
               </div>
             )}
             <button
-              aria-label={voiceOn ? "Turn off voice" : "Turn on voice"}
+              aria-label={voiceOn ? "Matikan suara" : "Nyalakan suara"}
               onClick={() => { setVoiceOn((v) => !v); if (voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel(); }}
               style={{ width: 40, height: 40, borderRadius: 12, background: C.primarySoft, border: "none", display: "grid", placeItems: "center" }}
             >
@@ -902,11 +972,6 @@ function AITutor() {
             </button>
           </div>
         </div>
-        {voiceOn && !enVoice && voices.length > 0 && (
-          <div className="flex items-center" style={{ gap: 8, padding: "9px 22px", background: C.pinkSoft, fontSize: 12, color: "#DB2777", fontWeight: 600 }}>
-            <AlertTriangle size={14} /> This browser does not have a suitable English voice — speech will use the default voice. Try the latest version of Chrome or enable an English text-to-speech voice in your device settings.
-          </div>
-        )}
 
         {/* messages */}
         <div className="cs-scroll" style={{ flex: 1, overflowY: "auto", padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -936,7 +1001,7 @@ function AITutor() {
           {loading && (
             <div style={{ display: "flex" }}>
               <div className="flex items-center" style={{ gap: 8, background: "#fff", border: "1px solid rgba(139,92,246,0.12)", padding: "13px 18px", borderRadius: 20, borderBottomLeftRadius: 6, fontSize: 13, color: C.textSoft, fontWeight: 600 }}>
-                <Loader2 size={15} className="spin" /> Thinking…
+                <Loader2 size={15} className="spin" /> Sedang berpikir…
               </div>
             </div>
           )}
@@ -954,18 +1019,18 @@ function AITutor() {
 
         {/* input */}
         <div className="flex items-center" style={{ gap: 10, padding: "14px 18px", borderTop: "1px solid rgba(139,92,246,0.1)", background: "rgba(255,255,255,0.6)" }}>
-          <button aria-label="Voice input" style={{ width: 44, height: 44, borderRadius: 14, background: C.pinkSoft, border: "none", display: "grid", placeItems: "center", flexShrink: 0 }}>
+          <button aria-label="Input suara" style={{ width: 44, height: 44, borderRadius: 14, background: C.pinkSoft, border: "none", display: "grid", placeItems: "center", flexShrink: 0 }}>
             <Mic size={20} color={C.pink} />
           </button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder="Ask LENTERA anything…"
+            placeholder="Tanyakan apa saja ke LENTERA…"
             disabled={loading}
             style={{ flex: 1, border: "1px solid rgba(139,92,246,0.18)", background: "#fff", borderRadius: 14, padding: "13px 16px", fontSize: 14, color: C.text, fontFamily: BODY, outline: "none" }}
           />
-          <button aria-label="Send" onClick={() => send()} disabled={loading} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, border: "none", display: "grid", placeItems: "center", flexShrink: 0, boxShadow: C.shadowSm, opacity: loading ? 0.6 : 1 }}>
+          <button aria-label="Kirim" onClick={() => send()} disabled={loading} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, border: "none", display: "grid", placeItems: "center", flexShrink: 0, boxShadow: C.shadowSm, opacity: loading ? 0.6 : 1 }}>
             <Send size={19} color="#fff" />
           </button>
         </div>
@@ -976,7 +1041,7 @@ function AITutor() {
         <SectionTitle
           icon={SlidersHorizontal}
           title="Panel Simulasi"
-          sub="Test the AI Tutor flow without physical hardware — useful for demo practice"
+          sub="Uji alur AI Tutor tanpa perangkat fisik — berguna untuk latihan demo"
           right={circuitState && (
             <button onClick={() => setCircuitState(null)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid rgba(139,92,246,0.2)", color: C.textSoft, padding: "7px 12px", borderRadius: 99, fontSize: 12.5, fontWeight: 700 }}>
               <RefreshCw size={13} /> Reset
@@ -1000,7 +1065,7 @@ function AITutor() {
         </div>
         {circuitState && (
           <div className="flex items-center" style={{ gap: 8, marginTop: 14, fontSize: 12, color: C.textSoft, fontWeight: 600, flexWrap: "wrap" }}>
-            <PlugZap size={14} /> Simulation status: battery {circuitState.battery_connected ? "✓" : "✗"} · switch {circuitState.switch_state} · lamp {circuitState.lamp_connected ? "✓" : "✗"} · path {circuitState.circuit_closed ? "closed" : "open"} · polarity {circuitState.polarity_correct ? "correct" : "reversed"}
+            <PlugZap size={14} /> Status simulasi: baterai {circuitState.battery_connected ? "✓" : "✗"} · saklar {circuitState.switch_state === "on" ? "ON" : "OFF"} · lampu {circuitState.lamp_connected ? "✓" : "✗"} · jalur {circuitState.circuit_closed ? "tertutup" : "terbuka"} · polaritas {circuitState.polarity_correct ? "benar" : "terbalik"}
           </div>
         )}
       </Card>
@@ -1065,10 +1130,10 @@ function CurrentDots({ path }: { path: string }) {
 
 function CircuitDiagram({ variant }: { variant: "closed" | "open" | "series" | "parallel" }) {
   const label: Record<string, string> = {
-    closed: "Closed circuit — the path is fully connected, current flows, and the lamp turns on.",
-    open: "Open circuit — the path is interrupted, current cannot flow, and the lamp turns off.",
-    series: "Series circuit — components are arranged in sequence along a single path.",
-    parallel: "Parallel circuit — components are arranged in branches, with each branch having its own path.",
+    closed: "Rangkaian tertutup — jalur tersambung penuh, arus mengalir, dan lampu menyala.",
+    open: "Rangkaian terbuka — jalur terputus, arus tidak dapat mengalir, dan lampu mati.",
+    series: "Rangkaian seri — komponen disusun berurutan dalam satu jalur tunggal.",
+    parallel: "Rangkaian paralel — komponen disusun bercabang, masing-masing cabang memiliki jalurnya sendiri.",
   };
   const loopPath = "M60,40 L260,40 L260,130 L60,130 Z";
   const branchPath = "M60,40 L230,40 L230,130 L60,130 Z";
@@ -1186,10 +1251,10 @@ function IsoBlock({ front, side, symbol }: { front: string; side: string; symbol
 
 interface TactilePart { name: string; symbol: "battery" | "switch" | "lamp" | "cable"; front: string; side: string; braille: string; texture: string; }
 const tactileParts: TactilePart[] = [
-  { name: "Battery", symbol: "battery", front: C.blue, side: "#1D4ED8", braille: "Braille “B” + raised diagonal lines at the positive terminal", texture: "Smooth block, striped positive side, flat negative side" },
-  { name: "Switch", symbol: "switch", front: C.green, side: "#15803D", braille: "Braille “S” + clickable lever", texture: "Raised lever that can be switched ON/OFF by touch" },
-  { name: "Lamp", symbol: "lamp", front: "#F59E0B", side: "#B45309", braille: "Braille “L” + raised rounded surface", texture: "Feels warm / gently vibrating when powered on" },
-  { name: "Wire", symbol: "cable", front: C.primary, side: C.primaryDeep, braille: "Raised rubber path along the board", texture: "Rough and raised compared with the board surface" },
+  { name: "Baterai", symbol: "battery", front: C.blue, side: "#1D4ED8", braille: "Braille “B” + garis diagonal timbul di kutub positif", texture: "Balok halus, sisi positif bergaris, sisi negatif datar" },
+  { name: "Saklar", symbol: "switch", front: C.green, side: "#15803D", braille: "Braille “S” + tuas klik", texture: "Tuas timbul yang dapat digeser ON/OFF dengan rabaan" },
+  { name: "Lampu", symbol: "lamp", front: "#F59E0B", side: "#B45309", braille: "Braille “L” + permukaan bulat timbul", texture: "Terasa hangat / bergetar halus saat dinyalakan" },
+  { name: "Kabel", symbol: "cable", front: C.primary, side: C.primaryDeep, braille: "Jalur karet timbul di sepanjang papan", texture: "Kasar dan timbul dibanding permukaan papan" },
 ];
 
 function TactilePartCard({ part, delay }: { part: TactilePart; delay: number }) {
@@ -1222,71 +1287,71 @@ interface HandbookSection {
 const handbookSections: HandbookSection[] = [
   {
     id: "pengertian",
-    title: "Understanding Electrical Circuits",
+    title: "Pengertian Rangkaian Listrik",
     icon: CircuitBoard,
-    badge: "Basics",
-    summary: "An electrical circuit is a path followed by current from a source (battery), through components such as wires, switches, and lamps, and back to the source.",
+    badge: "Dasar",
+    summary: "Rangkaian listrik adalah jalur yang dilalui arus listrik dari sumber (baterai), melalui komponen seperti kabel, saklar, dan lampu, lalu kembali ke sumber.",
     points: [
-      "Current can flow only when the path is fully connected from start to finish with no breaks.",
-      "The LENTERA Board uses a battery as its energy source, with two terminals: + (positive) and − (negative).",
-      "Think of it like water flowing through a circular pipe — if the pipe leaks or breaks, the flow stops.",
+      "Arus hanya dapat mengalir saat jalurnya tersambung utuh dari awal sampai akhir tanpa putus.",
+      "Papan LENTERA menggunakan baterai sebagai sumber energi, dengan dua kutub: + (positif) dan − (negatif).",
+      "Bayangkan seperti air yang mengalir dalam pipa melingkar — jika pipa bocor atau terputus, aliran akan berhenti.",
     ],
-    tip: "Ask the student to trace the LENTERA Board path with a finger, starting at the battery’s + terminal and following it back to the − terminal. Let them discover that the path must form a complete loop for current to “flow”.",
+    tip: "Ajak siswa menelusuri jalur papan LENTERA dengan jari, mulai dari kutub + baterai hingga kembali ke kutub −. Biarkan mereka menyadari bahwa jalur harus membentuk loop tertutup agar arus bisa “mengalir”.",
     diagram: "intro",
   },
   {
     id: "komponen",
-    title: "Electrical Components for Blind Learners",
+    title: "Komponen Listrik untuk Siswa Tunanetra",
     icon: Fingerprint,
-    badge: "Tools",
-    summary: "Each component on the LENTERA Board is modified with distinct Braille labels, textures, and raised shapes so it can be identified by touch without sight.",
+    badge: "Alat",
+    summary: "Setiap komponen di Papan LENTERA dimodifikasi dengan label Braille, tekstur, dan bentuk timbul yang berbeda agar dapat dikenali lewat rabaan tanpa melihat.",
     points: [
-      "Each component block has a different shape and surface texture for easy identification.",
-      "A Braille label is placed on the side of each block to identify the component.",
-      "The wire path is a raised rubber track on the grid board, with a texture that feels rougher than the board surface.",
+      "Setiap balok komponen memiliki bentuk dan tekstur permukaan berbeda untuk kemudahan identifikasi.",
+      "Label Braille diletakkan di sisi setiap balok untuk mengenali komponen.",
+      "Jalur kabel berupa rel karet timbul di papan grid, dengan tekstur yang lebih kasar daripada permukaan papan.",
     ],
-    tip: "Before building a circuit, ask the student to feel and identify each component block (battery, switch, lamp, cable) one by one — this is the “component recognition” stage in the LENTERA learning flow.",
+    tip: "Sebelum merakit rangkaian, minta siswa meraba dan mengenali setiap balok komponen (baterai, saklar, lampu, kabel) satu per satu — ini adalah tahap “pengenalan komponen” dalam alur belajar LENTERA.",
   },
   {
     id: "jenis",
-    title: "Circuit Types: Open & Closed",
+    title: "Jenis Rangkaian: Terbuka & Tertutup",
     icon: Link2,
-    badge: "Concept",
-    summary: "A closed circuit is a fully connected electrical path that lets current flow and the lamp turn on. An open circuit is interrupted at one point, so current stops and the lamp turns off.",
+    badge: "Konsep",
+    summary: "Rangkaian tertutup adalah jalur listrik yang tersambung penuh sehingga arus mengalir dan lampu menyala. Rangkaian terbuka terputus di satu titik, sehingga arus berhenti dan lampu mati.",
     points: [
-      "Closed: all connections are secure, the switch is ON → the lamp turns on.",
-      "Open: a cable is disconnected or the switch is OFF → the lamp is off.",
-      "A switch is a component intentionally used to open or close the electrical path.",
+      "Tertutup: semua sambungan aman, saklar ON → lampu menyala.",
+      "Terbuka: kabel terlepas atau saklar OFF → lampu mati.",
+      "Saklar adalah komponen yang sengaja digunakan untuk membuka atau menutup jalur listrik.",
     ],
-    tip: "Use the switch for a hands-on demonstration: ask the student to move it to ON (closed) and then OFF (open), and feel/listen to the difference — the lamp turns on versus off.",
+    tip: "Gunakan saklar untuk demonstrasi langsung: minta siswa menggeser ke ON (tertutup) lalu OFF (terbuka), dan rasakan/dengarkan perbedaannya — lampu menyala versus mati.",
     diagram: "closed-open",
   },
   {
     id: "seri",
-    title: "Series Circuit",
+    title: "Rangkaian Seri",
     icon: Layers,
-    badge: "Practice",
-    summary: "In a series circuit, components such as two lamps are arranged one after another along a single path.",
+    badge: "Praktik",
+    summary: "Pada rangkaian seri, komponen seperti dua lampu disusun berurutan satu demi satu dalam satu jalur tunggal.",
     points: [
-      "The same current passes through every component in sequence.",
-      "A key feature is that if one lamp is removed or disconnected, all other lamps turn off because the path is completely broken.",
-      "On the LENTERA Board, students build two lamps in sequence along one straight path.",
+      "Arus yang sama mengalir melewati setiap komponen secara berurutan.",
+      "Ciri utamanya: jika satu lampu dilepas atau terputus, semua lampu lain ikut mati karena jalurnya putus total.",
+      "Di Papan LENTERA, siswa merakit dua lampu berurutan dalam satu jalur lurus.",
     ],
-    tip: "Ask the student to build two lamps in sequence and then remove one. Let them discover that the other lamp also turns off — a key experience for understanding series circuits.",
+    tip: "Minta siswa merakit dua lampu berurutan lalu melepas salah satunya. Biarkan mereka menyadari bahwa lampu lainnya ikut mati — pengalaman kunci untuk memahami rangkaian seri.",
     diagram: "series",
   },
   {
     id: "paralel",
-    title: "Parallel Circuit",
+    title: "Rangkaian Paralel",
     icon: GitBranch,
-    badge: "Practice",
-    summary: "In a parallel circuit, components are arranged in branches — each component has its own path back to the battery.",
+    badge: "Praktik",
+    summary: "Pada rangkaian paralel, komponen disusun bercabang — setiap komponen memiliki jalurnya sendiri kembali ke baterai.",
     points: [
-      "If one lamp is removed, the other lamp stays on because the other path remains connected.",
-      "This is useful for applications such as home wiring because each device can be switched on or off independently.",
-      "On the LENTERA Board, students build two lamps on two separate circuit branches.",
+      "Jika satu lampu dilepas, lampu lainnya tetap menyala karena jalurnya tetap tersambung.",
+      "Ini berguna untuk instalasi rumah karena setiap perangkat bisa dinyalakan atau dimatikan secara terpisah.",
+      "Di Papan LENTERA, siswa merakit dua lampu pada dua cabang rangkaian yang terpisah.",
     ],
-    tip: "After trying a series circuit, compare it on the same board: remove one lamp from the parallel circuit and let the student discover the difference — the other lamp stays on.",
+    tip: "Setelah mencoba rangkaian seri, bandingkan di papan yang sama: lepas satu lampu dari rangkaian paralel dan biarkan siswa merasakan perbedaannya — lampu lainnya tetap menyala.",
     diagram: "parallel",
   },
 ];
@@ -1304,14 +1369,14 @@ function TeacherHandbook() {
               <BookOpen size={26} color="#fff" />
             </div>
             <div>
-              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 19 }}>Digital Teacher Handbook</div>
+              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 19 }}>Handbook Guru Digital</div>
               <div style={{ fontSize: 13, opacity: 0.9, marginTop: 3, maxWidth: 480 }}>
-                Simple electrical circuit materials designed as a teaching guide for blind and visually impaired learners at the special junior high school level.
+                Materi rangkaian listrik sederhana yang dirancang sebagai panduan mengajar untuk siswa tunanetra dan low vision di tingkat SMPLB.
               </div>
             </div>
           </div>
           <button onClick={() => window.print()} style={{ background: "#fff", color: C.primaryDeep, border: "none", padding: "11px 18px", borderRadius: 99, fontWeight: 800, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <Printer size={16} /> Print / Download
+            <Printer size={16} /> Cetak / Unduh
           </button>
         </div>
       </Card>
@@ -1350,7 +1415,7 @@ function TeacherHandbook() {
 
         {/* content */}
         <Card delay={120} style={{ padding: 26 }}>
-          <SectionTitle icon={section.icon} title={section.title} sub={`Section ${active + 1} of 5 · LENTERA Handbook`} right={<Pill tone="purple">{section.badge}</Pill>} />
+          <SectionTitle icon={section.icon} title={section.title} sub={`Bagian ${active + 1} dari 5 · Handbook LENTERA`} right={<Pill tone="purple">{section.badge}</Pill>} />
 
           <p style={{ fontSize: 14.5, color: C.text, lineHeight: 1.6, marginBottom: 16 }}>{section.summary}</p>
 
@@ -1399,7 +1464,7 @@ function TeacherHandbook() {
               <Hand size={19} color={C.primaryDeep} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 13, color: C.primaryDeep, marginBottom: 4 }}>Teaching Tip</div>
+              <div style={{ fontWeight: 800, fontSize: 13, color: C.primaryDeep, marginBottom: 4 }}>Tips Mengajar</div>
               <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55 }}>{section.tip}</div>
             </div>
           </div>
@@ -1411,14 +1476,14 @@ function TeacherHandbook() {
               disabled={active === 0}
               style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent", border: `1px solid rgba(139,92,246,0.2)`, color: active === 0 ? "rgba(124,119,166,0.4)" : C.text, padding: "10px 16px", borderRadius: 99, fontWeight: 700, fontSize: 13 }}
             >
-              <ChevronLeft size={16} /> Previous
+              <ChevronLeft size={16} /> Sebelumnya
             </button>
             <button
               onClick={() => setActive((v) => Math.min(handbookSections.length - 1, v + 1))}
               disabled={active === handbookSections.length - 1}
               style={{ display: "inline-flex", alignItems: "center", gap: 7, background: active === handbookSections.length - 1 ? "rgba(139,92,246,0.15)" : `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, border: "none", color: active === handbookSections.length - 1 ? "rgba(124,119,166,0.5)" : "#fff", padding: "10px 18px", borderRadius: 99, fontWeight: 700, fontSize: 13, boxShadow: active === handbookSections.length - 1 ? "none" : C.shadowSm }}
             >
-              Next <ChevronRight size={16} />
+              Selanjutnya <ChevronRight size={16} />
             </button>
           </div>
         </Card>
@@ -1438,23 +1503,23 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
 
   const roleCopy = {
     student: {
-      title: "Sign in as a Student",
-      desc: "Continue your lessons, earn badges, and learn to build circuits with the AI Tutor.",
-      cta: "Sign in & Start Learning",
+      title: "Masuk sebagai Siswa",
+      desc: "Lanjutkan pelajaranmu, raih lencana, dan belajar merakit rangkaian bersama AI Tutor.",
+      cta: "Masuk & Mulai Belajar",
       placeholder: "student@lentera.demo",
       label: "Email",
     },
     teacher: {
-      title: "Sign in as a Teacher",
-      desc: "Track class progress and open the Digital Handbook for teaching blind and visually impaired learners.",
-      cta: "Open Teacher Dashboard",
+      title: "Masuk sebagai Guru",
+      desc: "Pantau progres kelas dan buka Handbook Digital untuk mengajar siswa tunanetra dan low vision.",
+      cta: "Buka Dashboard Guru",
       placeholder: "teacher@lentera.demo",
       label: "Email",
     },
     parent: {
-      title: "Sign in as a Parent",
-      desc: "View teacher reports, your child’s progress, and guidance for learning at home.",
-      cta: "Open Parent Dashboard",
+      title: "Masuk sebagai Orang Tua",
+      desc: "Lihat laporan guru, progres belajar anak, dan panduan belajar di rumah.",
+      cta: "Buka Dashboard Orang Tua",
       placeholder: "parent@lentera.demo",
       label: "Email",
     },
@@ -1464,17 +1529,17 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
     e.preventDefault();
 
     if (!email.trim()) {
-      setError("Email is required.");
+      setError("Email wajib diisi.");
       return;
     }
 
     if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
+      setError("Masukkan alamat email yang valid.");
       return;
     }
 
     if (!password.trim()) {
-      setError("Password is required.");
+      setError("Password wajib diisi.");
       return;
     }
 
@@ -1484,16 +1549,16 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
     try {
       await onLogin(role, email.trim(), password);
     } catch (err) {
-      setError((err as Error).message || "Login failed. Please try again.");
+      setError((err as Error).message || "Gagal masuk. Silakan coba lagi.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const roleTabs: [typeof role, string, LucideIcon][] = [
-    ["student", "Student", User],
-    ["teacher", "Teacher", GraduationCap],
-    ["parent", "Parent", Hand],
+    ["student", "Siswa", User],
+    ["teacher", "Guru", GraduationCap],
+    ["parent", "Orang Tua", Hand],
   ];
 
   return (
@@ -1506,13 +1571,13 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
             <div style={{ position: "absolute", right: -40, top: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
             <div style={{ marginBottom: 16, position: "relative" }}><Logo /></div>
             <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 20, lineHeight: 1.25, marginBottom: 9, position: "relative" }}>
-              An adaptive science lab companion — learn through touch, voice, and AI that understands.
+              Pendamping lab sains adaptif — belajar melalui sentuhan, suara, dan AI yang memahami.
             </div>
             <p style={{ fontSize: 12.5, opacity: 0.88, lineHeight: 1.55, maxWidth: 560, position: "relative" }}>
-              LENTERA brings the Smart Tactile Experiment Board and Context-Aware Learning Engine to blind and visually impaired learners at the special junior high school level, designed for students, teachers, and parents.
+              LENTERA menghadirkan Smart Tactile Experiment Board dan Context-Aware Learning Engine untuk siswa tunanetra dan low vision di tingkat SMPLB, dirancang untuk siswa, guru, dan orang tua.
             </p>
             <div className="flex items-center" style={{ gap: 8, marginTop: 18, fontSize: 11.5, fontWeight: 700, opacity: 0.9, position: "relative" }}>
-              <ShieldCheck size={15} /> Built for every learner — Braille &amp; voice support
+              <ShieldCheck size={15} /> Dibuat untuk semua pembelajar — dukungan Braille &amp; suara
             </div>
           </div>
 
@@ -1571,7 +1636,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
 
               <div className="flex" style={{ gap: 8, marginTop: 3 }}>
                 <button type="submit" disabled={submitting} style={{ flex: 1, background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, color: "#fff", border: "none", padding: "12px 18px", borderRadius: 13, fontWeight: 800, fontSize: 13.5, boxShadow: C.shadowSm, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: submitting ? .65 : 1 }}>
-                  {submitting ? "Signing in…" : roleCopy.cta} <ChevronRight size={16} />
+                  {submitting ? "Sedang masuk…" : roleCopy.cta} <ChevronRight size={16} />
                 </button>
                 <button type="button" onClick={() => onLogin(role, roleCopy.placeholder, "lentera123")} disabled={submitting} style={{ background: C.pinkSoft, color: "#DB2777", border: "none", padding: "12px 18px", borderRadius: 13, fontWeight: 800, fontSize: 13.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <Sparkles size={16} /> Demo
@@ -1581,10 +1646,10 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
 
             <div className="flex items-center justify-between" style={{ marginTop: 14 }}>
               <div className="flex items-center" style={{ gap: 7, fontSize: 11, color: C.textSoft }}>
-                <Info size={13} /> Secure sign-in powered by LENTERA
+                <Info size={13} /> Masuk aman didukung oleh LENTERA
               </div>
               <a href="/" style={{ fontSize: 11, fontWeight: 700, color: C.primaryDeep, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
-                <ArrowLeft size={12} /> Back to Portal
+                <ArrowLeft size={12} /> Kembali ke Portal
               </a>
             </div>
           </div>
@@ -1625,7 +1690,7 @@ interface ShellProps {
 }
 
 function Sidebar({ view, setView, role, onLogout }: ShellProps) {
-  const homeLabel = role === "student" ? "My Dashboard" : role === "parent" ? "Child Progress" : "Overview";
+  const homeLabel = role === "student" ? "Dashboard Saya" : role === "parent" ? "Progres Anak" : "Ringkasan";
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: homeLabel, icon: LayoutDashboard },
     ...(role === "teacher" ? [{ id: "handbook", label: "Handbook", icon: BookOpen }] : []),
@@ -1637,7 +1702,7 @@ function Sidebar({ view, setView, role, onLogout }: ShellProps) {
       className="hidden lg:flex"
       style={{ width: 260, flexShrink: 0, flexDirection: "column", padding: 22, gap: 8, ...glassStyle({ borderRadius: 0, border: "none", boxShadow: "none", background: "rgba(255,255,255,0.55)" }) }}
     >
-      <Link href="/" style={{ marginBottom: 22, display: "block" }} aria-label="Back to LENTERA Portal"><Logo /></Link>
+      <Link href="/" style={{ marginBottom: 22, display: "block" }} aria-label="Kembali ke Portal LENTERA"><Logo /></Link>
 
       <div style={{ fontSize: 11, fontWeight: 800, color: C.textSoft, letterSpacing: 1, padding: "0 6px 8px" }}>MENU</div>
       {nav.map((n) => {
@@ -1663,11 +1728,11 @@ function Sidebar({ view, setView, role, onLogout }: ShellProps) {
 
       <div style={{ padding: 14, borderRadius: 16, background: `linear-gradient(135deg, ${C.primarySoft}, ${C.pinkSoft})`, display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <Hand size={20} color={C.primaryDeep} />
-        <div style={{ fontSize: 12, color: C.text, fontWeight: 600, lineHeight: 1.4 }}>Built for every learner — screen-reader &amp; Braille ready.</div>
+        <div style={{ fontSize: 12, color: C.text, fontWeight: 600, lineHeight: 1.4 }}>Dibuat untuk semua pembelajar — siap pembaca layar &amp; Braille.</div>
       </div>
 
       <button onClick={onLogout} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 14, border: "none", background: "transparent", color: C.textSoft, fontWeight: 700, fontSize: 13.5, textAlign: "left" }}>
-        <LogOut size={17} /> Log out
+        <LogOut size={17} /> Keluar
       </button>
     </aside>
   );
@@ -1677,13 +1742,13 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
-    { id: "home", label: "Home", icon: LayoutDashboard },
+    { id: "home", label: "Beranda", icon: LayoutDashboard },
     ...(role === "teacher" ? [{ id: "handbook", label: "Handbook", icon: BookOpen }] : []),
     { id: "ai", label: "AI", icon: Sparkles },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
-  const fallbackName = role === "student" ? "Kai Rahman" : role === "parent" ? "Parent/Guardian" : "Ms. Sari";
-  const tag = role === "student" ? "Electrician · Lv 2" : role === "parent" ? "Student’s parent" : "Class 8B · Teacher";
+  const fallbackName = role === "student" ? "Kai Rahman" : role === "parent" ? "Orang Tua / Wali" : "Bu Sari";
+  const tag = role === "student" ? "Teknisi · Lv 2" : role === "parent" ? "Orang tua siswa" : "Kelas 8B · Guru";
   const person = { name: name || fallbackName, tag };
   return (
     <header
@@ -1692,7 +1757,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
     >
       {/* left: mobile logo + mobile nav + desktop search */}
       <div className="flex items-center" style={{ gap: 12 }}>
-        <Link href="/" className="lg:hidden" aria-label="Back to LENTERA Portal"><Logo small /></Link>
+        <Link href="/" className="lg:hidden" aria-label="Kembali ke Portal LENTERA"><Logo small /></Link>
         <div className="lg:hidden flex" style={{ gap: 4, padding: 4, borderRadius: 12, background: "rgba(139,92,246,0.08)" }}>
           {nav.map((n) => {
             const Icon = n.icon;
@@ -1720,8 +1785,8 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
                 setView(role === "teacher" ? "home" : "ai");
               }
             }}
-            placeholder="Search students, lessons…"
-            aria-label="Search students or lessons"
+            placeholder="Cari siswa, pelajaran…"
+            aria-label="Cari siswa atau pelajaran"
             style={{ border: "none", outline: "none", fontSize: 13.5, color: C.text, fontFamily: BODY, background: "transparent", width: "100%" }}
           />
         </div>
@@ -1731,7 +1796,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
       <div className="flex items-center" style={{ gap: 12 }}>
         <div style={{ position: "relative" }}>
           <button
-            aria-label="Notifications"
+            aria-label="Notifikasi"
             aria-expanded={notificationsOpen}
             onClick={() => setNotificationsOpen((v) => !v)}
             style={{ position: "relative", width: 42, height: 42, borderRadius: 13, background: "#fff", border: "1px solid rgba(139,92,246,0.14)", display: "grid", placeItems: "center" }}
@@ -1741,10 +1806,10 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
           </button>
           {notificationsOpen && (
             <div className="notif-popover">
-              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 14 }}>LENTERA Notifications</div>
-              <div className="notif-item"><CheckCircle2 size={15} color={C.green} /> Learning progress saved.</div>
-              <div className="notif-item"><Sparkles size={15} color={C.primaryDeep} /> AI Tutor is ready to support the lab session.</div>
-              <div className="notif-item"><Info size={15} color={C.blue} /> Try the Simulation Panel for a hardware-free demo.</div>
+              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 14 }}>Notifikasi LENTERA</div>
+              <div className="notif-item"><CheckCircle2 size={15} color={C.green} /> Progres belajar tersimpan.</div>
+              <div className="notif-item"><Sparkles size={15} color={C.primaryDeep} /> AI Tutor siap mendampingi sesi lab.</div>
+              <div className="notif-item"><Info size={15} color={C.blue} /> Coba Panel Simulasi untuk demo tanpa perangkat fisik.</div>
             </div>
           )}
         </div>
@@ -1757,7 +1822,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
             <div style={{ fontSize: 11.5, color: C.textSoft, marginTop: 3 }}>{person.tag}</div>
           </div>
         </div>
-        <button aria-label="Log out" onClick={onLogout} className="lg:hidden" style={{ width: 42, height: 42, borderRadius: 13, background: "#fff", border: "1px solid rgba(139,92,246,0.14)", display: "grid", placeItems: "center" }}>
+        <button aria-label="Keluar" onClick={onLogout} className="lg:hidden" style={{ width: 42, height: 42, borderRadius: 13, background: "#fff", border: "1px solid rgba(139,92,246,0.14)", display: "grid", placeItems: "center" }}>
           <LogOut size={18} color={C.text} />
         </button>
       </div>
@@ -1869,25 +1934,25 @@ export default function CircuitSenseDashboard() {
     );
   }
 
-  const firstName = name ? name.split(" ")[0] : role === "student" ? "Kai" : role === "parent" ? "Bpk/Ibu" : "Ms. Sari";
+  const firstName = name ? name.split(" ")[0] : role === "student" ? "Kai" : role === "parent" ? "Bpk/Ibu" : "Bu Sari";
   const heading = view === "ai"
     ? "AI Tutor"
     : view === "handbook"
     ? "Handbook Digital"
     : role === "student"
-    ? `Hello, ${firstName} 👋`
+    ? `Halo, ${firstName} 👋`
     : role === "parent"
-    ? `Hello, ${firstName} 👋`
-    : `Welcome back, ${firstName} 👋`;
+    ? `Halo, ${firstName} 👋`
+    : `Selamat datang kembali, ${firstName} 👋`;
   const subheading = view === "ai"
-    ? "Touch the board, think it through, understand the why."
+    ? "Raba papannya, pikirkan baik-baik, pahami alasannya."
     : view === "handbook"
-    ? "A teaching handbook for simple electrical circuits for blind and visually impaired learners."
+    ? "Handbook panduan mengajar rangkaian listrik sederhana untuk siswa tunanetra dan low vision."
     : role === "student"
-    ? "You're one lesson away from your next badge."
+    ? "Kamu tinggal satu pelajaran lagi untuk meraih lencana berikutnya."
     : role === "parent"
-    ? "Here is your child’s learning progress this week."
-    : "Here's how Class 8B is doing today.";
+    ? "Berikut progres belajar anak Anda minggu ini."
+    : "Berikut perkembangan Kelas 8B hari ini.";
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", fontFamily: BODY, color: C.text, position: "relative" }}>

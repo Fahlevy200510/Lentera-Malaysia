@@ -21,6 +21,17 @@ COMPONENT_ROTATION_OFFSET = {
     "lamp": 90
 }
 
+# Nama komponen untuk narasi suara
+COMPONENT_NAME_ID = {
+    "battery": "baterai",
+    "straight_cable": "kabel lurus",
+    "l_cable": "kabel L",
+    "t_cable": "kabel T",
+    "lamp": "lampu",
+    "resistor": "resistor",
+    "switch": "saklar"
+}
+
 class GridState:
     def __init__(self):
         self.cells = {}
@@ -94,7 +105,7 @@ class GridState:
                         events.append({
                             "type": "component_removed",
                             "cell": cell_name,
-                            "narration": f"Component at {cell_name} removed."
+                            "narration": f"Komponen di {cell_name} diangkat."
                         })
                 else:
                     comp = confirmed_state["component"]
@@ -111,7 +122,7 @@ class GridState:
                                 "type": "switch_toggled",
                                 "cell": cell_name,
                                 "state": status,
-                                "narration": f"Switch at {cell_name} turned {status}."
+                                "narration": f"Saklar di {cell_name} {'dinyalakan' if status == 'ON' else 'dimatikan'}."
                             })
                         else:
                             events.append({
@@ -119,7 +130,7 @@ class GridState:
                                 "cell": cell_name,
                                 "component": comp,
                                 "rotation": rot,
-                                "narration": f"Rotation of {comp.replace('_', ' ')} at {cell_name} changed."
+                                "narration": f"Rotasi {COMPONENT_NAME_ID.get(comp, comp)} di {cell_name} berubah."
                             })
                     elif history_state is not None and history_state.get("component") == comp and comp == "switch":
                         # Komponen diangkat lalu diletakkan lagi (Toggling tuas)
@@ -128,7 +139,7 @@ class GridState:
                             "type": "switch_toggled",
                             "cell": cell_name,
                             "state": status,
-                            "narration": f"Switch at {cell_name} turned {status}."
+                            "narration": f"Saklar di {cell_name} {'dinyalakan' if status == 'ON' else 'dimatikan'}."
                         })
                     else:
                         # Komponen baru diletakkan
@@ -137,7 +148,7 @@ class GridState:
                             "cell": cell_name,
                             "component": comp,
                             "rotation": rot,
-                            "narration": f"{comp.replace('_', ' ').capitalize()} placed at {cell_name}."
+                            "narration": f"{COMPONENT_NAME_ID.get(comp, comp).capitalize()} diletakkan di {cell_name}."
                         })
                         
                 # Update history jika tidak kosong (sehingga kita ingat komponen terakhir yang ada di sini)

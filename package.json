@@ -1,0 +1,10 @@
+{
+  "name": "lentera-malaysia-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix Lentera-Portal run dev",
+    "build": "npm --prefix Lentera-Portal run build",
+    "start": "npm --prefix Lentera-Portal run start"
+  }
+}

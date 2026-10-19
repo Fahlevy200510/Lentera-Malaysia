@@ -44,18 +44,18 @@ function App() {
     // Hentikan bicara yang sedang berlangsung agar event baru lebih responsif
     synth.cancel(); 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
+    utterance.lang = 'id-ID';
     utterance.rate = 1.1; // Sedikit lebih cepat
     synth.speak(utterance);
   };
 
   const enableAudio = () => {
     setAudioEnabled(true);
-    speak("Observer system is ready to use.");
+    speak("Sistem pengamat siap digunakan.");
   };
 
   const renderGrid = () => {
-    if (!gridState) return <div className="loading">Waiting for board data...</div>;
+    if (!gridState) return <div className="loading">Menunggu data papan...</div>;
 
     const cols = ['A', 'B', 'C', 'D', 'E'];
     const rows = [1, 2, 3, 4, 5];
@@ -106,40 +106,40 @@ function App() {
       <header>
         <h1>LENTERA <span>Observer</span></h1>
         <div className={`status-badge ${wsConnected ? 'connected' : 'disconnected'}`}>
-          {wsConnected ? 'Connected' : 'Disconnected'}
+          {wsConnected ? 'Terhubung' : 'Terputus'}
         </div>
         {!audioEnabled && (
           <button className="btn-enable-audio" onClick={enableAudio}>
-            Enable Audio
+            Aktifkan Audio
           </button>
         )}
       </header>
 
       <main>
         <div className="left-panel">
-          <h2>Circuit Board</h2>
+          <h2>Papan Rangkaian</h2>
           <div className="board-wrapper">
              {renderGrid()}
           </div>
           
           {circuitStatus && (
             <div className={`circuit-status-card status-${circuitStatus.status}`}>
-              <h3>Circuit Status: {circuitStatus.status.replace('_', ' ').toUpperCase()}</h3>
+              <h3>Status Rangkaian: {circuitStatus.status.replace('_', ' ').toUpperCase()}</h3>
               <p>{circuitStatus.narration}</p>
             </div>
           )}
         </div>
 
         <div className="right-panel">
-          <h2>Activity Log</h2>
+          <h2>Catatan Aktivitas</h2>
           <div className="event-log">
             {events.map((ev, idx) => (
               <div key={idx} className="event-item">
-                <div className="event-time">{new Date().toLocaleTimeString('en-US')}</div>
+                <div className="event-time">{new Date().toLocaleTimeString('id-ID')}</div>
                 <div className="event-text">{ev.narration}</div>
               </div>
             ))}
-            {events.length === 0 && <p className="no-events">No activities yet.</p>}
+            {events.length === 0 && <p className="no-events">Belum ada aktivitas.</p>}
           </div>
         </div>
       </main>

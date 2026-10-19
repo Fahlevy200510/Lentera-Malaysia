@@ -45,7 +45,7 @@ class AudioNarrator:
                     self.q.get_nowait()
                 except queue.Empty:
                     break
-            self.q.put_nowait("Multiple changes detected. " + text)
+            self.q.put_nowait("Beberapa perubahan terdeteksi. " + text)
 
     def _worker(self):
         while self.running:
@@ -56,7 +56,7 @@ class AudioNarrator:
                 print(f"[LOCAL AUDIO] {text}")
                 if self.has_tts:
                     import subprocess
-                    subprocess.run(['espeak', '-s', '150', text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(['espeak', '-v', 'id', '-s', '150', text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     
                 self.q.task_done()
             except queue.Empty:

@@ -15,3 +15,7 @@ dist-ssr/
 # IDEs
 .vscode/
 .idea/
+
+# Scratch & temporary
+scratch_birela/
+.env*.local

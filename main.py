@@ -6,6 +6,7 @@ import json
 import signal
 import sys
 import os
+import base64
 import numpy as np
 
 
@@ -17,6 +18,7 @@ from backend.logic.circuit import evaluate_circuit
 from backend.server.audio import AudioNarrator
 from backend.server.ws_server import WSServer
 from backend.hardware.led_controller import LEDController
+from backend.hardware.buzzer import BuzzerController
 
 # Tangani sinyal dari systemd untuk mencegah hang saat shutdown
 def signal_handler(sig, frame):
@@ -75,8 +77,9 @@ def main():
     mapper = GridMapper("grid_roi.json")
     grid_state = GridState()
     
-    # Inisialisasi Hardware (4 Lampu Fisik di PIN BCM 18, 23, 24, 25)
+    # Inisialisasi Hardware (4 Lampu Fisik di PIN BCM 18, 23, 24, 25 & Buzzer di BCM 17)
     led = LEDController()
+    buzzer = BuzzerController(pin=17)
     
     # 3. Inisialisasi Server Audio & WebSocket
     audio = AudioNarrator()
@@ -89,8 +92,14 @@ def main():
     mjpeg_thread = threading.Thread(target=run_mjpeg_server, daemon=True)
     mjpeg_thread.start()
     
-    # Beri tahu siap (Sesuai PRD 18.2)
-    audio.enqueue_narration("Observer system is ready to use.")
+    # Verifikasi warm-up sensor kamera sebelum membunyikan tanda siap (mencegah false alarm)
+    print("Memverifikasi kesiapan sensor kamera...")
+    warmup_frame = camera.get_frame()
+    if warmup_frame is not None and getattr(warmup_frame, "size", 0) > 0:
+        buzzer.beep(times=2, duration=0.08, interval=0.06)
+        audio.enqueue_narration("Sistem pengamat siap digunakan.")
+    else:
+        print("[WARNING] Kamera belum siap atau menghasilkan frame kosong.")
     
     last_raw_detections = {}
     def handle_calibrate():
@@ -133,6 +142,20 @@ def main():
                 
             global global_frame
             global_frame = frame.copy()
+            
+            # Broadcast frame kamera berkala via WebSocket (ringan kuota ~4 FPS, resolusi teroptimasi)
+            if hasattr(ws, 'clients') and ws.clients and frame_count % 6 == 0:
+                try:
+                    small_frame = cv2.resize(frame, (480, 360))
+                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 55])
+                    if ret:
+                        b64_img = base64.b64encode(jpg_buf).decode('utf-8')
+                        ws.broadcast_sync({
+                            "type": "camera_frame",
+                            "image": f"data:image/jpeg;base64,{b64_img}"
+                        })
+                except Exception:
+                    pass
                 
             # Tampilkan window kamera HANYA jika berjalan di Windows (laptop)
             if os.name == 'nt':
@@ -214,6 +237,8 @@ def main():
         print("Menghentikan sistem...")
     finally:
         audio.stop()
+        led.cleanup()
+        buzzer.cleanup()
         camera.close()
 
 if __name__ == "__main__":

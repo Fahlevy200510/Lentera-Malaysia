@@ -119,9 +119,9 @@ def evaluate_circuit(grid_state_cells):
     lamps = [cell for cell, state in grid_state_cells.items() if state and state["component"] == "lamp"]
     
     if not batteries:
-        return {"status": "no_battery", "narration": "No battery detected."}
+        return {"status": "no_battery", "narration": "Baterai tidak terdeteksi."}
     if not lamps:
-        return {"status": "no_lamp", "narration": "No lamp detected."}
+        return {"status": "no_lamp", "narration": "Lampu tidak terdeteksi."}
         
     graph = build_graph(grid_state_cells)
     
@@ -142,7 +142,7 @@ def evaluate_circuit(grid_state_cells):
             break
             
     if not connected:
-        return {"status": "not_connected", "narration": "Battery and lamp are not connected."}
+        return {"status": "not_connected", "narration": "Baterai dan lampu belum terhubung."}
         
     loops = find_all_loops_through_battery(graph, batteries)
     
@@ -162,7 +162,7 @@ def evaluate_circuit(grid_state_cells):
         return {
             "status": "short_circuit", 
             "cells": short_loops[0],
-            "narration": "Warning, short circuit detected. Battery is connected directly without a load."
+            "narration": "Peringatan, terdeteksi korsleting. Baterai terhubung langsung tanpa beban."
         }
         
     # Ambil loop yang memiliki lampu
@@ -172,7 +172,7 @@ def evaluate_circuit(grid_state_cells):
             loops_with_lamp.append(loop)
             
     if not loops_with_lamp:
-        return {"status": "open_circuit", "narration": "The circuit is open and has not formed a closed loop."}
+        return {"status": "open_circuit", "narration": "Rangkaian masih terbuka dan belum membentuk loop tertutup."}
         
     # Klasifikasi topologi: Seri (1 loop), Paralel (>1 loop)
     graph_type = "series" if len(loops_with_lamp) == 1 else "parallel"
@@ -193,7 +193,7 @@ def evaluate_circuit(grid_state_cells):
             return {
                 "status": "success", 
                 "graph_type": graph_type,
-                "narration": f"Circuit successful, the lamp is on. Topology: {graph_type}."
+                "narration": f"Rangkaian berhasil, lampu menyala. Jenis rangkaian: {'seri' if graph_type == 'series' else 'paralel'}."
             }
             
         if len(off_switches) < min_off_switches:
@@ -206,5 +206,5 @@ def evaluate_circuit(grid_state_cells):
     return {
         "status": "switch_off", 
         "cells": off_switches_in_best_loop,
-        "narration": f"Circuit is not lit. Switch at {cells_str} is OFF."
+        "narration": f"Rangkaian belum menyala. Saklar di {cells_str} dalam posisi mati."
     }

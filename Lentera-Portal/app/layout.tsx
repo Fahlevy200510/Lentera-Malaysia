@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LENTERA — Adaptive Science Lab Companion",
+  title: "LENTERA — Pendamping Lab Sains Adaptif",
   description:
-    "LENTERA: an adaptive science lab companion for blind and visually impaired learners, powered by the Smart Tactile Experiment Board and Context-Aware Learning Engine.",
+    "LENTERA: pendamping lab sains adaptif untuk siswa tunanetra dan low vision, didukung Smart Tactile Experiment Board dan Context-Aware Learning Engine.",
   icons: {
     icon: "/logo-lentera.png",
     shortcut: "/logo-lentera.png",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="id">
       <body>{children}</body>
     </html>
   );
