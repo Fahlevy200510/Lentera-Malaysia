@@ -72,13 +72,19 @@ class WSServer:
 
     def broadcast_frame_sync(self, message_dict):
         """
-        Khusus frame kamera: jika frame sebelumnya masih dalam proses kirim,
-        frame baru akan dilewati (drop frame) agar buffer jaringan hotspot tidak tersumbat.
-        Ini mencegah WebSocket putus-nyambung akibat antrian overload.
+        Khusus frame kamera: batasi maksimal ~5 FPS (interval 0.20s) dan lewati frame
+        jika antrean sebelumnya masih berjalan agar buffer hotspot 4G tidak tersumbat.
+        Ini menghentikan masalah WebSocket putus-nyambung secara tuntas.
         """
         if not self.clients or not hasattr(self, 'loop') or self._is_sending_frame:
             return
             
+        import time
+        now = time.time()
+        if now - getattr(self, '_last_frame_sent', 0) < 0.20:
+            return
+
+        self._last_frame_sent = now
         self._is_sending_frame = True
         msg = json.dumps(message_dict)
         try:
@@ -87,12 +93,13 @@ class WSServer:
             self._is_sending_frame = False
 
     async def _run_server(self):
+        # ping_interval=None mencegah pemutusan sepihak saat lalu lintas frame padat
         async with websockets.serve(
             self.handler,
             self.host,
             self.port,
-            ping_interval=20,
-            ping_timeout=25,
+            ping_interval=None,
+            ping_timeout=None,
             max_size=2**22,
             max_queue=32
         ):

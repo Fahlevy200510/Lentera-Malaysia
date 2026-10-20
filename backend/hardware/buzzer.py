@@ -20,8 +20,8 @@ class BuzzerController:
                 GPIO.output(self.pin, GPIO.LOW)  # Pastikan mati saat inisialisasi
                 self.gpio = GPIO
                 print(f"[BUZZER] Buzzer aktif di pin BCM {self.pin} (Pin Fisik 11).")
-            except ImportError:
-                print("[BUZZER] Peringatan: Pustaka RPi.GPIO tidak ditemukan. Mode simulasi aktif.")
+            except Exception as e:
+                print(f"[BUZZER] Gagal inisialisasi Buzzer: {e}")
                 self.is_pi = False
         else:
             print(f"[BUZZER] Berjalan di simulator ({platform.system()}). Buzzer menggunakan console beep.")
@@ -31,16 +31,22 @@ class BuzzerController:
         Membunyikan nada bip dengan jumlah dan durasi tertentu.
         Default: 2x bip pendek (0.08s) sebagai penanda sistem siap (ready signal).
         """
-        if not self.is_pi:
+        if not self.is_pi or not hasattr(self, 'gpio'):
             print(f"[BUZZER SIM] Beep {times}x (durasi: {duration}s, jeda: {interval}s)")
             return
 
-        for _ in range(times):
-            self.gpio.output(self.pin, self.gpio.HIGH)
-            time.sleep(duration)
-            self.gpio.output(self.pin, self.gpio.LOW)
-            time.sleep(interval)
+        try:
+            for _ in range(times):
+                self.gpio.output(self.pin, self.gpio.HIGH)
+                time.sleep(duration)
+                self.gpio.output(self.pin, self.gpio.LOW)
+                time.sleep(interval)
+        except Exception:
+            pass
 
     def cleanup(self):
-        if self.is_pi:
-            self.gpio.output(self.pin, self.gpio.LOW)
+        if self.is_pi and hasattr(self, 'gpio'):
+            try:
+                self.gpio.output(self.pin, self.gpio.LOW)
+            except Exception:
+                pass

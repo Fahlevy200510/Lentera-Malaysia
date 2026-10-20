@@ -100,6 +100,10 @@ class GridMapper:
         # BL (Bottom-Left): y-x terbesar
         bl = max(centroids, key=lambda c: c[1] - c[0])
         
+        selected = {tl, br, tr, bl}
+        if len(selected) < 4:
+            return False, "Pastikan 4 komponen berada di 4 sudut terpisah (A1, E1, A5, E5)."
+        
         cols = ['A', 'B', 'C', 'D', 'E']
         for r in range(5):
             # Aslinya: Row 1 (r=0) di ATAS kamera, Row 5 (r=4) di BAWAH kamera.

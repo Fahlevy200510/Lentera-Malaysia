@@ -8,7 +8,7 @@ import sys
 import os
 import base64
 import numpy as np
-
+import math
 
 from backend.core.camera import get_camera
 from backend.core.vision import VisionCore, calculate_centroid, get_marker_rotation_state
@@ -101,21 +101,17 @@ def main():
     else:
         print("[WARNING] Kamera belum siap atau menghasilkan frame kosong.")
     
-    last_raw_detections = []
-    recent_marker_cache = {}  # { marker_id: (corners, timestamp) }
+    # Spatial tracker untuk anti-kedip dan memori kalibrasi
+    marker_tracker = []  # [{"id": m_id, "corners": corners, "centroid": (cx, cy), "last_seen": timestamp}]
 
     def handle_calibrate():
         print("[CALIBRATION] Menerima perintah auto-calibrate dari UI...")
-        # Gabungkan deteksi frame sekarang dengan memory 2.0 detik terakhir
-        # agar jika ada salah satu sudut yang sempat kedip, kalibrasi tetap berhasil
-        combined = {m_id: corners for m_id, corners in last_raw_detections}
         now = time.time()
-        for m_id, (corners, ts) in recent_marker_cache.items():
-            if m_id not in combined and (now - ts) < 2.0:
-                combined[m_id] = corners
-                
-        calib_input = [(m_id, corners) for m_id, corners in combined.items()]
-        print(f"[CALIBRATION] Marker terkumpul untuk kalibrasi: {len(calib_input)} marker (ID: {list(combined.keys())})")
+        # Ambil semua marker yang terdeteksi dalam 2.5 detik terakhir
+        valid_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 2.5]
+        print(f"[CALIBRATION] Marker valid terkumpul: {len(valid_markers)}")
+        
+        calib_input = [(m["id"], m["corners"]) for m in valid_markers]
         success, msg = mapper.auto_calibrate(calib_input)
         print(f"[CALIBRATION] {msg}")
         audio.enqueue_narration(msg)
@@ -134,19 +130,42 @@ def main():
             
             # b. Deteksi Marker
             raw_detections = vision.detect_markers(frame)
-            last_raw_detections = raw_detections
-            
             now = time.time()
-            for m_id, corners in raw_detections:
-                recent_marker_cache[m_id] = (corners, now)
             
-            # (Opsional Debug) Gambar deteksi ArUco ke frame
+            # Update spatial tracker (mengeliminasi kedip & mendukung ID duplikat)
             for m_id, corners in raw_detections:
-                cv2.polylines(frame, [np.int32(corners)], True, (0, 255, 0), 2)
                 cx, cy = calculate_centroid(corners)
-                cv2.putText(frame, f"ID: {m_id}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                matched = False
+                for tracker in marker_tracker:
+                    tcx, tcy = tracker["centroid"]
+                    if math.hypot(cx - tcx, cy - tcy) < 30:
+                        tracker["id"] = m_id
+                        tracker["corners"] = corners
+                        tracker["centroid"] = (cx, cy)
+                        tracker["last_seen"] = now
+                        matched = True
+                        break
+                if not matched:
+                    marker_tracker.append({
+                        "id": m_id,
+                        "corners": corners,
+                        "centroid": (cx, cy),
+                        "last_seen": now
+                    })
+                    
+            # Bersihkan tracker yang sudah tidak aktif > 2.5 detik
+            marker_tracker = [m for m in marker_tracker if (now - m["last_seen"]) < 2.5]
+            
+            # Marker yang aktif saat ini (toleransi dropout 0.5s agar tidak kedip)
+            active_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 0.5]
+            
+            # Gambar deteksi ArUco ke frame (anti-kedip)
+            for m in active_markers:
+                cv2.polylines(frame, [np.int32(m["corners"])], True, (0, 255, 0), 2)
+                cx, cy = m["centroid"]
+                cv2.putText(frame, f"ID: {m['id']}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
-            # (Opsional Debug) Gambar Grid 5x5 ke frame
+            # Gambar Grid 5x5 ke frame
             if hasattr(mapper, 'grid_rois') and mapper.grid_rois:
                 for cell_name, roi in mapper.grid_rois.items():
                     gcx, gcy = int(roi["centroid"][0]), int(roi["centroid"][1])
@@ -162,8 +181,8 @@ def main():
             # Broadcast frame kamera via WebSocket (terproteksi anti-clogging & anti-disconnect)
             if hasattr(ws, 'clients') and ws.clients and frame_count % 3 == 0:
                 try:
-                    small_frame = cv2.resize(frame, (440, 330))
-                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 52])
+                    small_frame = cv2.resize(frame, (400, 300))
+                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 48])
                     if ret:
                         b64_img = base64.b64encode(jpg_buf).decode('utf-8')
                         ws.broadcast_frame_sync({
@@ -182,27 +201,27 @@ def main():
             cell_observations = {}
             if not mapper.grid_rois:
                 # TEST MODE: Jika belum dikalibrasi, petakan setiap marker ke baris tengah berurutan dari kiri ke kanan.
-                sorted_detections = sorted(raw_detections, key=lambda d: calculate_centroid(d[1])[0])
+                sorted_detections = sorted(active_markers, key=lambda m: m["centroid"][0])
                 cols = ['A', 'B', 'C', 'D', 'E']
-                for idx, (m_id, corners) in enumerate(sorted_detections):
+                for idx, m in enumerate(sorted_detections):
                     if idx >= 5: break
-                    undistorted_corners = vision.undistort_corners(corners)
+                    undistorted_corners = vision.undistort_corners(m["corners"])
                     rot = get_marker_rotation_state(undistorted_corners, mapper.H)
                     cell_name = f"{cols[idx]}3"
                     cell_observations[cell_name] = {
-                        "id": m_id,
+                        "id": m["id"],
                         "raw_angle": rot
                     }
             else:
-                for m_id, corners in raw_detections:
-                    undistorted_corners = vision.undistort_corners(corners)
+                for m in active_markers:
+                    undistorted_corners = vision.undistort_corners(m["corners"])
                     cx, cy = calculate_centroid(undistorted_corners)
                     
                     cell_name = mapper.map_to_cell(cx, cy)
                     if cell_name:
                         rot = get_marker_rotation_state(undistorted_corners, mapper.H)
                         cell_observations[cell_name] = {
-                            "id": m_id,
+                            "id": m["id"],
                             "raw_angle": rot
                         }
                     
@@ -253,9 +272,18 @@ def main():
         print("Menghentikan sistem...")
     finally:
         audio.stop()
-        led.cleanup()
-        buzzer.cleanup()
-        camera.close()
+        try:
+            buzzer.cleanup()
+        except Exception:
+            pass
+        try:
+            led.cleanup()
+        except Exception:
+            pass
+        try:
+            camera.close()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     main()

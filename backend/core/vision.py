@@ -7,19 +7,16 @@ class VisionCore:
         # Setup ArUco Detector
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_params = cv2.aruco.DetectorParameters()
-        self.aruco_params = cv2.aruco.DetectorParameters()
-        # Optimasi Khusus Lensa Wide-Angle/Fisheye:
-        # Gunakan CORNER_REFINE_CONTOUR (jauh lebih toleran terhadap lengkungan di sudut bingkai)
-        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_CONTOUR
-        self.aruco_params.minDistanceToBorder = 1
-        self.aruco_params.polygonalApproxAccuracyRate = 0.08
-        self.aruco_params.maxErroneousBitsInBorderRate = 0.40
-        self.aruco_params.errorCorrectionRate = 0.8
+        # Parameter stabil & akurat (bebas kedip) untuk Raspberry Pi 3B
+        self.aruco_params.polygonalApproxAccuracyRate = 0.03
         self.aruco_params.adaptiveThreshWinSizeMin = 3
         self.aruco_params.adaptiveThreshWinSizeMax = 23
-        self.aruco_params.adaptiveThreshWinSizeStep = 8
-        self.aruco_params.minMarkerPerimeterRate = 0.02
-        self.aruco_params.maxMarkerPerimeterRate = 4.0
+        self.aruco_params.adaptiveThreshWinSizeStep = 10
+        self.aruco_params.minDistanceToBorder = 2
+        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+        self.aruco_params.cornerRefinementWinSize = 3
+        self.aruco_params.cornerRefinementMaxIterations = 15
+        self.aruco_params.cornerRefinementMinAccuracy = 0.1
         
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -35,41 +32,25 @@ class VisionCore:
 
     def detect_markers(self, frame):
         """
-        Deteksi marker ArUco dengan Dual-Pass (Grayscale + CLAHE)
-        agar marker di sudut cembung dan area silau tetap tertangkap.
-        Mendukung multiple marker dengan ID yang sama (misal kabel atau sudut).
+        Deteksi marker ArUco yang cepat dan stabil.
+        Mendukung multiple marker dengan ID yang sama.
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        
-        # Pass 1: Deteksi standar grayscale
         corners, ids, _ = self.detector.detectMarkers(gray)
         
         results = []
-        centroids = []
         if ids is not None:
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
-                c = corners[i][0]
-                results.append((int(flat_ids[i]), c))
-                centroids.append(calculate_centroid(c))
-                
-        # Pass 2: Jika marker < 4, bantu dengan CLAHE
-        if len(results) < 4:
+                results.append((int(flat_ids[i]), corners[i][0]))
+        else:
+            # Fallback ke CLAHE hanya jika sama sekali tidak ada marker yang terdeteksi
             enhanced = self.clahe.apply(gray)
             e_corners, e_ids, _ = self.detector.detectMarkers(enhanced)
             if e_ids is not None:
                 e_flat_ids = np.ravel(e_ids)
                 for i in range(len(e_flat_ids)):
-                    ec = e_corners[i][0]
-                    ec_center = calculate_centroid(ec)
-                    # Hanya tambahkan jika posisi centroid belum terdeteksi di Pass 1
-                    is_duplicate_pos = any(
-                        math.hypot(ec_center[0] - cx, ec_center[1] - cy) < 15
-                        for cx, cy in centroids
-                    )
-                    if not is_duplicate_pos:
-                        results.append((int(e_flat_ids[i]), ec))
-                        centroids.append(ec_center)
+                    results.append((int(e_flat_ids[i]), e_corners[i][0]))
         
         return results
 
