@@ -182,26 +182,51 @@ export default function ArUcoDetector() {
   }, []);
 
   useEffect(() => {
-    // 1. Tentukan endpoint awal cerdas (Default otomatis ke tunnel Ngrok):
-    const DEFAULT_TUNNEL =
-      process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
-    let initialEndpoint = DEFAULT_TUNNEL;
+    let cancelled = false;
 
-    try {
-      const saved = localStorage.getItem("lentera_edge_endpoint");
-      // Pakai saved jika user pernah ubah secara manual (kecuali jika saved adalah placeholder lama)
-      if (saved && saved !== "edge.lentera.id") {
-        initialEndpoint = saved;
+    async function autoDiscoverAndConnect() {
+      const DEFAULT_TUNNEL =
+        process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
+      let targetEndpoint = DEFAULT_TUNNEL;
+
+      // 1. Cek auto-discovery dari Cloudflare Quick Tunnel relay
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch("https://ntfy.sh/lentera_malaysia_edge_tunnel/raw?poll=1", {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const text = (await res.text()).trim();
+          if (text.includes("trycloudflare.com")) {
+            targetEndpoint = text.replace(/^https?:\/\//, "").replace(/\/$/, "");
+            console.log("[Auto-Sync] Menemukan Cloudflare Quick Tunnel aktif:", targetEndpoint);
+          }
+        }
+      } catch {
+        // Gunakan targetEndpoint default jika relay belum ada/timeout
       }
-    } catch {
-      initialEndpoint = DEFAULT_TUNNEL;
+
+      // 2. Jika user pernah menyimpan endpoint kustom sendiri
+      try {
+        const saved = localStorage.getItem("lentera_edge_endpoint");
+        if (saved && saved !== "edge.lentera.id" && !targetEndpoint.includes("trycloudflare.com")) {
+          targetEndpoint = saved;
+        }
+      } catch {}
+
+      if (!cancelled) {
+        setEndpoint(targetEndpoint);
+        setCustomInput(targetEndpoint);
+        connectWebSocket(targetEndpoint);
+      }
     }
 
-    setEndpoint(initialEndpoint);
-    setCustomInput(initialEndpoint);
-    connectWebSocket(initialEndpoint);
+    autoDiscoverAndConnect();
 
     return () => {
+      cancelled = true;
       manualDisconnectRef.current = true;
       wsRef.current?.close();
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
