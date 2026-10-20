@@ -28,40 +28,27 @@ const wiringPoints = [
 export default function ArucoPage() {
   const router = useRouter();
   const [diagramMode, setDiagramMode] = useState("live");
-  const [session, setSession] = useState<{ name: string; role: string } | null>(null);
-  const [authed, setAuthed] = useState(false);
+  const [session, setSession] = useState<{ name: string; role: string }>({
+    name: "Pengguna LENTERA",
+    role: "siswa",
+  });
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("lentera-session");
-      if (!saved) {
-        router.replace("/login?redirect=/aruco");
-        return;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.name && parsed?.role) {
+          setSession(parsed);
+        }
       }
-      const parsed = JSON.parse(saved);
-      if (!parsed?.name || !parsed?.role) {
-        router.replace("/login?redirect=/aruco");
-        return;
-      }
-      setSession(parsed);
-      setAuthed(true);
-    } catch {
-      router.replace("/login?redirect=/aruco");
-    }
-  }, [router]);
+    } catch {}
+  }, []);
 
   const logout = () => {
     localStorage.removeItem("lentera-session");
     router.replace("/login");
   };
-
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-cs-bg flex items-center justify-center font-heading text-cs-text font-bold">
-        Memverifikasi akun LENTERA...
-      </div>
-    );
-  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-cs-bg font-body text-cs-text">
