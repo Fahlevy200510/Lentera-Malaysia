@@ -7,12 +7,15 @@ class VisionCore:
         # Setup ArUco Detector
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_params = cv2.aruco.DetectorParameters()
-        # Parameter stabil & akurat (bebas kedip) untuk Raspberry Pi 3B
+        # Parameter stabil & akurat (bebas kedip dan anti-ghosting) untuk Raspberry Pi 3B
         self.aruco_params.polygonalApproxAccuracyRate = 0.03
         self.aruco_params.adaptiveThreshWinSizeMin = 3
         self.aruco_params.adaptiveThreshWinSizeMax = 23
         self.aruco_params.adaptiveThreshWinSizeStep = 10
         self.aruco_params.minDistanceToBorder = 2
+        self.aruco_params.errorCorrectionRate = 0.5  # Cegah halusinasi bit pada bayangan/tekstur
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.25  # Wajibkan border hitam yang bersih
+        self.aruco_params.minMarkerPerimeterRate = 0.04  # Tolak bintik noise kecil
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
         self.aruco_params.cornerRefinementWinSize = 3
         self.aruco_params.cornerRefinementMaxIterations = 15
@@ -20,6 +23,7 @@ class VisionCore:
         
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        self.valid_ids = set(range(1, 10))  # Komponen resmi Lentera ID 1 s.d. 7 (buffer aman s.d. 9)
         
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)
@@ -33,7 +37,7 @@ class VisionCore:
     def detect_markers(self, frame):
         """
         Deteksi marker ArUco yang cepat dan stabil.
-        Mendukung multiple marker dengan ID yang sama.
+        Menyaring ID acak (> 9) agar bayangan atau pantulan akrilik tidak memunculkan ghost marker.
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, ids, _ = self.detector.detectMarkers(gray)
@@ -42,7 +46,9 @@ class VisionCore:
         if ids is not None:
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
-                results.append((int(flat_ids[i]), corners[i][0]))
+                m_id = int(flat_ids[i])
+                if m_id in self.valid_ids:
+                    results.append((m_id, corners[i][0]))
         else:
             # Fallback ke CLAHE hanya jika sama sekali tidak ada marker yang terdeteksi
             enhanced = self.clahe.apply(gray)
@@ -50,7 +56,9 @@ class VisionCore:
             if e_ids is not None:
                 e_flat_ids = np.ravel(e_ids)
                 for i in range(len(e_flat_ids)):
-                    results.append((int(e_flat_ids[i]), e_corners[i][0]))
+                    m_id = int(e_flat_ids[i])
+                    if m_id in self.valid_ids:
+                        results.append((m_id, e_corners[i][0]))
         
         return results
 
