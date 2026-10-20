@@ -143,11 +143,11 @@ def main():
             global global_frame
             global_frame = frame.copy()
             
-            # Broadcast frame kamera berkala via WebSocket (ringan kuota ~4 FPS, resolusi teroptimasi)
-            if hasattr(ws, 'clients') and ws.clients and frame_count % 6 == 0:
+            # Broadcast frame kamera via WebSocket (12 FPS mulus, Cloudflare Unlimited)
+            if hasattr(ws, 'clients') and ws.clients and frame_count % 2 == 0:
                 try:
                     small_frame = cv2.resize(frame, (480, 360))
-                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 55])
+                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 65])
                     if ret:
                         b64_img = base64.b64encode(jpg_buf).decode('utf-8')
                         ws.broadcast_sync({
