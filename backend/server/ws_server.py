@@ -18,9 +18,12 @@ class WSServer:
             async for message in websocket:
                 try:
                     data = json.loads(message)
-                    if data.get("type") == "command" and data.get("action") == "calibrate":
-                        if hasattr(self, 'on_calibrate'):
+                    if data.get("type") == "command":
+                        action = data.get("action")
+                        if action == "calibrate" and hasattr(self, 'on_calibrate'):
                             self.on_calibrate()
+                        elif action == "shutdown" and hasattr(self, 'on_shutdown'):
+                            self.on_shutdown()
                 except Exception as e:
                     print(f"[WS] Error parsing message: {e}")
         except websockets.exceptions.ConnectionClosed:

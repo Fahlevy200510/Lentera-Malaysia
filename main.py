@@ -117,6 +117,32 @@ def main():
         audio.enqueue_narration(msg)
         
     ws.on_calibrate = handle_calibrate
+
+    def handle_shutdown():
+        print("[SYSTEM] Menerima sinyal aman untuk mematikan perangkat dari Web...")
+        audio.enqueue_narration("Alat LENTERA sedang dimatikan secara aman. Silakan tunggu lampu indikator padam sebelum mencabut kabel daya.")
+        ws.broadcast_sync({
+            "type": "system_event",
+            "event": "shutting_down",
+            "message": "Sistem sedang dimatikan secara aman."
+        })
+        
+        def execute_shutdown():
+            time.sleep(3.5)  # Beri waktu audio selesai diucapkan dan pesan WS terkirim
+            try:
+                buzzer.beep(times=3, duration=0.1, interval=0.1)
+            except Exception:
+                pass
+            print("[SYSTEM] Mengeksekusi sudo shutdown -h now...")
+            if os.name != 'nt':
+                os.system("sudo shutdown -h now")
+            else:
+                print("[SIMULATOR] Perintah shutdown disimulasikan.")
+
+        shutdown_thread = threading.Thread(target=execute_shutdown, daemon=True)
+        shutdown_thread.start()
+
+    ws.on_shutdown = handle_shutdown
     
     print("Memasuki loop utama...")
     prev_circuit_status = None
