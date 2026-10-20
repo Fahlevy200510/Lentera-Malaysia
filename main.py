@@ -133,9 +133,9 @@ def main():
                 buzzer.beep(times=3, duration=0.1, interval=0.1)
             except Exception:
                 pass
-            print("[SYSTEM] Mengeksekusi sudo shutdown -h now...")
+            print("[SYSTEM] Mengeksekusi shutdown aman...")
             if os.name != 'nt':
-                os.system("sudo shutdown -h now")
+                os.system("sudo poweroff || sudo shutdown -h now || systemctl poweroff")
             else:
                 print("[SIMULATOR] Perintah shutdown disimulasikan.")
 
