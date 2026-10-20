@@ -1,6 +1,6 @@
-PRESENCE_CONFIRM_FRAMES = 5   # ~200ms pada 22 FPS - penempatan
-REMOVAL_CONFIRM_FRAMES = 5    # ~200ms pada 22 FPS - pelepasan
-ROTATION_DEADZONE_DEG = 20    # +/- 20 derajat dari batas kuadran diabaikan
+PRESENCE_CONFIRM_FRAMES = 4   # ~160ms pada 24 FPS - responsif saat ditaruh
+REMOVAL_CONFIRM_FRAMES = 12   # ~500ms pada 24 FPS - anti-kedip (tahan jika 1-3 frame hilang sesaat)
+ROTATION_DEADZONE_DEG = 22    # +/- 22 derajat hysteresis agar sudut rotasi tidak goyang
 
 def discretize_rotation(raw_angle_deg, previous_bucket):
     """

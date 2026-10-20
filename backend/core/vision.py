@@ -7,7 +7,20 @@ class VisionCore:
         # Setup ArUco Detector
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_params = cv2.aruco.DetectorParameters()
+        # Optimasi Parameter ArUco: Subpixel refinement & adaptive thresholding
+        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+        self.aruco_params.cornerRefinementWinSize = 5
+        self.aruco_params.cornerRefinementMaxIterations = 30
+        self.aruco_params.cornerRefinementMinAccuracy = 0.05
+        self.aruco_params.adaptiveThreshWinSizeMin = 3
+        self.aruco_params.adaptiveThreshWinSizeMax = 23
+        self.aruco_params.adaptiveThreshWinSizeStep = 4
+        self.aruco_params.minMarkerPerimeterRate = 0.02
+        self.aruco_params.maxMarkerPerimeterRate = 4.0
+        self.aruco_params.polygonalApproxAccuracyRate = 0.05
+        
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
+        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)
@@ -20,12 +33,15 @@ class VisionCore:
 
     def detect_markers(self, frame):
         """
-        Mendeteksi marker ArUco. Mengembalikan dictionary {id: corners}.
-        Sesuai PRD (Strategi A), ini dipanggil di frame mentah.
+        Mendeteksi marker ArUco dengan CLAHE contrast enhancement
+        agar tahan terhadap silau lampu dan bayangan tangan.
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        enhanced = self.clahe.apply(gray)
         
-        corners, ids, rejected = self.detector.detectMarkers(gray)
+        corners, ids, rejected = self.detector.detectMarkers(enhanced)
+        if ids is None or len(ids) == 0:
+            corners, ids, rejected = self.detector.detectMarkers(gray)
         
         results = []
         if ids is not None:
