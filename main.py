@@ -101,10 +101,22 @@ def main():
     else:
         print("[WARNING] Kamera belum siap atau menghasilkan frame kosong.")
     
-    last_raw_detections = {}
+    last_raw_detections = []
+    recent_marker_cache = {}  # { marker_id: (corners, timestamp) }
+
     def handle_calibrate():
         print("[CALIBRATION] Menerima perintah auto-calibrate dari UI...")
-        success, msg = mapper.auto_calibrate(last_raw_detections)
+        # Gabungkan deteksi frame sekarang dengan memory 2.0 detik terakhir
+        # agar jika ada salah satu sudut yang sempat kedip, kalibrasi tetap berhasil
+        combined = {m_id: corners for m_id, corners in last_raw_detections}
+        now = time.time()
+        for m_id, (corners, ts) in recent_marker_cache.items():
+            if m_id not in combined and (now - ts) < 2.0:
+                combined[m_id] = corners
+                
+        calib_input = [(m_id, corners) for m_id, corners in combined.items()]
+        print(f"[CALIBRATION] Marker terkumpul untuk kalibrasi: {len(calib_input)} marker (ID: {list(combined.keys())})")
+        success, msg = mapper.auto_calibrate(calib_input)
         print(f"[CALIBRATION] {msg}")
         audio.enqueue_narration(msg)
         
@@ -123,6 +135,10 @@ def main():
             # b. Deteksi Marker
             raw_detections = vision.detect_markers(frame)
             last_raw_detections = raw_detections
+            
+            now = time.time()
+            for m_id, corners in raw_detections:
+                recent_marker_cache[m_id] = (corners, now)
             
             # (Opsional Debug) Gambar deteksi ArUco ke frame
             for m_id, corners in raw_detections:

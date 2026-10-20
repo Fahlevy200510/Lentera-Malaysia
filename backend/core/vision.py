@@ -7,17 +7,19 @@ class VisionCore:
         # Setup ArUco Detector
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_params = cv2.aruco.DetectorParameters()
-        # Optimasi Parameter ArUco: Subpixel refinement & adaptive thresholding
-        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
-        self.aruco_params.cornerRefinementWinSize = 5
-        self.aruco_params.cornerRefinementMaxIterations = 30
-        self.aruco_params.cornerRefinementMinAccuracy = 0.05
+        self.aruco_params = cv2.aruco.DetectorParameters()
+        # Optimasi Khusus Lensa Wide-Angle/Fisheye:
+        # Gunakan CORNER_REFINE_CONTOUR (jauh lebih toleran terhadap lengkungan di sudut bingkai)
+        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_CONTOUR
+        self.aruco_params.minDistanceToBorder = 1
+        self.aruco_params.polygonalApproxAccuracyRate = 0.08
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.40
+        self.aruco_params.errorCorrectionRate = 0.8
         self.aruco_params.adaptiveThreshWinSizeMin = 3
         self.aruco_params.adaptiveThreshWinSizeMax = 23
-        self.aruco_params.adaptiveThreshWinSizeStep = 4
+        self.aruco_params.adaptiveThreshWinSizeStep = 8
         self.aruco_params.minMarkerPerimeterRate = 0.02
         self.aruco_params.maxMarkerPerimeterRate = 4.0
-        self.aruco_params.polygonalApproxAccuracyRate = 0.05
         
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -33,22 +35,32 @@ class VisionCore:
 
     def detect_markers(self, frame):
         """
-        Mendeteksi marker ArUco dengan CLAHE contrast enhancement
-        agar tahan terhadap silau lampu dan bayangan tangan.
+        Deteksi marker ArUco dengan Dual-Pass (Grayscale + CLAHE)
+        agar marker di sudut cembung dan area silau tetap tertangkap.
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        enhanced = self.clahe.apply(gray)
         
-        corners, ids, rejected = self.detector.detectMarkers(enhanced)
-        if ids is None or len(ids) == 0:
-            corners, ids, rejected = self.detector.detectMarkers(gray)
+        # Pass 1: Deteksi standar grayscale
+        corners, ids, _ = self.detector.detectMarkers(gray)
         
-        results = []
+        found_dict = {}
         if ids is not None:
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
-                results.append((int(flat_ids[i]), corners[i][0]))
-        return results
+                found_dict[int(flat_ids[i])] = corners[i][0]
+                
+        # Pass 2: Jika ada marker yang belum tertangkap (< 4), bantu dengan CLAHE
+        if len(found_dict) < 4:
+            enhanced = self.clahe.apply(gray)
+            e_corners, e_ids, _ = self.detector.detectMarkers(enhanced)
+            if e_ids is not None:
+                e_flat_ids = np.ravel(e_ids)
+                for i in range(len(e_flat_ids)):
+                    m_id = int(e_flat_ids[i])
+                    if m_id not in found_dict:
+                        found_dict[m_id] = e_corners[i][0]
+        
+        return list(found_dict.items())
 
     def undistort_corners(self, corners):
         """
