@@ -198,9 +198,11 @@ export default function ArUcoDetector() {
         });
         clearTimeout(timeoutId);
         if (res.ok) {
-          const text = (await res.text()).trim();
-          if (text.includes("trycloudflare.com")) {
-            targetEndpoint = text.replace(/^https?:\/\//, "").replace(/\/$/, "");
+          const raw = await res.text();
+          const lines = raw.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          const latest = lines[lines.length - 1];
+          if (latest && latest.includes("trycloudflare.com")) {
+            targetEndpoint = latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
             console.log("[Auto-Sync] Menemukan Cloudflare Quick Tunnel aktif:", targetEndpoint);
           }
         }
