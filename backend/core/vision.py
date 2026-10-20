@@ -37,30 +37,41 @@ class VisionCore:
         """
         Deteksi marker ArUco dengan Dual-Pass (Grayscale + CLAHE)
         agar marker di sudut cembung dan area silau tetap tertangkap.
+        Mendukung multiple marker dengan ID yang sama (misal kabel atau sudut).
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
         # Pass 1: Deteksi standar grayscale
         corners, ids, _ = self.detector.detectMarkers(gray)
         
-        found_dict = {}
+        results = []
+        centroids = []
         if ids is not None:
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
-                found_dict[int(flat_ids[i])] = corners[i][0]
+                c = corners[i][0]
+                results.append((int(flat_ids[i]), c))
+                centroids.append(calculate_centroid(c))
                 
-        # Pass 2: Jika ada marker yang belum tertangkap (< 4), bantu dengan CLAHE
-        if len(found_dict) < 4:
+        # Pass 2: Jika marker < 4, bantu dengan CLAHE
+        if len(results) < 4:
             enhanced = self.clahe.apply(gray)
             e_corners, e_ids, _ = self.detector.detectMarkers(enhanced)
             if e_ids is not None:
                 e_flat_ids = np.ravel(e_ids)
                 for i in range(len(e_flat_ids)):
-                    m_id = int(e_flat_ids[i])
-                    if m_id not in found_dict:
-                        found_dict[m_id] = e_corners[i][0]
+                    ec = e_corners[i][0]
+                    ec_center = calculate_centroid(ec)
+                    # Hanya tambahkan jika posisi centroid belum terdeteksi di Pass 1
+                    is_duplicate_pos = any(
+                        math.hypot(ec_center[0] - cx, ec_center[1] - cy) < 15
+                        for cx, cy in centroids
+                    )
+                    if not is_duplicate_pos:
+                        results.append((int(e_flat_ids[i]), ec))
+                        centroids.append(ec_center)
         
-        return list(found_dict.items())
+        return results
 
     def undistort_corners(self, corners):
         """
