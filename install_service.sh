@@ -34,13 +34,35 @@ SyslogIdentifier=lentera
 WantedBy=multi-user.target
 EOF
 
-# Reload systemd, enable, dan start service
+# Buat file service tunnel auto-sync
+TUNNEL_SERVICE_FILE="/etc/systemd/system/lentera-tunnel.service"
+sudo bash -c "cat > $TUNNEL_SERVICE_FILE" << 'EOF'
+[Unit]
+Description=LENTERA Cloudflare Auto-Sync Tunnel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pilentera
+WorkingDirectory=/home/pilentera/Lentera-Malaysia
+ExecStart=/home/pilentera/Lentera-Malaysia/start_tunnel_autosync.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd, enable, dan start kedua service
 sudo systemctl daemon-reload
-sudo systemctl enable lentera.service
-sudo systemctl restart lentera.service
+sudo systemctl enable lentera.service lentera-tunnel.service
+sudo systemctl restart lentera.service lentera-tunnel.service
 
 echo ""
-echo "Selesai! LENTERA MVP sekarang akan berjalan otomatis setiap kali Raspberry Pi dinyalakan."
-echo "Untuk melihat log langsung (jika ada error), gunakan perintah:"
-echo "sudo journalctl -u lentera -f"
-echo "=========================================="
+echo "=========================================================="
+echo "Selesai! LENTERA MVP & Tunnel sekarang otomatis berjalan"
+echo "setiap kali Raspberry Pi dinyalakan."
+echo "Untuk melihat log tunnel: sudo journalctl -u lentera-tunnel -f"
+echo "Untuk melihat log kamera: sudo journalctl -u lentera -f"
+echo "=========================================================="
