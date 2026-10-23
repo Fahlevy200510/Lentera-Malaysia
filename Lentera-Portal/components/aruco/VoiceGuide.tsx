@@ -154,16 +154,16 @@ const ADAPTIVE_SERIES_STEPS: StepDef[] = [
     hint: "Letakkan balok baterai di mana pun kamu suka.",
   },
   {
-    instruction: "Letakkan dua Lampu di mana saja",
-    voice: "Bagus! Sekarang letakkan dua lampu di tempat lain di papan.",
-    validator: (cells) => Object.values(cells).filter((c: any) => c && c.component === "lamp").length >= 2,
-    hint: "Letakkan dua lampu di mana saja.",
+    instruction: "Letakkan Lampu di mana saja",
+    voice: "Bagus! Sekarang letakkan balok lampu di posisi lain di papan.",
+    validator: (cells) => Object.values(cells).filter((c: any) => c && c.component === "lamp").length >= 1,
+    hint: "Letakkan balok lampu di mana saja.",
   },
   {
-    instruction: "Sambungkan dalam satu jalur",
-    voice: "Sekarang, gunakan kabel untuk menyambungkan baterai dan kedua lampu sehingga membentuk satu loop yang tidak bercabang. Hanya boleh ada satu jalur untuk listrik!",
+    instruction: "Sambungkan dalam satu jalur seri",
+    voice: "Sekarang, gunakan kabel dan saklar untuk menyambungkan baterai dan lampu sehingga membentuk satu lintasan loop tertutup. Pastikan tidak ada jalur yang bercabang!",
     validator: (cells, status, graphType) => status === "success" && graphType === "series",
-    hint: "Sambungkan tanpa ada jalur yang bercabang.",
+    hint: "Sambungkan baterai ke lampu hingga membentuk loop tertutup.",
   },
 ];
 

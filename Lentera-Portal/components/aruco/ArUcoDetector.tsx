@@ -34,7 +34,7 @@ const STATUS_LABEL: Record<DetectionData["status"], string> = {
  * - Mendukung Cloudflare Tunnel HTTPS/WSS (misal: edge.lentera.id)
  * - Mendukung pengujian lokal (localhost atau IP lokal)
  */
-function resolveEndpoints(target: string) {
+export function resolveEndpoints(target: string) {
   const clean = (target || "").trim();
   const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
 

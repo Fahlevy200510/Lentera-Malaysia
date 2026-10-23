@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight, ArrowUpRight, CircuitBoard, LayoutDashboard,
   Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck,
 } from "lucide-react";
+import { resolveEndpoints } from "@/components/aruco/ArUcoDetector";
 
 type Destination = {
   href: string;
@@ -41,12 +43,14 @@ const destinations: Destination[] = [
 ];
 
 export default function PortalHome() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [session, setSession] = useState<{ name: string; role: string } | null>(null);
   const [ready, setReady] = useState(false);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const hasSpokenOnFirstClickRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -113,7 +117,7 @@ export default function PortalHome() {
       return;
     }
     const utterance = new SpeechSynthesisUtterance(
-      "LENTERA adalah pendamping lab sains adaptif untuk siswa tunanetra dan low vision. Sentuh, pahami, belajar mandiri. Silakan masuk terlebih dahulu untuk mengakses LENTERA Learn dan deteksi blok di LENTERA Lab."
+      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan blok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan blok baterai di atas papan fisik di depan Anda. Selamat bereksplorasi!"
     );
     utterance.lang = "id-ID";
     utterance.rate = 0.94;
@@ -122,6 +126,60 @@ export default function PortalHome() {
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };
+
+  // Autoplay intro pada klik pertama di area mana pun di landing page
+  useEffect(() => {
+    const handleFirstClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("a, button")) {
+        return; // Jangan potong aksi jika yang diklik langsung link navigasi
+      }
+      if (!hasSpokenOnFirstClickRef.current) {
+        hasSpokenOnFirstClickRef.current = true;
+        readIntro();
+      }
+    };
+    window.addEventListener("click", handleFirstClick, { once: true });
+    return () => window.removeEventListener("click", handleFirstClick);
+  }, []);
+
+  // Background WebSocket: Auto-redirect ke /aruco (LENTERA Lab) jika ada balok Baterai diletakkan di papan
+  useEffect(() => {
+    let ws: WebSocket | null = null;
+    let redirected = false;
+
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("lentera_endpoint") : null;
+      const host = saved || (typeof window !== "undefined" ? window.location.hostname || "localhost" : "localhost");
+      const { wsUrl } = resolveEndpoints(host);
+
+      ws = new WebSocket(wsUrl);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "grid_state" && data.cells && !redirected) {
+            const placed = Object.values(data.cells).filter(Boolean);
+            const hasBattery = placed.some((c: any) => c?.component === "battery");
+            if (hasBattery) {
+              redirected = true;
+              if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                window.speechSynthesis.cancel();
+                const notify = new SpeechSynthesisUtterance("Baterai terdeteksi! Membuka LENTERA Lab.");
+                notify.lang = "id-ID";
+                window.speechSynthesis.speak(notify);
+              }
+              router.push("/aruco");
+            }
+          }
+        } catch {}
+      };
+    } catch {}
+
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [router]);
+
 
   const roleLabel = session?.role === "student" ? "Siswa" : session?.role === "teacher" ? "Guru" : "Orang Tua";
 
@@ -224,17 +282,23 @@ export default function PortalHome() {
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    href="/login"
-                    className="portal-primary-btn text-base py-3.5 px-7 shadow-xl shadow-violet-500/30"
+                    href="/aruco"
+                    className="portal-primary-btn text-base py-3.5 px-7 shadow-xl shadow-cyan-500/25 bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500"
                   >
-                    Masuk ke LENTERA <ArrowRight className="h-4 w-4" />
+                    Buka LENTERA Lab <ScanEye className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="portal-ghost-btn text-base py-3.5 px-6 border border-white/20 hover:border-violet-400"
+                  >
+                    Masuk Akun <ArrowRight className="h-4 w-4" />
                   </Link>
                   <button onClick={readIntro} className="portal-secondary-btn text-base py-3.5 px-6">
-                    <Volume2 className="h-4 w-4" /> Dengarkan Panduan
+                    <Volume2 className="h-4 w-4" /> {speaking ? "Matikan Suara" : "Dengarkan Panduan"}
                   </button>
                 </div>
-                <p className="text-xs text-violet-200/65 font-medium">
-                  💡 Silakan masuk sesuai peran Anda (Siswa, Guru, Orang Tua) untuk mengakses materi dan deteksi rangkaian.
+                <p className="text-xs text-cyan-200/80 font-medium flex items-center gap-1.5">
+                  ✨ <span>Akses Taktil Mandiri: Letakkan balok Baterai di atas papan fisik kapan saja untuk langsung membuka Lab.</span>
                 </p>
               </div>
             )}
