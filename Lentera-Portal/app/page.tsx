@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -52,6 +52,7 @@ export default function PortalHome() {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const hasSpokenOnFirstClickRef = useRef(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     try {
@@ -110,39 +111,98 @@ export default function PortalHome() {
     if (!open) menuBtnRef.current?.focus();
   }, [open]);
 
-  const readIntro = () => {
+  // Pre-load daftar voice browser agar suara bahasa Indonesia langsung siap
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      const onVoicesChanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+      window.speechSynthesis.addEventListener("voiceschanged", onVoicesChanged);
+      return () => {
+        window.speechSynthesis.removeEventListener("voiceschanged", onVoicesChanged);
+      };
+    }
+  }, []);
+
+  const readIntro = useCallback(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const synth = window.speechSynthesis;
+
     if (speaking) {
-      window.speechSynthesis.cancel();
+      synth.cancel();
       setSpeaking(false);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(
-      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan blok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan blok baterai di atas papan fisik di depan Anda. Selamat bereksplorasi!"
-    );
-    utterance.lang = "id-ID";
-    utterance.rate = 0.94;
-    utterance.onend = () => setSpeaking(false);
-    setSpeaking(true);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  };
 
-  // Autoplay intro pada klik pertama di area mana pun di landing page
-  useEffect(() => {
-    const handleFirstClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target && target.closest("a, button")) {
-        return; // Jangan potong aksi jika yang diklik langsung link navigasi
+    if (synth.paused) {
+      synth.resume();
+    }
+    synth.cancel();
+
+    const text =
+      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan balok baterai di atas papan fisik di depan Anda. Selamat bereksplorasi!";
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utteranceRef.current = utterance; // Mencegah bug Chrome Garbage Collection
+
+    const voices = synth.getVoices();
+    const idVoice = voices.find(
+      (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
+    );
+    if (idVoice) {
+      utterance.voice = idVoice;
+    }
+    utterance.lang = idVoice ? idVoice.lang : "id-ID";
+    utterance.rate = 0.94;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+      setSpeaking(true);
+    };
+    utterance.onend = () => {
+      setSpeaking(false);
+      utteranceRef.current = null;
+    };
+    utterance.onerror = (err) => {
+      console.warn("Speech synthesis notice:", err);
+      setSpeaking(false);
+      utteranceRef.current = null;
+    };
+
+    // Jeda kecil 60ms agar audio thread OS siap setelah cancel()
+    setTimeout(() => {
+      try {
+        synth.speak(utterance);
+      } catch (e) {
+        console.error("Gagal menjalankan speak():", e);
       }
+    }, 60);
+  }, [speaking]);
+
+  // Autoplay intro pada sentuhan/klik pertama di area mana pun di landing page
+  useEffect(() => {
+    const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      // Jika pengguna menekan tombol toggle suara langsung, biarkan onClick tombol yang menangani
+      if (target && target.closest("button")?.textContent?.includes("Suara")) {
+        return;
+      }
+
       if (!hasSpokenOnFirstClickRef.current) {
         hasSpokenOnFirstClickRef.current = true;
         readIntro();
       }
     };
-    window.addEventListener("click", handleFirstClick, { once: true });
-    return () => window.removeEventListener("click", handleFirstClick);
-  }, []);
+
+    window.addEventListener("click", handleFirstInteraction, { passive: true });
+    window.addEventListener("touchstart", handleFirstInteraction, { passive: true });
+
+    return () => {
+      window.removeEventListener("click", handleFirstInteraction);
+      window.removeEventListener("touchstart", handleFirstInteraction);
+    };
+  }, [readIntro]);
 
   // Background WebSocket: Auto-redirect ke /aruco (LENTERA Lab) jika ada balok Baterai diletakkan di papan
   useEffect(() => {
