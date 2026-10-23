@@ -64,6 +64,13 @@ Dokumen ini merangkum seluruh fitur baru dan perubahan arsitektur yang diterapka
   5. **Reset Progres Per Siswa**:
      - Tombol reset progres hanya menghapus riwayat siswa yang sedang aktif, tanpa mengganggu progres milik teman sekelasnya.
 
+### E. Narasi Masuk LENTERA Lab & Arahan Bersihkan Papan
+- **Lokasi Kode**: [`Lentera-Portal/app/aruco/page.tsx`](file:///l:/LENTERA%20MALAYSIA/Lentera-Portal/app/aruco/page.tsx)
+- **Cara Kerja**:
+  - Saat browser dialihkan ke halaman lab (`/aruco`), sistem menunggu 700ms lalu otomatis memutar narasi panduan:
+    > *"Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok baterai yang terpasang di papan fisik agar grid bersih dan siap digunakan. Selamat bereksplorasi!"*
+  - Dilengkapi tombol toggle suara **"Dengarkan Arahan Lab"** di samping badge status agar pengguna dapat memutar ulang atau menghentikan narasi kapan saja.
+
 ---
 
 ## 3. Arsitektur Data: Isolasi Progres di LocalStorage
