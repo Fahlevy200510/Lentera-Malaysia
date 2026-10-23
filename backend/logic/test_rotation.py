@@ -41,24 +41,38 @@ assert discretize_rotation(50, 0) == 0
 assert discretize_rotation(355, 0) == 0
 assert discretize_rotation(275, 0) == 270
 
-# Preset "closed": Baterai + mengalir ke + Lampu (rot 0: + di Kiri, - di Kanan)
-closed = {
+# 1. Saklar pada Jalur VERTIKAL (kolom D, antara D4 dan D2)
+# Aligned (rot 90) = OFF; Rotated (rot 0) = ON
+vert_circuit = {
     "C4": {"component": "battery", "rotation": 270},
     "B4": {"component": "l_cable", "rotation": 90},
     "D4": {"component": "l_cable", "rotation": 180},
     "B2": {"component": "l_cable", "rotation": 0},
     "D2": {"component": "l_cable", "rotation": 270},
     "B3": {"component": "straight_cable", "rotation": 90},
-    "D3": {"component": "switch", "rotation": 90},
+    "D3": {"component": "switch", "rotation": 0},  # ON pada kawat vertikal
     "C2": {"component": "lamp", "rotation": 0},
 }
-assert evaluate_circuit(closed)["status"] == "success"
+assert evaluate_circuit(vert_circuit)["status"] == "success"
+assert evaluate_circuit({**vert_circuit, "D3": {"component": "switch", "rotation": 90}})["status"] == "switch_off"
 
-# Saklar OFF -> status switch_off
-assert evaluate_circuit({**closed, "D3": {"component": "switch", "rotation": 0}})["status"] == "switch_off"
+# 2. Saklar pada Jalur HORIZONTAL (baris 2 di C2, antara B2 dan D2; lampu di B3)
+# Aligned (rot 0) = OFF; Rotated (rot 90) = ON
+horiz_circuit = {
+    "C4": {"component": "battery", "rotation": 270},
+    "B4": {"component": "l_cable", "rotation": 90},
+    "D4": {"component": "l_cable", "rotation": 180},
+    "B2": {"component": "l_cable", "rotation": 0},
+    "D2": {"component": "l_cable", "rotation": 270},
+    "B3": {"component": "lamp", "rotation": 90},     # Lampu vertikal (+ di Atas)
+    "D3": {"component": "straight_cable", "rotation": 90},
+    "C2": {"component": "switch", "rotation": 90},  # ON pada kawat horizontal
+}
+assert evaluate_circuit(horiz_circuit)["status"] == "success"
+assert evaluate_circuit({**horiz_circuit, "C2": {"component": "switch", "rotation": 0}})["status"] == "switch_off"
 
 # Polaritas lampu dibalik (rot 180: + di Kanan, - di Kiri) -> status polarity_reversed
-reversed_lamp = {**closed, "C2": {"component": "lamp", "rotation": 180}}
+reversed_lamp = {**vert_circuit, "C2": {"component": "lamp", "rotation": 180}}
 assert evaluate_circuit(reversed_lamp)["status"] == "polarity_reversed"
 
 # Korsleting: Baterai dihubung-singkat langsung tanpa beban -> status short_circuit

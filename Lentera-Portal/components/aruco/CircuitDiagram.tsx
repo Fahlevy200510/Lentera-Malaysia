@@ -84,7 +84,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "B2": { component: "l_cable", rotation: 0 },
         "D2": { component: "l_cable", rotation: 270 },
         "B3": { component: "straight_cable", rotation: 90 },
-        "D3": { component: "switch", rotation: 0 },
+        "D3": { component: "switch", rotation: 90 },
         "C2": { component: "lamp", rotation: 0 },
       };
       isComplete = false;
@@ -126,9 +126,14 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
          const {x, y} = getXY(cell);
          const { component, rotation } = compData;
          
+         let effectiveRotation = rotation;
+         if (component === "switch" && compData.wire_orientation) {
+           effectiveRotation = compData.wire_orientation === "vertical" ? 90 : 0;
+         }
+         
          return (
-           <g key={cell} transform={`translate(${x}, ${y}) rotate(${rotation})`} className="transition-all duration-500">
-              {renderComponent(component, isComplete, rotation, variant)}
+           <g key={cell} transform={`translate(${x}, ${y}) rotate(${effectiveRotation})`} className="transition-all duration-500">
+              {renderComponent(component, isComplete, rotation, variant, compData)}
            </g>
          );
       })}
@@ -136,7 +141,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
   )
 }
 
-function renderComponent(type: string, isComplete: boolean, rotation: number = 0, variant: string = "live") {
+function renderComponent(type: string, isComplete: boolean, rotation: number = 0, variant: string = "live", compData?: any) {
   const stroke = isComplete ? "#8b5cf6" : "#475569";
   const dim = "#475569";
   
@@ -185,7 +190,9 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
     case "switch":
       let isSwitchOn = false;
       if (variant === "live") {
-        isSwitchOn = rotation === 90 || rotation === 270;
+        isSwitchOn = compData?.is_on !== undefined
+          ? compData.is_on
+          : (rotation === 90 || rotation === 270);
       } else if (variant === "closed") {
         isSwitchOn = true;
       } else {
@@ -193,6 +200,8 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
       }
       content = (
         <g>
+          <line x1="-40" y1="0" x2="-20" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
+          <line x1="20" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />
           <circle cx="-20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
           <circle cx="20" cy="0" r="4" fill={isComplete ? "#ec4899" : dim} />
           <line x1="-20" y1="0" x2="16" y2={isSwitchOn ? "0" : "-15"} stroke={isComplete ? "#ec4899" : dim} strokeWidth="4" strokeLinecap="round" />

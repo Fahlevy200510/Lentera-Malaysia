@@ -70,6 +70,64 @@ def get_step_direction(from_cell, to_cell):
             return side
     return None
 
+def get_switch_wire_orientation(cell_name, grid_state_cells, loop=None):
+    """Menentukan apakah saklar berada pada jalur kawat 'horizontal' atau 'vertical'."""
+    if loop and cell_name in loop:
+        idx = loop.index(cell_name)
+        prev_cell = loop[idx - 1]
+        next_cell = loop[(idx + 1) % len(loop)]
+        d1 = get_step_direction(cell_name, prev_cell)
+        d2 = get_step_direction(cell_name, next_cell)
+        if d1 in ("Atas", "Bawah") and d2 in ("Atas", "Bawah"):
+            return "vertical"
+        if d1 in ("Kiri", "Kanan") and d2 in ("Kiri", "Kanan"):
+            return "horizontal"
+
+    x, y = cell_to_xy(cell_name)
+    vert_count = 0
+    horiz_count = 0
+
+    for side in ("Atas", "Bawah"):
+        dx, dy = DIRECTIONS[side]
+        nb = xy_to_cell(x + dx, y + dy)
+        if nb and grid_state_cells.get(nb):
+            n_state = grid_state_cells[nb]
+            n_open = get_open_sides(n_state["component"], n_state["rotation"])
+            if OPPOSITE[side] in n_open:
+                vert_count += 1
+
+    for side in ("Kiri", "Kanan"):
+        dx, dy = DIRECTIONS[side]
+        nb = xy_to_cell(x + dx, y + dy)
+        if nb and grid_state_cells.get(nb):
+            n_state = grid_state_cells[nb]
+            n_open = get_open_sides(n_state["component"], n_state["rotation"])
+            if OPPOSITE[side] in n_open:
+                horiz_count += 1
+
+    if vert_count > horiz_count:
+        return "vertical"
+    if horiz_count > vert_count:
+        return "horizontal"
+
+    # Default bila seimbang / belum ada tetangga kawat: baca dari orientasi blok itu sendiri
+    rot = grid_state_cells.get(cell_name, {}).get("rotation", 0) if grid_state_cells.get(cell_name) else 0
+    return "vertical" if rot in (90, 270) else "horizontal"
+
+def is_switch_on(cell_name, grid_state_cells, loop=None):
+    """
+    Menentukan apakah saklar di cell_name menutup kontak (ON/NC) atau membuka kontak (OFF/NO).
+    - Pada jalur kawat horizontal: 0°/180° = sejajar jalur = OFF, 90°/270° = diputar = ON.
+    - Pada jalur kawat vertikal:   90°/270° = sejajar jalur = OFF, 0°/180° = diputar = ON.
+    """
+    state = grid_state_cells.get(cell_name)
+    if not state or state.get("component") != "switch":
+        return False
+    rot = state.get("rotation", 0)
+    orientation = get_switch_wire_orientation(cell_name, grid_state_cells, loop)
+    return rot in (0, 180) if orientation == "vertical" else rot in (90, 270)
+
+
 def build_graph(grid_state_cells):
     """
     Membangun graf konektivitas adjacency list (dict of sets).
@@ -160,7 +218,7 @@ def evaluate_circuit(grid_state_cells):
         has_load = any(grid_state_cells[c]["component"] in ["lamp", "resistor"] for c in loop)
         if not has_load:
             has_off_switch = any(
-                grid_state_cells[c]["component"] == "switch" and grid_state_cells[c]["rotation"] in [0, 180]
+                grid_state_cells[c]["component"] == "switch" and not is_switch_on(c, grid_state_cells, loop)
                 for c in loop
             )
             if not has_off_switch:
@@ -209,7 +267,7 @@ def evaluate_circuit(grid_state_cells):
     for loop in loops_with_lamp:
         off_switches = [
             c for c in loop
-            if grid_state_cells[c]["component"] == "switch" and grid_state_cells[c]["rotation"] in [0, 180]
+            if grid_state_cells[c]["component"] == "switch" and not is_switch_on(c, grid_state_cells, loop)
         ]
         if len(off_switches) == 0:
             active_loops.append(loop)

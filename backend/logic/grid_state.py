@@ -1,4 +1,5 @@
 from backend.logic.debounce import CellDebouncer, discretize_rotation
+from backend.logic.circuit import is_switch_on, get_switch_wire_orientation
 
 MARKER_ID_MAP = {
     1: "battery",
@@ -104,7 +105,7 @@ class GridState:
                     if old_state is not None and old_state.get("component") == comp:
                         # Berarti hanya rotasinya yang berubah selagi di papan
                         if comp == "switch":
-                            status = "ON" if (rot == 90 or rot == 270) else "OFF"
+                            status = "ON" if is_switch_on(cell_name, self.cells) else "OFF"
                             events.append({
                                 "type": "switch_toggled",
                                 "cell": cell_name,
@@ -121,7 +122,7 @@ class GridState:
                             })
                     elif history_state is not None and history_state.get("component") == comp and comp == "switch":
                         # Komponen diangkat lalu diletakkan lagi (Toggling tuas)
-                        status = "ON" if (rot == 90 or rot == 270) else "OFF"
+                        status = "ON" if is_switch_on(cell_name, self.cells) else "OFF"
                         events.append({
                             "type": "switch_toggled",
                             "cell": cell_name,
@@ -142,4 +143,10 @@ class GridState:
                 if confirmed_state is not None:
                     self.cell_history[cell_name] = confirmed_state
                         
+        # Sinkronkan orientasi jalur & status ON/OFF untuk seluruh saklar aktif di grid
+        for c_name, c_state in self.cells.items():
+            if c_state and c_state.get("component") == "switch":
+                c_state["wire_orientation"] = get_switch_wire_orientation(c_name, self.cells)
+                c_state["is_on"] = is_switch_on(c_name, self.cells)
+
         return events
