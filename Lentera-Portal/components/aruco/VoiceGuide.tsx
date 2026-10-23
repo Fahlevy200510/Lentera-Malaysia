@@ -256,8 +256,18 @@ export default function VoiceGuide() {
     }
     return () => {
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+      if (typeof window !== "undefined") {
+        (window as any).__lenteraGuideMode = "idle";
+        (window as any).__lenteraSpeaking = false;
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).__lenteraGuideMode = mode;
+    }
+  }, [mode]);
 
   const speak = useCallback((text: string, onEnd?: () => void) => {
     if (!synthRef.current || isMuted) {
@@ -269,14 +279,21 @@ export default function VoiceGuide() {
     utterance.lang = "id-ID";
     utterance.rate = 0.92;
     utterance.pitch = 1.05;
-    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = true;
+    };
     utterance.onend = () => {
       setIsSpeaking(false);
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
       if (onEnd) onEnd();
     };
-    utterance.onerror = () => {
+    utterance.onerror = (e) => {
       setIsSpeaking(false);
-      if (onEnd) onEnd();
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
+      if (onEnd && (e as any)?.error !== "interrupted" && (e as any)?.error !== "canceled") {
+        onEnd();
+      }
     };
     utteranceRef.current = utterance;
     synthRef.current.speak(utterance);
@@ -286,6 +303,7 @@ export default function VoiceGuide() {
     if (synthRef.current) {
       synthRef.current.cancel();
       setIsSpeaking(false);
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
     }
   }, []);
 
@@ -314,10 +332,14 @@ export default function VoiceGuide() {
         allFound = step.validator(cells, detail?.status, detail?.graph_type);
       }
       
-      setCompletedCells(newCompleted);
+      // Jika langkah belum selesai, perbarui completed cells
+      if (!stepCompleted) {
+        setCompletedCells(newCompleted);
+      }
 
       if (allFound && !stepCompleted) {
         setStepCompleted(true);
+        setCompletedCells(newCompleted);
         if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
 
         if (step.explanation) {
@@ -390,6 +412,10 @@ export default function VoiceGuide() {
     setCurrentStep(0);
     setStepCompleted(false);
     setCompletedCells(new Set());
+    if (typeof window !== "undefined") {
+      (window as any).__lenteraGuideMode = "idle";
+      (window as any).__lenteraSpeaking = false;
+    }
   };
 
   const skipStep = () => {
@@ -410,8 +436,19 @@ export default function VoiceGuide() {
   };
 
   const replayVoice = () => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     if (stepCompleted && step?.explanation) {
-      speak(step.explanation);
+      speak(step.explanation, () => {
+        advanceTimerRef.current = setTimeout(() => {
+          if (currentStep < totalSteps - 1) {
+            setCurrentStep((prev) => prev + 1);
+            setStepCompleted(false);
+            setCompletedCells(new Set());
+          } else {
+            setCurrentStep(totalSteps);
+          }
+        }, 3500);
+      });
     } else if (step) {
       speak(step.voice);
     }

@@ -197,11 +197,17 @@ export default function ArUcoDetector() {
             );
           }
 
-          if (data.narration && typeof window !== "undefined") {
-            const utterance = new SpeechSynthesisUtterance(data.narration);
-            utterance.lang = "id-ID";
-            utterance.rate = 1.0;
-            window.speechSynthesis.speak(utterance);
+          if (data.narration && typeof window !== "undefined" && "speechSynthesis" in window) {
+            const isGuiding = (window as any).__lenteraGuideMode && (window as any).__lenteraGuideMode !== "idle";
+            const isSpeaking = (window as any).__lenteraSpeaking || window.speechSynthesis.speaking;
+
+            // Prioritaskan tutorial/panduan: abaikan narasi sensor mentah jika modul bimbingan aktif atau suara panduan sedang bicara
+            if (!isGuiding && !isSpeaking) {
+              const utterance = new SpeechSynthesisUtterance(data.narration);
+              utterance.lang = "id-ID";
+              utterance.rate = 1.0;
+              window.speechSynthesis.speak(utterance);
+            }
           }
         } catch (parseErr) {
           console.error("Gagal memproses data WS:", parseErr);

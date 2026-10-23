@@ -64,9 +64,13 @@ export default function ArucoPage() {
     utterance.rate = 0.94;
     utterance.pitch = 1.0;
 
-    utterance.onstart = () => setSpeaking(true);
+    utterance.onstart = () => {
+      setSpeaking(true);
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = true;
+    };
     utterance.onend = () => {
       setSpeaking(false);
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
       utteranceRef.current = null;
 
       // OPSI B: Jika siswa pemula (belum menguasai pengenalan balok), otomatis mulai Tahap 1
@@ -80,6 +84,7 @@ export default function ArucoPage() {
     };
     utterance.onerror = () => {
       setSpeaking(false);
+      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
       utteranceRef.current = null;
     };
 
@@ -100,6 +105,7 @@ export default function ArucoPage() {
       clearTimeout(timer);
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
+        (window as any).__lenteraSpeaking = false;
       }
     };
   }, [speakLabIntro]);
