@@ -142,7 +142,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
               <span className="text-[10px] uppercase font-bold text-indigo-100">Tingkat Penguasaan Materi</span>
               <div className="text-2xl font-black">{masteryPercentage}% Kuasai</div>
               <p className="text-[11px] text-indigo-100/90 mt-0.5">
-                {completedCount} dari 4 modul kurikulum telah diselesaikan mandiri
+                {completedCount} dari {modulesList.length} modul kurikulum telah diselesaikan mandiri
               </p>
             </div>
             <div className="text-right">

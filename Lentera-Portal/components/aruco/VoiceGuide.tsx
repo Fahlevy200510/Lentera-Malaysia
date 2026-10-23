@@ -1090,11 +1090,21 @@ export default function VoiceGuide() {
               </div>
               <div>
                 <h3 className="font-heading text-base font-extrabold text-cs-text">
-                  {mode === "recognition" ? "Pengenalan Selesai! 🎉" : "Rangkaian Selesai! 🎉"}
+                  {mode === "recognition"
+                    ? "Pengenalan Selesai! 🎉"
+                    : mode === "quiz"
+                    ? "Kuis Taktil Tuntas! 🏆"
+                    : mode === "troubleshoot"
+                    ? "Misi Detektif Selesai! 🕵️"
+                    : "Rangkaian Selesai! 🎉"}
                 </h3>
                 <p className="text-xs text-cs-text/60 mt-0.5 leading-relaxed max-w-xs mx-auto">
                   {mode === "recognition"
                     ? "Hebat sekali! Kamu telah mengenal bentuk taktil dan fungsi seluruh komponen Lentera."
+                    : mode === "quiz"
+                    ? "Luar biasa! Kamu berhasil menjawab semua tebakan fungsi komponen secara mandiri di papan fisik."
+                    : mode === "troubleshoot"
+                    ? "Hebat sekali, detektif! Kamu membuktikan pemahaman mendalam tentang kendali saklar dan sirkuit listrik."
                     : mode === "series" || mode === "adaptive_series"
                     ? "Kamu telah membuat rangkaian seri! Semua komponen berbagi satu jalur."
                     : "Kamu telah membuat rangkaian paralel! Setiap cabang bekerja sendiri-sendiri."}
@@ -1206,6 +1216,10 @@ export default function VoiceGuide() {
                     ? "border-emerald-300 bg-emerald-50/70"
                     : mode === "recognition"
                     ? "border-amber-200 bg-amber-50/40"
+                    : mode === "quiz"
+                    ? "border-indigo-200 bg-indigo-50/40"
+                    : mode === "troubleshoot"
+                    ? "border-rose-200 bg-rose-50/40"
                     : mode === "series" || mode === "adaptive_series"
                     ? "border-violet-200 bg-violet-50/50"
                     : "border-sky-200 bg-sky-50/50"
