@@ -7,14 +7,14 @@
     - Rumus rotasi: `rot = (360 - raw_angle) % 360` tanpa offset membingungkan.
     - Hysteresis rotasi di `debounce.py` diperbaiki (rotasi baru 90° diterima lancar tanpa harus mengangkat blok).
     - Live video preview di `main.py` dibalik vertikal (`cv2.flip(frame, 0)`) sehingga A1 tampil di kiri bawah, persis sesuai sudut pandang siswa.
-*   **6 Komponen Resmi & ID Fisik Terkunci:**
-    - Filter kamera `valid_ids` di `vision.py` dan `MARKER_ID_MAP` di `grid_state.py` dikunci ketat ke 6 ID:
+*   **6 Komponen Resmi & ID Fisik Terkunci (Urut 1 s.d. 6):**
+    - Filter kamera `valid_ids` di `vision.py` dan `MARKER_ID_MAP` di `grid_state.py` dikunci rapi ke 6 ID urut:
       1: **Baterai** (+ Atas, − Bawah pada 0°)
       2: **Kabel Lurus** (─)
       3: **Kabel Siku L** (└)
+      4: **Kabel Simpang T** (┬)
       5: **Lampu** (+ Kiri, − Kanan pada 0°)
-      6: **Kabel Simpang T** (┬)
-      7: **Saklar** (0°/180° = OFF, 90°/270° = ON)
+      6: **Saklar** (0°/180° = OFF, 90°/270° = ON, fallback ID 7 tetap didukung toleransi)
 *   **Logika Fisika Rangkaian & Deteksi Korsleting (`circuit.py`):**
     - Pembatasan terminal fisik: arus hanya bisa masuk/keluar melalui sisi terminal komponen (bukan bebas 4 arah).
     - Deteksi korsleting (*short circuit*) sebagai prioritas tertinggi: buzzer berbunyi 3x alarm, banner merah web berkedip.

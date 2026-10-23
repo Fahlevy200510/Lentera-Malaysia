@@ -5,9 +5,10 @@ MARKER_ID_MAP = {
     1: "battery",
     2: "straight_cable",
     3: "l_cable",
+    4: "t_cable",
     5: "lamp",
-    6: "t_cable",
-    7: "switch"
+    6: "switch",
+    7: "switch"  # Fallback toleransi untuk stiker saklar lama
 }
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]

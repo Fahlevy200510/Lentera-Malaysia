@@ -13,8 +13,8 @@ Dokumen ini merangkum seluruh fitur baru dan perubahan arsitektur yang diterapka
    - Siswa tunanetra tidak menggunakan mouse untuk mengklik tombol "Mulai Lab" di layar laptop.
    - Guru atau juri membutuhkan cara cepat untuk langsung membuka lab tanpa terhalang form registrasi/login yang rumit.
 3. **Keterbatasan Kit Fisik**:
-   - Kit fisik LENTERA memiliki tepat **6 jenis balok komponen** (ID 1: Baterai, 2: Kabel Lurus, 3: Kabel Belok/L, 5: Lampu, 6: Kabel T, 7: Sakelar).
-   - Solusi software **TIDAK BOLEH** menuntut penambahan balok fisik baru atau ID ArUco baru.
+   - Kit fisik LENTERA memiliki tepat **6 jenis balok komponen** urut (ID 1: Baterai, 2: Kabel Lurus, 3: Kabel Belok/L, 4: Kabel T, 5: Lampu, 6: Saklar).
+   - Solusi software **TIDAK BOLEH** menuntut penambahan balok fisik baru atau ID di luar 6 komponen ini.
 
 ---
 
