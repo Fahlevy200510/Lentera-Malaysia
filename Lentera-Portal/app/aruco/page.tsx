@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut } from "lucide-react";
+import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2 } from "lucide-react";
 import CircuitDiagram from "@/components/aruco/CircuitDiagram";
 import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
@@ -33,6 +33,62 @@ export default function ArucoPage() {
     name: "Pengguna LENTERA",
     role: "siswa",
   });
+
+  const [speaking, setSpeaking] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  const speakLabIntro = useCallback(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const synth = window.speechSynthesis;
+
+    if (synth.paused) synth.resume();
+    synth.cancel();
+
+    const text =
+      "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok baterai yang terpasang di papan fisik agar grid bersih dan siap digunakan. Selamat bereksplorasi!";
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utteranceRef.current = utterance;
+
+    const voices = synth.getVoices();
+    const idVoice = voices.find(
+      (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
+    );
+    if (idVoice) utterance.voice = idVoice;
+    utterance.lang = idVoice ? idVoice.lang : "id-ID";
+    utterance.rate = 0.94;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => {
+      setSpeaking(false);
+      utteranceRef.current = null;
+    };
+    utterance.onerror = () => {
+      setSpeaking(false);
+      utteranceRef.current = null;
+    };
+
+    setTimeout(() => {
+      try {
+        synth.speak(utterance);
+      } catch {}
+    }, 100);
+  }, []);
+
+  // Otomatis putar narasi sambutan & arahan saat halaman lab selesai dimuat
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      speakLabIntro();
+    }, 700);
+
+    return () => {
+      clearTimeout(timer);
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [speakLabIntro]);
 
   useEffect(() => {
     try {
@@ -119,9 +175,26 @@ export default function ArucoPage() {
           {/* Left: Edge Info + Detector */}
           <div className="space-y-6">
             <div className="rise space-y-4" style={{ animationDelay: ".05s" }}>
-              <p className="inline-flex rounded-full border border-cs-blue/30 bg-cs-blue/10 px-4 py-1 text-xs font-bold uppercase tracking-wider text-sky-600">
-                Sinkronisasi Edge Langsung
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="inline-flex rounded-full border border-cs-blue/30 bg-cs-blue/10 px-4 py-1 text-xs font-bold uppercase tracking-wider text-sky-600">
+                  Sinkronisasi Edge Langsung
+                </p>
+                <button
+                  onClick={() => {
+                    if (speaking && typeof window !== "undefined") {
+                      window.speechSynthesis.cancel();
+                      setSpeaking(false);
+                    } else {
+                      speakLabIntro();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-1 text-xs font-bold text-violet-700 hover:bg-violet-100 transition-colors shadow-sm"
+                  title="Dengarkan kembali penjelasan ruang kerja"
+                >
+                  <Volume2 className="h-3.5 w-3.5 text-violet-600" />
+                  {speaking ? "Hentikan Suara" : "Dengarkan Arahan Lab"}
+                </button>
+              </div>
               <h1 className="font-heading text-3xl font-extrabold leading-tight text-cs-text md:text-4xl">
                 Status Perangkat Real-time
               </h1>
