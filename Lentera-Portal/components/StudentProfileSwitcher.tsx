@@ -6,12 +6,12 @@ import {
 } from "lucide-react";
 import {
   getActiveStudent, setActiveStudent, getStudentProfiles, addStudentProfile,
-  resetStudentProgress, getStudentProgress, type StudentProfile
+  resetStudentProgress, getStudentProgress, PRESET_STUDENTS, type StudentProfile
 } from "@/utils/progress";
 
 export default function StudentProfileSwitcher({ compact = false }: { compact?: boolean }) {
-  const [profiles, setProfiles] = useState<StudentProfile[]>([]);
-  const [active, setActive] = useState<StudentProfile>(getActiveStudent());
+  const [profiles, setProfiles] = useState<StudentProfile[]>(PRESET_STUDENTS);
+  const [active, setActive] = useState<StudentProfile>(PRESET_STUDENTS[0]);
   const [isOpen, setIsOpen] = useState(false);
   const [showAddInput, setShowAddInput] = useState(false);
   const [newName, setNewName] = useState("");

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Volume2, VolumeX, Play, Pause, SkipForward, RotateCcw, CheckCircle2, Sparkles, ChevronDown, ChevronUp, BookOpen, Lock } from "lucide-react";
-import { completeModule, getStudentProgress, type StudentProgress } from "@/utils/progress";
+import { completeModule, getStudentProgress, DEFAULT_PROGRESS, type StudentProgress } from "@/utils/progress";
 
 /* ---------------------------------------------------------------- Types */
 type CellData = { component: string; rotation: number };
@@ -205,9 +205,10 @@ export default function VoiceGuide() {
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const [studentProgress, setStudentProgress] = useState<StudentProgress>(() => getStudentProgress());
+  const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
 
   useEffect(() => {
+    setStudentProgress(getStudentProgress());
     const handleProg = () => setStudentProgress(getStudentProgress());
     window.addEventListener("lentera-progress-update", handleProg);
     window.addEventListener("storage", handleProg);
