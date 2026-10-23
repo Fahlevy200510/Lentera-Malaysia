@@ -23,7 +23,7 @@ class VisionCore:
         
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        self.valid_ids = set(range(1, 10))  # Komponen resmi Lentera ID 1 s.d. 7 (buffer aman s.d. 9)
+        self.valid_ids = {1, 2, 3, 5, 6, 7}  # 6 Komponen resmi Lentera: Baterai, Kabel Lurus, Kabel L, Lampu, Kabel T, Saklar
         
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)
