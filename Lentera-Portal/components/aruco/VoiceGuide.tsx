@@ -24,6 +24,7 @@ import {
   completeModule,
   getStudentProgress,
   getActiveStudent,
+  PRESET_STUDENTS,
   DEFAULT_PROGRESS,
   type StudentProgress,
   type StudentProfile,
@@ -334,11 +335,13 @@ export default function VoiceGuide() {
   const lastMenuSelectRef = useRef<number>(0);
   const hasTriggeredSuccessEarconRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
-  const [activeStudent, setActiveStudentState] = useState<StudentProfile>(getActiveStudent());
+  const [activeStudentState, setActiveStudentState] = useState<StudentProfile>(PRESET_STUDENTS[0]);
+  const [mounted, setMounted] = useState<boolean>(false);
 
   const nextGuide = NEXT_GUIDE_MAP[mode];
 
   useEffect(() => {
+    setMounted(true);
     setStudentProgress(getStudentProgress());
     setActiveStudentState(getActiveStudent());
     const handleProg = () => {
@@ -793,13 +796,14 @@ export default function VoiceGuide() {
 
   /* ---------------------------------------------------------------- Idle Mode */
   if (mode === "idle") {
-    const activeStudent = getActiveStudent();
+    const activeStudent = mounted ? activeStudentState : PRESET_STUDENTS[0];
+    const currentProgress = mounted ? studentProgress : DEFAULT_PROGRESS;
     const completedCount = [
-      studentProgress.modules.component_recognition,
-      studentProgress.modules.component_quiz,
-      studentProgress.modules.series_circuit,
-      studentProgress.modules.parallel_circuit,
-      studentProgress.modules.circuit_troubleshoot,
+      currentProgress.modules.component_recognition,
+      currentProgress.modules.component_quiz,
+      currentProgress.modules.series_circuit,
+      currentProgress.modules.parallel_circuit,
+      currentProgress.modules.circuit_troubleshoot,
     ].filter(Boolean).length;
 
     // Menentukan modul rekomendasi berikutnya
@@ -812,7 +816,7 @@ export default function VoiceGuide() {
       cell: "A1",
     };
 
-    if (!studentProgress.modules.component_recognition) {
+    if (!currentProgress.modules.component_recognition) {
       nextRec = {
         mode: "recognition",
         stage: "Tahap 1 (Dasar)",
@@ -821,7 +825,7 @@ export default function VoiceGuide() {
         actionText: "Mulai Tahap 1",
         cell: "A1",
       };
-    } else if (!studentProgress.modules.component_quiz) {
+    } else if (!currentProgress.modules.component_quiz) {
       nextRec = {
         mode: "quiz",
         stage: "Tahap 2 (Kuis)",
@@ -830,7 +834,7 @@ export default function VoiceGuide() {
         actionText: "Mulai Kuis Taktil",
         cell: "B1",
       };
-    } else if (!studentProgress.modules.series_circuit) {
+    } else if (!currentProgress.modules.series_circuit) {
       nextRec = {
         mode: "series",
         stage: "Tahap 3 (Sirkuit Seri)",
@@ -839,7 +843,7 @@ export default function VoiceGuide() {
         actionText: "Mulai Rangkaian Seri",
         cell: "C1",
       };
-    } else if (!studentProgress.modules.parallel_circuit) {
+    } else if (!currentProgress.modules.parallel_circuit) {
       nextRec = {
         mode: "parallel",
         stage: "Tahap 4 (Sirkuit Paralel)",
@@ -848,7 +852,7 @@ export default function VoiceGuide() {
         actionText: "Mulai Rangkaian Paralel",
         cell: "D1",
       };
-    } else if (!studentProgress.modules.circuit_troubleshoot) {
+    } else if (!currentProgress.modules.circuit_troubleshoot) {
       nextRec = {
         mode: "troubleshoot",
         stage: "Tahap 5 (Mahir)",
@@ -907,16 +911,19 @@ export default function VoiceGuide() {
               <Volume2 className="h-3.5 w-3.5 text-violet-600" />
               <span>Dengarkan Menu</span>
             </button>
-            <div className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700">
-              <span>{activeStudent.avatar}</span>
-              <span className="truncate max-w-[100px]">{activeStudent.name.split(" ")[0]}</span>
-              <span className="text-[10px] text-indigo-600 font-extrabold ml-0.5">({studentProgress.xp} XP)</span>
+            <div
+              suppressHydrationWarning
+              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700"
+            >
+              <span suppressHydrationWarning>{activeStudent.avatar}</span>
+              <span suppressHydrationWarning className="truncate max-w-[100px]">{activeStudent.name.split(" ")[0]}</span>
+              <span suppressHydrationWarning className="text-[10px] text-indigo-600 font-extrabold ml-0.5">({currentProgress.xp} XP)</span>
             </div>
           </div>
         </div>
 
         {/* HERO CARD: Rekomendasi Modul Berikutnya */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 p-4 shadow-sm">
+        <div suppressHydrationWarning className="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 p-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -971,14 +978,14 @@ export default function VoiceGuide() {
             <button
               onClick={() => startGuide("recognition")}
               className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                studentProgress.modules.component_recognition
+                currentProgress.modules.component_recognition
                   ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
                   : "bg-white border-amber-200 text-slate-800 hover:border-amber-400"
               }`}
             >
               <div className="flex items-center justify-between w-full px-1">
                 <span className="text-[10px] font-black font-mono text-amber-600">A1</span>
-                {studentProgress.modules.component_recognition ? (
+                {currentProgress.modules.component_recognition ? (
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 ) : (
                   <span className="text-[9px] text-slate-400">1</span>
@@ -992,14 +999,14 @@ export default function VoiceGuide() {
             <button
               onClick={() => startGuide("quiz")}
               className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                studentProgress.modules.component_quiz
+                currentProgress.modules.component_quiz
                   ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
                   : "bg-white border-indigo-200 text-slate-800 hover:border-indigo-400"
               }`}
             >
               <div className="flex items-center justify-between w-full px-1">
                 <span className="text-[10px] font-black font-mono text-indigo-600">B1</span>
-                {studentProgress.modules.component_quiz ? (
+                {currentProgress.modules.component_quiz ? (
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 ) : (
                   <span className="text-[9px] text-slate-400">2</span>
@@ -1013,14 +1020,14 @@ export default function VoiceGuide() {
             <button
               onClick={() => startGuide("series")}
               className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                studentProgress.modules.series_circuit
+                currentProgress.modules.series_circuit
                   ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
                   : "bg-white border-violet-200 text-slate-800 hover:border-violet-400"
               }`}
             >
               <div className="flex items-center justify-between w-full px-1">
                 <span className="text-[10px] font-black font-mono text-violet-600">C1</span>
-                {studentProgress.modules.series_circuit ? (
+                {currentProgress.modules.series_circuit ? (
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 ) : (
                   <span className="text-[9px] text-slate-400">3</span>
@@ -1034,14 +1041,14 @@ export default function VoiceGuide() {
             <button
               onClick={() => startGuide("parallel")}
               className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                studentProgress.modules.parallel_circuit
+                currentProgress.modules.parallel_circuit
                   ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
                   : "bg-white border-sky-200 text-slate-800 hover:border-sky-400"
               }`}
             >
               <div className="flex items-center justify-between w-full px-1">
                 <span className="text-[10px] font-black font-mono text-sky-600">D1</span>
-                {studentProgress.modules.parallel_circuit ? (
+                {currentProgress.modules.parallel_circuit ? (
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 ) : (
                   <span className="text-[9px] text-slate-400">4</span>
@@ -1055,14 +1062,14 @@ export default function VoiceGuide() {
             <button
               onClick={() => startGuide("troubleshoot")}
               className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                studentProgress.modules.circuit_troubleshoot
+                currentProgress.modules.circuit_troubleshoot
                   ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
                   : "bg-white border-rose-200 text-slate-800 hover:border-rose-400"
               }`}
             >
               <div className="flex items-center justify-between w-full px-1">
                 <span className="text-[10px] font-black font-mono text-rose-600">E1</span>
-                {studentProgress.modules.circuit_troubleshoot ? (
+                {currentProgress.modules.circuit_troubleshoot ? (
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 ) : (
                   <span className="text-[9px] text-slate-400">5</span>
@@ -1096,7 +1103,7 @@ export default function VoiceGuide() {
                   <span className="text-[10px] font-bold text-slate-500">
                     6 Komponen Fisik • Rabaan Sel C3
                   </span>
-                  {studentProgress.modules.component_recognition ? (
+                  {currentProgress.modules.component_recognition ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
                       <CheckCircle2 className="h-3 w-3" /> Dikuasai (+50 XP)
                     </span>
@@ -1119,7 +1126,7 @@ export default function VoiceGuide() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-amber-600 active:scale-95 shrink-0 transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-white" />
-                <span>{studentProgress.modules.component_recognition ? "Ulangi Pengenalan" : "Mulai Pengenalan"}</span>
+                <span>{currentProgress.modules.component_recognition ? "Ulangi Pengenalan" : "Mulai Pengenalan"}</span>
               </button>
             </div>
           </div>
@@ -1135,7 +1142,7 @@ export default function VoiceGuide() {
                   <span className="text-[10px] font-bold text-slate-500">
                     4 Soal Gamifikasi Taktil
                   </span>
-                  {studentProgress.modules.component_quiz ? (
+                  {currentProgress.modules.component_quiz ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
                       <CheckCircle2 className="h-3 w-3" /> Dikuasai (+50 XP)
                     </span>
@@ -1158,7 +1165,7 @@ export default function VoiceGuide() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 active:scale-95 shrink-0 transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-white" />
-                <span>{studentProgress.modules.component_quiz ? "Ulangi Kuis" : "Mulai Kuis Taktil"}</span>
+                <span>{currentProgress.modules.component_quiz ? "Ulangi Kuis" : "Mulai Kuis Taktil"}</span>
               </button>
             </div>
           </div>
@@ -1174,7 +1181,7 @@ export default function VoiceGuide() {
                   <span className="text-[10px] font-bold text-slate-500">
                     Sirkuit 1 Loop Tertutup & Saklar
                   </span>
-                  {studentProgress.modules.series_circuit ? (
+                  {currentProgress.modules.series_circuit ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
                       <CheckCircle2 className="h-3 w-3" /> Dikuasai (+100 XP)
                     </span>
@@ -1245,7 +1252,7 @@ export default function VoiceGuide() {
                   <span className="text-[10px] font-bold text-slate-500">
                     Sirkuit Bercabang Kabel T & 2 Lampu
                   </span>
-                  {studentProgress.modules.parallel_circuit ? (
+                  {currentProgress.modules.parallel_circuit ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
                       <CheckCircle2 className="h-3 w-3" /> Dikuasai (+100 XP)
                     </span>
@@ -1316,7 +1323,7 @@ export default function VoiceGuide() {
                   <span className="text-[10px] font-bold text-slate-500">
                     3 Misi Troubleshooting & Kendali Saklar
                   </span>
-                  {studentProgress.modules.circuit_troubleshoot ? (
+                  {currentProgress.modules.circuit_troubleshoot ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
                       <CheckCircle2 className="h-3 w-3" /> Dikuasai (+150 XP)
                     </span>
@@ -1339,7 +1346,7 @@ export default function VoiceGuide() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:from-rose-600 hover:to-pink-700 active:scale-95 shrink-0 transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-white" />
-                <span>{studentProgress.modules.circuit_troubleshoot ? "Ulangi Misi Detektif" : "Mulai Misi Detektif"}</span>
+                <span>{currentProgress.modules.circuit_troubleshoot ? "Ulangi Misi Detektif" : "Mulai Misi Detektif"}</span>
               </button>
             </div>
           </div>

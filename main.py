@@ -133,7 +133,8 @@ def main():
                 pass
             print("[SYSTEM] Mengeksekusi shutdown aman...")
             if os.name != 'nt':
-                os.system("sudo poweroff || sudo shutdown -h now || systemctl poweroff")
+                ret = os.system("sudo -n /sbin/poweroff || sudo -n /sbin/shutdown -h now || sudo -n poweroff || systemctl poweroff || sudo poweroff")
+                print(f"[SYSTEM] Eksekusi shutdown selesai dengan kode: {ret}")
             else:
                 print("[SIMULATOR] Perintah shutdown disimulasikan.")
 

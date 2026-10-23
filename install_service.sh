@@ -54,6 +54,10 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+# Konfigurasi izin shutdown aman tanpa password untuk service lentera
+echo "$USER ALL=(ALL) NOPASSWD: /sbin/poweroff, /sbin/shutdown, /bin/systemctl" | sudo tee /etc/sudoers.d/lentera_shutdown > /dev/null
+sudo chmod 0440 /etc/sudoers.d/lentera_shutdown
+
 # Reload systemd, enable, dan start kedua service
 sudo systemctl daemon-reload
 sudo systemctl enable lentera.service lentera-tunnel.service
