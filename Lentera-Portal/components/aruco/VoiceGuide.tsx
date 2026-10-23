@@ -772,7 +772,7 @@ export default function VoiceGuide() {
         </p>
 
         {/* Menu Papan Taktil (Zero-Screen TUI) Info Banner */}
-        <div className="mb-4 rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/80 via-indigo-50/50 to-purple-50/80 p-3.5">
+        <div className="mb-4 rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/80 via-indigo-50/50 to-purple-50/80 p-3.5 shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-violet-700 bg-white/90 px-2 py-0.5 rounded-full shadow-xs border border-violet-100">
               <Sparkles className="h-3 w-3 text-violet-500" /> Navigasi Papan Taktil (Zero-Screen)
@@ -780,211 +780,203 @@ export default function VoiceGuide() {
             <span className="text-[10px] text-slate-500 font-medium">Taruh 1 balok di baris 1</span>
           </div>
           <p className="text-[11px] text-slate-600 leading-4 mb-2.5">
-            Siswa tunanetra dapat langsung meletakkan 1 balok di baris atas papan (A1 - D1) untuk memilih materi secara mandiri:
+            Siswa tunanetra dapat langsung meletakkan 1 balok di baris atas papan (A1 - E1) untuk memilih materi secara mandiri:
           </p>
-          <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+          <div className="grid grid-cols-5 gap-1.5 text-center text-[10px]">
             <button
               onClick={() => startGuide("quiz")}
-              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
+              className="p-1.5 rounded-lg bg-white/95 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
             >
               <div className="font-mono text-xs font-black text-violet-600">A1</div>
-              <div>Kuis Taktil</div>
+              <div className="truncate font-semibold">Kuis</div>
             </button>
             <button
               onClick={() => startGuide("series")}
-              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
+              className="p-1.5 rounded-lg bg-white/95 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
             >
               <div className="font-mono text-xs font-black text-violet-600">B1</div>
-              <div>Rangkaian Seri</div>
+              <div className="truncate font-semibold">Seri</div>
             </button>
             <button
               onClick={() => startGuide("parallel")}
-              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
+              className="p-1.5 rounded-lg bg-white/95 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
             >
               <div className="font-mono text-xs font-black text-violet-600">C1</div>
-              <div>Rangkaian Paralel</div>
+              <div className="truncate font-semibold">Paralel</div>
             </button>
             <button
               onClick={() => startGuide("troubleshoot")}
-              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-rose-700 transition-colors shadow-xs"
+              className="p-1.5 rounded-lg bg-white/95 border border-rose-100 hover:border-rose-300 font-bold text-rose-700 transition-colors shadow-xs"
             >
               <div className="font-mono text-xs font-black text-rose-600">D1</div>
-              <div>Detektif Sirkuit</div>
+              <div className="truncate font-semibold">Detektif</div>
+            </button>
+            <button
+              onClick={() => {
+                speak("Menu Pilihan LENTERA: Letakkan satu balok di A1 untuk Kuis Taktil, di B1 untuk Rangkaian Seri, di C1 untuk Rangkaian Paralel, atau di D1 untuk Tantangan Detektif Sirkuit. Silakan angkat balok dari E1 dan tentukan pilihanmu!");
+              }}
+              className="p-1.5 rounded-lg bg-white/95 border border-slate-100 hover:border-slate-300 font-bold text-slate-700 transition-colors shadow-xs"
+            >
+              <div className="font-mono text-xs font-black text-slate-600">E1</div>
+              <div className="truncate font-semibold">Bantuan</div>
             </button>
           </div>
         </div>
 
-        {/* Tahap 1: Pengenalan Blok Komponen */}
-        <div className="mb-3">
+        {/* Section 1: Modul Dasar & Taktil (Grid 2 Kolom) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
           <button
             onClick={() => startGuide("recognition")}
-            className="group relative w-full overflow-hidden rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-3.5 text-left transition-all hover:border-amber-400 hover:shadow-lg hover:shadow-amber-100 active:scale-[0.99]"
+            className="group relative flex flex-col justify-between rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-3 text-left transition-all hover:border-amber-400 hover:shadow-md active:scale-[0.99]"
           >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
-                  studentProgress.modules.component_recognition
-                    ? "text-emerald-700 bg-emerald-100/90"
-                    : "text-amber-700 bg-amber-100/90"
-                }`}>
-                  {studentProgress.modules.component_recognition ? (
-                    <>
-                      <CheckCircle2 className="h-3 w-3" /> Tahap 1 • Dikuasai
-                    </>
-                  ) : (
-                    <>
-                      <BookOpen className="h-3 w-3" /> Tahap 1 • Mulai Dari Sini
-                    </>
-                  )}
-                </span>
-                <div className="font-heading text-sm font-extrabold text-cs-text">
-                  Pengenalan Blok Komponen
-                </div>
-                <p className="text-[11px] text-cs-text/65 mt-1 max-w-[280px] leading-4">
-                  Ambil dan letakkan balok di C3. Asisten menjelaskan bentuk taktil & fungsi tiap komponen.
-                </p>
+            <div>
+              <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
+                studentProgress.modules.component_recognition
+                  ? "text-emerald-700 bg-emerald-100/90"
+                  : "text-amber-700 bg-amber-100/90"
+              }`}>
+                {studentProgress.modules.component_recognition ? (
+                  <><CheckCircle2 className="h-3 w-3" /> Dikuasai</>
+                ) : (
+                  <><BookOpen className="h-3 w-3" /> Tahap 1 Dasar</>
+                )}
+              </span>
+              <div className="font-heading text-xs font-extrabold text-cs-text">
+                Pengenalan Komponen
               </div>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-200 group-hover:scale-105 transition-transform">
-                <Play className="h-3.5 w-3.5 fill-white translate-x-0.5" />
+              <p className="text-[10px] text-cs-text/65 mt-1 leading-4">
+                Pelajari rabaan timbul dan fungsi 6 balok dasar di sel C3.
+              </p>
+            </div>
+            <div className="flex justify-end pt-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500 text-white shadow-xs group-hover:scale-105 transition-transform">
+                <Play className="h-3 w-3 fill-white translate-x-0.5" />
               </div>
             </div>
           </button>
-        </div>
 
-        {/* Kuis Taktil: Tebak Komponen */}
-        <div className="mb-4">
           <button
             onClick={() => startGuide("quiz")}
-            className="group relative w-full overflow-hidden rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-3.5 text-left transition-all hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-100 active:scale-[0.99]"
+            className="group relative flex flex-col justify-between rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-3 text-left transition-all hover:border-indigo-400 hover:shadow-md active:scale-[0.99]"
           >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
-                  studentProgress.modules.component_quiz
-                    ? "text-emerald-700 bg-emerald-100/90"
-                    : "text-indigo-700 bg-indigo-100/90"
-                }`}>
-                  {studentProgress.modules.component_quiz ? (
-                    <>
-                      <CheckCircle2 className="h-3 w-3" /> Kuis • Selesai
-                    </>
-                  ) : (
-                    <>
-                      <HelpCircle className="h-3 w-3" /> Gamifikasi TUI
-                    </>
-                  )}
-                </span>
-                <div className="font-heading text-sm font-extrabold text-cs-text">
-                  Kuis Tebak Komponen Taktil
-                </div>
-                <p className="text-[11px] text-cs-text/65 mt-1 max-w-[280px] leading-4">
-                  Lentera menanyakan fungsi komponen, jawab dengan meletakkan balok di papan fisik.
-                </p>
+            <div>
+              <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
+                studentProgress.modules.component_quiz
+                  ? "text-emerald-700 bg-emerald-100/90"
+                  : "text-indigo-700 bg-indigo-100/90"
+              }`}>
+                {studentProgress.modules.component_quiz ? (
+                  <><CheckCircle2 className="h-3 w-3" /> Kuis Selesai</>
+                ) : (
+                  <><HelpCircle className="h-3 w-3" /> Gamifikasi TUI</>
+                )}
+              </span>
+              <div className="font-heading text-xs font-extrabold text-cs-text">
+                Kuis Tebak Komponen
               </div>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform">
-                <Play className="h-3.5 w-3.5 fill-white translate-x-0.5" />
+              <p className="text-[10px] text-cs-text/65 mt-1 leading-4">
+                Jawab tebak fungsi komponen dengan menaruh balok di papan.
+              </p>
+            </div>
+            <div className="flex justify-end pt-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-xs group-hover:scale-105 transition-transform">
+                <Play className="h-3 w-3 fill-white translate-x-0.5" />
               </div>
             </div>
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mb-2.5">
-          <div className="h-px flex-1 bg-slate-200/80" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-cs-text/45">
-            Tahap 2 • Merakit Rangkaian
-          </span>
-          <div className="h-px flex-1 bg-slate-200/80" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 mb-2">
-          <button
-            onClick={() => startGuide("series")}
-            className="group relative overflow-hidden rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 p-3.5 text-left transition-all hover:border-violet-400 hover:shadow-lg hover:shadow-violet-100"
-          >
-            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-violet-400 mb-1">
-              <span>Bertahap</span>
-              {studentProgress.modules.series_circuit && (
-                <span className="text-emerald-600 font-extrabold flex items-center gap-0.5">
-                  <CheckCircle2 className="h-3 w-3" /> Selesai
-                </span>
-              )}
+        {/* Section 2: Merakit Rangkaian (Grid 2 Kolom) */}
+        <div className="grid grid-cols-2 gap-2.5 mb-3">
+          <div className="rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50/80 to-purple-50/80 p-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-violet-500 mb-1">
+                <span>Tahap 2</span>
+                {studentProgress.modules.series_circuit && (
+                  <span className="text-emerald-600 font-extrabold flex items-center gap-0.5">
+                    <CheckCircle2 className="h-3 w-3" /> Selesai
+                  </span>
+                )}
+              </div>
+              <div className="font-heading text-xs font-extrabold text-cs-text">Rangkaian Seri</div>
+              <p className="text-[10px] text-cs-text/60 mt-0.5 leading-tight">Aliran 1 loop tertutup</p>
             </div>
-            <div className="font-heading text-xs font-extrabold text-cs-text">Rangkaian Seri</div>
-            <Play className="absolute bottom-2.5 right-2.5 h-3.5 w-3.5 text-violet-300 group-hover:text-violet-500 transition-colors" />
-          </button>
-          <button
-            onClick={() => startGuide("parallel")}
-            className="group relative overflow-hidden rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 p-3.5 text-left transition-all hover:border-sky-400 hover:shadow-lg hover:shadow-sky-100"
-          >
-            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-sky-400 mb-1">
-              <span>Bertahap</span>
-              {studentProgress.modules.parallel_circuit && (
-                <span className="text-emerald-600 font-extrabold flex items-center gap-0.5">
-                  <CheckCircle2 className="h-3 w-3" /> Selesai
-                </span>
-              )}
+            <div className="flex gap-1.5 pt-2">
+              <button
+                onClick={() => startGuide("series")}
+                className="flex-1 rounded-lg bg-violet-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-violet-700 transition-colors shadow-xs"
+              >
+                Bertahap
+              </button>
+              <button
+                onClick={() => startGuide("adaptive_series")}
+                className="rounded-lg bg-white border border-violet-200 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-50 transition-colors"
+                title="Rangkai Seri Bebas"
+              >
+                Bebas
+              </button>
             </div>
-            <div className="font-heading text-xs font-extrabold text-cs-text">Rangkaian Paralel</div>
-            <Play className="absolute bottom-2.5 right-2.5 h-3.5 w-3.5 text-sky-300 group-hover:text-sky-500 transition-colors" />
-          </button>
-          <button
-            onClick={() => startGuide("adaptive_series")}
-            className="group relative overflow-hidden rounded-xl border-2 border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-pink-50 p-3.5 text-left transition-all hover:border-fuchsia-400 hover:shadow-lg hover:shadow-fuchsia-100"
-          >
-            <div className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 mb-1">Bebas</div>
-            <div className="font-heading text-xs font-extrabold text-cs-text">Seri Bebas</div>
-            <Play className="absolute bottom-2.5 right-2.5 h-3.5 w-3.5 text-fuchsia-300 group-hover:text-fuchsia-500 transition-colors" />
-          </button>
-          <button
-            onClick={() => startGuide("adaptive_parallel")}
-            className="group relative overflow-hidden rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-3.5 text-left transition-all hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-100"
-          >
-            <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1">Bebas</div>
-            <div className="font-heading text-xs font-extrabold text-cs-text">Paralel Bebas</div>
-            <Play className="absolute bottom-2.5 right-2.5 h-3.5 w-3.5 text-emerald-300 group-hover:text-emerald-500 transition-colors" />
-          </button>
+          </div>
+
+          <div className="rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50/80 to-cyan-50/80 p-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-sky-500 mb-1">
+                <span>Tahap 2</span>
+                {studentProgress.modules.parallel_circuit && (
+                  <span className="text-emerald-600 font-extrabold flex items-center gap-0.5">
+                    <CheckCircle2 className="h-3 w-3" /> Selesai
+                  </span>
+                )}
+              </div>
+              <div className="font-heading text-xs font-extrabold text-cs-text">Rangkaian Paralel</div>
+              <p className="text-[10px] text-cs-text/60 mt-0.5 leading-tight">Bercabang kabel T</p>
+            </div>
+            <div className="flex gap-1.5 pt-2">
+              <button
+                onClick={() => startGuide("parallel")}
+                className="flex-1 rounded-lg bg-sky-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-sky-700 transition-colors shadow-xs"
+              >
+                Bertahap
+              </button>
+              <button
+                onClick={() => startGuide("adaptive_parallel")}
+                className="rounded-lg bg-white border border-sky-200 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-50 transition-colors"
+                title="Rangkai Paralel Bebas"
+              >
+                Bebas
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 my-2.5">
-          <div className="h-px flex-1 bg-slate-200/80" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500 font-extrabold">
-            Tahap 3 • Tingkat Mahir
-          </span>
-          <div className="h-px flex-1 bg-slate-200/80" />
-        </div>
-
-        {/* Tahap 3: Tantangan Detektif Sirkuit */}
+        {/* Section 3: Tingkat Mahir (Detektif Sirkuit) */}
         <div>
           <button
             onClick={() => startGuide("troubleshoot")}
-            className="group relative w-full overflow-hidden rounded-xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 p-3.5 text-left transition-all hover:border-rose-400 hover:shadow-lg hover:shadow-rose-100 active:scale-[0.99]"
+            className="group relative w-full overflow-hidden rounded-xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 p-3 text-left transition-all hover:border-rose-400 hover:shadow-md active:scale-[0.99]"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
+                <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1 ${
                   studentProgress.modules.circuit_troubleshoot
                     ? "text-emerald-700 bg-emerald-100/90"
                     : "text-rose-700 bg-rose-100/90"
                 }`}>
                   {studentProgress.modules.circuit_troubleshoot ? (
-                    <>
-                      <CheckCircle2 className="h-3 w-3" /> Mahir • Selesai
-                    </>
+                    <><CheckCircle2 className="h-3 w-3" /> Mahir Selesai</>
                   ) : (
-                    <>
-                      <Sparkles className="h-3 w-3" /> Detektif Sirkuit (Troubleshooting)
-                    </>
+                    <><Sparkles className="h-3 w-3" /> Tahap 3 • Tingkat Mahir</>
                   )}
                 </span>
-                <div className="font-heading text-sm font-extrabold text-cs-text">
-                  Tantangan Detektif Sirkuit
+                <div className="font-heading text-xs font-extrabold text-cs-text">
+                  Tantangan Detektif Sirkuit (Troubleshooting)
                 </div>
-                <p className="text-[11px] text-cs-text/65 mt-1 max-w-[280px] leading-4">
-                  Misi analisis kendali saklar dan uji rangkaian paralel bebas tanpa bantuan panduan visual.
+                <p className="text-[10px] text-cs-text/65 mt-0.5 leading-tight">
+                  Misi analisis kendali saklar dan uji rangkaian paralel bebas tanpa panduan visual.
                 </p>
               </div>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md shadow-rose-200 group-hover:scale-105 transition-transform">
-                <Play className="h-3.5 w-3.5 fill-white translate-x-0.5" />
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-500 text-white shadow-xs group-hover:scale-105 transition-transform">
+                <Play className="h-3 w-3 fill-white translate-x-0.5" />
               </div>
             </div>
           </button>

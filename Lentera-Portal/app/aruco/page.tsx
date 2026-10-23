@@ -234,13 +234,31 @@ export default function ArucoPage() {
 
             {/* ArUcoDetector (yang sudah support Grid 5x5 + Input IP) */}
             <ArUcoDetector />
-            
-            {/* Voice Guide — Panduan suara langkah demi langkah */}
-            <VoiceGuide />
+
+            {/* Hardware & Relay Architecture Info */}
+            <div className="space-y-3 pt-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-cs-text/50">
+                Arsitektur Edge Computing
+              </p>
+              {wiringPoints.map((item) => (
+                <article
+                  key={item.title}
+                  className="flex gap-4 card rounded-2xl border border-cs-text/10 bg-white/80 p-4 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md"
+                >
+                  <div className="mt-0.5 flex-shrink-0 bg-slate-50 p-2 rounded-xl border border-slate-100 h-fit">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-sm font-extrabold text-cs-text">{item.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-cs-text/65">{item.text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
 
-          {/* Right: Circuit Diagram & Tech Stack */}
-          <div className="rise" style={{ animationDelay: ".1s" }}>
+          {/* Right: Circuit Diagram & Voice Guide */}
+          <div className="rise space-y-6" style={{ animationDelay: ".1s" }}>
             <div className="card rounded-[2rem] border border-cs-text/10 bg-white/80 p-5 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:p-7">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -276,24 +294,10 @@ export default function ArucoPage() {
               <div className="rounded-2xl bg-[#0b1220] p-4 flex items-center justify-center min-h-[200px]">
                 <CircuitDiagram variant={diagramMode} />
               </div>
-
-              <div className="mt-6 space-y-3">
-                {wiringPoints.map((item) => (
-                  <article
-                    key={item.title}
-                    className="flex gap-4 card rounded-2xl border border-cs-text/10 bg-white p-4 shadow-[0_8px_24px_rgba(46,42,94,0.06)]"
-                  >
-                    <div className="mt-1 flex-shrink-0 bg-slate-50 p-2 rounded-lg border">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-heading text-sm font-extrabold text-cs-text">{item.title}</h3>
-                      <p className="mt-1 text-[13px] leading-6 text-cs-text/65">{item.text}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
             </div>
+
+            {/* Voice Guide — Panduan suara interaktif langkah demi langkah */}
+            <VoiceGuide />
           </div>
         </div>
       </section>
