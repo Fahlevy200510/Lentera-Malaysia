@@ -71,22 +71,29 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
     >
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+          }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            box-sizing: border-box !important;
           }
-          body {
-            background: white !important;
+          html, body {
+            background: #ffffff !important;
             color: #0f172a !important;
             margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+            height: auto !important;
           }
           body > *:not(main) {
             display: none !important;
           }
           body > main {
             display: block !important;
-            background: white !important;
+            background: #ffffff !important;
             padding: 0 !important;
             margin: 0 !important;
             min-height: 0 !important;
@@ -98,7 +105,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
           #student-report-modal-backdrop {
             display: block !important;
             position: static !important;
-            background: white !important;
+            background: #ffffff !important;
             padding: 0 !important;
             margin: 0 !important;
             width: 100% !important;
@@ -114,28 +121,31 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             border: none !important;
             box-shadow: none !important;
             overflow: visible !important;
-            padding: 0 !important;
+            padding: 4mm 6mm !important;
             margin: 0 !important;
             max-height: none !important;
-            background: white !important;
+            background: #ffffff !important;
           }
           #student-report-body {
+            display: block !important;
+            width: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
             overflow: visible !important;
             max-height: none !important;
           }
-          #student-report-body > * + * {
-            margin-top: 12px !important;
+          .print-section {
+            display: block !important;
+            width: 100% !important;
+            margin-bottom: 11px !important;
+            clear: both !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .print-hidden,
           .print\\:hidden,
           button {
             display: none !important;
-          }
-          @page {
-            size: A4 portrait;
-            margin: 10mm 12mm;
           }
         }
       ` }} />
@@ -172,101 +182,120 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
         </div>
 
         {/* Printable Report Document Body */}
-        <div id="student-report-body" className="flex-1 overflow-y-auto p-8 print:p-0 print:overflow-visible text-slate-800 space-y-6">
+        <div id="student-report-body" className="flex-1 overflow-y-auto p-7 print:p-0 print:overflow-visible text-slate-800 space-y-4 print:space-y-0">
           
           {/* Header Lembaga / Alat */}
-          <div className="border-b-2 border-indigo-600 pb-5 text-center relative">
-            <div className="inline-flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-extrabold uppercase tracking-widest mb-2">
-              <Sparkles className="h-3.5 w-3.5" /> LENTERA • Inklusi Pendidikan Fisika
+          <div className="print-section border-b-2 border-indigo-600 pb-3 text-center">
+            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-extrabold uppercase tracking-widest mb-1.5">
+              <Sparkles className="h-3 w-3" /> LENTERA • Inklusi Pendidikan Fisika
             </div>
-            <h1 className="font-heading text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="font-heading text-xl font-black text-slate-900 tracking-tight leading-tight">
               LEMBAR LAPORAN CAPAIAN BELAJAR SISWA
             </h1>
-            <p className="text-xs text-slate-500 mt-1 max-w-lg mx-auto">
+            <p className="text-[11px] text-slate-500 mt-1 max-w-lg mx-auto leading-normal">
               Media Pembelajaran Fisika Kelistrikan Berbasis Tangible User Interface & Panduan Suara Mandiri untuk Siswa Tunanetra
             </p>
           </div>
 
           {/* Biodata Siswa */}
-          <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 text-xs">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400">Nama Siswa:</span>
-              <p className="font-heading text-sm font-extrabold text-slate-900 mt-0.5 flex items-center gap-1.5">
-                <span>{student.avatar}</span> {student.name}
-              </p>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400">Kelas / Kelompok:</span>
-              <p className="font-heading text-sm font-extrabold text-slate-900 mt-0.5">
-                {student.grade}
-              </p>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400">Tanggal Asesmen:</span>
-              <p className="font-semibold text-slate-700 mt-0.5">{today}</p>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400">Indeks Kemandirian Belajar:</span>
-              <p className="font-bold text-emerald-600 mt-0.5 flex items-center gap-1">
-                <UserCheck className="h-3.5 w-3.5" /> 100% Mandiri Taktil (Bebas Layar)
-              </p>
-            </div>
+          <div className="print-section rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-xs">
+            <table className="w-full border-collapse">
+              <tbody>
+                <tr>
+                  <td className="w-1/2 pb-1.5 pr-2 align-top">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Nama Siswa:</span>
+                    <p className="font-heading text-sm font-extrabold text-slate-900 mt-0.5 flex items-center gap-1.5">
+                      <span>{student.avatar}</span> {student.name}
+                    </p>
+                  </td>
+                  <td className="w-1/2 pb-1.5 pl-2 align-top">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Kelas / Kelompok:</span>
+                    <p className="font-heading text-sm font-extrabold text-slate-900 mt-0.5">
+                      {student.grade}
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="w-1/2 pt-1 pr-2 align-top">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Tanggal Asesmen:</span>
+                    <p className="font-semibold text-slate-700 mt-0.5">{today}</p>
+                  </td>
+                  <td className="w-1/2 pt-1 pl-2 align-top">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Indeks Kemandirian Belajar:</span>
+                    <p className="font-bold text-emerald-600 mt-0.5 flex items-center gap-1">
+                      <UserCheck className="h-3.5 w-3.5" /> 100% Mandiri Taktil (Bebas Layar)
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           {/* Ringkasan Skor Kemahiran */}
-          <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white shadow-md">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-indigo-100">Tingkat Penguasaan Materi</span>
-              <div className="text-2xl font-black">{masteryPercentage}% Kuasai</div>
-              <p className="text-[11px] text-indigo-100/90 mt-0.5">
-                {completedCount} dari {modulesList.length} modul kurikulum telah diselesaikan mandiri
-              </p>
-            </div>
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-indigo-100">Total XP Capaian</span>
-              <div className="text-xl font-black">{progress.xp} XP</div>
-              <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold mt-1">
-                {progress.achievements.length} Lencana Prestasi
-              </span>
-            </div>
+          <div className="print-section rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 p-3.5 text-white shadow-sm">
+            <table className="w-full border-collapse text-white">
+              <tbody>
+                <tr>
+                  <td className="align-middle text-left">
+                    <span className="text-[10px] uppercase font-bold text-indigo-100 block">Tingkat Penguasaan Materi</span>
+                    <div className="text-2xl font-black leading-tight text-white">{masteryPercentage}% Kuasai</div>
+                    <p className="text-[11px] text-indigo-100/95 mt-0.5">
+                      {completedCount} dari {modulesList.length} modul kurikulum telah diselesaikan mandiri
+                    </p>
+                  </td>
+                  <td className="align-middle text-right whitespace-nowrap">
+                    <span className="text-[10px] uppercase font-bold text-indigo-100 block">Total XP Capaian</span>
+                    <div className="text-xl font-black leading-tight text-white">{progress.xp} XP</div>
+                    <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold mt-1 text-white">
+                      {progress.achievements.length} Lencana Prestasi
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           {/* Matriks Capaian Modul */}
-          <div className="space-y-3">
-            <h3 className="font-heading text-xs font-black uppercase tracking-wider text-slate-700">
+          <div className="print-section">
+            <h3 className="font-heading text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">
               Evaluasi Capaian Modul Pembelajaran
             </h3>
-            <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 overflow-hidden bg-white">
-              {modulesList.map((mod, idx) => (
-                <div key={mod.id} className="flex items-start justify-between gap-4 p-3.5 text-xs">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800">{mod.name}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">{mod.desc}</p>
-                  </div>
-                  <div className="shrink-0 pt-0.5">
-                    {mod.done ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800">
-                        <CheckCircle2 className="h-3 w-3" /> Dikuasai
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
-                        <AlertCircle className="h-3 w-3" /> Dalam Proses
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+              <table className="w-full border-collapse">
+                <tbody>
+                  {modulesList.map((mod, idx) => (
+                    <tr
+                      key={mod.id}
+                      className={`border-b border-slate-100 last:border-b-0 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"}`}
+                    >
+                      <td className="p-2.5 pl-3 align-middle">
+                        <div className="font-bold text-slate-800 text-xs">{mod.name}</div>
+                        <div className="text-[10.5px] text-slate-500 leading-snug mt-0.5">{mod.desc}</div>
+                      </td>
+                      <td className="p-2.5 pr-3 align-middle text-right shrink-0 whitespace-nowrap w-28">
+                        {mod.done ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800">
+                            <CheckCircle2 className="h-3 w-3" /> Dikuasai
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
+                            <AlertCircle className="h-3 w-3" /> Dalam Proses
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
           {/* Catatan Keterampilan Taktil & Safety */}
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 text-xs space-y-2">
-            <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+          <div className="print-section rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-xs">
+            <h4 className="font-bold text-slate-800 flex items-center gap-1.5 mb-1">
               <Award className="h-3.5 w-3.5 text-indigo-600" /> Catatan Perkembangan Motorik & Keamanan Listrik
             </h4>
-            <ul className="text-[11px] text-slate-600 list-disc pl-4 space-y-1">
+            <ul className="text-[10.5px] text-slate-600 list-disc pl-4 space-y-0.5 leading-relaxed">
               <li>Siswa menunjukkan respon taktil cepat dalam mengenali simbol timbul (+, −, kubah beban, tuas saklar).</li>
               <li>Mampu merespon peringatan darurat korsleting arus pendek dengan memutus loop sirkuit secara aman.</li>
               <li>Mampu mengambil keputusan checkpoint (A1 = Lanjut, E1 = Selesai) secara mandiri melalui papan fisik.</li>
@@ -274,19 +303,29 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
           </div>
 
           {/* Area Tanda Tangan Guru / Pembimbing */}
-          <div className="pt-6 grid grid-cols-2 gap-8 text-center text-xs">
-            <div>
-              <p className="text-slate-400">Siswa Pembelajar,</p>
-              <div className="h-16 flex items-end justify-center font-bold text-slate-800">
-                ( {student.name} )
-              </div>
-            </div>
-            <div>
-              <p className="text-slate-400">Guru Pendamping Khusus (GPK),</p>
-              <div className="h-16 flex items-end justify-center font-bold text-slate-800 border-b border-dashed border-slate-300 pb-1 w-44 mx-auto">
-                ( ......................................... )
-              </div>
-            </div>
+          <div className="print-section pt-3">
+            <table className="w-full text-center text-xs border-collapse">
+              <tbody>
+                <tr>
+                  <td className="w-1/2 align-top px-4">
+                    <p className="text-slate-500 text-[11px]">Siswa Pembelajar,</p>
+                    <div className="h-10" />
+                    <div className="font-bold text-slate-900 border-b border-slate-400 pb-1 w-44 mx-auto">
+                      ( {student.name} )
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">Siswa LENTERA SLB</p>
+                  </td>
+                  <td className="w-1/2 align-top px-4">
+                    <p className="text-slate-500 text-[11px]">Guru Pendamping Khusus (GPK),</p>
+                    <div className="h-10" />
+                    <div className="font-bold text-slate-900 border-b border-slate-400 pb-1 w-44 mx-auto">
+                      (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">NIP / NUPTK.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
         </div>
