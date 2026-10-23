@@ -369,6 +369,20 @@ export default function VoiceGuide() {
     setIsExpanded(true);
   };
 
+  useEffect(() => {
+    const handleStartGuide = (e: Event) => {
+      const targetMode = (e as CustomEvent).detail;
+      if (
+        targetMode &&
+        ["recognition", "series", "parallel", "adaptive_series", "adaptive_parallel"].includes(targetMode)
+      ) {
+        startGuide(targetMode);
+      }
+    };
+    window.addEventListener("lentera-start-guide", handleStartGuide);
+    return () => window.removeEventListener("lentera-start-guide", handleStartGuide);
+  }, []);
+
   const resetGuide = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);

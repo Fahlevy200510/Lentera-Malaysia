@@ -7,6 +7,7 @@ import CircuitDiagram from "@/components/aruco/CircuitDiagram";
 import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import { getStudentProgress } from "@/utils/progress";
 
 const wiringPoints = [
   {
@@ -44,8 +45,12 @@ export default function ArucoPage() {
     if (synth.paused) synth.resume();
     synth.cancel();
 
-    const text =
-      "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar grid bersih dan siap digunakan. Selamat bereksplorasi!";
+    const progress = getStudentProgress();
+    const hasLearnedComponents = Boolean(progress?.modules?.component_recognition);
+
+    const text = hasLearnedComponents
+      ? "Selamat datang kembali di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan dan memantau kamera dari bawah papan. Papan siap digunakan. Kamu dapat langsung merangkai bebas di atas papan fisik, atau memilih modul bimbingan di bilah samping. Selamat bereksplorasi!"
+      : "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar grid bersih dan siap digunakan.";
 
     const utterance = new SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance;
@@ -63,6 +68,15 @@ export default function ArucoPage() {
     utterance.onend = () => {
       setSpeaking(false);
       utteranceRef.current = null;
+
+      // OPSI B: Jika siswa pemula (belum menguasai pengenalan balok), otomatis mulai Tahap 1
+      if (!hasLearnedComponents) {
+        setTimeout(() => {
+          window.dispatchEvent(
+            new CustomEvent("lentera-start-guide", { detail: "recognition" })
+          );
+        }, 1800);
+      }
     };
     utterance.onerror = () => {
       setSpeaking(false);

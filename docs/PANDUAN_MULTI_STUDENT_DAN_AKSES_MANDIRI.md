@@ -64,11 +64,17 @@ Dokumen ini merangkum seluruh fitur baru dan perubahan arsitektur yang diterapka
   5. **Reset Progres Per Siswa**:
      - Tombol reset progres hanya menghapus riwayat siswa yang sedang aktif, tanpa mengganggu progres milik teman sekelasnya.
 
-### E. Narasi Masuk LENTERA Lab & Arahan Bersihkan Papan
-- **Lokasi Kode**: [`Lentera-Portal/app/aruco/page.tsx`](file:///l:/LENTERA%20MALAYSIA/Lentera-Portal/app/aruco/page.tsx)
-- **Cara Kerja**:
-  - Saat browser dialihkan ke halaman lab (`/aruco`), sistem menunggu 700ms lalu otomatis memutar narasi panduan:
-    > *"Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok baterai yang terpasang di papan fisik agar grid bersih dan siap digunakan. Selamat bereksplorasi!"*
+### E. Narasi Masuk LENTERA Lab & Auto-Start Pengenalan Komponen (Opsi B)
+- **Lokasi Kode**: [`Lentera-Portal/app/aruco/page.tsx`](file:///l:/LENTERA%20MALAYSIA/Lentera-Portal/app/aruco/page.tsx) & [`VoiceGuide.tsx`](file:///l:/LENTERA%20MALAYSIA/Lentera-Portal/components/aruco/VoiceGuide.tsx)
+- **Cara Kerja Cerdas (Berdasarkan Profil Siswa)**:
+  - **Siswa Pemula (Belum Menyelesaikan Tahap 1)**:
+    1. Sistem menyambut dan mengarahkan: *"Selamat datang di LENTERA Lab! ... Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar grid bersih dan siap digunakan."*
+    2. Begitu arahan selesai (jeda 1,8 detik), sistem **secara otomatis memulai Tahap 1: Pengenalan Balok Komponen** tanpa perlu klik mouse!
+    3. Suara langsung memandu: *"Mari berkenalan dengan komponen listrik! Pertama, raba dan cari balok Baterai. Letakkan balok Baterai di posisi C3, tepat di tengah papan."*
+    4. Siswa meletakkan balok di C3 ➔ sistem menjelaskan karakteristik dan terminal balok ➔ otomatis berlanjut ke balok berikutnya hingga ke-6 balok selesai.
+  - **Siswa Mahir / Guru / Juri (Sudah Menguasai Tahap 1)**:
+    1. Sistem menyambut: *"Selamat datang kembali di LENTERA Lab! ... Papan siap digunakan. Kamu dapat langsung merangkai bebas di atas papan fisik, atau memilih modul bimbingan di bilah samping. Selamat bereksplorasi!"*
+    2. Sistem tidak memaksakan masuk ke Tahap 1, memberikan kebebasan merangkai bebas (*sandbox*).
   - Dilengkapi tombol toggle suara **"Dengarkan Arahan Lab"** di samping badge status agar pengguna dapat memutar ulang atau menghentikan narasi kapan saja.
 
 ---
