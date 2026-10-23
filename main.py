@@ -17,7 +17,6 @@ from backend.logic.grid_state import GridState
 from backend.logic.circuit import evaluate_circuit
 from backend.server.audio import AudioNarrator
 from backend.server.ws_server import WSServer
-from backend.hardware.led_controller import LEDController
 from backend.hardware.buzzer import BuzzerController
 
 # Tangani sinyal dari systemd untuk mencegah hang saat shutdown
@@ -77,8 +76,7 @@ def main():
     mapper = GridMapper("grid_roi.json")
     grid_state = GridState()
     
-    # Inisialisasi Hardware (4 Lampu Fisik di PIN BCM 18, 23, 24, 25 & Buzzer di BCM 17)
-    led = LEDController()
+    # Inisialisasi Hardware (Buzzer di BCM 17)
     buzzer = BuzzerController(pin=17)
     
     # 3. Inisialisasi Server Audio & WebSocket
@@ -267,12 +265,6 @@ def main():
             circuit_eval = evaluate_circuit(grid_state.cells)
             status_code = circuit_eval["status"]
             
-            # Kontrol Lampu Fisik via GPIO
-            if status_code == "success":
-                led.turn_on()
-            else:
-                led.turn_off()
-            
             # e. Jika ada perubahan status sirkuit, tambahkan ke list event
             if status_code != prev_circuit_status:
                 prev_circuit_status = status_code
@@ -314,10 +306,6 @@ def main():
         audio.stop()
         try:
             buzzer.cleanup()
-        except Exception:
-            pass
-        try:
-            led.cleanup()
         except Exception:
             pass
         try:
