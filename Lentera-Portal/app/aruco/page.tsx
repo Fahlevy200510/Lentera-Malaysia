@@ -130,8 +130,8 @@ export default function ArucoPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-cs-bg font-body text-cs-text">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+    <main className="relative min-h-screen overflow-hidden bg-cs-bg font-body text-cs-text print:bg-white print:min-h-0 print:p-0">
+      <div className="pointer-events-none absolute inset-0 -z-10 print:hidden">
         <div
           className="blob1 absolute -left-32 top-[-3rem] h-72 w-72 rounded-full blur-3xl md:h-96 md:w-96"
           style={{ background: "radial-gradient(circle, rgba(56,189,248,0.16), transparent 70%)" }}
@@ -142,7 +142,7 @@ export default function ArucoPage() {
         />
       </div>
 
-      <section className="mx-auto flex min-h-screen max-w-screen-2xl flex-col md:flex-row gap-8 px-5 py-8 lg:px-10 lg:py-10">
+      <section className="mx-auto flex min-h-screen max-w-screen-2xl flex-col md:flex-row gap-8 px-5 py-8 lg:px-10 lg:py-10 print:hidden">
         <div className="rise flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-64 md:flex-shrink-0">
           <div>
             <div className="flex items-center gap-3 font-heading text-xl font-extrabold tracking-tight text-cs-text">

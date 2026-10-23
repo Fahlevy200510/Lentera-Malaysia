@@ -65,8 +65,85 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
   const masteryPercentage = Math.round((completedCount / modulesList.length) * 100);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:p-0 print:bg-white print:static">
-      <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl print:shadow-none print:max-h-none print:w-full print:rounded-none overflow-hidden">
+    <div
+      id="student-report-modal-backdrop"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:p-0 print:bg-white print:static print:z-auto print:inset-auto"
+    >
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            background: white !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body > *:not(main) {
+            display: none !important;
+          }
+          body > main {
+            display: block !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+          }
+          body > main > *:not(#student-report-modal-backdrop) {
+            display: none !important;
+          }
+          #student-report-modal-backdrop {
+            display: block !important;
+            position: static !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            inset: auto !important;
+            z-index: 1 !important;
+          }
+          #student-report-card {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-height: none !important;
+            background: white !important;
+          }
+          #student-report-body {
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            max-height: none !important;
+          }
+          #student-report-body > * + * {
+            margin-top: 12px !important;
+          }
+          .print-hidden,
+          .print\\:hidden,
+          button {
+            display: none !important;
+          }
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+          }
+        }
+      ` }} />
+
+      <div
+        id="student-report-card"
+        className="relative flex max-h-[90vh] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl print:shadow-none print:max-h-none print:w-full print:rounded-none overflow-hidden"
+      >
         
         {/* Modal Top Bar (Hidden on Print) */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-3.5 print:hidden">
@@ -95,7 +172,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
         </div>
 
         {/* Printable Report Document Body */}
-        <div className="flex-1 overflow-y-auto p-8 print:p-6 print:overflow-visible text-slate-800 space-y-6">
+        <div id="student-report-body" className="flex-1 overflow-y-auto p-8 print:p-0 print:overflow-visible text-slate-800 space-y-6">
           
           {/* Header Lembaga / Alat */}
           <div className="border-b-2 border-indigo-600 pb-5 text-center relative">

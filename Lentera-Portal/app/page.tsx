@@ -270,15 +270,15 @@ export default function PortalHome() {
   const roleLabel = session?.role === "student" ? "Siswa" : session?.role === "teacher" ? "Guru" : "Orang Tua";
 
   return (
-    <main className="portal-page relative min-h-screen overflow-hidden font-body text-white">
-      <div className="portal-bg" aria-hidden="true">
+    <main className="portal-page relative min-h-screen overflow-hidden font-body text-white print:bg-white print:min-h-0 print:p-0">
+      <div className="portal-bg print:hidden" aria-hidden="true">
         <div className="portal-orb portal-orb-a" />
         <div className="portal-orb portal-orb-b" />
         <div className="portal-orb portal-orb-c" />
         <div className="portal-grid" />
       </div>
 
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
+      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10 print:hidden">
         <Link href="/" className="flex items-center gap-3" aria-label="Beranda LENTERA">
           <img src="/logo-lentera.png" alt="Logo LENTERA" className="h-11 w-11 rounded-xl object-cover shadow-lg" />
           <div>
@@ -340,7 +340,7 @@ export default function PortalHome() {
         </button>
       </header>
 
-      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-82px)] max-w-7xl items-center gap-12 px-5 pb-14 pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-20">
+      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-82px)] max-w-7xl items-center gap-12 px-5 pb-14 pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-20 print:hidden">
         <div className="rise max-w-2xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold tracking-wide text-violet-100 backdrop-blur-md">
             <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
@@ -494,7 +494,7 @@ export default function PortalHome() {
       <div
         onClick={() => setOpen(false)}
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-[#100B2E]/65 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 bg-[#100B2E]/65 backdrop-blur-sm transition-opacity duration-300 print:hidden ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -504,7 +504,7 @@ export default function PortalHome() {
         role="dialog"
         aria-modal="true"
         aria-label="Menu portal LENTERA"
-        className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l border-white/15 bg-[#17103D]/95 p-6 shadow-2xl backdrop-blur-2xl transition-transform duration-500 ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l border-white/15 bg-[#17103D]/95 p-6 shadow-2xl backdrop-blur-2xl transition-transform duration-500 print:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
