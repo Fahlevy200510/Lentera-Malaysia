@@ -8,16 +8,15 @@ def discretize_rotation(raw_angle_deg, previous_bucket):
     Mencegah state jitter di sekitar batas antar-kuadran (45, 135, 225, 315).
     Mengembalikan 0, 90, 180, atau 270.
     """
-    if previous_bucket is None:
-        # Jika belum ada state sebelumnya, langsung bulatkan ke kelipatan 90 terdekat
-        return round(raw_angle_deg / 90) * 90 % 360
-        
     nearest_bucket = round(raw_angle_deg / 90) * 90 % 360
-    distance_to_boundary = min(abs(raw_angle_deg % 90), 90 - abs(raw_angle_deg % 90))
-    
-    if distance_to_boundary < ROTATION_DEADZONE_DEG:
-        return previous_bucket # Tunda keputusan, gunakan yang lama
-        
+    if previous_bucket is None:
+        return nearest_bucket
+
+    # Jarak sudut melingkar ke bucket lama; tahan bucket lama sampai lewat batas 45 + deadzone
+    diff = abs((raw_angle_deg - previous_bucket + 180) % 360 - 180)
+    if diff < 45 + ROTATION_DEADZONE_DEG:
+        return previous_bucket
+
     return nearest_bucket
 
 class CellDebouncer:

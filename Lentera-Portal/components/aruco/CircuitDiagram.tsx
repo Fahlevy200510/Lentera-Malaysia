@@ -18,11 +18,11 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
     isComplete = true; // Preset referensi selalu menyala
     if (variant === "series") {
       cells = {
-        "A5": { component: "l_cable", rotation: 0 },
+        "A5": { component: "l_cable", rotation: 90 },
         "B5": { component: "straight_cable", rotation: 0 },
-        "C5": { component: "battery", rotation: 0 },
+        "C5": { component: "battery", rotation: 270 },
         "D5": { component: "straight_cable", rotation: 0 },
-        "E5": { component: "l_cable", rotation: 90 },
+        "E5": { component: "l_cable", rotation: 180 },
         
         "A4": { component: "straight_cable", rotation: 90 },
         "E4": { component: "straight_cable", rotation: 90 },
@@ -33,59 +33,59 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "A2": { component: "straight_cable", rotation: 90 },
         "E2": { component: "straight_cable", rotation: 90 },
         
-        "A1": { component: "l_cable", rotation: 270 },
-        "B1": { component: "lamp", rotation: 270 },
+        "A1": { component: "l_cable", rotation: 0 },
+        "B1": { component: "lamp", rotation: 0 },
         "C1": { component: "switch", rotation: 0 },
-        "D1": { component: "lamp", rotation: 270 },
-        "E1": { component: "l_cable", rotation: 180 },
+        "D1": { component: "lamp", rotation: 0 },
+        "E1": { component: "l_cable", rotation: 270 },
       };
     } else if (variant === "parallel") {
       cells = {
-        "A5": { component: "l_cable", rotation: 0 },
+        "A5": { component: "l_cable", rotation: 90 },
         "B5": { component: "straight_cable", rotation: 0 },
-        "C5": { component: "battery", rotation: 0 },
+        "C5": { component: "battery", rotation: 270 },
         "D5": { component: "straight_cable", rotation: 0 },
-        "E5": { component: "l_cable", rotation: 90 },
+        "E5": { component: "l_cable", rotation: 180 },
         
         "A4": { component: "straight_cable", rotation: 90 },
         "E4": { component: "straight_cable", rotation: 90 },
         
-        "A3": { component: "t_cable", rotation: 0 },
+        "A3": { component: "t_cable", rotation: 270 },
         "B3": { component: "switch", rotation: 0 },
-        "C3": { component: "lamp", rotation: 270 },
+        "C3": { component: "lamp", rotation: 0 },
         "D3": { component: "straight_cable", rotation: 0 },
-        "E3": { component: "t_cable", rotation: 180 },
+        "E3": { component: "t_cable", rotation: 90 },
         
         "A2": { component: "straight_cable", rotation: 90 },
         "E2": { component: "straight_cable", rotation: 90 },
         
-        "A1": { component: "l_cable", rotation: 270 },
+        "A1": { component: "l_cable", rotation: 0 },
         "B1": { component: "switch", rotation: 0 },
-        "C1": { component: "lamp", rotation: 270 },
+        "C1": { component: "lamp", rotation: 0 },
         "D1": { component: "straight_cable", rotation: 0 },
-        "E1": { component: "l_cable", rotation: 180 },
+        "E1": { component: "l_cable", rotation: 270 },
       };
     } else if (variant === "closed") {
       cells = {
-        "C4": { component: "battery", rotation: 0 },
-        "B4": { component: "l_cable", rotation: 0 },
-        "D4": { component: "l_cable", rotation: 90 },
-        "B2": { component: "l_cable", rotation: 270 },
-        "D2": { component: "l_cable", rotation: 180 },
+        "C4": { component: "battery", rotation: 270 },
+        "B4": { component: "l_cable", rotation: 90 },
+        "D4": { component: "l_cable", rotation: 180 },
+        "B2": { component: "l_cable", rotation: 0 },
+        "D2": { component: "l_cable", rotation: 270 },
         "B3": { component: "straight_cable", rotation: 90 },
         "D3": { component: "switch", rotation: 90 },
-        "C2": { component: "lamp", rotation: 90 },
+        "C2": { component: "lamp", rotation: 180 },
       };
     } else if (variant === "open") {
       cells = {
-        "C4": { component: "battery", rotation: 0 },
-        "B4": { component: "l_cable", rotation: 0 },
-        "D4": { component: "l_cable", rotation: 90 },
-        "B2": { component: "l_cable", rotation: 270 },
-        "D2": { component: "l_cable", rotation: 180 },
+        "C4": { component: "battery", rotation: 270 },
+        "B4": { component: "l_cable", rotation: 90 },
+        "D4": { component: "l_cable", rotation: 180 },
+        "B2": { component: "l_cable", rotation: 0 },
+        "D2": { component: "l_cable", rotation: 270 },
         "B3": { component: "straight_cable", rotation: 90 },
         "D3": { component: "switch", rotation: 0 },
-        "C2": { component: "lamp", rotation: 90 },
+        "C2": { component: "lamp", rotation: 180 },
       };
       isComplete = false;
     }
@@ -149,22 +149,24 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
       content = <line x1="-40" y1="0" x2="40" y2="0" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
       break;
     case "l_cable":
-      content = <path d="M 0 40 L 0 0 L 40 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      // Default fisik: └ (buka Atas & Kanan)
+      content = <path d="M 0 -40 L 0 0 L 40 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
       break;
     case "t_cable":
-      content = <path d="M 0 -40 L 0 0 M 0 40 L 0 0 M 40 0 L 0 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
+      // Default fisik: ┬ (buka Kiri, Kanan, Bawah)
+      content = <path d="M -40 0 L 40 0 M 0 40 L 0 0" fill="none" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter={isComplete ? "url(#wireGlow)" : ""} />;
       break;
     case "battery":
       content = (
         <g>
-          <rect x="-25" y="-15" width="50" height="30" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
-          {/* Positive (Long) on Left */}
-          <line x1="-10" y1="-8" x2="-10" y2="8" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
-          {/* Negative (Short) on Right */}
-          <line x1="10" y1="-4" x2="10" y2="4" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
+          <rect x="-15" y="-25" width="30" height="50" rx="4" fill="#0b1220" stroke={isComplete ? "#c084fc" : dim} strokeWidth="4" />
+          {/* Default fisik: vertikal, Positive (Long) di Atas */}
+          <line x1="-8" y1="-10" x2="8" y2="-10" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
+          {/* Negative (Short) di Bawah */}
+          <line x1="-4" y1="10" x2="4" y2="10" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           
-          <text x="-35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -35, 5)`}>+</text>
-          <text x="35" y="5" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 35, 5)`}>-</text>
+          <text x="0" y="-31" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, -36)`}>+</text>
+          <text x="0" y="43" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, 38)`}>-</text>
         </g>
       );
       break;
@@ -174,8 +176,9 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           <circle cx="0" cy="0" r="18" fill="#0b1220" stroke={isComplete ? "#fef08a" : dim} strokeWidth="4" filter={isComplete ? "url(#bulbGlow)" : ""} />
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
           
-          <text x="0" y="-25" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, -25)`}>+</text>
-          <text x="0" y="25" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, 25)`}>-</text>
+          {/* Default fisik: + di Kiri, - di Kanan */}
+          <text x="-28" y="5" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -28, 0)`}>+</text>
+          <text x="28" y="5" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 28, 0)`}>-</text>
         </g>
       );
       break;

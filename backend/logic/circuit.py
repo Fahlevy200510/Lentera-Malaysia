@@ -1,12 +1,20 @@
 import collections
 
-# Arah relatif dari sel: (dx, dy)
-# A1 = x=0, y=0. E5 = x=4, y=4
+# Arah relatif dari sel: (dx, dy), dilihat siswa dari atas papan.
+# A1 = x=0, y=0 (paling dekat siswa). "Atas" = menjauhi siswa = menuju baris 5.
 DIRECTIONS = {
-    "Atas": (0, -1),
-    "Bawah": (0, 1),
+    "Atas": (0, 1),
+    "Bawah": (0, -1),
     "Kiri": (-1, 0),
     "Kanan": (1, 0)
+}
+
+# Sisi terbuka saat rotasi 0 (posisi default blok fisik); rotasi berputar searah jarum jam.
+CW_ORDER = ["Atas", "Kanan", "Bawah", "Kiri"]
+CABLE_DEFAULT_SIDES = {
+    "straight_cable": ["Kiri", "Kanan"],      # ─
+    "l_cable": ["Atas", "Kanan"],             # └
+    "t_cable": ["Kiri", "Kanan", "Bawah"],    # ┬
 }
 
 OPPOSITE = {
@@ -29,32 +37,12 @@ def xy_to_cell(x, y):
 
 def get_open_sides(component, rotation):
     """Mengembalikan list arah yang terbuka berdasarkan jenis komponen dan rotasi"""
-    if component not in ["straight_cable", "l_cable", "t_cable"]:
+    if component not in CABLE_DEFAULT_SIDES:
         # Non-kabel terbuka ke semua 4 sisi
         return ["Atas", "Bawah", "Kiri", "Kanan"]
-        
-    if component == "straight_cable":
-        # 0 atau 180 (di grid_state sudah dinormalkan ke 0) = Horizontal
-        if rotation == 0 or rotation == 180:
-            return ["Kiri", "Kanan"]
-        else: # 90 atau 270 -> Vertikal
-            return ["Atas", "Bawah"]
-            
-    elif component == "l_cable":
-        # Fisik 0 deg (ArUco normal): Buka Kanan & Bawah
-        if rotation == 0: return ["Kanan", "Bawah"]
-        elif rotation == 90: return ["Bawah", "Kiri"]
-        elif rotation == 180: return ["Kiri", "Atas"]
-        elif rotation == 270: return ["Atas", "Kanan"]
-        
-    elif component == "t_cable":
-        # Fisik 0 deg (ArUco normal): Bentuk |- -> Buka Atas, Bawah, Kanan
-        if rotation == 0: return ["Atas", "Bawah", "Kanan"]
-        elif rotation == 90: return ["Kiri", "Kanan", "Bawah"]
-        elif rotation == 180: return ["Atas", "Bawah", "Kiri"]
-        elif rotation == 270: return ["Kiri", "Kanan", "Atas"]
-        
-    return []
+
+    steps = (rotation // 90) % 4
+    return [CW_ORDER[(CW_ORDER.index(s) + steps) % 4] for s in CABLE_DEFAULT_SIDES[component]]
 
 def build_graph(grid_state_cells):
     """

@@ -12,15 +12,6 @@ MARKER_ID_MAP = {
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
 
-COMPONENT_ROTATION_OFFSET = {
-    "battery": -90,
-    "straight_cable": 0,
-    "l_cable": 90,
-    "t_cable": -90,
-    "switch": 90,
-    "lamp": 90
-}
-
 # Nama komponen untuk narasi suara
 COMPONENT_NAME_ID = {
     "battery": "baterai",
@@ -73,12 +64,9 @@ class GridState:
                         if prev_state and prev_state.get("component") == comp_name:
                             prev_bucket = prev_state.get("rotation")
                             
-                        # Rumus final berdasarkan kalibrasi empiris (A1):
-                        # Fisik 0 (Kanan) -> Kamera 270
-                        # Fisik 90 (Bawah) -> Kamera 180
-                        # Transformasi dari rotasi kamera ke rotasi UI standar (0 = Kanan)
-                        offset = COMPONENT_ROTATION_OFFSET.get(comp_name, 0)
-                        transformed_angle = (270 - raw_angle + offset) % 360
+                        # Marker tegak di kamera = posisi default komponen (rotasi 0).
+                        # Kamera di bawah papan -> citra tercermin: CW dilihat dari atas = CCW di kamera.
+                        transformed_angle = (360 - raw_angle) % 360
                         
                         rot = discretize_rotation(transformed_angle, prev_bucket)
                         

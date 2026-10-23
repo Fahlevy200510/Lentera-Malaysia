@@ -185,29 +185,38 @@ def main():
             # Marker yang aktif saat ini (toleransi dropout 0.5s agar tidak kedip)
             active_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 0.5]
             
+            # Kamera di bawah papan -> citra tercermin. Balik vertikal agar preview = tampilan siswa dari atas (A1 kiri bawah).
+            # Deteksi tetap memakai frame mentah; hanya koordinat overlay yang dicerminkan.
+            frame_h = frame.shape[0]
+            display = cv2.flip(frame, 0)
+            fy = lambda y: int(frame_h - 1 - y)
+
             # Gambar deteksi ArUco ke frame (anti-kedip)
             for m in active_markers:
-                cv2.polylines(frame, [np.int32(m["corners"])], True, (0, 255, 0), 2)
+                pts = np.int32([[x, fy(y)] for x, y in m["corners"]])
+                cv2.polylines(display, [pts], True, (0, 255, 0), 2)
                 cx, cy = m["centroid"]
-                cv2.putText(frame, f"ID: {m['id']}", (int(cx)-10, int(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.putText(display, f"ID: {m['id']}", (int(cx)-10, fy(cy)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
             # Gambar Grid 5x5 ke frame
             if hasattr(mapper, 'grid_rois') and mapper.grid_rois:
                 for cell_name, roi in mapper.grid_rois.items():
-                    gcx, gcy = int(roi["centroid"][0]), int(roi["centroid"][1])
+                    if cell_name == "_camera_corners":
+                        continue
+                    gcx, gcy = int(roi["centroid"][0]), fy(roi["centroid"][1])
                     gr = int(roi["radius"])
                     # Gambar lingkaran pembatas
-                    cv2.circle(frame, (gcx, gcy), gr, (255, 0, 0), 1)
+                    cv2.circle(display, (gcx, gcy), gr, (255, 0, 0), 1)
                     # Tulis nama sel (A1, B2, dst)
-                    cv2.putText(frame, cell_name, (gcx - 12, gcy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                    cv2.putText(display, cell_name, (gcx - 12, gcy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
                 
             global global_frame
-            global_frame = frame.copy()
+            global_frame = display
             
             # Broadcast frame kamera via WebSocket (terproteksi anti-clogging & anti-disconnect)
             if hasattr(ws, 'clients') and ws.clients and frame_count % 3 == 0:
                 try:
-                    small_frame = cv2.resize(frame, (400, 300))
+                    small_frame = cv2.resize(display, (400, 300))
                     ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 48])
                     if ret:
                         b64_img = base64.b64encode(jpg_buf).decode('utf-8')
@@ -220,7 +229,7 @@ def main():
                 
             # Tampilkan window kamera HANYA jika berjalan di Windows (laptop)
             if os.name == 'nt':
-                cv2.imshow("LENTERA - Webcam Preview", frame)
+                cv2.imshow("LENTERA - Webcam Preview", display)
                 cv2.waitKey(1)
             
             # c. Undistort & Map to Grid
