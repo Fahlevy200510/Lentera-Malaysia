@@ -70,24 +70,31 @@ flowchart TD
 ### Modul B: Panduan Merangkai Mandiri Tahap-demi-Tahap (Adaptive Scaffolding)
 *Tujuan: Membimbing siswa membangun sirkuit seri lengkap tanpa panduan visual.*
 
-1. **Langkah 1 (Penempatan Sumber Tegangan):**
+1. **Langkah 1 (Penempatan Sumber Tegangan & Deteksi Arah Kutub):**
    - **Speaker LENTERA:**  
      *"Mari kita bangun rangkaian seri satu lampu. Pertama, letakkan baterai di posisi mana pun yang kamu inginkan di papan."*
-   - Siswa bebas meletakkan baterai di **C4** (rotasi 270° / horizontal).
-   - **Speaker:** *"Baterai terdeteksi di C4 dengan kutub positif mengarah ke kiri. Sekarang, letakkan sebuah lampu di baris bawah agar siap dihubungkan."*
+   
+   - **Jika Siswa Meletakkan Baterai VERTIKAL di C4 (Rotasi 0° / + di Atas, - di Bawah):**  
+     Terminal baterai membuka ke atas (C5) dan ke bawah (C3). Sisi kiri dan kanan baterai tidak memiliki kontak.  
+     - **Speaker:** *"Baterai terdeteksi vertikal di C4. Kutub positif menghadap ke atas menuju C5, dan kutub negatif ke arah C3. Letakkan kabel siku L di atas baterai (di C5) untuk membelokkan arus ke kolom samping."*
 
-2. **Langkah 2 (Penempatan Beban):**
-   - Siswa meletakkan lampu di **C2**.
-   - **Speaker:** *"Bagus! Lampu diletakkan di C2. Sekarang kita memiliki baterai di C4 dan lampu di C2, namun belum ada penghubung. Ambil kabel sudut atau kabel lurus untuk menyambungkannya membentuk loop tertutup."*
+   - **Jika Siswa Meletakkan Baterai HORIZONTAL di C4 (Rotasi 270° / + di Kiri, - di Kanan):**  
+     Terminal baterai langsung membuka ke B4 (kiri) dan D4 (kanan).  
+     - **Speaker:** *"Baterai terdeteksi horizontal di C4. Kutub positif menghadap ke kiri (B4) dan negatif ke kanan (D4). Pasang kabel sudut L di B4 yang mengarah ke bawah untuk mulai membuat loop."*
 
-3. **Langkah 3 (Pemasangan Jalur Kabel):**
-   - Siswa menyusun kabel sudut di **B4**, **B2**, dan kabel lurus di **B3**.
-   - **Speaker:** *"Jalur kabel sisi kiri terhubung dari B4 hingga B2. Lengkapi juga jalur kabel di sisi kanan agar arus dapat kembali ke kutub negatif."*
+2. **Langkah 2 (Menyusun Jalur Belokan Kabel L):**
+   - Pada posisi baterai horizontal di C4:  
+     Siswa menaruh kabel sudut L di **B4** (membelokkan arus dari C4 ke arah bawah menuju baris 2).  
+     - **Speaker:** *"Bagus! Kabel L di B4 sudah terhubung ke kutub positif baterai dan mengarah ke bawah. Sekarang letakkan beban lampu di baris bawah (C2)."*
 
-4. **Langkah 4 (Penyelesaian Rangkaian):**
-   - Siswa melengkapi sisi kanan dengan kabel di **D4**, **D3**, dan **D2**.
-   - Begitu loop tertutup sempurna dan polaritas sesuai:
-   - **Buzzer:** Berbunyi nada sukses (2x bip pendek).
+3. **Langkah 3 (Penempatan Beban Lampu):**
+   - Siswa meletakkan lampu di **C2** (rotasi horizontal: + di kiri, - di kanan).  
+   - **Speaker:** *"Lampu terpasang di C2. Sambungkan kabel sudut di B2 agar arus dari B4 dan B3 masuk ke kutub positif lampu."*
+
+4. **Langkah 4 (Penyelesaian Loop Sirkuit di Sisi Kanan):**
+   - Siswa menyambungkan kabel di **B2**, kabel lurus di **B3**, lalu menyusun jalur kembali di sisi kanan (**D2**, **D3/Saklar**, **D4**).  
+   - Begitu loop tertutup sempurna dan polaritas sesuai:  
+   - **Buzzer:** Berbunyi nada sukses (2x bip pendek).  
    - **Speaker:** *"Selamat! Rangkaian berhasil menyala sempurna. Kamu telah membuat rangkaian seri satu lampu secara mandiri."*
 
 ---
