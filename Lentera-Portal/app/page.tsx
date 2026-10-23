@@ -7,7 +7,7 @@ import {
   ArrowRight, ArrowUpRight, CircuitBoard, LayoutDashboard,
   Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck,
 } from "lucide-react";
-import { resolveEndpoints } from "@/components/aruco/ArUcoDetector";
+import { resolveEndpoints, getActiveLenteraEndpoint } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 
 type Destination = {
@@ -208,35 +208,48 @@ export default function PortalHome() {
   useEffect(() => {
     let ws: WebSocket | null = null;
     let redirected = false;
+    let cancelled = false;
 
-    try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("lentera_endpoint") : null;
-      const host = saved || (typeof window !== "undefined" ? window.location.hostname || "localhost" : "localhost");
-      const { wsUrl } = resolveEndpoints(host);
+    async function initBackgroundWS() {
+      const endpoint = await getActiveLenteraEndpoint();
+      if (cancelled) return;
 
-      ws = new WebSocket(wsUrl);
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "grid_state" && data.cells && !redirected) {
-            const placed = Object.values(data.cells).filter(Boolean);
-            const hasBattery = placed.some((c: any) => c?.component === "battery");
-            if (hasBattery) {
-              redirected = true;
-              if (typeof window !== "undefined" && "speechSynthesis" in window) {
-                window.speechSynthesis.cancel();
-                const notify = new SpeechSynthesisUtterance("Baterai terdeteksi! Membuka LENTERA Lab.");
-                notify.lang = "id-ID";
-                window.speechSynthesis.speak(notify);
+      const { wsUrl } = resolveEndpoints(endpoint);
+      console.log("[LENTERA Auto-Redirect WS] Menghubungkan ke:", wsUrl);
+
+      try {
+        ws = new WebSocket(wsUrl);
+        ws.onopen = () => {
+          console.log("[LENTERA Auto-Redirect WS] Terhubung ke papan fisik!");
+        };
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === "grid_state" && data.cells && !redirected) {
+              const placed = Object.values(data.cells).filter(Boolean);
+              const hasBattery = placed.some((c: any) => c?.component === "battery");
+              if (hasBattery) {
+                redirected = true;
+                if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                  window.speechSynthesis.cancel();
+                  const notify = new SpeechSynthesisUtterance("Baterai terdeteksi! Membuka LENTERA Lab.");
+                  notify.lang = "id-ID";
+                  window.speechSynthesis.speak(notify);
+                }
+                router.push("/aruco");
               }
-              router.push("/aruco");
             }
-          }
-        } catch {}
-      };
-    } catch {}
+          } catch {}
+        };
+      } catch (err) {
+        console.warn("[LENTERA Auto-Redirect WS] Gagal terhubung:", err);
+      }
+    }
+
+    initBackgroundWS();
 
     return () => {
+      cancelled = true;
       if (ws) ws.close();
     };
   }, [router]);

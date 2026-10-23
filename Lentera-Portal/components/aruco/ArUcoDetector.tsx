@@ -74,6 +74,45 @@ export function resolveEndpoints(target: string) {
   };
 }
 
+/**
+ * Temukan endpoint aktif secara otomatis (Cloudflare Tunnel relay / saved localStorage / fallback local)
+ */
+export async function getActiveLenteraEndpoint(): Promise<string> {
+  const DEFAULT_TUNNEL =
+    process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
+  let targetEndpoint = DEFAULT_TUNNEL;
+
+  // 1. Cek auto-discovery dari Cloudflare Quick Tunnel relay
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch("https://ntfy.sh/lentera_malaysia_edge_tunnel/raw?poll=1", {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const raw = await res.text();
+      const lines = raw.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const latest = lines[lines.length - 1];
+      if (latest && latest.includes("trycloudflare.com")) {
+        targetEndpoint = latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      }
+    }
+  } catch {}
+
+  // 2. Cek localStorage
+  try {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("lentera_edge_endpoint") || localStorage.getItem("lentera_endpoint");
+      if (saved && saved !== "edge.lentera.id" && !targetEndpoint.includes("trycloudflare.com")) {
+        targetEndpoint = saved;
+      }
+    }
+  } catch {}
+
+  return targetEndpoint;
+}
+
 export default function ArUcoDetector() {
   const [detections, setDetections] = useState<DetectionData>({ cells: {}, status: "connecting" });
   const [isCalibrating, setIsCalibrating] = useState(false);
@@ -193,39 +232,7 @@ export default function ArUcoDetector() {
     let cancelled = false;
 
     async function autoDiscoverAndConnect() {
-      const DEFAULT_TUNNEL =
-        process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
-      let targetEndpoint = DEFAULT_TUNNEL;
-
-      // 1. Cek auto-discovery dari Cloudflare Quick Tunnel relay
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        const res = await fetch("https://ntfy.sh/lentera_malaysia_edge_tunnel/raw?poll=1", {
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const raw = await res.text();
-          const lines = raw.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-          const latest = lines[lines.length - 1];
-          if (latest && latest.includes("trycloudflare.com")) {
-            targetEndpoint = latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
-            console.log("[Auto-Sync] Menemukan Cloudflare Quick Tunnel aktif:", targetEndpoint);
-          }
-        }
-      } catch {
-        // Gunakan targetEndpoint default jika relay belum ada/timeout
-      }
-
-      // 2. Jika user pernah menyimpan endpoint kustom sendiri
-      try {
-        const saved = localStorage.getItem("lentera_edge_endpoint");
-        if (saved && saved !== "edge.lentera.id" && !targetEndpoint.includes("trycloudflare.com")) {
-          targetEndpoint = saved;
-        }
-      } catch {}
-
+      const targetEndpoint = await getActiveLenteraEndpoint();
       if (!cancelled) {
         setEndpoint(targetEndpoint);
         setCustomInput(targetEndpoint);
