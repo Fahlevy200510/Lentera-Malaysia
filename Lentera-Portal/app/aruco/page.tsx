@@ -45,7 +45,7 @@ export default function ArucoPage() {
     synth.cancel();
 
     const text =
-      "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok baterai yang terpasang di papan fisik agar grid bersih dan siap digunakan. Selamat bereksplorasi!";
+      "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar grid bersih dan siap digunakan. Selamat bereksplorasi!";
 
     const utterance = new SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance;

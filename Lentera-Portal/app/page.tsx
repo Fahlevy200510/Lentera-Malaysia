@@ -141,7 +141,7 @@ export default function PortalHome() {
     synth.cancel();
 
     const text =
-      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan balok baterai di atas papan fisik di depan Anda. Selamat bereksplorasi!";
+      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan balok komponen apa saja di atas papan fisik di depan Anda. Selamat bereksplorasi!";
 
     const utterance = new SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance; // Mencegah bug Chrome Garbage Collection
@@ -222,17 +222,27 @@ export default function PortalHome() {
         ws.onopen = () => {
           console.log("[LENTERA Auto-Redirect WS] Terhubung ke papan fisik!");
         };
+        const COMPONENT_LABEL: Record<string, string> = {
+          battery: "Baterai",
+          lamp: "Lampu",
+          switch: "Saklar",
+          straight_cable: "Kabel lurus",
+          l_cable: "Kabel sudut",
+          t_cable: "Kabel cabang T",
+        };
+
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "grid_state" && data.cells && !redirected) {
-              const placed = Object.values(data.cells).filter(Boolean);
-              const hasBattery = placed.some((c: any) => c?.component === "battery");
-              if (hasBattery) {
+              const placed = (Object.values(data.cells).filter(Boolean) as Array<{ component: string; rotation: number }>);
+              if (placed.length > 0) {
                 redirected = true;
+                const comp = placed[0]?.component;
+                const label = COMPONENT_LABEL[comp] || "komponen";
                 if (typeof window !== "undefined" && "speechSynthesis" in window) {
                   window.speechSynthesis.cancel();
-                  const notify = new SpeechSynthesisUtterance("Baterai terdeteksi! Membuka LENTERA Lab.");
+                  const notify = new SpeechSynthesisUtterance(`Balok ${label} terdeteksi! Membuka LENTERA Lab.`);
                   notify.lang = "id-ID";
                   window.speechSynthesis.speak(notify);
                 }
@@ -369,7 +379,7 @@ export default function PortalHome() {
                   </button>
                 </div>
                 <p className="text-xs text-cyan-200/80 font-medium flex items-center gap-1.5">
-                  ✨ <span>Akses Taktil Mandiri: Letakkan balok Baterai di atas papan fisik kapan saja untuk langsung membuka Lab.</span>
+                  ✨ <span>Akses Taktil Mandiri: Letakkan balok komponen apa saja di atas papan fisik kapan saja untuk langsung membuka Lab.</span>
                 </p>
               </div>
             )}

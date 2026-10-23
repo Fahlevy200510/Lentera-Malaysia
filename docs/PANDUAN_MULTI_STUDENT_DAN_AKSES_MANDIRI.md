@@ -28,15 +28,15 @@ Dokumen ini merangkum seluruh fitur baru dan perubahan arsitektur yang diterapka
     > *"Halo! Selamat datang di LENTERA — media belajar rangkaian listrik taktil dan inklusif untuk siswa tunanetra. Untuk memulai, kamu bisa menekan tombol Buka LENTERA Lab di layar, atau langsung letakkan balok baterai ke atas papan fisik LENTERA kapan saja."*
   - Dilengkapi tombol toggle suara (*"Dengarkan Panduan"* / *"Matikan Suara"*) di bilah hero.
 
-### B. Auto-Redirect Taktil (Zero-Screen Trigger)
+### B. Auto-Redirect Taktil (Zero-Screen Trigger - Balok Komponen Bebas)
 - **Lokasi Kode**: [`Lentera-Portal/app/page.tsx`](file:///l:/LENTERA%20MALAYSIA/Lentera-Portal/app/page.tsx)
 - **Cara Kerja**:
   - Halaman landing page membuka koneksi WebSocket di latar belakang ke engine penglihatan komputer (`backend`).
-  - Ketika seorang siswa tunanetra meraba kotak komponen dan meletakkan **Balok Baterai (ID 1)** di posisi mana saja di atas papan grid:
-    1. Sistem langsung mendeteksi keberadaan ID 1.
-    2. Suara AI berbicara: *"Balok baterai terdeteksi di papan fisik. Mengalihkan ke LENTERA Lab..."*
-    3. Halaman web otomatis berpindah ke `/aruco` (LENTERA Lab) dalam 1,2 detik.
-  - Siswa tunanetra dapat membuka materi tanpa perlu melihat layar monitor atau meminta tolong orang lain mengklik mouse.
+  - Ketika seorang siswa tunanetra meraba kotak komponen dan meletakkan **balok komponen apa saja** (Baterai, Lampu, Saklar, atau Kabel) di posisi mana saja di atas papan grid:
+    1. Sistem langsung mengenali balok tersebut dan jenis komponennya.
+    2. Suara AI berbicara menyebutkan nama komponen: *"Balok [Nama Komponen] terdeteksi! Membuka LENTERA Lab."*
+    3. Halaman web otomatis berpindah ke `/aruco` (LENTERA Lab).
+  - Siswa tunanetra dapat membuka materi dengan bebas meletakkan balok apa pun tanpa perlu melihat layar monitor atau meminta tolong orang lain mengklik mouse.
 
 ### C. Akses Langsung LENTERA Lab (One-Click Judge/Teacher Access)
 - **Lokasi Kode**: [`Lentera-Portal/app/page.tsx`](file:///l:/LENTERA%20MALAYSIA/Lentera-Portal/app/page.tsx)
