@@ -15,6 +15,7 @@ Folder ini merangkum seluruh dokumen panduan teknis, spesifikasi produk, konsep 
 | 5 | [NEXT_PLAN.md](./NEXT_PLAN.md) | **Roadmap** | Rencana pengembangan fitur lanjutan untuk LENTERA (fase kurikulum, optimasi, dan fitur lanjutan). |
 | 6 | [PANDUAN_CLOUDFLARE_TUNNEL.md](./PANDUAN_CLOUDFLARE_TUNNEL.md) | **Jaringan & Akses Remote** | Panduan setup Cloudflare Tunnel untuk mengakses web portal LENTERA dari jarak jauh secara aman. |
 | 7 | [PANDUAN_NGROK_TUNNEL.md](./PANDUAN_NGROK_TUNNEL.md) | **Jaringan & Akses Remote** | Panduan alternatif tunneling menggunakan ngrok untuk ekspos port web dan WebSocket. |
+| 8 | [PANDUAN_MULTI_STUDENT_DAN_AKSES_MANDIRI.md](./PANDUAN_MULTI_STUDENT_DAN_AKSES_MANDIRI.md) | **Fitur Kelas & Akses Mandiri** | Panduan sistem profil multi-siswa (1 laptop untuk banyak siswa SLB), sambutan suara otomatis di landing page, trigger auto-redirect balok baterai tanpa mouse, dan isolasi progres localStorage tanpa penambahan balok fisik baru. |
 
 ---
 

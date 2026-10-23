@@ -8,6 +8,7 @@ import {
   Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck,
 } from "lucide-react";
 import { resolveEndpoints } from "@/components/aruco/ArUcoDetector";
+import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 
 type Destination = {
   href: string;
@@ -207,19 +208,16 @@ export default function PortalHome() {
             {speaking ? "Matikan suara" : "Dengarkan"}
           </button>
 
+          <StudentProfileSwitcher />
+
           {ready && session ? (
-            <div className="flex items-center gap-2">
-              <span className="rounded-full border border-violet-400/30 bg-violet-500/20 px-3.5 py-1.5 text-xs font-bold text-violet-100 backdrop-blur-md">
-                👤 {session.name} ({roleLabel})
-              </span>
-              <button
-                onClick={logout}
-                className="portal-ghost-btn text-rose-300 hover:text-rose-200 hover:bg-rose-500/20"
-                title="Keluar dari akun"
-              >
-                Keluar
-              </button>
-            </div>
+            <button
+              onClick={logout}
+              className="portal-ghost-btn text-rose-300 hover:text-rose-200 hover:bg-rose-500/20"
+              title="Keluar dari akun"
+            >
+              Keluar
+            </button>
           ) : (
             <Link
               href="/login"
