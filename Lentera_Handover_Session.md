@@ -1,19 +1,32 @@
 # Catatan Serah Terima (Handover) LENTERA
 *Dibuat untuk melanjutkan sesi kerja di obrolan (chat) baru.*
 
-## 1. Pencapaian Sesi Sebelumnya
-*   **Logika Grid 5x5 & Auto-Calibration:** Berhasil mengubah pemetaan sirkuit fisik Lentera dari 3x3 menjadi 5x5 yang utuh. Sistem komputer visi (Raspberry Pi) kini dilengkapi fitur kalibrasi matriks 4-titik agar tangkapan kamera tetap akurat meski miring.
-*   **Web Portal Interaktif (SVG Dinamis):** Halaman *Edge Lab* (`app/aruco/page.tsx`) dirombak total. Skema sirkuit statis telah diganti menjadi **live SVG diagram** yang kabelnya bisa berubah otomatis secara *real-time* mengikuti letak komponen di dunia nyata.
-*   **Text-to-Speech (Suara Asisten):** Karena Raspberry Pi kekurangan mesin suara (pyttsx3 gagal), suara narator AI ("Lamp placed at C1") dialihkan agar diucapkan langsung melalui *browser* pengguna dengan memanfaatkan *Web Speech API*.
-*   **Background Daemon (Raspberry Pi):** Dibuatkan `install_service.sh` agar `main.py` berjalan sebagai *service* latar belakang yang menyala otomatis saat Raspberry Pi dicolokkan ke listrik, tanpa perlu mengetik apapun.
-*   **Penyatuan Git:** Seluruh repositori berhasil dibersihkan dari *submodule* yang bermasalah dan digabungkan permanen ke `github.com/Fahlevy200510/Lentera-Malaysia`.
+## 1. Status Terkini (Sudah Teruji & Tersimpan Aman di GitHub)
+*   **Rotasi & Arah Komponen ArUco (100% Final):**
+    - Alur visi telah diselaraskan dengan kamera di bawah papan (*under-board mirror compensation*).
+    - Rumus rotasi: `rot = (360 - raw_angle) % 360` tanpa offset membingungkan.
+    - Hysteresis rotasi di `debounce.py` diperbaiki (rotasi baru 90° diterima lancar tanpa harus mengangkat blok).
+    - Live video preview di `main.py` dibalik vertikal (`cv2.flip(frame, 0)`) sehingga A1 tampil di kiri bawah, persis sesuai sudut pandang siswa.
+*   **6 Komponen Resmi & ID Fisik Terkunci:**
+    - Filter kamera `valid_ids` di `vision.py` dan `MARKER_ID_MAP` di `grid_state.py` dikunci ketat ke 6 ID:
+      1: **Baterai** (+ Atas, − Bawah pada 0°)
+      2: **Kabel Lurus** (─)
+      3: **Kabel Siku L** (└)
+      5: **Lampu** (+ Kiri, − Kanan pada 0°)
+      6: **Kabel Simpang T** (┬)
+      7: **Saklar** (0°/180° = OFF, 90°/270° = ON)
+*   **Logika Fisika Rangkaian & Deteksi Korsleting (`circuit.py`):**
+    - Pembatasan terminal fisik: arus hanya bisa masuk/keluar melalui sisi terminal komponen (bukan bebas 4 arah).
+    - Deteksi korsleting (*short circuit*) sebagai prioritas tertinggi: buzzer berbunyi 3x alarm, banner merah web berkedip.
+    - Pengecekan polaritas lampu (*forward bias*): kutub `+` baterai harus mengalir ke `+` lampu (anoda). Jika terbalik, dilaporkan status `polarity_reversed`.
+*   **Hardware Output:**
+    - Modul lampu LED fisik 4-pin telah dihapus dari kode. Hanya buzzer aktif di pin BCM 17.
+    - Telah dibuat panduan uji coba tombol power fisik di `PANDUAN_POWER_BUTTON.md`.
 
-## 2. Peringatan Penting (Context Status)
-*   **JANGAN LAKUKAN MERGE DARI TEMAN (BirelaMP):** Sempat ada upaya *merge* dari cabang `updated-23-sept` milik teman pengguna, namun hal tersebut menyebabkan `package.json` rusak dan *Internal Server Error* (karena butuh Supabase dll). 
-*   **Status Terkini:** Seluruh kode saat ini dijamin **bersih dan stabil** tanpa sentuhan kode teman pengguna. Namun, halaman *Edge Lab* sudah kita desain ulang secara mandiri agar terasa elegan (bergaya Sidebar) seperti desain *Lentera Learn*.
+## 2. Peringatan Penting
+*   **Git Status:** Repositori bersih dan tersinkronisasi penuh dengan `main` di `github.com/Fahlevy200510/Lentera-Malaysia`.
+*   **Raspberry Pi:** Perlu menjalankan `git pull` dan me-restart service (`sudo systemctl restart lentera.service`) untuk menerapkan semua pembaruan ini ke hardware alat fisik.
 
 ## 3. Rencana Sesi Selanjutnya (To-Do List)
-Saat pengguna memulai obrolan baru, lanjutkan dengan agenda berikut:
-1.  **Vercel Deployment:** Membantu mempublikasikan / *hosting* web aplikasi `Lentera-Portal` ke layanan Vercel agar dapat diakses dari internet.
-2.  **Hardware Field Testing:** Melakukan uji coba menyeluruh ke fisik perangkat keras (Raspberry Pi dan ArUco Marker) untuk menguji keakuratan matriks 5x5 baru.
-3.  **Integrasi Lanjutan (Opsional):** Jika teman pengguna (BirelaMP) ingin menyatukan halamannya, arahkan pengguna untuk menyalinnya secara manual per-file, BUKAN melalui *git merge* otomatis.
+1.  **Raspberry Pi Live Field Testing:** Menjalankan sistem di Raspberry Pi dan menguji coba dengan 6 balok fisik nyata di papan akrilik.
+2.  **Trial Tombol Power Fisik:** Uji coba skema pengkabelan tombol 4-pin sesuai petunjuk di `PANDUAN_POWER_BUTTON.md`.
