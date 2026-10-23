@@ -74,7 +74,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "D2": { component: "l_cable", rotation: 270 },
         "B3": { component: "straight_cable", rotation: 90 },
         "D3": { component: "switch", rotation: 90 },
-        "C2": { component: "lamp", rotation: 180 },
+        "C2": { component: "lamp", rotation: 0 },
       };
     } else if (variant === "open") {
       cells = {
@@ -85,7 +85,7 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         "D2": { component: "l_cable", rotation: 270 },
         "B3": { component: "straight_cable", rotation: 90 },
         "D3": { component: "switch", rotation: 0 },
-        "C2": { component: "lamp", rotation: 180 },
+        "C2": { component: "lamp", rotation: 0 },
       };
       isComplete = false;
     }

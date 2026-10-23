@@ -460,9 +460,13 @@ export default function ArUcoDetector() {
           {/* Circuit Status Narration */}
           {detections.circuit_status && (
             <div
-              className={`mt-4 p-3 rounded-xl border text-xs font-semibold w-full text-center ${
+              className={`mt-4 p-3 rounded-xl border text-xs font-semibold w-full text-center transition-all ${
                 detections.circuit_status.status === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold"
+                  : detections.circuit_status.status === "short_circuit"
+                  ? "bg-rose-50 border-rose-300 text-rose-700 font-bold animate-pulse shadow-sm"
+                  : detections.circuit_status.status === "polarity_reversed"
+                  ? "bg-purple-50 border-purple-200 text-purple-700 font-semibold"
                   : "bg-amber-50 border-amber-200 text-amber-700"
               }`}
             >

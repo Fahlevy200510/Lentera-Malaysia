@@ -276,6 +276,11 @@ def main():
             # e. Jika ada perubahan status sirkuit, tambahkan ke list event
             if status_code != prev_circuit_status:
                 prev_circuit_status = status_code
+                if status_code == "short_circuit":
+                    try:
+                        buzzer.beep(times=3, duration=0.15, interval=0.08)
+                    except Exception:
+                        pass
                 events.append({
                     "type": "circuit_status",
                     "status": status_code,
