@@ -220,6 +220,41 @@ const ADAPTIVE_PARALLEL_STEPS: StepDef[] = [
   },
 ];
 
+const TROUBLESHOOT_STEPS: StepDef[] = [
+  {
+    instruction: "Tantangan 1: Rangkai Sirkuit Kendali Saklar",
+    voice: "Tantangan Detektif Sirkuit dimulai! Misi pertama: Buatlah rangkaian satu lampu dengan saklar di posisi mana saja di papan. Pastikan seluruh jalur tersambung hingga lampu berhasil menyala!",
+    validator: (cells, status) => {
+      const hasBattery = Object.values(cells).some((c: any) => c && c.component === "battery");
+      const hasLamp = Object.values(cells).some((c: any) => c && c.component === "lamp");
+      const hasSwitch = Object.values(cells).some((c: any) => c && c.component === "switch");
+      return status === "success" && hasBattery && hasLamp && hasSwitch;
+    },
+    hint: "Gunakan baterai, saklar, lampu, dan kabel hingga lampu menyala sempurna.",
+    explanation: "Hebat sekali, detektif! Sirkuit kendali saklar berhasil menyala!",
+  },
+  {
+    instruction: "Tantangan 2: Uji Pemutus Aliran Arus",
+    voice: "Misi kedua! Tanpa melepas balok komponen dari papan, putar tuas saklar ke posisi terbuka atau mati untuk memutus aliran listrik!",
+    validator: (cells, status) => {
+      const placedCount = Object.values(cells).filter(Boolean).length;
+      return placedCount >= 4 && status !== "success" && status !== "short_circuit";
+    },
+    hint: "Raba tuas timbul di atas saklar, lalu putar untuk mematikan sirkuit.",
+    explanation: "Sempurna! Kamu telah membuktikan saklar dapat memutuskan aliran listrik secara aman tanpa harus membongkar rangkaian.",
+  },
+  {
+    instruction: "Tantangan 3: Rancang Sirkuit Paralel Mandiri",
+    voice: "Misi ketiga: Buatlah rangkaian bercabang paralel dengan minimal dua lampu menggunakan kabel cabang T. Pastikan kedua lampu menyala bersamaan!",
+    validator: (cells, status, graphType) => {
+      const lamps = Object.values(cells).filter((c: any) => c && c.component === "lamp").length;
+      return status === "success" && graphType === "parallel" && lamps >= 2;
+    },
+    hint: "Gunakan kabel cabang T untuk membagi aliran arus ke dua lampu terpisah.",
+    explanation: "Luar biasa! Kamu resmi menjadi Master Sirkuit Taktil Lentera! Kemampuan analisismu setara ilmuwan cilik sejati.",
+  },
+];
+
 const COMPONENT_LABEL: Record<string, string> = {
   battery: "baterai", straight_cable: "kabel lurus", l_cable: "kabel L", t_cable: "kabel T",
   lamp: "lampu", resistor: "resistor", switch: "saklar",
@@ -234,16 +269,28 @@ const COMPONENT_TACTILE_HINT: Record<string, string> = {
   t_cable: "memiliki alur timbul bercabang tiga seperti huruf T",
 };
 
-const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" | "parallel"; title: string }> = {
+const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" | "parallel" | "troubleshoot"; title: string }> = {
   recognition: { mode: "quiz", title: "Kuis Taktil" },
   quiz: { mode: "series", title: "Rangkaian Seri" },
   series: { mode: "parallel", title: "Rangkaian Paralel" },
   adaptive_series: { mode: "parallel", title: "Rangkaian Paralel" },
+  parallel: { mode: "troubleshoot", title: "Tantangan Detektif Sirkuit" },
+  adaptive_parallel: { mode: "troubleshoot", title: "Tantangan Detektif Sirkuit" },
 };
+
+type GuideMode =
+  | "idle"
+  | "recognition"
+  | "quiz"
+  | "series"
+  | "parallel"
+  | "adaptive_series"
+  | "adaptive_parallel"
+  | "troubleshoot";
 
 /* ---------------------------------------------------------------- Component */
 export default function VoiceGuide() {
-  const [mode, setMode] = useState<"idle" | "recognition" | "quiz" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel">("idle");
+  const [mode, setMode] = useState<GuideMode>("idle");
   const [currentStep, setCurrentStep] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -259,6 +306,7 @@ export default function VoiceGuide() {
   const lastRemindRef = useRef<number>(0);
   const lastClueRef = useRef<number>(0);
   const lastShortCircuitRef = useRef<number>(0);
+  const lastMenuSelectRef = useRef<number>(0);
   const hasTriggeredSuccessEarconRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
 
@@ -284,6 +332,8 @@ export default function VoiceGuide() {
       completeModule("series_circuit");
     } else if (targetMode === "parallel" || targetMode === "adaptive_parallel") {
       completeModule("parallel_circuit");
+    } else if (targetMode === "troubleshoot") {
+      completeModule("circuit_troubleshoot");
     }
   }, []);
 
@@ -300,6 +350,8 @@ export default function VoiceGuide() {
       ? ADAPTIVE_SERIES_STEPS
       : mode === "adaptive_parallel"
       ? ADAPTIVE_PARALLEL_STEPS
+      : mode === "troubleshoot"
+      ? TROUBLESHOOT_STEPS
       : [];
   const step = steps[currentStep];
   const totalSteps = steps.length;
@@ -412,10 +464,8 @@ export default function VoiceGuide() {
     }
   }, [isFinished, mode, checkpointPhase, speak]);
 
-  // Listen to circuit-update events to track progress
+  // Listen to circuit-update events to track progress and tangible menu
   useEffect(() => {
-    if (mode === "idle") return;
-
     const handleCircuitUpdate = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       const cells = detail?.cells || {};
@@ -423,6 +473,45 @@ export default function VoiceGuide() {
 
       const placedCount = Object.values(cells).filter(Boolean).length;
       setBoardBlockCount(placedCount);
+
+      // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1)
+      if (mode === "idle") {
+        if (placedCount === 1) {
+          const now = Date.now();
+          if (now - lastMenuSelectRef.current > 4000) {
+            if (cells["A1"]) {
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              speak("Pilihan diterima: Kuis Taktil! Angkat balok dari A1 untuk memulai kuis.", () => {
+                setTimeout(() => startGuide("quiz"), 1200);
+              });
+            } else if (cells["B1"]) {
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              speak("Pilihan diterima: Misi Rangkaian Seri! Angkat balok dari B1 untuk memulai panduan.", () => {
+                setTimeout(() => startGuide("series"), 1200);
+              });
+            } else if (cells["C1"]) {
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              speak("Pilihan diterima: Misi Rangkaian Paralel! Angkat balok dari C1 untuk memulai panduan.", () => {
+                setTimeout(() => startGuide("parallel"), 1200);
+              });
+            } else if (cells["D1"]) {
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              speak("Pilihan diterima: Tantangan Detektif Sirkuit! Angkat balok dari D1 untuk memulai tantangan.", () => {
+                setTimeout(() => startGuide("troubleshoot"), 1200);
+              });
+            } else if (cells["E1"]) {
+              lastMenuSelectRef.current = now;
+              playEarcon("clue");
+              speak("Menu Pilihan LENTERA: Letakkan satu balok di A1 untuk Kuis Taktil, di B1 untuk Rangkaian Seri, di C1 untuk Rangkaian Paralel, atau di D1 untuk Tantangan Detektif Sirkuit. Silakan angkat balok dari E1 dan tentukan pilihanmu!");
+            }
+          }
+        }
+        return;
+      }
 
       // Evaluasi Darurat Korsleting Fisika (Short Circuit Safety Alert)
       if (detail?.status === "short_circuit") {
@@ -587,7 +676,8 @@ export default function VoiceGuide() {
     }
   }, [currentStep, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startGuide = (guideMode: "recognition" | "quiz" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel") => {
+  const startGuide = (guideMode: GuideMode) => {
+    if (guideMode === "idle") return;
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     setMode(guideMode);
     setCurrentStep(0);
@@ -603,7 +693,7 @@ export default function VoiceGuide() {
       const targetMode = (e as CustomEvent).detail;
       if (
         targetMode &&
-        ["recognition", "quiz", "series", "parallel", "adaptive_series", "adaptive_parallel"].includes(targetMode)
+        ["recognition", "quiz", "series", "parallel", "adaptive_series", "adaptive_parallel", "troubleshoot"].includes(targetMode)
       ) {
         startGuide(targetMode);
       }
@@ -677,9 +767,52 @@ export default function VoiceGuide() {
           </div>
         </div>
         
-        <p className="text-xs text-cs-text/65 leading-5 mb-4">
+        <p className="text-xs text-cs-text/65 leading-5 mb-3">
           Pilih mode di bawah. Mulai dari pengenalan blok komponen terlebih dahulu, atau langsung merakit rangkaian di papan.
         </p>
+
+        {/* Menu Papan Taktil (Zero-Screen TUI) Info Banner */}
+        <div className="mb-4 rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50/80 via-indigo-50/50 to-purple-50/80 p-3.5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-violet-700 bg-white/90 px-2 py-0.5 rounded-full shadow-xs border border-violet-100">
+              <Sparkles className="h-3 w-3 text-violet-500" /> Navigasi Papan Taktil (Zero-Screen)
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Taruh 1 balok di baris 1</span>
+          </div>
+          <p className="text-[11px] text-slate-600 leading-4 mb-2.5">
+            Siswa tunanetra dapat langsung meletakkan 1 balok di baris atas papan (A1 - D1) untuk memilih materi secara mandiri:
+          </p>
+          <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+            <button
+              onClick={() => startGuide("quiz")}
+              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
+            >
+              <div className="font-mono text-xs font-black text-violet-600">A1</div>
+              <div>Kuis Taktil</div>
+            </button>
+            <button
+              onClick={() => startGuide("series")}
+              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
+            >
+              <div className="font-mono text-xs font-black text-violet-600">B1</div>
+              <div>Rangkaian Seri</div>
+            </button>
+            <button
+              onClick={() => startGuide("parallel")}
+              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-violet-800 transition-colors shadow-xs"
+            >
+              <div className="font-mono text-xs font-black text-violet-600">C1</div>
+              <div>Rangkaian Paralel</div>
+            </button>
+            <button
+              onClick={() => startGuide("troubleshoot")}
+              className="p-1.5 rounded-lg bg-white/90 border border-violet-100 hover:border-violet-300 font-bold text-rose-700 transition-colors shadow-xs"
+            >
+              <div className="font-mono text-xs font-black text-rose-600">D1</div>
+              <div>Detektif Sirkuit</div>
+            </button>
+          </div>
+        </div>
 
         {/* Tahap 1: Pengenalan Blok Komponen */}
         <div className="mb-3">
@@ -811,6 +944,51 @@ export default function VoiceGuide() {
             <Play className="absolute bottom-2.5 right-2.5 h-3.5 w-3.5 text-emerald-300 group-hover:text-emerald-500 transition-colors" />
           </button>
         </div>
+
+        <div className="flex items-center gap-2 my-2.5">
+          <div className="h-px flex-1 bg-slate-200/80" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-500 font-extrabold">
+            Tahap 3 • Tingkat Mahir
+          </span>
+          <div className="h-px flex-1 bg-slate-200/80" />
+        </div>
+
+        {/* Tahap 3: Tantangan Detektif Sirkuit */}
+        <div>
+          <button
+            onClick={() => startGuide("troubleshoot")}
+            className="group relative w-full overflow-hidden rounded-xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 p-3.5 text-left transition-all hover:border-rose-400 hover:shadow-lg hover:shadow-rose-100 active:scale-[0.99]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
+                  studentProgress.modules.circuit_troubleshoot
+                    ? "text-emerald-700 bg-emerald-100/90"
+                    : "text-rose-700 bg-rose-100/90"
+                }`}>
+                  {studentProgress.modules.circuit_troubleshoot ? (
+                    <>
+                      <CheckCircle2 className="h-3 w-3" /> Mahir • Selesai
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3 w-3" /> Detektif Sirkuit (Troubleshooting)
+                    </>
+                  )}
+                </span>
+                <div className="font-heading text-sm font-extrabold text-cs-text">
+                  Tantangan Detektif Sirkuit
+                </div>
+                <p className="text-[11px] text-cs-text/65 mt-1 max-w-[280px] leading-4">
+                  Misi analisis kendali saklar dan uji rangkaian paralel bebas tanpa bantuan panduan visual.
+                </p>
+              </div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md shadow-rose-200 group-hover:scale-105 transition-transform">
+                <Play className="h-3.5 w-3.5 fill-white translate-x-0.5" />
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
     );
   }
@@ -822,6 +1000,8 @@ export default function VoiceGuide() {
       ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600"
       : mode === "quiz"
       ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600"
+      : mode === "troubleshoot"
+      ? "bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600"
       : mode === "series" || mode === "adaptive_series"
       ? "bg-gradient-to-r from-violet-500 to-purple-600"
       : "bg-gradient-to-r from-sky-500 to-cyan-600";
@@ -831,6 +1011,8 @@ export default function VoiceGuide() {
       ? "bg-amber-500"
       : mode === "quiz"
       ? "bg-indigo-500"
+      : mode === "troubleshoot"
+      ? "bg-rose-500"
       : mode === "series" || mode === "adaptive_series"
       ? "bg-violet-500"
       : "bg-sky-500";
@@ -840,6 +1022,8 @@ export default function VoiceGuide() {
       ? "Pengenalan Blok Komponen"
       : mode === "quiz"
       ? "Kuis Tebak Komponen Taktil"
+      : mode === "troubleshoot"
+      ? "Tantangan Detektif Sirkuit"
       : `${mode.includes("adaptive") ? "Rangkaian Bebas" : "Panduan"} ${
           mode.includes("series") ? "Seri" : "Paralel"
         }`;
@@ -850,6 +1034,8 @@ export default function VoiceGuide() {
     ? `Komponen ${currentStep + 1} dari ${totalSteps}`
     : mode === "quiz"
     ? `Soal ${currentStep + 1} dari ${totalSteps}`
+    : mode === "troubleshoot"
+    ? `Misi ${currentStep + 1} dari ${totalSteps}`
     : `Langkah ${currentStep + 1} dari ${totalSteps}`;
 
   return (

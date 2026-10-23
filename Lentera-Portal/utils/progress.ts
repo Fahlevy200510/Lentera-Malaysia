@@ -6,6 +6,7 @@ export interface StudentProgress {
     component_quiz?: boolean;
     series_circuit: boolean;
     parallel_circuit: boolean;
+    circuit_troubleshoot?: boolean;
   };
   skills: {
     battery: number;
@@ -32,6 +33,7 @@ export const DEFAULT_PROGRESS: StudentProgress = {
     component_quiz: false,
     series_circuit: false,
     parallel_circuit: false,
+    circuit_troubleshoot: false,
   },
   skills: {
     battery: 1,
@@ -209,7 +211,7 @@ export function resetStudentProgress(studentId?: string): StudentProgress {
 }
 
 export function completeModule(
-  moduleKey: "component_recognition" | "component_quiz" | "series_circuit" | "parallel_circuit",
+  moduleKey: "component_recognition" | "component_quiz" | "series_circuit" | "parallel_circuit" | "circuit_troubleshoot",
   studentId?: string
 ): StudentProgress {
   const current = getStudentProgress(studentId);
@@ -262,6 +264,15 @@ export function completeModule(
       updated.achievements.push("Master Rangkaian");
     }
     updated.xp = 1000;
+  } else if (moduleKey === "circuit_troubleshoot") {
+    // Tantangan Detektif Sirkuit tuntas: Master Detektif Sirkuit
+    updated.skills.series = 5;
+    updated.skills.parallel = 5;
+    updated.skills.flow = 5;
+    if (!updated.achievements.includes("Master Detektif Sirkuit")) {
+      updated.achievements.push("Master Detektif Sirkuit");
+    }
+    updated.xp = Math.max(updated.xp, 1200);
   }
 
   saveStudentProgress(updated, studentId);

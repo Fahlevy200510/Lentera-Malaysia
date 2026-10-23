@@ -53,6 +53,12 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
       desc: "Menyusun sirkuit bercabang dengan kabel T dan saklar mandiri untuk setiap lampu.",
       done: progress.modules.parallel_circuit,
     },
+    {
+      id: "circuit_troubleshoot",
+      name: "Tahap 5: Tantangan Detektif Sirkuit (Tingkat Mahir)",
+      desc: "Mendiagnosis, menguji saklar pemutus arus, dan memecahkan tantangan sirkuit tanpa panduan visual.",
+      done: progress.modules.circuit_troubleshoot ?? false,
+    },
   ];
 
   const completedCount = modulesList.filter((m) => m.done).length;
