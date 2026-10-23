@@ -193,6 +193,12 @@ const COMPONENT_LABEL: Record<string, string> = {
   lamp: "lampu", resistor: "resistor", switch: "saklar",
 };
 
+const NEXT_GUIDE_MAP: Record<string, { mode: "series" | "parallel"; title: string }> = {
+  recognition: { mode: "series", title: "Rangkaian Seri" },
+  series: { mode: "parallel", title: "Rangkaian Paralel" },
+  adaptive_series: { mode: "parallel", title: "Rangkaian Paralel" },
+};
+
 /* ---------------------------------------------------------------- Component */
 export default function VoiceGuide() {
   const [mode, setMode] = useState<"idle" | "recognition" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel">("idle");
@@ -202,10 +208,16 @@ export default function VoiceGuide() {
   const [completedCells, setCompletedCells] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(true);
   const [stepCompleted, setStepCompleted] = useState(false);
+  const [checkpointPhase, setCheckpointPhase] = useState<"idle" | "waiting_clear" | "waiting_choice" | "confirmed">("idle");
+  const [boardBlockCount, setBoardBlockCount] = useState<number>(0);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const latestCellsRef = useRef<Record<string, any>>({});
+  const lastRemindRef = useRef<number>(0);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
+
+  const nextGuide = NEXT_GUIDE_MAP[mode];
 
   useEffect(() => {
     setStudentProgress(getStudentProgress());
@@ -307,14 +319,117 @@ export default function VoiceGuide() {
     }
   }, []);
 
+  // Checkpoint Handler: saat panduan selesai, pandu pembersihan papan dan pilihan taktil A1/E1
+  useEffect(() => {
+    if (!isFinished || mode === "idle" || checkpointPhase !== "idle") return;
+
+    const currentCells = latestCellsRef.current || {};
+    const placed = Object.values(currentCells).filter(Boolean).length;
+    setBoardBlockCount(placed);
+
+    const targetNext = NEXT_GUIDE_MAP[mode];
+
+    if (placed > 0) {
+      setCheckpointPhase("waiting_clear");
+      if (mode === "recognition") {
+        speak(
+          "Selamat! Kamu telah menyelesaikan pengenalan seluruh balok komponen Lentera. Kerja yang luar biasa! Sebelum kita lanjut ke panduan berikutnya, silakan angkat terlebih dahulu semua balok yang ada di papan."
+        );
+      } else if (mode === "series" || mode === "adaptive_series") {
+        speak(
+          "Hebat sekali! Kamu berhasil menyelesaikan Rangkaian Seri dan lampu menyala! Sebelum kita lanjut ke Rangkaian Paralel, silakan angkat terlebih dahulu semua balok dari papan."
+        );
+      } else {
+        speak(
+          "Selamat! Kamu telah menyelesaikan seluruh rangkaian! Kerja yang luar biasa! Silakan angkat semua balok dari papan jika ingin merangkai bebas."
+        );
+      }
+    } else {
+      if (targetNext) {
+        setCheckpointPhase("waiting_choice");
+        speak(
+          `Selamat! Kamu telah menyelesaikan ${
+            mode === "recognition" ? "pengenalan komponen" : "rangkaian seri"
+          }. Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${
+            targetNext.title
+          }? Letakkan balok di sudut kiri posisi A1 untuk IYA, atau di sudut kanan posisi E1 untuk TIDAK.`
+        );
+      } else {
+        setCheckpointPhase("confirmed");
+        speak(
+          "Selamat! Kamu telah menyelesaikan seluruh materi rangkaian dasar Lentera! Papan sudah bersih dan siap untuk eksplorasi bebas."
+        );
+      }
+    }
+  }, [isFinished, mode, checkpointPhase, speak]);
+
   // Listen to circuit-update events to track progress
   useEffect(() => {
-    if (mode === "idle" || !step) return;
+    if (mode === "idle") return;
 
     const handleCircuitUpdate = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       const cells = detail?.cells || {};
-      
+      latestCellsRef.current = cells;
+
+      const placedCount = Object.values(cells).filter(Boolean).length;
+      setBoardBlockCount(placedCount);
+
+      // KETIKA MODUL TELAH SELESAI (CHECKPOINT TAKTIL A1 / E1)
+      if (isFinished) {
+        const targetNext = NEXT_GUIDE_MAP[mode];
+
+        if (checkpointPhase === "waiting_clear") {
+          if (placedCount === 0) {
+            if (targetNext) {
+              setCheckpointPhase("waiting_choice");
+              speak(
+                `Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di sudut kiri posisi A1 untuk IYA, atau di sudut kanan posisi E1 untuk TIDAK.`
+              );
+            } else {
+              setCheckpointPhase("confirmed");
+              speak(
+                "Papan sudah bersih. Selamat bereksplorasi bebas merangkai apa saja di papan fisik!"
+              );
+            }
+          }
+        } else if (checkpointPhase === "waiting_choice") {
+          if (cells["A1"]) {
+            setCheckpointPhase("confirmed");
+            speak(
+              `Pilihan IYA diterima! Silakan angkat kembali balok dari A1, kita mulai panduan ${targetNext?.title}.`,
+              () => {
+                setTimeout(() => {
+                  if (targetNext) {
+                    startGuide(targetNext.mode);
+                  }
+                }, 1200);
+              }
+            );
+          } else if (cells["E1"]) {
+            setCheckpointPhase("confirmed");
+            speak(
+              "Baik, kamu memilih istirahat. Silakan angkat kembali baloknya. Kamu bisa merangkai bebas di papan fisik kapan saja.",
+              () => {
+                setTimeout(() => {
+                  resetGuide();
+                }, 1200);
+              }
+            );
+          } else if (placedCount > 0) {
+            const now = Date.now();
+            if (now - lastRemindRef.current > 7000) {
+              lastRemindRef.current = now;
+              speak("Letakkan balok di sudut kiri A1 untuk IYA, atau di sudut kanan E1 untuk TIDAK.");
+            }
+          }
+        }
+        return;
+      }
+
+      // KETIKA MASIH DALAM PROSES LANGKAH PANDUAN
+      if (!step) return;
+
       const newCompleted = new Set<string>();
       let allFound = true;
       if (step.targetCells) {
@@ -363,17 +478,17 @@ export default function VoiceGuide() {
             setCompletedCells(new Set());
           }, 2500);
         } else {
-          speak("Selamat! Kamu telah menyelesaikan seluruh rangkaian! Kerja yang luar biasa!");
+          speak("Bagus sekali! Rangkaian selesai.");
           advanceTimerRef.current = setTimeout(() => {
             setCurrentStep(totalSteps);
-          }, 3000);
+          }, 1500);
         }
       }
     };
 
     window.addEventListener("circuit-update", handleCircuitUpdate);
     return () => window.removeEventListener("circuit-update", handleCircuitUpdate);
-  }, [mode, step, stepCompleted, currentStep, totalSteps, speak]);
+  }, [mode, step, stepCompleted, currentStep, totalSteps, isFinished, checkpointPhase, speak]);
 
   // Speak current step instruction when step changes
   useEffect(() => {
@@ -388,6 +503,8 @@ export default function VoiceGuide() {
     setCurrentStep(0);
     setStepCompleted(false);
     setCompletedCells(new Set());
+    setCheckpointPhase("idle");
+    setBoardBlockCount(0);
     setIsExpanded(true);
   };
 
@@ -412,6 +529,8 @@ export default function VoiceGuide() {
     setCurrentStep(0);
     setStepCompleted(false);
     setCompletedCells(new Set());
+    setCheckpointPhase("idle");
+    setBoardBlockCount(0);
     if (typeof window !== "undefined") {
       (window as any).__lenteraGuideMode = "idle";
       (window as any).__lenteraSpeaking = false;
@@ -641,37 +760,119 @@ export default function VoiceGuide() {
       {isExpanded && (
         <div className="p-4 space-y-3">
           {isFinished ? (
-            /* Completion Screen */
-            <div className="text-center py-4 space-y-3">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-green-500 text-white shadow-lg shadow-emerald-200">
-                <CheckCircle2 className="h-7 w-7" />
+            /* Completion & Tactile Checkpoint Screen */
+            <div className="text-center py-3 space-y-3">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-green-500 text-white shadow-lg shadow-emerald-200">
+                <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h3 className="font-heading text-lg font-extrabold text-cs-text">
-                {mode === "recognition" ? "Pengenalan Selesai!" : "Rangkaian Selesai!"}
-              </h3>
-              <p className="text-xs text-cs-text/60 leading-5 max-w-xs mx-auto">
-                {mode === "recognition"
-                  ? "Hebat sekali! Kamu telah mengenal bentuk taktil dan fungsi seluruh komponen Lentera. Sekarang kamu siap untuk mulai merakit rangkaian!"
-                  : mode === "series" || mode === "adaptive_series"
-                  ? "Kamu telah membuat rangkaian seri! Semua komponen berbagi satu jalur. Jika satu putus, seluruh rangkaian berhenti."
-                  : "Kamu telah membuat rangkaian paralel! Setiap cabang bekerja sendiri-sendiri. Jika satu lampu mati, lampu lainnya tetap menyala."}
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                {mode === "recognition" && (
+              <div>
+                <h3 className="font-heading text-base font-extrabold text-cs-text">
+                  {mode === "recognition" ? "Pengenalan Selesai! 🎉" : "Rangkaian Selesai! 🎉"}
+                </h3>
+                <p className="text-xs text-cs-text/60 mt-0.5 leading-relaxed max-w-xs mx-auto">
+                  {mode === "recognition"
+                    ? "Hebat sekali! Kamu telah mengenal bentuk taktil dan fungsi seluruh komponen Lentera."
+                    : mode === "series" || mode === "adaptive_series"
+                    ? "Kamu telah membuat rangkaian seri! Semua komponen berbagi satu jalur."
+                    : "Kamu telah membuat rangkaian paralel! Setiap cabang bekerja sendiri-sendiri."}
+                </p>
+              </div>
+
+              {/* KARTU CHECKPOINT TAKTIL & INTERAKTIF */}
+              {nextGuide ? (
+                <div className="mt-2 text-left rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-purple-50/40 to-white p-3.5 shadow-sm space-y-2.5">
+                  {checkpointPhase === "waiting_clear" ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-amber-700 font-bold text-xs">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                        </span>
+                        <span>Tahap 1: Kosongkan Papan Fisik</span>
+                      </div>
+                      <p className="text-[11px] text-cs-text/70 leading-relaxed">
+                        Silakan angkat semua balok yang ada di papan fisik agar grid bersih sebelum lanjut ke modul berikutnya.
+                      </p>
+                      <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-100/80 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
+                        <span>{boardBlockCount > 0 ? `${boardBlockCount} balok masih di papan` : "Papan sudah bersih..."}</span>
+                      </div>
+                    </div>
+                  ) : checkpointPhase === "waiting_choice" ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
+                          Tahap 2: Pilihan di Papan Fisik
+                        </span>
+                        <span className="text-[10px] text-cs-text/50">Taktil / Layar</span>
+                      </div>
+                      <p className="text-xs font-bold text-cs-text leading-tight">
+                        Lanjut ke {nextGuide.title}?
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        {/* Pilihan A1 = IYA */}
+                        <button
+                          onClick={() => startGuide(nextGuide.mode)}
+                          className="group relative flex flex-col items-start rounded-xl border-2 border-emerald-300 bg-emerald-50/80 p-2.5 text-left transition-all hover:border-emerald-500 hover:shadow-md hover:bg-emerald-100/70 active:scale-[0.98]"
+                        >
+                          <div className="flex items-center justify-between w-full mb-1">
+                            <span className="rounded bg-emerald-200 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-800">
+                              A1 (Sudut Kiri)
+                            </span>
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                          </div>
+                          <div className="text-xs font-extrabold text-emerald-950">
+                            IYA, Lanjut
+                          </div>
+                          <div className="text-[10px] text-emerald-700/80 mt-0.5 leading-tight">
+                            Mulai {nextGuide.title}
+                          </div>
+                        </button>
+
+                        {/* Pilihan E1 = TIDAK */}
+                        <button
+                          onClick={resetGuide}
+                          className="group relative flex flex-col items-start rounded-xl border-2 border-slate-200 bg-white p-2.5 text-left transition-all hover:border-slate-400 hover:shadow-md hover:bg-slate-50 active:scale-[0.98]"
+                        >
+                          <div className="flex items-center justify-between w-full mb-1">
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-600">
+                              E1 (Sudut Kanan)
+                            </span>
+                            <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+                          </div>
+                          <div className="text-xs font-extrabold text-slate-800">
+                            TIDAK, Istirahat
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                            Ke Menu Eksplorasi
+                          </div>
+                        </button>
+                      </div>
+                      
+                      <p className="text-[10px] text-cs-text/50 italic text-center pt-0.5">
+                        💡 Letakkan balok di sudut kiri bawah (A1) atau sudut kanan bawah (E1).
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="py-2 text-center text-xs font-bold text-emerald-700 flex items-center justify-center gap-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      <span>Pilihan diterima! Membuka panduan...</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="pt-2">
                   <button
-                    onClick={() => startGuide("series")}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-violet-200 hover:from-violet-500 hover:to-purple-500 transition-all active:scale-[0.98]"
+                    onClick={resetGuide}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-4 py-2 text-xs font-bold text-cs-text hover:bg-slate-200 transition-colors"
                   >
-                    <Play className="h-3.5 w-3.5 fill-white" /> Mulai Rangkaian Seri
+                    <RotateCcw className="h-3.5 w-3.5" /> Menu Utama
                   </button>
-                )}
-                <button
-                  onClick={resetGuide}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-4 py-2 text-xs font-bold text-cs-text hover:bg-slate-200 transition-colors"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" /> Menu Utama
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           ) : (
             <>
