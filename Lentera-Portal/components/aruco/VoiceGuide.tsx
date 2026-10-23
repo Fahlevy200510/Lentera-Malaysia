@@ -22,7 +22,7 @@ const RECOGNITION_STEPS: StepDef[] = [
     voice: "Mari berkenalan dengan komponen listrik! Pertama, raba dan cari balok Baterai. Letakkan balok Baterai di posisi C3, tepat di tengah papan.",
     targetCells: { "C3": "battery" },
     hint: "Baterai memiliki simbol plus-minus timbul. Letakkan di posisi C3 (tengah papan).",
-    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik. Raba kedua ujungnya: sisi bertanda timbul adalah kutub positif, dan sisi datar adalah kutub negatif. Arus listrik mengalir dari kutub positif menuju kutub negatif.",
+    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik. Raba kedua ujungnya: kamu akan merasakan simbol timbul tanda plus untuk kutub positif, dan simbol timbul tanda minus garis mendatar untuk kutub negatif. Keduanya memiliki tanda taktil timbul agar mudah dibedakan dengan jari. Arus listrik mengalir keluar dari kutub positif menuju kutub negatif.",
   },
   {
     instruction: "Angkat baterai, lalu letakkan balok Saklar di posisi C3",

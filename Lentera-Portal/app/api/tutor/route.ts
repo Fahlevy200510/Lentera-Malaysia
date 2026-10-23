@@ -125,7 +125,7 @@ function generateCLEFallbackResponse(
 
   if (/baterai|battery/.test(m)) {
     return {
-      text: "Baterai adalah sumber energi listrik kita. Raba kedua ujungnya: sisi dengan tonjolan kecil adalah kutub positif, sedangkan sisi yang datar adalah kutub negatif. Arus mengalir keluar dari kutub positif yang timbul.",
+      text: "Baterai adalah sumber energi listrik kita. Raba kedua ujungnya: kamu akan merasakan simbol timbul tanda plus untuk kutub positif, dan simbol timbul tanda minus untuk kutub negatif. Keduanya memiliki tekstur timbul agar mudah dibedakan dengan jari. Arus mengalir keluar dari kutub positif.",
       note: "Eksplorasi Taktil: Mengenali Polaritas Baterai",
     };
   }
