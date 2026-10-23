@@ -6,7 +6,7 @@ MARKER_ID_MAP = {
     3: "l_cable",
     4: "t_cable",
     5: "lamp",
-    6: "resistor",
+    6: "t_cable",
     7: "switch"
 }
 
