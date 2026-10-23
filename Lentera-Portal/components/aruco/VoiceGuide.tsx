@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Volume2, VolumeX, Play, Pause, SkipForward, RotateCcw, CheckCircle2, Sparkles, ChevronDown, ChevronUp, BookOpen, Lock } from "lucide-react";
+import { Volume2, VolumeX, Play, Pause, SkipForward, RotateCcw, CheckCircle2, Sparkles, ChevronDown, ChevronUp, BookOpen, Lock, HelpCircle, AlertTriangle } from "lucide-react";
 import { completeModule, getStudentProgress, DEFAULT_PROGRESS, type StudentProgress } from "@/utils/progress";
+import { playEarcon } from "@/utils/soundEffects";
 
 /* ---------------------------------------------------------------- Types */
 type CellData = { component: string; rotation: number };
@@ -58,6 +59,37 @@ const RECOGNITION_STEPS: StepDef[] = [
     targetCells: { "C3": "t_cable" },
     hint: "Kabel T memiliki alur timbul bercabang tiga membentuk huruf T.",
     explanation: "Luar biasa! Ini adalah balok Kabel Cabang T. Kabel ini memiliki tiga percabangan koneksi. Kabel T sangat penting pada rangkaian paralel karena membagi aliran listrik menjadi beberapa cabang terpisah untuk masing-masing lampu.",
+  },
+];
+
+const QUIZ_STEPS: StepDef[] = [
+  {
+    instruction: "Tebak: Sumber Energi Listrik",
+    voice: "Kuis Taktil dimulai! Pertanyaan pertama: Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik? Raba dan letakkan komponen tersebut di posisi mana saja di papan untuk menjawab.",
+    validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "battery"),
+    hint: "Cari balok yang memiliki simbol timbul plus dan minus di kedua ujungnya.",
+    explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi listrik yang menghasilkan tegangan untuk mendorong arus.",
+  },
+  {
+    instruction: "Tebak: Pengubah Listrik Menjadi Cahaya",
+    voice: "Pertanyaan kedua! Angkat baterai. Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Letakkan di papan untuk menjawab.",
+    validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "lamp"),
+    hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya.",
+    explanation: "Luar biasa! Benar sekali, itu adalah Lampu! Lampu berperan sebagai beban yang bersinar terang saat dialiri arus listrik.",
+  },
+  {
+    instruction: "Tebak: Pengendali Aliran Listrik",
+    voice: "Pertanyaan ketiga! Angkat lampu. Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Letakkan di papan untuk menjawab.",
+    validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "switch"),
+    hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser.",
+    explanation: "Tepat sekali! Itu adalah Saklar. Saat saklar ditutup rangkaian terhubung, dan saat dibuka rangkaian terputus.",
+  },
+  {
+    instruction: "Tebak: Kabel Cabang T Rangkaian Paralel",
+    voice: "Pertanyaan terakhir! Angkat saklar. Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Letakkan di papan untuk menjawab.",
+    validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "t_cable"),
+    hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
+    explanation: "Sempurna! Itu adalah Kabel Cabang T. Kabel T membagi arus listrik menjadi cabang-cabang mandiri untuk setiap lampu.",
   },
 ];
 
@@ -193,15 +225,25 @@ const COMPONENT_LABEL: Record<string, string> = {
   lamp: "lampu", resistor: "resistor", switch: "saklar",
 };
 
-const NEXT_GUIDE_MAP: Record<string, { mode: "series" | "parallel"; title: string }> = {
-  recognition: { mode: "series", title: "Rangkaian Seri" },
+const COMPONENT_TACTILE_HINT: Record<string, string> = {
+  battery: "memiliki simbol plus dan minus timbul di kedua ujungnya",
+  switch: "memiliki tuas mekanik timbul yang dapat diklik atau digeser di atasnya",
+  lamp: "memiliki kubah indikator bundar timbul di bagian atasnya",
+  straight_cable: "memiliki alur garis lurus timbul melintang",
+  l_cable: "memiliki alur timbul siku-siku seperti huruf L",
+  t_cable: "memiliki alur timbul bercabang tiga seperti huruf T",
+};
+
+const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" | "parallel"; title: string }> = {
+  recognition: { mode: "quiz", title: "Kuis Taktil" },
+  quiz: { mode: "series", title: "Rangkaian Seri" },
   series: { mode: "parallel", title: "Rangkaian Paralel" },
   adaptive_series: { mode: "parallel", title: "Rangkaian Paralel" },
 };
 
 /* ---------------------------------------------------------------- Component */
 export default function VoiceGuide() {
-  const [mode, setMode] = useState<"idle" | "recognition" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel">("idle");
+  const [mode, setMode] = useState<"idle" | "recognition" | "quiz" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel">("idle");
   const [currentStep, setCurrentStep] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -215,6 +257,9 @@ export default function VoiceGuide() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const latestCellsRef = useRef<Record<string, any>>({});
   const lastRemindRef = useRef<number>(0);
+  const lastClueRef = useRef<number>(0);
+  const lastShortCircuitRef = useRef<number>(0);
+  const hasTriggeredSuccessEarconRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
 
   const nextGuide = NEXT_GUIDE_MAP[mode];
@@ -233,6 +278,8 @@ export default function VoiceGuide() {
   const handleGuideFinish = useCallback((targetMode: string) => {
     if (targetMode === "recognition") {
       completeModule("component_recognition");
+    } else if (targetMode === "quiz") {
+      completeModule("component_quiz");
     } else if (targetMode === "series" || targetMode === "adaptive_series") {
       completeModule("series_circuit");
     } else if (targetMode === "parallel" || targetMode === "adaptive_parallel") {
@@ -243,6 +290,8 @@ export default function VoiceGuide() {
   const steps =
     mode === "recognition"
       ? RECOGNITION_STEPS
+      : mode === "quiz"
+      ? QUIZ_STEPS
       : mode === "series"
       ? SERIES_STEPS
       : mode === "parallel"
@@ -375,12 +424,31 @@ export default function VoiceGuide() {
       const placedCount = Object.values(cells).filter(Boolean).length;
       setBoardBlockCount(placedCount);
 
+      // Evaluasi Darurat Korsleting Fisika (Short Circuit Safety Alert)
+      if (detail?.status === "short_circuit") {
+        const now = Date.now();
+        if (now - lastShortCircuitRef.current > 9000) {
+          lastShortCircuitRef.current = now;
+          playEarcon("warning");
+          speak("Peringatan korsleting arus pendek! Arus listrik mengalir tanpa hambatan beban. Segera lepaskan salah satu kabel atau pasang balok lampu agar baterai aman!");
+        }
+      }
+
+      // Earcon Sirkuit Berhasil Menyala
+      if (detail?.isComplete && !hasTriggeredSuccessEarconRef.current) {
+        hasTriggeredSuccessEarconRef.current = true;
+        playEarcon("success");
+      } else if (!detail?.isComplete) {
+        hasTriggeredSuccessEarconRef.current = false;
+      }
+
       // KETIKA MODUL TELAH SELESAI (CHECKPOINT TAKTIL A1 / E1)
       if (isFinished) {
         const targetNext = NEXT_GUIDE_MAP[mode];
 
         if (checkpointPhase === "waiting_clear") {
           if (placedCount === 0) {
+            playEarcon("clear");
             if (targetNext) {
               setCheckpointPhase("waiting_choice");
               speak(
@@ -395,6 +463,7 @@ export default function VoiceGuide() {
           }
         } else if (checkpointPhase === "waiting_choice") {
           if (cells["A1"]) {
+            playEarcon("click");
             setCheckpointPhase("confirmed");
             speak(
               `Pilihan IYA diterima! Silakan angkat kembali balok dari A1, kita mulai panduan ${targetNext?.title}.`,
@@ -407,6 +476,7 @@ export default function VoiceGuide() {
               }
             );
           } else if (cells["E1"]) {
+            playEarcon("click");
             setCheckpointPhase("confirmed");
             speak(
               "Baik, kamu memilih istirahat. Silakan angkat kembali baloknya. Kamu bisa merangkai bebas di papan fisik kapan saja.",
@@ -446,6 +516,25 @@ export default function VoiceGuide() {
       if (step.validator) {
         allFound = step.validator(cells, detail?.status, detail?.graph_type);
       }
+
+      // Socratic Clue Feedback saat komponen yang diletakkan salah di sel target
+      if (step.targetCells && !allFound && !stepCompleted) {
+        for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
+          const placed = cells[cell];
+          if (placed && placed.component !== expectedComponent) {
+            const now = Date.now();
+            if (now - lastClueRef.current > 8000) {
+              lastClueRef.current = now;
+              const placedName = COMPONENT_LABEL[placed.component] || placed.component;
+              const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
+              const clue = COMPONENT_TACTILE_HINT[expectedComponent] || "bentuk yang sesuai";
+              playEarcon("clue");
+              speak(`Kamu meletakkan balok ${placedName} di ${cell}. Untuk langkah ini kita membutuhkan ${expectedName}. Coba raba balok yang ${clue}.`);
+            }
+            break;
+          }
+        }
+      }
       
       // Jika langkah belum selesai, perbarui completed cells
       if (!stepCompleted) {
@@ -455,6 +544,7 @@ export default function VoiceGuide() {
       if (allFound && !stepCompleted) {
         setStepCompleted(true);
         setCompletedCells(newCompleted);
+        playEarcon("step");
         if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
 
         if (step.explanation) {
@@ -497,7 +587,7 @@ export default function VoiceGuide() {
     }
   }, [currentStep, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startGuide = (guideMode: "recognition" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel") => {
+  const startGuide = (guideMode: "recognition" | "quiz" | "series" | "parallel" | "adaptive_series" | "adaptive_parallel") => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     setMode(guideMode);
     setCurrentStep(0);
@@ -513,7 +603,7 @@ export default function VoiceGuide() {
       const targetMode = (e as CustomEvent).detail;
       if (
         targetMode &&
-        ["recognition", "series", "parallel", "adaptive_series", "adaptive_parallel"].includes(targetMode)
+        ["recognition", "quiz", "series", "parallel", "adaptive_series", "adaptive_parallel"].includes(targetMode)
       ) {
         startGuide(targetMode);
       }
@@ -592,10 +682,10 @@ export default function VoiceGuide() {
         </p>
 
         {/* Tahap 1: Pengenalan Blok Komponen */}
-        <div className="mb-4">
+        <div className="mb-3">
           <button
             onClick={() => startGuide("recognition")}
-            className="group relative w-full overflow-hidden rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 text-left transition-all hover:border-amber-400 hover:shadow-lg hover:shadow-amber-100 active:scale-[0.99]"
+            className="group relative w-full overflow-hidden rounded-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-3.5 text-left transition-all hover:border-amber-400 hover:shadow-lg hover:shadow-amber-100 active:scale-[0.99]"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -618,11 +708,48 @@ export default function VoiceGuide() {
                   Pengenalan Blok Komponen
                 </div>
                 <p className="text-[11px] text-cs-text/65 mt-1 max-w-[280px] leading-4">
-                  Ambil dan letakkan balok di posisi C3. Asisten akan menjelaskan bentuk taktil dan fungsi tiap komponen.
+                  Ambil dan letakkan balok di C3. Asisten menjelaskan bentuk taktil & fungsi tiap komponen.
                 </p>
               </div>
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-200 group-hover:scale-105 transition-transform">
-                <Play className="h-4 w-4 fill-white translate-x-0.5" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-200 group-hover:scale-105 transition-transform">
+                <Play className="h-3.5 w-3.5 fill-white translate-x-0.5" />
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Kuis Taktil: Tebak Komponen */}
+        <div className="mb-4">
+          <button
+            onClick={() => startGuide("quiz")}
+            className="group relative w-full overflow-hidden rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-3.5 text-left transition-all hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-100 active:scale-[0.99]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
+                  studentProgress.modules.component_quiz
+                    ? "text-emerald-700 bg-emerald-100/90"
+                    : "text-indigo-700 bg-indigo-100/90"
+                }`}>
+                  {studentProgress.modules.component_quiz ? (
+                    <>
+                      <CheckCircle2 className="h-3 w-3" /> Kuis • Selesai
+                    </>
+                  ) : (
+                    <>
+                      <HelpCircle className="h-3 w-3" /> Gamifikasi TUI
+                    </>
+                  )}
+                </span>
+                <div className="font-heading text-sm font-extrabold text-cs-text">
+                  Kuis Tebak Komponen Taktil
+                </div>
+                <p className="text-[11px] text-cs-text/65 mt-1 max-w-[280px] leading-4">
+                  Lentera menanyakan fungsi komponen, jawab dengan meletakkan balok di papan fisik.
+                </p>
+              </div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform">
+                <Play className="h-3.5 w-3.5 fill-white translate-x-0.5" />
               </div>
             </div>
           </button>
@@ -693,6 +820,8 @@ export default function VoiceGuide() {
   const headerBg =
     mode === "recognition"
       ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600"
+      : mode === "quiz"
+      ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600"
       : mode === "series" || mode === "adaptive_series"
       ? "bg-gradient-to-r from-violet-500 to-purple-600"
       : "bg-gradient-to-r from-sky-500 to-cyan-600";
@@ -700,6 +829,8 @@ export default function VoiceGuide() {
   const progressBg =
     mode === "recognition"
       ? "bg-amber-500"
+      : mode === "quiz"
+      ? "bg-indigo-500"
       : mode === "series" || mode === "adaptive_series"
       ? "bg-violet-500"
       : "bg-sky-500";
@@ -707,6 +838,8 @@ export default function VoiceGuide() {
   const guideTitle =
     mode === "recognition"
       ? "Pengenalan Blok Komponen"
+      : mode === "quiz"
+      ? "Kuis Tebak Komponen Taktil"
       : `${mode.includes("adaptive") ? "Rangkaian Bebas" : "Panduan"} ${
           mode.includes("series") ? "Seri" : "Paralel"
         }`;
@@ -715,6 +848,8 @@ export default function VoiceGuide() {
     ? "Selesai! 🎉"
     : mode === "recognition"
     ? `Komponen ${currentStep + 1} dari ${totalSteps}`
+    : mode === "quiz"
+    ? `Soal ${currentStep + 1} dari ${totalSteps}`
     : `Langkah ${currentStep + 1} dari ${totalSteps}`;
 
   return (
@@ -730,6 +865,8 @@ export default function VoiceGuide() {
               <Volume2 className="h-3.5 w-3.5 text-white animate-pulse" />
             ) : mode === "recognition" ? (
               <BookOpen className="h-3.5 w-3.5 text-white" />
+            ) : mode === "quiz" ? (
+              <HelpCircle className="h-3.5 w-3.5 text-white" />
             ) : (
               <Sparkles className="h-3.5 w-3.5 text-white" />
             )}

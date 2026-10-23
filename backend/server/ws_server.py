@@ -24,6 +24,8 @@ class WSServer:
                             self.on_calibrate()
                         elif action == "shutdown" and hasattr(self, 'on_shutdown'):
                             self.on_shutdown()
+                        elif action == "buzzer" and hasattr(self, 'on_buzzer'):
+                            self.on_buzzer(data.get("pattern", "step"))
                 except Exception as e:
                     print(f"[WS] Error parsing message: {e}")
         except websockets.exceptions.ConnectionClosed:

@@ -141,6 +141,29 @@ def main():
         shutdown_thread.start()
 
     ws.on_shutdown = handle_shutdown
+
+    def handle_buzzer(pattern="step"):
+        print(f"[BUZZER CMD] Menerima trigger buzzer: {pattern}")
+        def run_beep():
+            try:
+                if pattern == "step":
+                    buzzer.beep(times=1, duration=0.08, interval=0.05)
+                elif pattern == "success":
+                    buzzer.beep(times=2, duration=0.10, interval=0.07)
+                elif pattern in ["warning", "short_circuit"]:
+                    buzzer.beep(times=3, duration=0.15, interval=0.08)
+                elif pattern == "clear":
+                    buzzer.beep(times=2, duration=0.05, interval=0.05)
+                elif pattern in ["clue", "hint"]:
+                    buzzer.beep(times=1, duration=0.15, interval=0.05)
+                else:
+                    buzzer.beep(times=1, duration=0.08, interval=0.05)
+            except Exception as e:
+                print(f"[BUZZER CMD] Gagal beep: {e}")
+
+        threading.Thread(target=run_beep, daemon=True).start()
+
+    ws.on_buzzer = handle_buzzer
     
     print("Memasuki loop utama...")
     prev_circuit_status = None
@@ -271,6 +294,11 @@ def main():
                 if status_code == "short_circuit":
                     try:
                         buzzer.beep(times=3, duration=0.15, interval=0.08)
+                    except Exception:
+                        pass
+                elif status_code == "success":
+                    try:
+                        buzzer.beep(times=2, duration=0.10, interval=0.07)
                     except Exception:
                         pass
                 events.append({

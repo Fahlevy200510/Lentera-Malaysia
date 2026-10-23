@@ -3,6 +3,7 @@
 export interface StudentProgress {
   modules: {
     component_recognition: boolean;
+    component_quiz?: boolean;
     series_circuit: boolean;
     parallel_circuit: boolean;
   };
@@ -28,6 +29,7 @@ export interface StudentProfile {
 export const DEFAULT_PROGRESS: StudentProgress = {
   modules: {
     component_recognition: false,
+    component_quiz: false,
     series_circuit: false,
     parallel_circuit: false,
   },
@@ -207,7 +209,7 @@ export function resetStudentProgress(studentId?: string): StudentProgress {
 }
 
 export function completeModule(
-  moduleKey: "component_recognition" | "series_circuit" | "parallel_circuit",
+  moduleKey: "component_recognition" | "component_quiz" | "series_circuit" | "parallel_circuit",
   studentId?: string
 ): StudentProgress {
   const current = getStudentProgress(studentId);
@@ -231,6 +233,15 @@ export function completeModule(
       updated.achievements.push("Cahaya Pertama");
     }
     updated.xp = Math.max(updated.xp, 500);
+  } else if (moduleKey === "component_quiz") {
+    // Kuis taktil tuntas: Detektif Taktil
+    updated.skills.battery = 5;
+    updated.skills.cable = 5;
+    updated.skills.switch = 5;
+    if (!updated.achievements.includes("Detektif Taktil")) {
+      updated.achievements.push("Detektif Taktil");
+    }
+    updated.xp = Math.max(updated.xp, 650);
   } else if (moduleKey === "series_circuit") {
     // Rangkaian seri tuntas
     updated.skills.series = 5;

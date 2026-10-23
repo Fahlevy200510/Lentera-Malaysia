@@ -2,11 +2,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2 } from "lucide-react";
+import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2, FileText } from "lucide-react";
 import CircuitDiagram from "@/components/aruco/CircuitDiagram";
 import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import StudentReportModal from "@/components/StudentReportModal";
 import { getStudentProgress } from "@/utils/progress";
 
 const wiringPoints = [
@@ -36,6 +37,7 @@ export default function ArucoPage() {
   });
 
   const [speaking, setSpeaking] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const speakLabIntro = useCallback(() => {
@@ -179,6 +181,13 @@ export default function ArucoPage() {
                   <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>
+              <button
+                onClick={() => setShowReport(true)}
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-sm hover:from-violet-700 hover:to-indigo-700 transition-all active:scale-95"
+              >
+                <FileText className="h-3.5 w-3.5" />
+                Cetak Raport Siswa
+              </button>
             </div>
 
             <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
@@ -288,6 +297,8 @@ export default function ArucoPage() {
           </div>
         </div>
       </section>
+
+      <StudentReportModal isOpen={showReport} onClose={() => setShowReport(false)} />
     </main>
   );
 }

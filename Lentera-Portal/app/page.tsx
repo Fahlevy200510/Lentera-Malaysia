@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight, ArrowUpRight, CircuitBoard, LayoutDashboard,
-  Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck,
+  Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck, FileText,
 } from "lucide-react";
 import { resolveEndpoints, getActiveLenteraEndpoint } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import StudentReportModal from "@/components/StudentReportModal";
 
 type Destination = {
   href: string;
@@ -49,6 +50,7 @@ export default function PortalHome() {
   const [speaking, setSpeaking] = useState(false);
   const [session, setSession] = useState<{ name: string; role: string } | null>(null);
   const [ready, setReady] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const hasSpokenOnFirstClickRef = useRef(false);
@@ -292,6 +294,15 @@ export default function PortalHome() {
           </button>
 
           <StudentProfileSwitcher />
+
+          <button
+            onClick={() => setShowReport(true)}
+            className="portal-ghost-btn text-violet-300 hover:text-violet-100 hover:bg-violet-500/20"
+            title="Cetak Raport Belajar Siswa"
+          >
+            <FileText className="h-4 w-4 text-violet-400" />
+            <span className="hidden lg:inline">Raport Siswa</span>
+          </button>
 
           {ready && session ? (
             <button
@@ -580,6 +591,8 @@ export default function PortalHome() {
           </div>
         </div>
       </aside>
+
+      <StudentReportModal isOpen={showReport} onClose={() => setShowReport(false)} />
     </main>
   );
 }

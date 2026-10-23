@@ -298,6 +298,20 @@ export default function ArUcoDetector() {
     }
   };
 
+  // Meneruskan trigger buzzer ke Raspberry Pi via WebSocket
+  useEffect(() => {
+    const handleBuzzerEvent = (e: Event) => {
+      const pattern = (e as CustomEvent).detail?.pattern || "step";
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        try {
+          wsRef.current.send(JSON.stringify({ type: "command", action: "buzzer", pattern }));
+        } catch {}
+      }
+    };
+    window.addEventListener("lentera-trigger-buzzer", handleBuzzerEvent);
+    return () => window.removeEventListener("lentera-trigger-buzzer", handleBuzzerEvent);
+  }, []);
+
   const resolved = resolveEndpoints(endpoint);
 
   return (
