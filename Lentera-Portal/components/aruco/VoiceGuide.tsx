@@ -59,11 +59,11 @@ const RECOGNITION_STEPS: StepDef[] = [
     explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Raba bagian atasnya, terdapat tuas yang dapat diklik. Saat saklar ditutup atau dinyalakan, arus listrik mengalir. Saat saklar dibuka, aliran listrik terputus dan lampu akan padam.",
   },
   {
-    instruction: "Angkat saklar. Raba dan cari balok Lampu (memiliki kubah bundar timbul seperti bohlam kecil), lalu letakkan di sel C3.",
-    voice: "Hebat! Sekarang angkat saklarnya. Komponen ketiga adalah Lampu, komponen beban yang menghasilkan cahaya. Coba raba balok yang memiliki tonjolan kubah bundar timbul di bagian tengah atasnya seperti bohlam kecil. Lampu ini yang akan bersinar saat dialiri listrik. Letakkan balok Lampu ini di sel C3.",
+    instruction: "Angkat saklar. Raba dan cari balok Lampu LED (memiliki kubah bundar timbul serta tanda plus (+) dan minus (-) di sisinya untuk polaritas), lalu letakkan di sel C3.",
+    voice: "Hebat! Sekarang angkat saklarnya. Komponen ketiga adalah Lampu. Lampu pada Lentera menggunakan LED yang memiliki polaritas atau kutub positif dan negatif! Coba raba baloknya: di bagian atas terdapat kubah bundar timbul seperti bohlam kecil, dan di kedua sisinya kamu akan merasakan simbol timbul tanda tambah plus untuk kutub positif atau anoda, dan tanda minus untuk kutub negatif atau katoda. Arus dari kutub positif baterai harus masuk ke kutub positif lampu agar lampu bisa menyala. Jika terbalik, lampu tidak akan menyala. Letakkan balok Lampu ini di sel C3.",
     targetCells: { "C3": "lamp" },
-    hint: "Raba bagian atas balok: temukan kubah bundar timbul yang di dalamnya terdapat lampu LED yang akan bersinar saat dialiri listrik.",
-    explanation: "Luar biasa! Ini adalah balok Lampu, yang berperan sebagai komponen beban. Lampu mengubah energi listrik menjadi energi cahaya. Di dalamnya terdapat LED yang akan bersinar terang saat dialiri arus listrik yang cukup dari baterai.",
+    hint: "Raba kubah bundar dan simbol timbul di sisinya: tanda tambah (+) adalah anoda (kutub positif), dan tanda minus (-) adalah katoda (kutub negatif). Polaritas ini menentukan arah arus agar lampu LED menyala.",
+    explanation: "Luar biasa! Ini adalah balok Lampu LED. Sangat penting diingat: Lampu memiliki sifat polaritas satu arah (forward bias). Arus listrik harus mengalir masuk melalui kutub positif bertanda plus menuju kutub negatif bertanda minus. Jika kamu merakit rangkaian dan lampu belum menyala padahal rangkaian sudah tertutup, jangan panik: cukup angkat balok lampu dan putar posisinya 180 derajat!",
   },
   {
     instruction: "Angkat lampu. Raba dan cari balok Kabel Lurus (memiliki alur garis timbul lurus melintang), lalu letakkan di sel C3.",
@@ -164,9 +164,9 @@ const SERIES_STEPS: StepDef[] = [
   },
   {
     instruction: "Letakkan 2 Lampu di B1 dan D1, dan Saklar di C1",
-    voice: "Langkah terakhir! Letakkan dua komponen lampu di posisi B1 dan D1, lalu letakkan saklar kedua tepat di antaranya di C1. Pada rangkaian seri, semua komponen berbagi satu jalur yang sama. Jika satu lampu putus, atau salah satu saklar dibuka, seluruh rangkaian akan terputus! Selamat, kamu berhasil membuat rangkaian seri dengan dua saklar!",
+    voice: "Langkah terakhir! Letakkan dua komponen lampu di posisi B1 dan D1, lalu letakkan saklar kedua tepat di antaranya di C1. Ingat polaritas lampu LED: pastikan kutub positif bertanda plus menghadap arah kutub positif baterai. Jika lampu belum menyala saat saklar dinyalakan, cukup angkat balok lampu dan putar posisinya 180 derajat. Selamat, kamu berhasil membuat rangkaian seri!",
     targetCells: { "B1": "lamp", "D1": "lamp", "C1": "switch" },
-    hint: "Saklar kedua di C1 mengendalikan kedua lampu karena tersusun seri.",
+    hint: "Perhatikan polaritas lampu LED: kutub positif (+) harus menghadap arah kutub positif baterai. Jika lampu belum menyala saat saklar tertutup, putar balok lampu 180 derajat.",
   },
 ];
 
@@ -289,7 +289,7 @@ const COMPONENT_LABEL: Record<string, string> = {
 const COMPONENT_TACTILE_HINT: Record<string, string> = {
   battery: "memiliki simbol plus dan minus timbul di kedua ujungnya",
   switch: "memiliki tuas mekanik timbul yang dapat diklik atau digeser di atasnya",
-  lamp: "memiliki kubah indikator bundar timbul di bagian atasnya",
+  lamp: "memiliki kubah bundar timbul serta tanda plus (+) dan minus (-) timbul untuk kutub polaritasnya",
   straight_cable: "memiliki alur garis lurus timbul melintang",
   l_cable: "memiliki alur timbul siku-siku seperti huruf L",
   t_cable: "memiliki alur timbul bercabang tiga seperti huruf T",
@@ -332,6 +332,7 @@ export default function VoiceGuide() {
   const lastRemindRef = useRef<number>(0);
   const lastClueRef = useRef<number>(0);
   const lastShortCircuitRef = useRef<number>(0);
+  const lastPolarityAlertRef = useRef<number>(0);
   const lastMenuSelectRef = useRef<number>(0);
   const hasTriggeredSuccessEarconRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
@@ -570,6 +571,17 @@ export default function VoiceGuide() {
           lastShortCircuitRef.current = now;
           playEarcon("warning");
           speak("Peringatan korsleting arus pendek! Arus listrik mengalir tanpa hambatan beban. Segera lepaskan salah satu kabel atau pasang balok lampu agar baterai aman!");
+        }
+      }
+
+      // Evaluasi Polaritas Terbalik pada Lampu LED
+      if (detail?.status === "polarity_reversed") {
+        const now = Date.now();
+        if (now - lastPolarityAlertRef.current > 9000) {
+          lastPolarityAlertRef.current = now;
+          playEarcon("clue");
+          const cellsStr = detail?.cells?.join(", ") || "lampu";
+          speak(`Rangkaian sudah membentuk lintasan tertutup, tetapi lampu di ${cellsStr} belum menyala karena kutub polaritasnya terbalik. Angkat balok lampu tersebut dan putar posisinya 180 derajat agar kutub positifnya tersambung ke arah arus baterai.`);
         }
       }
 
