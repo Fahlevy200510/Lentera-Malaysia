@@ -45,45 +45,45 @@ type StepDef = {
 /* ---------------------------------------------------------------- Guide Data */
 const RECOGNITION_STEPS: StepDef[] = [
   {
-    instruction: "Ambil balok Baterai, letakkan di posisi C3",
-    voice: "Mari berkenalan dengan komponen listrik! Pertama, raba dan cari balok Baterai. Letakkan balok Baterai di posisi C3, tepat di tengah papan.",
+    instruction: "Cari balok Baterai (memiliki tanda plus (+) dan minus (-) timbul di kedua sisinya), lalu letakkan di sel C3 tepat di tengah papan.",
+    voice: "Mari berkenalan dengan komponen listrik! Komponen pertama adalah Baterai, sumber energi utama rangkaian. Coba raba balok-balok di mejamu: cari balok yang memiliki simbol timbul tanda tambah plus untuk kutub positif, dan tanda minus garis mendatar untuk kutub negatif. Jika sudah menemukannya, letakkan balok Baterai di sel C3 tepat di tengah papan.",
     targetCells: { "C3": "battery" },
-    hint: "Baterai memiliki simbol plus-minus timbul. Letakkan di posisi C3 (tengah papan).",
-    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik. Raba kedua ujungnya: kamu akan merasakan simbol timbul tanda plus untuk kutub positif, dan simbol timbul tanda minus garis mendatar untuk kutub negatif. Keduanya memiliki tanda taktil timbul agar mudah dibedakan dengan jari. Arus listrik mengalir keluar dari kutub positif menuju kutub negatif.",
+    hint: "Raba kedua sisi balok: temukan tanda tambah (+) timbul untuk kutub positif dan tanda minus (-) garis mendatar untuk kutub negatif.",
+    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik. Raba kedua ujungnya: kamu merasakan simbol timbul tanda plus untuk kutub positif, dan tanda minus untuk kutub negatif. Arus listrik mengalir keluar dari kutub positif menuju kutub negatif melalui rangkaian tertutup.",
   },
   {
-    instruction: "Angkat baterai, lalu letakkan balok Saklar di posisi C3",
-    voice: "Bagus! Sekarang angkat baterai. Selanjutnya, ambil balok Saklar, lalu letakkan di posisi C3.",
+    instruction: "Angkat baterai. Raba dan cari balok Saklar (memiliki tuas mekanik timbul yang dapat diklik atau digeser), lalu letakkan di sel C3.",
+    voice: "Bagus! Sekarang angkat baterainya. Komponen kedua adalah Saklar, pengendali aliran listrik. Coba raba balok yang memiliki tuas mekanik timbul di bagian atasnya yang bisa kamu klik atau geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
     targetCells: { "C3": "switch" },
-    hint: "Saklar memiliki tuas mekanik timbul yang dapat digeser atau ditekan.",
+    hint: "Raba bagian atas balok: temukan tuas mekanik yang dapat diklik atau digeser untuk menyambung dan memutus aliran listrik.",
     explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Raba bagian atasnya, terdapat tuas yang dapat diklik. Saat saklar ditutup atau dinyalakan, arus listrik mengalir. Saat saklar dibuka, aliran listrik terputus dan lampu akan padam.",
   },
   {
-    instruction: "Angkat saklar, lalu letakkan balok Lampu di posisi C3",
-    voice: "Hebat! Sekarang angkat saklar. Ambil balok Lampu, lalu letakkan di posisi C3.",
+    instruction: "Angkat saklar. Raba dan cari balok Lampu (memiliki kubah bundar timbul seperti bohlam kecil), lalu letakkan di sel C3.",
+    voice: "Hebat! Sekarang angkat saklarnya. Komponen ketiga adalah Lampu, komponen beban yang menghasilkan cahaya. Coba raba balok yang memiliki tonjolan kubah bundar timbul di bagian tengah atasnya seperti bohlam kecil. Lampu ini yang akan bersinar saat dialiri listrik. Letakkan balok Lampu ini di sel C3.",
     targetCells: { "C3": "lamp" },
-    hint: "Lampu memiliki kubah indikator bundar timbul di bagian atasnya.",
-    explanation: "Luar biasa! Ini adalah balok Lampu, yang berperan sebagai komponen beban. Lampu mengubah energi listrik menjadi energi cahaya. Di dalamnya terdapat LED atau filamen yang akan bersinar terang saat dialiri arus listrik yang cukup.",
+    hint: "Raba bagian atas balok: temukan kubah bundar timbul yang di dalamnya terdapat lampu LED yang akan bersinar saat dialiri listrik.",
+    explanation: "Luar biasa! Ini adalah balok Lampu, yang berperan sebagai komponen beban. Lampu mengubah energi listrik menjadi energi cahaya. Di dalamnya terdapat LED yang akan bersinar terang saat dialiri arus listrik yang cukup dari baterai.",
   },
   {
-    instruction: "Angkat lampu, lalu letakkan balok Kabel Lurus di posisi C3",
-    voice: "Sekarang angkat lampu. Ambil balok Kabel Lurus, lalu letakkan di posisi C3.",
+    instruction: "Angkat lampu. Raba dan cari balok Kabel Lurus (memiliki alur garis timbul lurus melintang), lalu letakkan di sel C3.",
+    voice: "Bagus sekali! Sekarang angkat lampunya. Komponen keempat adalah Kabel Lurus, penghantar arus listrik. Coba raba permukaan balok: kamu akan merasakan alur garis timbul lurus yang membentang dari satu sisi tembus ke sisi seberangnya. Letakkan balok Kabel Lurus ini di sel C3.",
     targetCells: { "C3": "straight_cable" },
-    hint: "Kabel lurus memiliki alur garis lurus timbul melintang.",
+    hint: "Raba alur timbul: garis lurus melintang berfungsi mengalirkan arus listrik lurus tanpa belokan.",
     explanation: "Bagus sekali! Ini adalah balok Kabel Lurus. Di dalamnya terdapat jalur konduktor tembaga untuk mengalirkan arus listrik secara mendatar atau tegak dalam satu garis lurus tanpa belokan.",
   },
   {
-    instruction: "Angkat kabel lurus, lalu letakkan balok Kabel Sudut L di posisi C3",
-    voice: "Sekarang angkat kabel lurus. Ambil balok Kabel Sudut L, lalu letakkan di posisi C3.",
+    instruction: "Angkat kabel lurus. Raba dan cari balok Kabel Sudut L (memiliki garis timbul berbelok siku 90 derajat), lalu letakkan di sel C3.",
+    voice: "Sekarang angkat kabel lurus. Komponen kelima adalah Kabel Sudut L, pemutar arah aliran listrik. Coba raba permukaannya: rasakan alur garis timbul yang berbelok siku membentuk huruf L. Balok ini dipasang di setiap sudut papan agar lintasan sirkuit bisa berputar kembali ke baterai. Letakkan di sel C3.",
     targetCells: { "C3": "l_cable" },
-    hint: "Kabel L memiliki alur timbul siku-siku seperti huruf L.",
+    hint: "Raba alur siku 90 derajat menyerupai huruf L: kabel ini menghubungkan sisi horizontal dan vertikal di setiap sudut papan.",
     explanation: "Hebat! Ini adalah balok Kabel Sudut L. Kabel ini membelokkan aliran listrik sebesar 90 derajat. Kabel L digunakan di setiap sudut papan agar rangkaian dapat berputar kembali ke baterai dan membentuk lintasan tertutup.",
   },
   {
-    instruction: "Angkat kabel sudut, lalu letakkan balok Kabel Cabang T di posisi C3",
-    voice: "Terakhir, angkat kabel sudut. Ambil balok Kabel Cabang T, lalu letakkan di posisi C3.",
+    instruction: "Angkat kabel sudut. Raba dan cari balok Kabel Cabang T (memiliki garis timbul bercabang tiga membentuk huruf T), lalu letakkan di sel C3.",
+    voice: "Terakhir, angkat kabel sudut. Komponen keenam adalah Kabel Cabang T, pembagi arus pada rangkaian paralel. Raba permukaannya: rasakan alur garis timbul bercabang tiga menyerupai huruf T. Balok ini membagi arus listrik menjadi cabang-cabang terpisah untuk setiap lampu. Letakkan di sel C3.",
     targetCells: { "C3": "t_cable" },
-    hint: "Kabel T memiliki alur timbul bercabang tiga membentuk huruf T.",
+    hint: "Raba alur timbul bercabang tiga menyerupai huruf T: kabel utama untuk merakit rangkaian bercabang paralel.",
     explanation: "Luar biasa! Ini adalah balok Kabel Cabang T. Kabel ini memiliki tiga percabangan koneksi. Kabel T sangat penting pada rangkaian paralel karena membagi aliran listrik menjadi beberapa cabang terpisah untuk masing-masing lampu.",
   },
 ];
@@ -1404,11 +1404,17 @@ export default function VoiceGuide() {
                 )}
               </div>
 
-              {/* Hint */}
+              {/* Panduan Rabaan Bentuk Taktil / Hint */}
               {step?.hint && (
-                <p className="text-[11px] text-cs-text/50 leading-5 px-1 italic">
-                  💡 {step.hint}
-                </p>
+                <div className="rounded-xl border border-amber-200/90 bg-amber-50/80 p-3 text-xs text-amber-950 flex items-start gap-2.5 shadow-2xs">
+                  <span className="text-base shrink-0 select-none">🖐️</span>
+                  <div>
+                    <span className="font-extrabold text-amber-900 block text-[11px] uppercase tracking-wide">
+                      Panduan Rabaan Bentuk Taktil:
+                    </span>
+                    <p className="text-xs leading-relaxed text-amber-900/90 mt-0.5">{step.hint}</p>
+                  </div>
+                </div>
               )}
 
               {/* Controls */}
