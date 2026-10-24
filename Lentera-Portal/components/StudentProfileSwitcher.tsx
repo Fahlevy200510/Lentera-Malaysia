@@ -17,6 +17,8 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
   const [newName, setNewName] = useState("");
   const [newGrade, setNewGrade] = useState("Kelas 8B");
   const [toast, setToast] = useState<string | null>(null);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [alignLeft, setAlignLeft] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +41,20 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
       window.removeEventListener("storage", handleUpdate);
     };
   }, []);
+
+  // Hitung posisi aman dropdown agar tidak terpotong tepi layar bawah/kiri
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      setOpenUpward(spaceBelow < 380 && spaceAbove > spaceBelow);
+      setAlignLeft(rect.left < 220 || (viewportWidth - rect.right > 320 && rect.left < 320));
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -113,8 +129,16 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
 
       {/* Floating Dropdown Dialog */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-2xl border border-violet-500/30 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
-          <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-2.5">
+        <div
+          className={`absolute z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-violet-500/30 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl max-h-[calc(100vh-4rem)] flex flex-col ${
+            openUpward
+              ? "bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2"
+              : "top-full mt-2 animate-in fade-in slide-in-from-top-2"
+          } ${
+            alignLeft ? "left-0" : "right-0"
+          }`}
+        >
+          <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-2.5 shrink-0">
             <div>
               <div className="text-xs font-extrabold uppercase tracking-wider text-violet-300">Profil Siswa Aktif</div>
               <div className="text-[11px] text-slate-400">Pilih siapa yang sedang merangkai di papan:</div>
@@ -128,7 +152,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
           </div>
 
           {/* Daftar Siswa */}
-          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 cs-scroll">
+          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 cs-scroll overscroll-contain shrink">
             {profiles.map((p) => {
               const prog = getStudentProgress(p.id);
               const isSelected = p.id === active.id;
@@ -144,7 +168,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-lg">{p.avatar || "👤"}</span>
+                    <span className="text-lg shrink-0">{p.avatar || "👤"}</span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-white truncate">{p.name}</span>
@@ -161,7 +185,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   {/* Tombol Reset cepat per siswa */}
                   <button
                     onClick={(e) => handleResetCurrent(e, p.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-amber-400 hover:bg-white/10 rounded transition-all"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-amber-400 hover:bg-white/10 rounded transition-all shrink-0"
                     title="Reset progres siswa ini"
                   >
                     <RotateCcw className="h-3 w-3" />
@@ -172,7 +196,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
           </div>
 
           {/* Form Tambah Siswa Baru */}
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-white/10 shrink-0">
             {!showAddInput ? (
               <button
                 onClick={() => setShowAddInput(true)}
