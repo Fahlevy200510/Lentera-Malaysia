@@ -51,8 +51,8 @@ export default function ArucoPage() {
     const hasLearnedComponents = Boolean(progress?.modules?.component_recognition);
 
     const text = hasLearnedComponents
-      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Mau belajar apa hari ini? Kamu bisa memilih langsung dari papan fisik: letakkan satu balok di A1 untuk Kuis Taktil, di B1 untuk Rangkaian Seri, di C1 untuk Rangkaian Paralel, atau di D1 untuk Tantangan Detektif Sirkuit. Letakkan di E1 untuk mendengar menu bantuan, atau langsung merangkai di mana saja untuk eksplorasi bebas."
-      : "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum memulai eksperimen, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar grid bersih dan siap digunakan.";
+      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Mau belajar apa hari ini? Kamu bisa memilih langsung dari papan fisik: letakkan satu balok di A1 untuk Pengenalan Taktil, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, atau di E1 untuk Tantangan Detektif Sirkuit. Atau langsung merangkai di papan untuk eksplorasi bebas."
+      : "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum kita mulai, mari kita berkenalan terlebih dahulu dengan komponen-komponennya.";
 
     const utterance = new SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance;

@@ -518,36 +518,45 @@ export default function VoiceGuide() {
         if (placedCount === 1) {
           const now = Date.now();
           if (now - lastMenuSelectRef.current > 4000) {
+            const currentProgress = mounted ? studentProgress : DEFAULT_PROGRESS;
+            const isRecognitionDone = Boolean(currentProgress.modules.component_recognition);
+
             if (cells["A1"]) {
               lastMenuSelectRef.current = now;
               playEarcon("click");
               speak("Pilihan diterima: Tahap 1, Pengenalan Komponen! Angkat balok dari A1 untuk mulai meraba balok di sel C3.", () => {
                 setTimeout(() => startGuide("recognition"), 1200);
               });
-            } else if (cells["B1"]) {
-              lastMenuSelectRef.current = now;
-              playEarcon("click");
-              speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab tebak fungsi komponen.", () => {
-                setTimeout(() => startGuide("quiz"), 1200);
-              });
-            } else if (cells["C1"]) {
-              lastMenuSelectRef.current = now;
-              playEarcon("click");
-              speak("Pilihan diterima: Tahap 3, Rangkaian Seri! Angkat balok dari C1 untuk mulai merakit sirkuit satu loop.", () => {
-                setTimeout(() => startGuide("series"), 1200);
-              });
-            } else if (cells["D1"]) {
-              lastMenuSelectRef.current = now;
-              playEarcon("click");
-              speak("Pilihan diterima: Tahap 4, Rangkaian Paralel! Angkat balok dari D1 untuk mulai merakit sirkuit percabangan kabel T.", () => {
-                setTimeout(() => startGuide("parallel"), 1200);
-              });
-            } else if (cells["E1"]) {
-              lastMenuSelectRef.current = now;
-              playEarcon("click");
-              speak("Pilihan diterima: Tahap 5, Tantangan Detektif Sirkuit Mahir! Angkat balok dari E1 untuk memulai misi analisis.", () => {
-                setTimeout(() => startGuide("troubleshoot"), 1200);
-              });
+            } else if (cells["B1"] || cells["C1"] || cells["D1"] || cells["E1"]) {
+              if (!isRecognitionDone) {
+                lastMenuSelectRef.current = now;
+                playEarcon("warning");
+                speak("Tahap ini masih terkunci. Silakan letakkan balok di kotak A1 terlebih dahulu untuk menyelesaikan Pengenalan Bentuk Komponen.");
+              } else if (cells["B1"]) {
+                lastMenuSelectRef.current = now;
+                playEarcon("click");
+                speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab tebak fungsi komponen.", () => {
+                  setTimeout(() => startGuide("quiz"), 1200);
+                });
+              } else if (cells["C1"]) {
+                lastMenuSelectRef.current = now;
+                playEarcon("click");
+                speak("Pilihan diterima: Tahap 3, Rangkaian Seri! Angkat balok dari C1 untuk mulai merakit sirkuit satu loop.", () => {
+                  setTimeout(() => startGuide("series"), 1200);
+                });
+              } else if (cells["D1"]) {
+                lastMenuSelectRef.current = now;
+                playEarcon("click");
+                speak("Pilihan diterima: Tahap 4, Rangkaian Paralel! Angkat balok dari D1 untuk mulai merakit sirkuit percabangan kabel T.", () => {
+                  setTimeout(() => startGuide("parallel"), 1200);
+                });
+              } else if (cells["E1"]) {
+                lastMenuSelectRef.current = now;
+                playEarcon("click");
+                speak("Pilihan diterima: Tahap 5, Tantangan Detektif Sirkuit Mahir! Angkat balok dari E1 untuk memulai misi analisis.", () => {
+                  setTimeout(() => startGuide("troubleshoot"), 1200);
+                });
+              }
             }
           }
         }
@@ -719,6 +728,12 @@ export default function VoiceGuide() {
 
   const startGuide = (guideMode: GuideMode) => {
     if (guideMode === "idle") return;
+    const currentProgress = mounted ? studentProgress : DEFAULT_PROGRESS;
+    if (!currentProgress.modules.component_recognition && guideMode !== "recognition") {
+      playEarcon("warning");
+      speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil agar materi berikutnya terbuka.");
+      return;
+    }
     playEarcon("click");
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     setMode(guideMode);
@@ -807,6 +822,8 @@ export default function VoiceGuide() {
       currentProgress.modules.circuit_troubleshoot,
     ].filter(Boolean).length;
 
+    const isRecognitionDone = Boolean(currentProgress.modules.component_recognition);
+
     // Menentukan tahapan rekomendasi berikutnya (tahap pertama yang belum diselesaikan)
     let recommendedMode: GuideMode = "recognition";
     if (!currentProgress.modules.component_recognition) recommendedMode = "recognition";
@@ -818,9 +835,15 @@ export default function VoiceGuide() {
 
     const speakMenuGuidance = () => {
       playEarcon("click");
-      speak(
-        "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan belajar yang bisa kamu pilih: Tahap satu, Pengenalan Komponen dengan meletakkan balok di kotak A1. Tahap dua, Kuis Taktil di kotak B1. Tahap tiga, Rangkaian Seri di kotak C1. Tahap empat, Rangkaian Paralel di kotak D1. Dan Tahap lima, Tantangan Detektif Sirkuit di kotak E1. Kamu bisa meletakkan satu balok di baris atas papan fisik untuk mulai belajar secara mandiri."
-      );
+      if (!isRecognitionDone) {
+        speak(
+          "Selamat datang di Panduan Suara LENTERA. Kamu berada di tahap awal. Silakan selesaikan Tahap 1 Pengenalan Bentuk Taktil terlebih dahulu dengan meletakkan satu balok di kotak A1 agar materi berikutnya terbuka."
+        );
+      } else {
+        speak(
+          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan belajar yang bisa kamu pilih: Tahap satu di kotak A1, Tahap dua Kuis Taktil di kotak B1, Tahap tiga Rangkaian Seri di kotak C1, Tahap empat Rangkaian Paralel di kotak D1, dan Tahap lima Tantangan Detektif di kotak E1. Letakkan satu balok di baris atas papan fisik untuk mulai belajar secara mandiri."
+        );
+      }
     };
 
     const MODULES = [
@@ -833,6 +856,7 @@ export default function VoiceGuide() {
         desc: "Raba & kenali 6 balok komponen sirkuit dasar di sel C3 tengah papan",
         xp: 50,
         isCompleted: currentProgress.modules.component_recognition,
+        isLocked: false,
         hasSubModes: false,
       },
       {
@@ -844,6 +868,7 @@ export default function VoiceGuide() {
         desc: "Tebak fungsi komponen listrik secara mandiri dengan menaruh balok di papan",
         xp: 50,
         isCompleted: currentProgress.modules.component_quiz,
+        isLocked: !isRecognitionDone,
         hasSubModes: false,
       },
       {
@@ -855,6 +880,7 @@ export default function VoiceGuide() {
         desc: "Rakit 1 jalur loop tertutup dari baterai, saklar, dan lampu hingga menyala",
         xp: 100,
         isCompleted: currentProgress.modules.series_circuit,
+        isLocked: !isRecognitionDone,
         hasSubModes: true,
       },
       {
@@ -866,6 +892,7 @@ export default function VoiceGuide() {
         desc: "Rakit sirkuit percabangan kabel T dengan kendali saklar mandiri tiap lampu",
         xp: 100,
         isCompleted: currentProgress.modules.parallel_circuit,
+        isLocked: !isRecognitionDone,
         hasSubModes: true,
       },
       {
@@ -877,6 +904,7 @@ export default function VoiceGuide() {
         desc: "Misi troubleshooting kendali saklar & pengujian sirkuit tingkat mahir",
         xp: 150,
         isCompleted: currentProgress.modules.circuit_troubleshoot,
+        isLocked: !isRecognitionDone,
         hasSubModes: false,
       },
     ];
@@ -958,13 +986,15 @@ export default function VoiceGuide() {
         {/* Daftar 5 Modul Pembelajaran */}
         <div className="space-y-2">
           {MODULES.map((item) => {
-            const isRecommended = item.mode === recommendedMode && !item.isCompleted;
+            const isRecommended = item.mode === recommendedMode && !item.isCompleted && !item.isLocked;
 
             return (
               <div
                 key={item.id}
                 className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl transition-all ${
-                  isRecommended
+                  item.isLocked
+                    ? "bg-slate-50/70 border border-slate-200/70 opacity-75"
+                    : isRecommended
                     ? "bg-gradient-to-r from-indigo-50/70 via-white to-purple-50/30 border-2 border-indigo-400/90 shadow-sm shadow-indigo-500/5 ring-1 ring-indigo-200/50"
                     : item.isCompleted
                     ? "bg-emerald-50/20 border border-emerald-200/70 hover:border-emerald-300"
@@ -975,7 +1005,9 @@ export default function VoiceGuide() {
                 <div className="flex items-start sm:items-center gap-3 min-w-0">
                   <div
                     className={`flex flex-col items-center justify-center h-10 w-10 sm:h-11 sm:w-11 rounded-xl font-mono shrink-0 transition-all ${
-                      item.isCompleted
+                      item.isLocked
+                        ? "bg-slate-100 text-slate-400 border border-slate-200/60"
+                        : item.isCompleted
                         ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         : isRecommended
                         ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
@@ -988,10 +1020,15 @@ export default function VoiceGuide() {
 
                   <div className="space-y-0.5 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <h4 className="font-heading text-xs sm:text-sm font-extrabold text-slate-900">
+                      <h4 className={`font-heading text-xs sm:text-sm font-extrabold ${item.isLocked ? "text-slate-600" : "text-slate-900"}`}>
                         {item.title}
                       </h4>
-                      {item.isCompleted ? (
+                      {item.isLocked ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                          <Lock className="h-2.5 w-2.5 text-slate-400" />
+                          <span>Terkunci</span>
+                        </span>
+                      ) : item.isCompleted ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
                           <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                           <span>Dikuasai</span>
@@ -1007,7 +1044,7 @@ export default function VoiceGuide() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[11.5px] text-slate-500 leading-snug">
+                    <p className={`text-[11.5px] leading-snug ${item.isLocked ? "text-slate-400" : "text-slate-500"}`}>
                       {item.desc}
                     </p>
                   </div>
@@ -1015,7 +1052,19 @@ export default function VoiceGuide() {
 
                 {/* Tombol Aksi Kanan */}
                 <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
-                  {item.hasSubModes ? (
+                  {item.isLocked ? (
+                    <button
+                      onClick={() => {
+                        playEarcon("warning");
+                        speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil agar materi berikutnya terbuka.");
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/90 px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 transition-all active:scale-95"
+                      title="Selesaikan Tahap 1 terlebih dahulu"
+                    >
+                      <Lock className="h-3 w-3 text-slate-400" />
+                      <span>Terkunci</span>
+                    </button>
+                  ) : item.hasSubModes ? (
                     <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5 shadow-2xs">
                       <button
                         onClick={() => startGuide(item.mode)}
