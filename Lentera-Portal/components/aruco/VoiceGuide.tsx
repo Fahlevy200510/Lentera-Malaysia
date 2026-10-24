@@ -646,7 +646,7 @@ export default function VoiceGuide() {
             );
           } else if (placedCount > 0) {
             const now = Date.now();
-            if (now - lastRemindRef.current > 7000) {
+            if (now - lastRemindRef.current > 18000) {
               lastRemindRef.current = now;
               speak("Letakkan balok di sudut kiri A1 untuk IYA, atau di sudut kanan E1 untuk TIDAK.");
             }
@@ -681,7 +681,7 @@ export default function VoiceGuide() {
           const placed = cells[cell];
           if (placed && placed.component !== expectedComponent) {
             const now = Date.now();
-            if (now - lastClueRef.current > 8000) {
+            if (now - lastClueRef.current > 16000) {
               lastClueRef.current = now;
               const placedName = COMPONENT_LABEL[placed.component] || placed.component;
               const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;

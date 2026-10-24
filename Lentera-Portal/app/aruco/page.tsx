@@ -75,15 +75,6 @@ export default function ArucoPage() {
       setSpeaking(false);
       if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
       utteranceRef.current = null;
-
-      // OPSI B: Jika siswa pemula (belum menguasai pengenalan balok), otomatis mulai Tahap 1
-      if (!hasLearnedComponents) {
-        setTimeout(() => {
-          window.dispatchEvent(
-            new CustomEvent("lentera-start-guide", { detail: "recognition" })
-          );
-        }, 1800);
-      }
     };
     utterance.onerror = () => {
       setSpeaking(false);
@@ -98,8 +89,23 @@ export default function ArucoPage() {
     }, 100);
   }, []);
 
-  // Otomatis putar narasi sambutan & arahan saat halaman lab selesai dimuat
+  // Putar narasi sambutan & arahan HANYA SEKALI saat halaman lab pertama kali dimuat
+  // Tidak boleh looping atau berputar ulang saat siswa menetap di halaman
+  const hasSpokenLabIntroRef = useRef(false);
   useEffect(() => {
+    try {
+      if (sessionStorage.getItem("lentera_lab_spoken") === "true") {
+        hasSpokenLabIntroRef.current = true;
+        return;
+      }
+    } catch {}
+
+    if (hasSpokenLabIntroRef.current) return;
+    hasSpokenLabIntroRef.current = true;
+    try {
+      sessionStorage.setItem("lentera_lab_spoken", "true");
+    } catch {}
+
     const timer = setTimeout(() => {
       speakLabIntro();
     }, 700);

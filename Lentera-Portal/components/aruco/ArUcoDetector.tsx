@@ -129,6 +129,8 @@ export default function ArUcoDetector() {
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const manualDisconnectRef = useRef(false);
+  const lastNarrationRef = useRef<string>("");
+  const lastNarrationTimeRef = useRef<number>(0);
 
   const showToast = (message: string) => {
     setToast(message);
@@ -202,8 +204,14 @@ export default function ArUcoDetector() {
             const isGuiding = (window as any).__lenteraGuideMode && (window as any).__lenteraGuideMode !== "idle";
             const isSpeaking = (window as any).__lenteraSpeaking || window.speechSynthesis.speaking;
 
-            // Prioritaskan tutorial/panduan: abaikan narasi sensor mentah jika modul bimbingan aktif atau suara panduan sedang bicara
-            if (!isGuiding && !isSpeaking) {
+            const now = Date.now();
+            const isNewNarration = data.narration !== lastNarrationRef.current;
+            const cooldownPassed = now - lastNarrationTimeRef.current > 7000;
+
+            // Prioritaskan tutorial/panduan: jangan looping narasi yang sama saat stay di halaman
+            if (!isGuiding && !isSpeaking && isNewNarration && cooldownPassed) {
+              lastNarrationRef.current = data.narration;
+              lastNarrationTimeRef.current = now;
               const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(data.narration));
               utterance.lang = "id-ID";
               utterance.rate = 1.0;

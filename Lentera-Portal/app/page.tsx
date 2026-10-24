@@ -183,19 +183,35 @@ export default function PortalHome() {
     }, 60);
   }, [speaking]);
 
-  // Autoplay intro pada sentuhan/klik pertama di area mana pun di landing page
+  // Autoplay intro HANYA SEKALI pada sentuhan/klik pertama di area mana pun di landing page
+  // Tidak boleh looping atau memutar ulang otomatis saat tetap berada di halaman
   useEffect(() => {
+    try {
+      if (sessionStorage.getItem("lentera_landing_spoken") === "true") {
+        hasSpokenOnFirstClickRef.current = true;
+        return;
+      }
+    } catch {}
+
     const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {
+      if (hasSpokenOnFirstClickRef.current) return;
+
       const target = e.target as HTMLElement | null;
-      // Jika pengguna menekan tombol toggle suara langsung, biarkan onClick tombol yang menangani
-      if (target && target.closest("button")?.textContent?.includes("Suara")) {
+      // Jika pengguna menekan tombol atau link langsung, biarkan onClick tombol yang menangani
+      if (target && (target.closest("button") || target.closest("a"))) {
         return;
       }
 
-      if (!hasSpokenOnFirstClickRef.current) {
-        hasSpokenOnFirstClickRef.current = true;
-        readIntro();
-      }
+      hasSpokenOnFirstClickRef.current = true;
+      try {
+        sessionStorage.setItem("lentera_landing_spoken", "true");
+      } catch {}
+
+      // Hapus listener segera agar tidak pernah terpanggil lagi selama stay di halaman
+      window.removeEventListener("click", handleFirstInteraction);
+      window.removeEventListener("touchstart", handleFirstInteraction);
+
+      readIntro();
     };
 
     window.addEventListener("click", handleFirstInteraction, { passive: true });
@@ -204,6 +220,9 @@ export default function PortalHome() {
     return () => {
       window.removeEventListener("click", handleFirstInteraction);
       window.removeEventListener("touchstart", handleFirstInteraction);
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, [readIntro]);
 
