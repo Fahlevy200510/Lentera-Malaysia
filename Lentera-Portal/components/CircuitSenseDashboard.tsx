@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
 import { getStudentProgress, type StudentProgress } from "@/utils/progress";
+import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
   Battery, Cable, Lightbulb, ToggleRight, Bell, ChevronRight, Play,
@@ -311,7 +312,7 @@ function StudentHome() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(
-      `Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`
+      normalizeIndonesianPhonetics(`Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`)
     );
     u.lang = "id-ID";
     u.rate = 0.94;
@@ -888,7 +889,7 @@ function AITutor() {
   const speak = (text: string) => {
     if (!voiceOn || typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
+    const utter = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     if (idVoice) {
       utter.voice = idVoice;
       utter.lang = idVoice.lang;

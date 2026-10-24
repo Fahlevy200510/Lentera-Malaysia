@@ -30,6 +30,7 @@ import {
   type StudentProfile,
 } from "@/utils/progress";
 import { playEarcon } from "@/utils/soundEffects";
+import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
 /* ---------------------------------------------------------------- Types */
 type CellData = { component: string; rotation: number };
@@ -428,8 +429,14 @@ export default function VoiceGuide() {
       return;
     }
     synthRef.current.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "id-ID";
+    const spokenText = normalizeIndonesianPhonetics(text);
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    const voices = synthRef.current.getVoices();
+    const idVoice = voices.find(
+      (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
+    );
+    if (idVoice) utterance.voice = idVoice;
+    utterance.lang = idVoice ? idVoice.lang : "id-ID";
     utterance.rate = 0.92;
     utterance.pitch = 1.05;
     utterance.onstart = () => {

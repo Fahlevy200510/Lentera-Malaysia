@@ -8,6 +8,7 @@ import {
   getActiveStudent, setActiveStudent, getStudentProfiles, addStudentProfile,
   resetStudentProgress, getStudentProgress, PRESET_STUDENTS, type StudentProfile
 } from "@/utils/progress";
+import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
 export default function StudentProfileSwitcher({ compact = false }: { compact?: boolean }) {
   const [profiles, setProfiles] = useState<StudentProfile[]>(PRESET_STUDENTS);
@@ -77,7 +78,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
     // Audio pemberitahuan
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(`Siswa aktif: ${profile.name}`);
+      const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(`Siswa aktif: ${profile.name}`));
       utterance.lang = "id-ID";
       window.speechSynthesis.speak(utterance);
     }

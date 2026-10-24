@@ -5,6 +5,7 @@ import {
   CheckCircle2, Sparkles, Zap, Lightbulb, ToggleLeft,
   SlidersHorizontal, RefreshCw, Globe, ShieldCheck, ChevronDown, ChevronUp, Power
 } from "lucide-react";
+import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
 type ComponentData = { component: string; rotation: number; id: number };
 type DetectionData = {
@@ -203,7 +204,7 @@ export default function ArUcoDetector() {
 
             // Prioritaskan tutorial/panduan: abaikan narasi sensor mentah jika modul bimbingan aktif atau suara panduan sedang bicara
             if (!isGuiding && !isSpeaking) {
-              const utterance = new SpeechSynthesisUtterance(data.narration);
+              const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(data.narration));
               utterance.lang = "id-ID";
               utterance.rate = 1.0;
               window.speechSynthesis.speak(utterance);

@@ -10,6 +10,7 @@ import {
 import { resolveEndpoints, getActiveLenteraEndpoint } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import StudentReportModal from "@/components/StudentReportModal";
+import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
 type Destination = {
   href: string;
@@ -145,7 +146,7 @@ export default function PortalHome() {
     const text =
       "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan balok komponen apa saja di atas papan fisik di depan Anda. Selamat bereksplorasi!";
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     utteranceRef.current = utterance; // Mencegah bug Chrome Garbage Collection
 
     const voices = synth.getVoices();
@@ -244,7 +245,7 @@ export default function PortalHome() {
                 const label = COMPONENT_LABEL[comp] || "komponen";
                 if (typeof window !== "undefined" && "speechSynthesis" in window) {
                   window.speechSynthesis.cancel();
-                  const notify = new SpeechSynthesisUtterance(`Balok ${label} terdeteksi! Membuka LENTERA Lab.`);
+                  const notify = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(`Balok ${label} terdeteksi! Membuka LENTERA Lab.`));
                   notify.lang = "id-ID";
                   window.speechSynthesis.speak(notify);
                 }

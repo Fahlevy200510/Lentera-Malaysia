@@ -9,6 +9,7 @@ import VoiceGuide from "@/components/aruco/VoiceGuide";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import StudentReportModal from "@/components/StudentReportModal";
 import { getStudentProgress } from "@/utils/progress";
+import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
 const wiringPoints = [
   {
@@ -54,7 +55,7 @@ export default function ArucoPage() {
       ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Mau belajar apa hari ini? Kamu bisa memilih langsung dari papan fisik: letakkan satu balok di A1 untuk Pengenalan Taktil, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, atau di E1 untuk Tantangan Detektif Sirkuit. Atau langsung merangkai di papan untuk eksplorasi bebas."
       : "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum kita mulai, mari kita berkenalan terlebih dahulu dengan komponen-komponennya.";
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     utteranceRef.current = utterance;
 
     const voices = synth.getVoices();
