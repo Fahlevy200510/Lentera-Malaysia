@@ -48,10 +48,10 @@ export const DEFAULT_PROGRESS: StudentProgress = {
 };
 
 export const PRESET_STUDENTS: StudentProfile[] = [
-  { id: "ahmad", name: "Ahmad Fadhil", grade: "Kelas 8B", avatar: "👦" },
-  { id: "siti", name: "Siti Rahma", grade: "Kelas 8B", avatar: "👧" },
-  { id: "dimas", name: "Dimas Putra", grade: "Kelas 8B", avatar: "🧑" },
-  { id: "guest", name: "Tamu / Juri Eksplorasi", grade: "Pengamat", avatar: "👤" },
+  { id: "ahmad", name: "Ahmad Fadhil", grade: "Kelas 8B", avatar: "ahmad" },
+  { id: "siti", name: "Siti Rahma", grade: "Kelas 8B", avatar: "siti" },
+  { id: "dimas", name: "Dimas Putra", grade: "Kelas 8B", avatar: "dimas" },
+  { id: "guest", name: "Tamu / Juri Eksplorasi", grade: "Pengamat", avatar: "guest" },
 ];
 
 const PRESET_INITIAL_PROGRESS: Record<string, StudentProgress> = {
@@ -144,7 +144,7 @@ export function addStudentProfile(name: string, grade: string = "Kelas 8B"): Stu
     id,
     name: cleanName,
     grade,
-    avatar: "👤",
+    avatar: "user",
   };
 
   if (typeof window !== "undefined") {

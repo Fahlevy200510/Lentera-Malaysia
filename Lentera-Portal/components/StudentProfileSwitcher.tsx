@@ -9,6 +9,7 @@ import {
   resetStudentProgress, getStudentProgress, PRESET_STUDENTS, type StudentProfile
 } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
+import StudentAvatarBadge from "@/components/StudentAvatarBadge";
 
 export default function StudentProfileSwitcher({ compact = false }: { compact?: boolean }) {
   const [profiles, setProfiles] = useState<StudentProfile[]>(PRESET_STUDENTS);
@@ -116,9 +117,13 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
         className="flex items-center gap-2.5 rounded-full border border-violet-400/30 bg-slate-900/80 px-3.5 py-1.5 text-xs font-semibold text-violet-100 shadow-md backdrop-blur-md transition-all hover:border-violet-400 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
         title="Ganti Siswa Aktif"
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-600/40 text-xs">
-          {active.avatar || "👤"}
-        </span>
+        <StudentAvatarBadge
+          id={active.id}
+          name={active.name}
+          avatar={active.avatar}
+          size="xs"
+          theme="dark"
+        />
         <div className="text-left">
           <div className="flex items-center gap-1.5 leading-tight">
             <span className="font-bold text-white max-w-[130px] truncate">{active.name}</span>
@@ -169,7 +174,13 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-lg shrink-0">{p.avatar || "👤"}</span>
+                    <StudentAvatarBadge
+                      id={p.id}
+                      name={p.name}
+                      avatar={p.avatar}
+                      size="sm"
+                      theme="dark"
+                    />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-white truncate">{p.name}</span>

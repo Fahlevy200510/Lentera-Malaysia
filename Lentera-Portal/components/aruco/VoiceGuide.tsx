@@ -19,6 +19,8 @@ import {
   Compass,
   Zap,
   ArrowRight,
+  Hand,
+  Lightbulb,
 } from "lucide-react";
 import {
   completeModule,
@@ -1167,7 +1169,7 @@ export default function VoiceGuide() {
         }`;
 
   const stepSubtitle = isFinished
-    ? "Selesai! 🎉"
+    ? "Selesai!"
     : mode === "recognition"
     ? `Komponen ${currentStep + 1} dari ${totalSteps}`
     : mode === "quiz"
@@ -1229,12 +1231,12 @@ export default function VoiceGuide() {
               <div>
                 <h3 className="font-heading text-base font-extrabold text-cs-text">
                   {mode === "recognition"
-                    ? "Pengenalan Selesai! 🎉"
+                    ? "Pengenalan Selesai!"
                     : mode === "quiz"
-                    ? "Kuis Taktil Tuntas! 🏆"
+                    ? "Kuis Taktil Tuntas!"
                     : mode === "troubleshoot"
-                    ? "Misi Detektif Selesai! 🕵️"
-                    : "Rangkaian Selesai! 🎉"}
+                    ? "Misi Detektif Selesai!"
+                    : "Rangkaian Selesai!"}
                 </h3>
                 <p className="text-xs text-cs-text/60 mt-0.5 leading-relaxed max-w-xs mx-auto">
                   {mode === "recognition"
@@ -1320,8 +1322,9 @@ export default function VoiceGuide() {
                         </button>
                       </div>
                       
-                      <p className="text-[10px] text-cs-text/50 italic text-center pt-0.5">
-                        💡 Letakkan balok di sudut kiri bawah (A1) atau sudut kanan bawah (E1).
+                      <p className="text-[10px] text-cs-text/50 italic text-center pt-0.5 flex items-center justify-center gap-1.5">
+                        <Lightbulb className="h-3 w-3 text-amber-500 shrink-0 inline" />
+                        <span>Letakkan balok di sudut kiri bawah (A1) atau sudut kanan bawah (E1).</span>
                       </p>
                     </div>
                   ) : (
@@ -1426,7 +1429,9 @@ export default function VoiceGuide() {
               {/* Panduan Rabaan Bentuk Taktil / Hint */}
               {step?.hint && (
                 <div className="rounded-xl border border-amber-200/90 bg-amber-50/80 p-3 text-xs text-amber-950 flex items-start gap-2.5 shadow-2xs">
-                  <span className="text-base shrink-0 select-none">🖐️</span>
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-200/80 text-amber-800 shrink-0 mt-0.5 select-none">
+                    <Hand className="h-3.5 w-3.5" />
+                  </div>
                   <div>
                     <span className="font-extrabold text-amber-900 block text-[11px] uppercase tracking-wide">
                       Panduan Rabaan Bentuk Taktil:

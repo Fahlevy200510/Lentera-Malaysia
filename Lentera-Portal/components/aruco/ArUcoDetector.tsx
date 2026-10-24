@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
   CheckCircle2, Sparkles, Zap, Lightbulb, ToggleLeft,
-  SlidersHorizontal, RefreshCw, Globe, ShieldCheck, ChevronDown, ChevronUp, Power
+  SlidersHorizontal, RefreshCw, Globe, ShieldCheck, ChevronDown, ChevronUp, Power, Camera
 } from "lucide-react";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
@@ -481,7 +481,9 @@ export default function ArUcoDetector() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-12">
-              <span className="text-4xl">📷</span>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100/90 border border-slate-200/80 text-slate-400 shadow-inner">
+                <Camera className="h-7 w-7 text-slate-400 stroke-[1.5]" />
+              </div>
               <p className="text-xs font-bold text-slate-600">
                 {detections.status === "connecting"
                   ? "Menghubungkan ke Kamera Lentera Edge..."

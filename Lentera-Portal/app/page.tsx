@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight, ArrowUpRight, CircuitBoard, LayoutDashboard,
-  Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck, FileText,
+  Menu, ScanEye, Sparkles, Volume2, X, CheckCircle2, ShieldCheck, FileText, User,
 } from "lucide-react";
 import { resolveEndpoints, getActiveLenteraEndpoint } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
@@ -56,6 +56,19 @@ export default function PortalHome() {
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const hasSpokenOnFirstClickRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const speakingRef = useRef(false);
+  const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 });
+
+  const handleVisualMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setMouseTilt({ x: Number((x * 12).toFixed(2)), y: Number((-y * 12).toFixed(2)) });
+  }, []);
+
+  const handleVisualMouseLeave = useCallback(() => {
+    setMouseTilt({ x: 0, y: 0 });
+  }, []);
 
   useEffect(() => {
     try {
@@ -132,8 +145,9 @@ export default function PortalHome() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     const synth = window.speechSynthesis;
 
-    if (speaking) {
+    if (speakingRef.current || synth.speaking) {
       synth.cancel();
+      speakingRef.current = false;
       setSpeaking(false);
       return;
     }
@@ -161,53 +175,45 @@ export default function PortalHome() {
     utterance.pitch = 1.0;
 
     utterance.onstart = () => {
+      speakingRef.current = true;
       setSpeaking(true);
     };
     utterance.onend = () => {
+      speakingRef.current = false;
       setSpeaking(false);
       utteranceRef.current = null;
     };
     utterance.onerror = (err) => {
       console.warn("Speech synthesis notice:", err);
+      speakingRef.current = false;
       setSpeaking(false);
       utteranceRef.current = null;
     };
 
-    // Jeda kecil 60ms agar audio thread OS siap setelah cancel()
-    setTimeout(() => {
-      try {
-        synth.speak(utterance);
-      } catch (e) {
-        console.error("Gagal menjalankan speak():", e);
-      }
-    }, 60);
-  }, [speaking]);
+    try {
+      synth.speak(utterance);
+      speakingRef.current = true;
+      setSpeaking(true);
+    } catch (e) {
+      console.error("Gagal menjalankan speak():", e);
+    }
+  }, []);
 
   // Autoplay intro HANYA SEKALI pada sentuhan/klik pertama di area mana pun di landing page
-  // Tidak boleh looping atau memutar ulang otomatis saat tetap berada di halaman
+  // Tidak looping saat tetap berada di halaman (dijaga oleh ref & pelepasan listener)
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem("lentera_landing_spoken") === "true") {
-        hasSpokenOnFirstClickRef.current = true;
-        return;
-      }
-    } catch {}
-
     const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {
       if (hasSpokenOnFirstClickRef.current) return;
 
       const target = e.target as HTMLElement | null;
-      // Jika pengguna menekan tombol atau link langsung, biarkan onClick tombol yang menangani
-      if (target && (target.closest("button") || target.closest("a"))) {
+      // Jika pengguna menekan tombol Dengarkan Panduan langsung, biarkan onClick tombol yang menangani
+      if (target && target.closest("#btn-voice-guide")) {
         return;
       }
 
       hasSpokenOnFirstClickRef.current = true;
-      try {
-        sessionStorage.setItem("lentera_landing_spoken", "true");
-      } catch {}
 
-      // Hapus listener segera agar tidak pernah terpanggil lagi selama stay di halaman
+      // Hapus listener segera agar tidak berputar ulang saat klik berikutnya
       window.removeEventListener("click", handleFirstInteraction);
       window.removeEventListener("touchstart", handleFirstInteraction);
 
@@ -380,40 +386,36 @@ export default function PortalHome() {
             menjelajahi eksperimen sains dengan lebih mandiri.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            {ready && session ? (
-              <>
-                <Link href="/dashboard" className="portal-primary-btn">
-                  Buka LENTERA Learn <ArrowRight className="h-4 w-4" />
+          <div className="mt-8 space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="portal-primary-btn text-base py-3.5 px-6 shadow-xl shadow-violet-500/25 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500"
+              >
+                Buka LENTERA Learn <LayoutDashboard className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/aruco"
+                className="portal-secondary-btn text-base py-3.5 px-6 border border-cyan-400/30 text-cyan-200 hover:bg-cyan-500/10 shadow-lg shadow-cyan-500/10"
+              >
+                Buka LENTERA Lab <ScanEye className="h-4 w-4 text-cyan-300" />
+              </Link>
+              <button id="btn-voice-guide" onClick={readIntro} className="portal-secondary-btn text-base py-3.5 px-5">
+                <Volume2 className="h-4 w-4" /> {speaking ? "Matikan Suara" : "Dengarkan Panduan"}
+              </button>
+              {ready && !session && (
+                <Link
+                  href="/login"
+                  className="portal-ghost-btn text-sm py-3 px-4 border border-white/15 text-violet-100/80 hover:text-white hover:border-violet-400"
+                >
+                  Masuk Akun <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
-                <Link href="/aruco" className="portal-secondary-btn">
-                  Jelajahi LENTERA Lab (Deteksi Blok) <ScanEye className="h-4 w-4" />
-                </Link>
-              </>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href="/aruco"
-                    className="portal-primary-btn text-base py-3.5 px-7 shadow-xl shadow-cyan-500/25 bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500"
-                  >
-                    Buka LENTERA Lab <ScanEye className="h-4 w-4" />
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="portal-ghost-btn text-base py-3.5 px-6 border border-white/20 hover:border-violet-400"
-                  >
-                    Masuk Akun <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <button onClick={readIntro} className="portal-secondary-btn text-base py-3.5 px-6">
-                    <Volume2 className="h-4 w-4" /> {speaking ? "Matikan Suara" : "Dengarkan Panduan"}
-                  </button>
-                </div>
-                <p className="text-xs text-cyan-200/80 font-medium flex items-center gap-1.5">
-                  ✨ <span>Akses Taktil Mandiri: Letakkan balok komponen apa saja di atas papan fisik kapan saja untuk langsung membuka Lab.</span>
-                </p>
-              </div>
-            )}
+              )}
+            </div>
+            <p className="text-xs text-cyan-200/80 font-medium flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0" />
+              <span>Akses Taktil Mandiri: Letakkan balok komponen apa saja di atas papan fisik kapan saja untuk langsung membuka Lab.</span>
+            </p>
           </div>
 
           <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
@@ -432,7 +434,15 @@ export default function PortalHome() {
         </div>
 
         <div className="relative rise lg:pl-8" style={{ animationDelay: ".12s" }}>
-          <div className="portal-visual" aria-label="Visualisasi pembelajaran LENTERA">
+          <div
+            className="portal-visual transition-transform duration-300 ease-out"
+            style={{
+              transform: `perspective(1000px) rotateY(${mouseTilt.x}deg) rotateX(${mouseTilt.y}deg)`,
+            }}
+            onMouseMove={handleVisualMouseMove}
+            onMouseLeave={handleVisualMouseLeave}
+            aria-label="Visualisasi pembelajaran LENTERA"
+          >
             <div className="portal-visual-glow portal-visual-glow-a" />
             <div className="portal-visual-glow portal-visual-glow-b" />
 
@@ -470,35 +480,91 @@ export default function PortalHome() {
                 </filter>
               </defs>
 
-              <g className="portal-orbit portal-orbit-one">
+              {/* 1. Orbit Horizontal Belakang & Tengah */}
+              <g className="portal-orbit-track">
                 <ellipse cx="310" cy="310" rx="235" ry="94" fill="none" stroke="url(#orbitGradient)" strokeWidth="2.5" />
-                <circle cx="545" cy="310" r="7" fill="#c4b5fd" filter="url(#tinyGlow)" />
+                <ellipse cx="310" cy="310" rx="235" ry="94" fill="none" stroke="#e9d5ff" strokeWidth="2" strokeDasharray="35 300" className="portal-orbit-stream-1" opacity="0.75" />
               </g>
-              <g className="portal-orbit portal-orbit-two">
+              <g className="portal-orbit-track">
                 <ellipse cx="310" cy="310" rx="228" ry="88" fill="none" stroke="url(#orbitGradient)" strokeWidth="2" />
-                <circle cx="82" cy="310" r="6" fill="#67e8f9" filter="url(#tinyGlow)" />
+                <ellipse cx="310" cy="310" rx="228" ry="88" fill="none" stroke="#67e8f9" strokeWidth="1.8" strokeDasharray="25 260" className="portal-orbit-stream-2" opacity="0.65" />
               </g>
-              <g className="portal-orbit portal-orbit-three">
+              <g className="portal-orbit-track">
                 <ellipse cx="310" cy="310" rx="235" ry="100" fill="none" stroke="url(#orbitGradient)" strokeWidth="2.2" />
-                <circle cx="310" cy="210" r="7" fill="#f0abfc" filter="url(#tinyGlow)" />
               </g>
 
-              <g className="portal-orbit portal-orbit-tilt">
-                <ellipse cx="310" cy="310" rx="245" ry="108" fill="none" stroke="#8b5cf6" strokeOpacity=".22" strokeWidth="1" />
+              {/* 2. Cincin Giroskopik Diagonal Kosmik */}
+              <g className="portal-gyro-ring-a">
+                <ellipse cx="310" cy="310" rx="245" ry="108" fill="none" stroke="#8b5cf6" strokeOpacity=".3" strokeWidth="1.2" />
+              </g>
+              <g className="portal-gyro-ring-b">
+                <ellipse cx="310" cy="310" rx="242" ry="102" fill="none" stroke="#c4b5fd" strokeOpacity=".2" strokeWidth="1" strokeDasharray="8 6" />
               </g>
 
-              <circle cx="310" cy="310" r="105" fill="url(#coreGradient)" opacity=".25" filter="url(#softGlow)" />
+              {/* 3. Inti Cahaya & Gelombang Riak Pendaran (Pulsing Light Waves) */}
+              <circle cx="310" cy="310" r="115" fill="url(#coreGradient)" opacity=".25" filter="url(#softGlow)" />
+              <circle cx="310" cy="310" r="36" fill="none" stroke="#c4b5fd">
+                <animate attributeName="r" values="36;125" dur="3.8s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.75;0" dur="3.8s" repeatCount="indefinite" />
+                <animate attributeName="stroke-width" values="1.8;0.3" dur="3.8s" repeatCount="indefinite" />
+              </circle>
+              <circle cx="310" cy="310" r="36" fill="none" stroke="#67e8f9">
+                <animate attributeName="r" values="36;125" begin="1.9s" dur="3.8s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.6;0" begin="1.9s" dur="3.8s" repeatCount="indefinite" />
+                <animate attributeName="stroke-width" values="1.5;0.2" begin="1.9s" dur="3.8s" repeatCount="indefinite" />
+              </circle>
+
               <circle cx="310" cy="310" r="74" fill="#8b5cf6" fillOpacity=".13" stroke="#c4b5fd" strokeOpacity=".34" />
               <circle cx="310" cy="310" r="49" fill="url(#coreGradient)" filter="url(#softGlow)" />
-              <circle cx="310" cy="310" r="16" fill="#fff7ed" filter="url(#tinyGlow)" />
 
+              {/* Bintang Inti Bersinar (Breathing Star Core) */}
+              <g className="portal-star-core">
+                <circle cx="310" cy="310" r="22" fill="#fff7ed" opacity=".4" filter="url(#softGlow)" />
+                <circle cx="310" cy="310" r="16" fill="#fff7ed" filter="url(#tinyGlow)" />
+              </g>
+
+              {/* 4. Satelit Berevolusi di Jalur Orbit (Continuous Orbiting Satellites) */}
+              {/* Satelit 1: Lavender / Perak (Mulai dari kanan: 545, 310) */}
+              <g>
+                <animateMotion
+                  path="M 545,310 A 235 94 0 0 1 75,310 A 235 94 0 0 1 545,310 Z"
+                  dur="16s"
+                  repeatCount="indefinite"
+                />
+                <circle r="12" fill="#c4b5fd" opacity=".3" filter="url(#softGlow)" />
+                <circle r="7" fill="#e9d5ff" filter="url(#tinyGlow)" />
+              </g>
+
+              {/* Satelit 2: Cyan (Mulai dari kiri: 82, 310) */}
+              <g>
+                <animateMotion
+                  path="M 82,310 A 228 88 0 0 0 538,310 A 228 88 0 0 0 82,310 Z"
+                  dur="13s"
+                  repeatCount="indefinite"
+                />
+                <circle r="11" fill="#67e8f9" opacity=".35" filter="url(#softGlow)" />
+                <circle r="6" fill="#67e8f9" filter="url(#tinyGlow)" />
+              </g>
+
+              {/* Satelit 3: Magenta / Pink (Mulai dari atas: 310, 210) */}
+              <g>
+                <animateMotion
+                  path="M 310,210 A 235 100 0 0 1 310,410 A 235 100 0 0 1 310,210 Z"
+                  dur="20s"
+                  repeatCount="indefinite"
+                />
+                <circle r="12" fill="#f0abfc" opacity=".35" filter="url(#softGlow)" />
+                <circle r="7" fill="#f0abfc" filter="url(#tinyGlow)" />
+              </g>
+
+              {/* 5. Partikel Bintang Berkedip (Twinkling Cosmic Dust) */}
               <g className="portal-particle-field" fill="#c4b5fd">
-                <circle cx="138" cy="176" r="2.5" />
-                <circle cx="176" cy="478" r="2" />
-                <circle cx="448" cy="140" r="2.5" />
-                <circle cx="492" cy="466" r="2" />
-                <circle cx="565" cy="232" r="2" />
-                <circle cx="104" cy="372" r="2" />
+                <circle cx="138" cy="176" r="2.5" className="star-twinkle-a" />
+                <circle cx="176" cy="478" r="2" className="star-twinkle-b" />
+                <circle cx="448" cy="140" r="2.5" className="star-twinkle-c" fill="#e9d5ff" />
+                <circle cx="492" cy="466" r="2" className="star-twinkle-a" fill="#67e8f9" />
+                <circle cx="565" cy="232" r="2.2" className="star-twinkle-b" fill="#fff" />
+                <circle cx="104" cy="372" r="2" className="star-twinkle-c" fill="#f0abfc" />
               </g>
             </svg>
 
@@ -575,7 +641,10 @@ export default function PortalHome() {
           {session ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-white">👤 {session.name}</div>
+                <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-violet-300 shrink-0" />
+                  <span>{session.name}</span>
+                </div>
                 <div className="text-[10px] text-violet-200/60 font-semibold uppercase">{roleLabel}</div>
               </div>
               <button

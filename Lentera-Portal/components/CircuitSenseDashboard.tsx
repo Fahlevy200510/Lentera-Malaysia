@@ -939,7 +939,7 @@ function AITutor() {
     callTutor(s.prompt, s.state);
   };
 
-  const chips = ["Pandu saya langkah demi langkah", "Jelaskan arah arus listrik", "Saya sudah selesai! 🎉"];
+  const chips = ["Pandu saya langkah demi langkah", "Jelaskan arah arus listrik", "Saya sudah selesai!"];
 
   return (
     <div style={{ display: "grid", gap: 20 }}>
@@ -1941,10 +1941,10 @@ export default function CircuitSenseDashboard() {
     : view === "handbook"
     ? "Handbook Digital"
     : role === "student"
-    ? `Halo, ${firstName} 👋`
+    ? `Halo, ${firstName}`
     : role === "parent"
-    ? `Halo, ${firstName} 👋`
-    : `Selamat datang kembali, ${firstName} 👋`;
+    ? `Halo, ${firstName}`
+    : `Selamat datang kembali, ${firstName}`;
   const subheading = view === "ai"
     ? "Raba papannya, pikirkan baik-baik, pahami alasannya."
     : view === "handbook"

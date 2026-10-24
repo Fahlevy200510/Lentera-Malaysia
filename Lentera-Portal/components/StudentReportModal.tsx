@@ -3,6 +3,7 @@
 import React from "react";
 import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck } from "lucide-react";
 import { getActiveStudent, getStudentProgress, type StudentProfile, type StudentProgress } from "@/utils/progress";
+import StudentAvatarBadge from "@/components/StudentAvatarBadge";
 
 interface StudentReportModalProps {
   isOpen: boolean;
@@ -205,7 +206,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
                   <td className="w-1/2 pb-1.5 pr-2 align-top">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Nama Siswa:</span>
                     <p className="font-heading text-sm font-extrabold text-slate-900 mt-0.5 flex items-center gap-1.5">
-                      <span>{student.avatar}</span> {student.name}
+                      <StudentAvatarBadge id={student.id} name={student.name} avatar={student.avatar} size="xs" theme="light" /> {student.name}
                     </p>
                   </td>
                   <td className="w-1/2 pb-1.5 pl-2 align-top">

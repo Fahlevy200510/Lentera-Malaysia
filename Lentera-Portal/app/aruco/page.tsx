@@ -39,7 +39,22 @@ export default function ArucoPage() {
 
   const [speaking, setSpeaking] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const speakingRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Pre-load daftar voice browser agar suara bahasa Indonesia langsung siap saat halaman terbuka
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      const onVoicesChanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+      window.speechSynthesis.addEventListener("voiceschanged", onVoicesChanged);
+      return () => {
+        window.speechSynthesis.removeEventListener("voiceschanged", onVoicesChanged);
+      };
+    }
+  }, []);
 
   const speakLabIntro = useCallback(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -53,7 +68,7 @@ export default function ArucoPage() {
 
     const text = hasLearnedComponents
       ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Mau belajar apa hari ini? Kamu bisa memilih langsung dari papan fisik: letakkan satu balok di A1 untuk Pengenalan Taktil, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, atau di E1 untuk Tantangan Detektif Sirkuit. Atau langsung merangkai di papan untuk eksplorasi bebas."
-      : "Selamat datang di LENTERA Lab! Di ruang kerja ini, kamu dapat melihat visualisasi skema rangkaian secara langsung di sisi kanan, memantau tangkapan kamera dari bawah papan, serta mengikuti panduan modul belajar interaktif langkah demi langkah. Sebelum kita mulai, mari kita berkenalan terlebih dahulu dengan komponen-komponennya.";
+      : "Selamat datang di LENTERA Lab! Di ruang belajar ini, kamu dapat bereksperimen merangkai sirkuit listrik secara mandiri melalui papan rabaan taktil dan panduan suara interaktif langkah demi langkah. Sebelum kita mulai merangkai sirkuit, mari kita berkenalan terlebih dahulu dengan bentuk rabaan dan fungsi tiap balok komponen.";
 
     const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     utteranceRef.current = utterance;
@@ -68,52 +83,79 @@ export default function ArucoPage() {
     utterance.pitch = 1.0;
 
     utterance.onstart = () => {
+      speakingRef.current = true;
       setSpeaking(true);
       if (typeof window !== "undefined") (window as any).__lenteraSpeaking = true;
     };
     utterance.onend = () => {
+      speakingRef.current = false;
       setSpeaking(false);
       if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
       utteranceRef.current = null;
+
+      // Jika siswa belum menyelesaikan Pengenalan Bentuk Taktil, otomatis lanjut ke panduan modul Tahap 1
+      if (!hasLearnedComponents && typeof window !== "undefined") {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("lentera-start-guide", { detail: "recognition" }));
+        }, 600);
+      }
     };
-    utterance.onerror = () => {
+    utterance.onerror = (err) => {
+      console.warn("Speech synthesis notice in Lab:", err);
+      speakingRef.current = false;
       setSpeaking(false);
       if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
       utteranceRef.current = null;
     };
 
+    // Beri jeda 250ms agar engine speech browser selesai melepaskan audio dari halaman landing page sebelumnya
     setTimeout(() => {
       try {
+        if (synth.paused) synth.resume();
         synth.speak(utterance);
-      } catch {}
-    }, 100);
+      } catch (e) {
+        console.error("Gagal menjalankan speakLabIntro():", e);
+      }
+    }, 250);
   }, []);
 
-  // Putar narasi sambutan & arahan HANYA SEKALI saat halaman lab pertama kali dimuat
-  // Tidak boleh looping atau berputar ulang saat siswa menetap di halaman
+  // Putar narasi sambutan & arahan saat masuk ke Lentera Lab:
+  // 1. Coba autoplay otomatis saat mount
+  // 2. Jika browser memblokir autoplay tanpa gesture pengguna, putar segera saat pertama kali menyentuh/mengklik layar lab
   const hasSpokenLabIntroRef = useRef(false);
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem("lentera_lab_spoken") === "true") {
-        hasSpokenLabIntroRef.current = true;
-        return;
-      }
-    } catch {}
+    hasSpokenLabIntroRef.current = false;
 
-    if (hasSpokenLabIntroRef.current) return;
-    hasSpokenLabIntroRef.current = true;
-    try {
-      sessionStorage.setItem("lentera_lab_spoken", "true");
-    } catch {}
-
+    // 1. Autoplay otomatis dengan jeda 400ms
     const timer = setTimeout(() => {
+      if (!hasSpokenLabIntroRef.current && !speakingRef.current) {
+        hasSpokenLabIntroRef.current = true;
+        speakLabIntro();
+      }
+    }, 400);
+
+    // 2. Fallback sentuhan/klik pertama di mana saja jika browser menahan autoplay
+    const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {
+      if (hasSpokenLabIntroRef.current || speakingRef.current) return;
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("#btn-lab-voice")) return;
+
+      hasSpokenLabIntroRef.current = true;
+      window.removeEventListener("click", handleFirstInteraction);
+      window.removeEventListener("touchstart", handleFirstInteraction);
       speakLabIntro();
-    }, 700);
+    };
+
+    window.addEventListener("click", handleFirstInteraction, { passive: true });
+    window.addEventListener("touchstart", handleFirstInteraction, { passive: true });
 
     return () => {
       clearTimeout(timer);
+      window.removeEventListener("click", handleFirstInteraction);
+      window.removeEventListener("touchstart", handleFirstInteraction);
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
+        speakingRef.current = false;
         (window as any).__lenteraSpeaking = false;
       }
     };
@@ -216,9 +258,11 @@ export default function ArucoPage() {
                   Sinkronisasi Edge Langsung
                 </p>
                 <button
+                  id="btn-lab-voice"
                   onClick={() => {
-                    if (speaking && typeof window !== "undefined") {
+                    if ((speaking || speakingRef.current) && typeof window !== "undefined") {
                       window.speechSynthesis.cancel();
+                      speakingRef.current = false;
                       setSpeaking(false);
                     } else {
                       speakLabIntro();
