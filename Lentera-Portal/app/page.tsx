@@ -12,6 +12,13 @@ import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import StudentReportModal from "@/components/StudentReportModal";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
+const TYPEWRITER_WORDS = [
+  "sentuhan dan suara.",
+  "papan taktil cerdas.",
+  "eksplorasi mandiri.",
+  "sensor AI interaktif.",
+];
+
 type Destination = {
   href: string;
   title: string;
@@ -58,6 +65,55 @@ export default function PortalHome() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speakingRef = useRef(false);
   const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 });
+
+  // Typewriter effect state
+  const [typedWord, setTypedWord] = useState("");
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Typewriter ticker effect: smooth, relaxed, and natural cadence
+  useEffect(() => {
+    // Initial pause on fresh load (350ms) so hero transition settles before typing
+    if (!hasStarted) {
+      const initTimer = setTimeout(() => {
+        setHasStarted(true);
+      }, 350);
+      return () => clearTimeout(initTimer);
+    }
+
+    const currentWord = TYPEWRITER_WORDS[wordIndex % TYPEWRITER_WORDS.length];
+    let timer: NodeJS.Timeout;
+
+    if (!isDeleting) {
+      if (typedWord.length < currentWord.length) {
+        // Human typing pace (110ms per letter)
+        timer = setTimeout(() => {
+          setTypedWord(currentWord.slice(0, typedWord.length + 1));
+        }, 110);
+      } else {
+        // Ample reading pause (3.0s) for completed phrase
+        timer = setTimeout(() => {
+          setIsDeleting(true);
+        }, 3000);
+      }
+    } else {
+      if (typedWord.length > 0) {
+        // Smooth backspacing (55ms per letter)
+        timer = setTimeout(() => {
+          setTypedWord(currentWord.slice(0, typedWord.length - 1));
+        }, 55);
+      } else {
+        // Calm pause with blinking cursor (600ms) before typing the next phrase
+        timer = setTimeout(() => {
+          setIsDeleting(false);
+          setWordIndex((prev) => (prev + 1) % TYPEWRITER_WORDS.length);
+        }, 600);
+      }
+    }
+
+    return () => clearTimeout(timer);
+  }, [typedWord, isDeleting, wordIndex, hasStarted]);
 
   const handleVisualMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -306,24 +362,19 @@ export default function PortalHome() {
 
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10 print:hidden">
         <Link href="/" className="flex items-center gap-3" aria-label="Beranda LENTERA">
-          <img src="/logo-lentera.png" alt="Logo LENTERA" className="h-11 w-11 rounded-xl object-cover shadow-lg" />
+          <img src="/logo-lentera.png" alt="Logo LENTERA" className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl object-cover shadow-lg" />
           <div>
-            <div className="font-heading text-lg font-extrabold tracking-tight">LENTERA</div>
-            <div className="text-[10px] font-semibold tracking-[0.24em] text-violet-200">SENTUH · PAHAMI · BELAJAR MANDIRI</div>
+            <div className="font-heading text-lg font-extrabold tracking-tight text-white">LENTERA</div>
+            <div className="hidden sm:block text-[10px] font-semibold tracking-[0.24em] text-violet-200">SENTUH · PAHAMI · BELAJAR MANDIRI</div>
           </div>
         </Link>
 
         <div className="hidden items-center gap-3 md:flex">
-          <button onClick={readIntro} className="portal-ghost-btn">
-            <Volume2 className="h-4 w-4" />
-            {speaking ? "Matikan suara" : "Dengarkan"}
-          </button>
-
           <StudentProfileSwitcher />
 
           <button
             onClick={() => setShowReport(true)}
-            className="portal-ghost-btn text-violet-300 hover:text-violet-100 hover:bg-violet-500/20"
+            className="portal-ghost-btn text-violet-300 hover:text-white"
             title="Cetak Raport Belajar Siswa"
           >
             <FileText className="h-4 w-4 text-violet-400" />
@@ -333,7 +384,7 @@ export default function PortalHome() {
           {ready && session ? (
             <button
               onClick={logout}
-              className="portal-ghost-btn text-rose-300 hover:text-rose-200 hover:bg-rose-500/20"
+              className="portal-ghost-btn text-rose-300 hover:text-rose-200"
               title="Keluar dari akun"
             >
               Keluar
@@ -341,13 +392,13 @@ export default function PortalHome() {
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:from-violet-400 hover:to-purple-500 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition active:scale-95"
             >
               Masuk / Login <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
 
-          <button onClick={() => setOpen(true)} className="portal-menu-btn">
+          <button onClick={() => setOpen(true)} className="portal-menu-btn" aria-label="Buka menu navigasi">
             <Menu className="h-4 w-4" />
             Menu
           </button>
@@ -366,70 +417,77 @@ export default function PortalHome() {
         </button>
       </header>
 
-      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-82px)] max-w-7xl items-center gap-12 px-5 pb-14 pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-20 print:hidden">
+      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-82px)] max-w-7xl items-center gap-8 lg:gap-12 px-5 pb-14 pt-4 sm:pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-20 print:hidden">
         <div className="rise max-w-2xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold tracking-wide text-violet-100 backdrop-blur-md">
-            <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
-            Ekosistem pembelajaran sains inklusif
-          </div>
-
-          <h1 className="font-heading text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-            Belajar melalui
-            <span className="block bg-gradient-to-r from-violet-200 via-fuchsia-200 to-cyan-200 bg-clip-text text-transparent">
-              sentuhan.
+          <h1
+            className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.14] tracking-tight text-white"
+            aria-label="Belajar sains melalui sentuhan dan suara."
+          >
+            <span className="block">Belajar sains melalui</span>
+            <span className="block text-amber-300 min-h-[1.25em] mt-1 sm:mt-1.5">
+              <span>{typedWord}</span>
+              <span
+                className="inline-block w-[3.5px] h-[0.78em] ml-2 bg-amber-400 rounded-sm animate-pulse align-middle"
+                aria-hidden="true"
+              />
             </span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-7 text-violet-100/75 sm:text-lg">
-            LENTERA menghubungkan Smart Tactile Experiment Board dengan aplikasi belajar,
-            AI Tutor, suara, dan Analitik Pembelajaran agar siswa tunanetra dan low vision dapat
-            menjelajahi eksperimen sains dengan lebih mandiri.
+          <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-violet-100/85">
+            LENTERA menggabungkan Smart Tactile Experiment Board dengan sensor cerdas, AI Tutor, dan panduan suara agar siswa tunanetra serta low vision dapat bereksperimen listrik secara mandiri dan aman.
           </p>
 
-          <div className="mt-8 space-y-3">
+          <div className="mt-8 space-y-3.5">
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/dashboard"
-                className="portal-primary-btn text-base py-3.5 px-6 shadow-xl shadow-violet-500/25 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500"
+                href="/aruco"
+                className="portal-primary-btn text-base py-3.5 px-6 flex items-center justify-center gap-2.5"
               >
-                Buka LENTERA Learn <LayoutDashboard className="h-4 w-4" />
+                <ScanEye className="h-5 w-5" /> Buka LENTERA Lab
               </Link>
               <Link
-                href="/aruco"
-                className="portal-secondary-btn text-base py-3.5 px-6 border border-cyan-400/30 text-cyan-200 hover:bg-cyan-500/10 shadow-lg shadow-cyan-500/10"
+                href="/dashboard"
+                className="portal-secondary-btn text-base py-3.5 px-6 flex items-center justify-center gap-2.5"
               >
-                Buka LENTERA Lab <ScanEye className="h-4 w-4 text-cyan-300" />
+                <LayoutDashboard className="h-5 w-5" /> Buka LENTERA Learn
               </Link>
-              <button id="btn-voice-guide" onClick={readIntro} className="portal-secondary-btn text-base py-3.5 px-5">
-                <Volume2 className="h-4 w-4" /> {speaking ? "Matikan Suara" : "Dengarkan Panduan"}
+              <button
+                id="btn-voice-guide"
+                onClick={readIntro}
+                className="portal-secondary-btn text-base py-3.5 px-5 flex items-center justify-center gap-2"
+                aria-label={speaking ? "Matikan panduan suara" : "Dengarkan panduan suara"}
+              >
+                <Volume2 className="h-4 w-4 text-amber-300" />
+                <span>{speaking ? "Matikan Suara" : "Dengarkan Panduan"}</span>
               </button>
-              {ready && !session && (
-                <Link
-                  href="/login"
-                  className="portal-ghost-btn text-sm py-3 px-4 border border-white/15 text-violet-100/80 hover:text-white hover:border-violet-400"
-                >
-                  Masuk Akun <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              )}
             </div>
-            <p className="text-xs text-cyan-200/80 font-medium flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0" />
-              <span>Akses Taktil Mandiri: Letakkan balok komponen apa saja di atas papan fisik kapan saja untuk langsung membuka Lab.</span>
-            </p>
+
+            <div className="flex items-center gap-2.5 rounded-xl border border-white/12 bg-white/[0.05] px-4 py-2.5 text-xs text-violet-100/90 backdrop-blur-md">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              </span>
+              <span>
+                <strong>Akses Taktil Mandiri:</strong> Letakkan balok di papan fisik kapan saja untuk langsung membuka Lab.
+              </span>
+            </div>
           </div>
 
-          <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
-            {[
-              ["AI Tutor", "bimbingan adaptif"],
-              ["Suara", "interaksi suara"],
-              ["Analitik", "progres berbasis data"],
-            ].map(([title, sub]) => (
-              <div key={title} className="portal-mini-card">
-                <CheckCircle2 className="h-4 w-4 text-cyan-200" />
-                <div className="mt-2 text-sm font-bold text-white">{title}</div>
-                <div className="mt-0.5 text-[11px] leading-4 text-violet-100/55">{sub}</div>
+          <div className="mt-8 sm:mt-10 border-t border-white/10 pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-violet-300/70">Interaksi Fisik</div>
+                <div className="mt-1 text-sm font-semibold text-white">Balok Taktil & Huruf Braille 3D</div>
               </div>
-            ))}
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-violet-300/70">Visi Komputer</div>
+                <div className="mt-1 text-sm font-semibold text-white">Sensor Kamera ArUco</div>
+              </div>
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-violet-300/70">Audio Inklusif</div>
+                <div className="mt-1 text-sm font-semibold text-white">Panduan Suara Interaktif</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -523,8 +581,7 @@ export default function PortalHome() {
                 <circle cx="310" cy="310" r="16" fill="#fff7ed" filter="url(#tinyGlow)" />
               </g>
 
-              {/* 4. Satelit Berevolusi di Jalur Orbit (Continuous Orbiting Satellites) */}
-              {/* Satelit 1: Lavender / Perak (Mulai dari kanan: 545, 310) */}
+              {/* 4. Satelit Berevolusi di Jalur Orbit */}
               <g>
                 <animateMotion
                   path="M 545,310 A 235 94 0 0 1 75,310 A 235 94 0 0 1 545,310 Z"
@@ -535,7 +592,6 @@ export default function PortalHome() {
                 <circle r="7" fill="#e9d5ff" filter="url(#tinyGlow)" />
               </g>
 
-              {/* Satelit 2: Cyan (Mulai dari kiri: 82, 310) */}
               <g>
                 <animateMotion
                   path="M 82,310 A 228 88 0 0 0 538,310 A 228 88 0 0 0 82,310 Z"
@@ -546,7 +602,6 @@ export default function PortalHome() {
                 <circle r="6" fill="#67e8f9" filter="url(#tinyGlow)" />
               </g>
 
-              {/* Satelit 3: Magenta / Pink (Mulai dari atas: 310, 210) */}
               <g>
                 <animateMotion
                   path="M 310,210 A 235 100 0 0 1 310,410 A 235 100 0 0 1 310,210 Z"
@@ -557,7 +612,7 @@ export default function PortalHome() {
                 <circle r="7" fill="#f0abfc" filter="url(#tinyGlow)" />
               </g>
 
-              {/* 5. Partikel Bintang Berkedip (Twinkling Cosmic Dust) */}
+              {/* 5. Partikel Bintang Berkedip */}
               <g className="portal-particle-field" fill="#c4b5fd">
                 <circle cx="138" cy="176" r="2.5" className="star-twinkle-a" />
                 <circle cx="176" cy="478" r="2" className="star-twinkle-b" />
@@ -598,8 +653,8 @@ export default function PortalHome() {
           <div className="flex items-center gap-3">
             <img src="/logo-lentera.png" alt="" className="h-9 w-9 rounded-xl" />
             <div>
-              <div className="font-heading font-extrabold">LENTERA</div>
-              <div className="text-[10px] tracking-[.2em] text-violet-200/55">EKOSISTEM</div>
+              <div className="font-heading font-extrabold text-white">LENTERA</div>
+              <div className="text-[10px] tracking-[.2em] text-slate-400">EKOSISTEM</div>
             </div>
           </div>
           <button ref={closeBtnRef} onClick={() => setOpen(false)} aria-label="Tutup menu" className="portal-close-btn">
@@ -607,7 +662,7 @@ export default function PortalHome() {
           </button>
         </div>
 
-        <p className="mt-5 text-sm leading-6 text-violet-100/60">
+        <p className="mt-5 text-sm leading-6 text-slate-400">
           Pilih ruang kerja yang ingin kamu gunakan.
         </p>
 
@@ -626,11 +681,11 @@ export default function PortalHome() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
-                    <span className="font-heading text-[15px] font-bold">{d.title}</span>
-                    <ArrowUpRight className="h-4 w-4 text-white/30 transition group-hover:translate-x-1 group-hover:text-white" />
+                    <span className="font-heading text-[15px] font-bold text-white">{d.title}</span>
+                    <ArrowUpRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
                   </span>
-                  <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-violet-200/45">{d.tagline}</span>
-                  <span className="mt-2 block text-[13px] leading-5 text-violet-100/55">{d.description}</span>
+                  <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400">{d.tagline}</span>
+                  <span className="mt-1.5 block text-[13px] leading-5 text-slate-300">{d.description}</span>
                 </span>
               </Link>
             );
@@ -642,10 +697,10 @@ export default function PortalHome() {
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center justify-between">
               <div>
                 <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-violet-300 shrink-0" />
+                  <User className="h-3.5 w-3.5 text-blue-300 shrink-0" />
                   <span>{session.name}</span>
                 </div>
-                <div className="text-[10px] text-violet-200/60 font-semibold uppercase">{roleLabel}</div>
+                <div className="text-[10px] text-slate-400 font-semibold uppercase">{roleLabel}</div>
               </div>
               <button
                 onClick={() => {
@@ -661,7 +716,7 @@ export default function PortalHome() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 p-3.5 text-xs font-bold text-white shadow-lg transition-all hover:from-violet-400 hover:to-purple-500"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 p-3.5 text-xs font-bold text-white shadow-md transition-all"
             >
               Masuk / Login Sekarang
             </Link>
@@ -669,10 +724,10 @@ export default function PortalHome() {
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-200" />
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
               <div>
-                <div className="text-sm font-bold">Dirancang untuk aksesibilitas</div>
-                <div className="mt-1 text-xs leading-5 text-violet-100/50">
+                <div className="text-sm font-bold text-white">Dirancang untuk aksesibilitas</div>
+                <div className="mt-1 text-xs leading-5 text-slate-400">
                   Dukungan suara, keyboard, Braille, dan pembelajaran taktil.
                 </div>
               </div>

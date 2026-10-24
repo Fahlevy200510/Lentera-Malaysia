@@ -348,7 +348,7 @@ function StudentHome() {
               href="/aruco"
               style={{ background: "#fff", color: C.primaryDeep, border: "none", padding: "12px 22px", borderRadius: 99, fontWeight: 800, fontSize: 14.5, display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
             >
-              <Play size={17} fill={C.primaryDeep} /> Buka di Edge Lab
+              <Play size={17} fill={C.primaryDeep} /> Buka di LENTERA Lab
             </Link>
             <button onClick={readLesson} style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", padding: "12px 18px", borderRadius: 99, fontWeight: 700, fontSize: 14, display: "inline-flex", alignItems: "center", gap: 8 }}>
               <Volume2 size={17} /> Bacakan
@@ -1370,7 +1370,7 @@ function TeacherHandbook() {
               <BookOpen size={26} color="#fff" />
             </div>
             <div>
-              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 19 }}>Handbook Guru Digital</div>
+              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 19 }}>Buku Panduan Guru Digital</div>
               <div style={{ fontSize: 13, opacity: 0.9, marginTop: 3, maxWidth: 480 }}>
                 Materi rangkaian listrik sederhana yang dirancang sebagai panduan mengajar untuk siswa tunanetra dan low vision di tingkat SMPLB.
               </div>
@@ -1416,7 +1416,7 @@ function TeacherHandbook() {
 
         {/* content */}
         <Card delay={120} style={{ padding: 26 }}>
-          <SectionTitle icon={section.icon} title={section.title} sub={`Bagian ${active + 1} dari 5 · Handbook LENTERA`} right={<Pill tone="purple">{section.badge}</Pill>} />
+          <SectionTitle icon={section.icon} title={section.title} sub={`Bagian ${active + 1} dari 5 · Buku Panduan LENTERA`} right={<Pill tone="purple">{section.badge}</Pill>} />
 
           <p style={{ fontSize: 14.5, color: C.text, lineHeight: 1.6, marginBottom: 16 }}>{section.summary}</p>
 
@@ -1512,7 +1512,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
     },
     teacher: {
       title: "Masuk sebagai Guru",
-      desc: "Pantau progres kelas dan buka Handbook Digital untuk mengajar siswa tunanetra dan low vision.",
+      desc: "Pantau progres kelas dan buka Buku Panduan Digital untuk mengajar siswa tunanetra dan low vision.",
       cta: "Buka Dashboard Guru",
       placeholder: "teacher@lentera.demo",
       label: "Email",
@@ -1540,7 +1540,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
     }
 
     if (!password.trim()) {
-      setError("Password wajib diisi.");
+      setError("Kata sandi wajib diisi.");
       return;
     }
 
@@ -1613,7 +1613,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>Password</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>Kata Sandi</label>
                 <div className="flex items-center" style={{ gap: 9, border: "1px solid rgba(139,92,246,0.2)", background: "#fff", borderRadius: 12, padding: "10px 14px" }}>
                   <KeyRound size={16} color={C.textSoft} />
                   <input
@@ -1623,7 +1623,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
                     placeholder="••••••••"
                     style={{ flex: 1, border: "none", outline: "none", fontSize: 13.5, fontFamily: BODY, color: C.text, background: "transparent" }}
                   />
-                  <button type="button" aria-label={showPw ? "Hide password" : "Show password"} onClick={() => setShowPw((v) => !v)} style={{ background: "none", border: "none", display: "grid", placeItems: "center", color: C.textSoft }}>
+                  <button type="button" aria-label={showPw ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"} onClick={() => setShowPw((v) => !v)} style={{ background: "none", border: "none", display: "grid", placeItems: "center", color: C.textSoft }}>
                     {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
@@ -1675,7 +1675,7 @@ function Logo({ small = false }: { small?: boolean }) {
       {!small && (
         <div>
           <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 18, color: C.text, lineHeight: 1 }}>Lentera</div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.primary, letterSpacing: 1.3 }}>TOUCH · UNDERSTAND · LEARN INDEPENDENTLY</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.primary, letterSpacing: 1.3 }}>SENTUH · PAHAMI · BELAJAR MANDIRI</div>
         </div>
       )}
     </div>
@@ -1694,7 +1694,7 @@ function Sidebar({ view, setView, role, onLogout }: ShellProps) {
   const homeLabel = role === "student" ? "Dashboard Saya" : role === "parent" ? "Progres Anak" : "Ringkasan";
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: homeLabel, icon: LayoutDashboard },
-    ...(role === "teacher" ? [{ id: "handbook", label: "Handbook", icon: BookOpen }] : []),
+    ...(role === "teacher" ? [{ id: "handbook", label: "Buku Panduan", icon: BookOpen }] : []),
     { id: "ai", label: "AI Tutor", icon: Sparkles },
     { id: "lab", label: "Lentera Lab", icon: ScanEye, href: "/aruco" },
   ];
@@ -1744,7 +1744,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
   const [search, setSearch] = useState("");
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: "Beranda", icon: LayoutDashboard },
-    ...(role === "teacher" ? [{ id: "handbook", label: "Handbook", icon: BookOpen }] : []),
+    ...(role === "teacher" ? [{ id: "handbook", label: "Panduan", icon: BookOpen }] : []),
     { id: "ai", label: "AI", icon: Sparkles },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
@@ -1939,7 +1939,7 @@ export default function CircuitSenseDashboard() {
   const heading = view === "ai"
     ? "AI Tutor"
     : view === "handbook"
-    ? "Handbook Digital"
+    ? "Buku Panduan Guru"
     : role === "student"
     ? `Halo, ${firstName}`
     : role === "parent"
@@ -1948,7 +1948,7 @@ export default function CircuitSenseDashboard() {
   const subheading = view === "ai"
     ? "Raba papannya, pikirkan baik-baik, pahami alasannya."
     : view === "handbook"
-    ? "Handbook panduan mengajar rangkaian listrik sederhana untuk siswa tunanetra dan low vision."
+    ? "Panduan mengajar materi rangkaian listrik sederhana untuk siswa tunanetra dan low vision."
     : role === "student"
     ? "Kamu tinggal satu pelajaran lagi untuk meraih lencana berikutnya."
     : role === "parent"
