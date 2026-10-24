@@ -719,6 +719,7 @@ export default function VoiceGuide() {
 
   const startGuide = (guideMode: GuideMode) => {
     if (guideMode === "idle") return;
+    playEarcon("click");
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     setMode(guideMode);
     setCurrentStep(0);
@@ -806,553 +807,258 @@ export default function VoiceGuide() {
       currentProgress.modules.circuit_troubleshoot,
     ].filter(Boolean).length;
 
-    // Menentukan modul rekomendasi berikutnya
-    let nextRec = {
-      mode: "recognition" as GuideMode,
-      stage: "Tahap 1",
-      title: "Pengenalan Bentuk Taktil Komponen",
-      desc: "Langkah awal: Raba dan kenali 6 bentuk timbul balok komponen dasar di sel C3 tengah papan.",
-      actionText: "Mulai Tahap 1",
-      cell: "A1",
-    };
-
-    if (!currentProgress.modules.component_recognition) {
-      nextRec = {
-        mode: "recognition",
-        stage: "Tahap 1 (Dasar)",
-        title: "Pengenalan Bentuk Taktil Komponen",
-        desc: "Langkah awal: Raba dan kenali 6 bentuk timbul balok komponen dasar di sel C3 tengah papan.",
-        actionText: "Mulai Tahap 1",
-        cell: "A1",
-      };
-    } else if (!currentProgress.modules.component_quiz) {
-      nextRec = {
-        mode: "quiz",
-        stage: "Tahap 2 (Kuis)",
-        title: "Kuis Tebak Fungsi Komponen",
-        desc: "Jawab tebak fungsi komponen listrik secara mandiri dengan meletakkan balok di papan fisik.",
-        actionText: "Mulai Kuis Taktil",
-        cell: "B1",
-      };
-    } else if (!currentProgress.modules.series_circuit) {
-      nextRec = {
-        mode: "series",
-        stage: "Tahap 3 (Sirkuit Seri)",
-        title: "Rangkaian Listrik Seri",
-        desc: "Rakit sirkuit satu loop tertutup dari baterai ke saklar dan dua lampu hingga menyala.",
-        actionText: "Mulai Rangkaian Seri",
-        cell: "C1",
-      };
-    } else if (!currentProgress.modules.parallel_circuit) {
-      nextRec = {
-        mode: "parallel",
-        stage: "Tahap 4 (Sirkuit Paralel)",
-        title: "Rangkaian Listrik Paralel",
-        desc: "Rakit sirkuit percabangan kabel T dengan dua saklar mandiri untuk setiap lampu.",
-        actionText: "Mulai Rangkaian Paralel",
-        cell: "D1",
-      };
-    } else if (!currentProgress.modules.circuit_troubleshoot) {
-      nextRec = {
-        mode: "troubleshoot",
-        stage: "Tahap 5 (Mahir)",
-        title: "Tantangan Detektif Sirkuit",
-        desc: "Misi mandiri tingkat mahir: analisis kendali saklar dan uji rangkaian tanpa panduan visual.",
-        actionText: "Mulai Misi Detektif",
-        cell: "E1",
-      };
-    } else {
-      nextRec = {
-        mode: "troubleshoot",
-        stage: "Kurikulum Tuntas",
-        title: "Eksplorasi Bebas & Pengujian",
-        desc: "Luar biasa! Seluruh 5 modul kurikulum telah kamu tuntaskan dengan mandiri.",
-        actionText: "Uji Misi Detektif Lagi",
-        cell: "E1",
-      };
-    }
+    // Menentukan tahapan rekomendasi berikutnya (tahap pertama yang belum diselesaikan)
+    let recommendedMode: GuideMode = "recognition";
+    if (!currentProgress.modules.component_recognition) recommendedMode = "recognition";
+    else if (!currentProgress.modules.component_quiz) recommendedMode = "quiz";
+    else if (!currentProgress.modules.series_circuit) recommendedMode = "series";
+    else if (!currentProgress.modules.parallel_circuit) recommendedMode = "parallel";
+    else if (!currentProgress.modules.circuit_troubleshoot) recommendedMode = "troubleshoot";
+    else recommendedMode = "recognition";
 
     const speakMenuGuidance = () => {
+      playEarcon("click");
       speak(
         "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan belajar yang bisa kamu pilih: Tahap satu, Pengenalan Komponen dengan meletakkan balok di kotak A1. Tahap dua, Kuis Taktil di kotak B1. Tahap tiga, Rangkaian Seri di kotak C1. Tahap empat, Rangkaian Paralel di kotak D1. Dan Tahap lima, Tantangan Detektif Sirkuit di kotak E1. Kamu bisa meletakkan satu balok di baris atas papan fisik untuk mulai belajar secara mandiri."
       );
     };
 
+    const MODULES = [
+      {
+        id: "recognition",
+        mode: "recognition" as GuideMode,
+        cell: "A1",
+        stage: 1,
+        title: "Pengenalan Bentuk Taktil",
+        desc: "Raba & kenali 6 balok komponen sirkuit dasar di sel C3 tengah papan",
+        xp: 50,
+        isCompleted: currentProgress.modules.component_recognition,
+        hasSubModes: false,
+      },
+      {
+        id: "quiz",
+        mode: "quiz" as GuideMode,
+        cell: "B1",
+        stage: 2,
+        title: "Kuis Tebak Komponen",
+        desc: "Tebak fungsi komponen listrik secara mandiri dengan menaruh balok di papan",
+        xp: 50,
+        isCompleted: currentProgress.modules.component_quiz,
+        hasSubModes: false,
+      },
+      {
+        id: "series",
+        mode: "series" as GuideMode,
+        cell: "C1",
+        stage: 3,
+        title: "Rangkaian Listrik Seri",
+        desc: "Rakit 1 jalur loop tertutup dari baterai, saklar, dan lampu hingga menyala",
+        xp: 100,
+        isCompleted: currentProgress.modules.series_circuit,
+        hasSubModes: true,
+      },
+      {
+        id: "parallel",
+        mode: "parallel" as GuideMode,
+        cell: "D1",
+        stage: 4,
+        title: "Rangkaian Listrik Paralel",
+        desc: "Rakit sirkuit percabangan kabel T dengan kendali saklar mandiri tiap lampu",
+        xp: 100,
+        isCompleted: currentProgress.modules.parallel_circuit,
+        hasSubModes: true,
+      },
+      {
+        id: "troubleshoot",
+        mode: "troubleshoot" as GuideMode,
+        cell: "E1",
+        stage: 5,
+        title: "Tantangan Detektif Sirkuit",
+        desc: "Misi troubleshooting kendali saklar & pengujian sirkuit tingkat mahir",
+        xp: 150,
+        isCompleted: currentProgress.modules.circuit_troubleshoot,
+        hasSubModes: false,
+      },
+    ];
+
     return (
-      <div className="card rounded-3xl border border-cs-text/10 bg-white/90 p-5 md:p-6 shadow-[0_12px_32px_rgba(46,42,94,0.07)] backdrop-blur-xl space-y-5">
-        
-        {/* Header Komponen */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-500/20">
-              <Sparkles className="h-5 w-5" />
+      <div className="card rounded-3xl border border-cs-text/10 bg-white/95 p-4 sm:p-5 shadow-[0_12px_32px_rgba(46,42,94,0.07)] backdrop-blur-xl space-y-3.5">
+        {/* Header Komponen & Progres Siswa */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm shadow-indigo-500/20">
+              <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-heading text-base font-extrabold text-cs-text">
-                  Panduan Suara & Taktil Interaktif
-                </h3>
-                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700">
-                  5 Level Belajar
-                </span>
-              </div>
-              <p className="text-xs text-cs-text/60 mt-0.5">
-                Pilih modul di bawah atau gunakan pintasan taktil di papan fisik tanpa layar.
+              <h3 className="font-heading text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
+                Panduan Modul Belajar
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Kurikulum 5 tahap terintegrasi dengan sensor papan fisik
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={speakMenuGuidance}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50/80 px-3 py-1.5 text-xs font-bold text-violet-700 hover:bg-violet-100 transition-colors shadow-xs"
-              title="Dengarkan panduan suara cara memilih menu"
-            >
-              <Volume2 className="h-3.5 w-3.5 text-violet-600" />
-              <span>Dengarkan Menu</span>
-            </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Indikator Progres 5 Segmen */}
+            <div className="flex items-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200/80 px-2.5 py-1 text-xs">
+              <span className="text-[11px] font-bold text-slate-600">
+                Progres {completedCount}/5
+              </span>
+              <div className="flex items-center gap-1" title={`${completedCount} dari 5 modul selesai`}>
+                {[
+                  currentProgress.modules.component_recognition,
+                  currentProgress.modules.component_quiz,
+                  currentProgress.modules.series_circuit,
+                  currentProgress.modules.parallel_circuit,
+                  currentProgress.modules.circuit_troubleshoot,
+                ].map((done, idx) => (
+                  <span
+                    key={idx}
+                    className={`h-1.5 w-3 rounded-full transition-all ${
+                      done ? "bg-emerald-500" : "bg-slate-200"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Badge Profil Siswa */}
             <div
               suppressHydrationWarning
-              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50/80 border border-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-900"
             >
               <span suppressHydrationWarning>{activeStudent.avatar}</span>
-              <span suppressHydrationWarning className="truncate max-w-[100px]">{activeStudent.name.split(" ")[0]}</span>
-              <span suppressHydrationWarning className="text-[10px] text-indigo-600 font-extrabold ml-0.5">({currentProgress.xp} XP)</span>
+              <span suppressHydrationWarning className="truncate max-w-[90px]">{activeStudent.name.split(" ")[0]}</span>
+              <span suppressHydrationWarning className="text-[10px] text-indigo-600 font-extrabold">({currentProgress.xp} XP)</span>
             </div>
           </div>
         </div>
 
-        {/* HERO CARD: Rekomendasi Modul Berikutnya */}
-        <div suppressHydrationWarning className="relative overflow-hidden rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 p-4 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-white shadow-xs">
-                  <Compass className="h-3 w-3" /> Rekomendasi Belajar
-                </span>
-                <span className="text-xs font-bold text-indigo-700">
-                  {nextRec.stage} • Pintasan Papan: {nextRec.cell}
-                </span>
-              </div>
-              <h4 className="font-heading text-sm sm:text-base font-extrabold text-slate-900">
-                {nextRec.title}
-              </h4>
-              <p className="text-xs text-slate-600 max-w-xl leading-relaxed">
-                {nextRec.desc}
-              </p>
-            </div>
-
-            <button
-              onClick={() => startGuide(nextRec.mode)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-indigo-500/25 transition-all hover:bg-indigo-700 active:scale-95 shrink-0"
-            >
-              <Play className="h-3.5 w-3.5 fill-white" />
-              <span>{nextRec.actionText}</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* PINTASAN PAPAN TAKTIL (ZERO-SCREEN TUI) */}
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 space-y-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                <Zap className="h-3 w-3" />
-              </span>
-              <span className="font-heading text-xs font-bold text-slate-800">
-                Pintasan Papan Taktil (Pilih Modul Bebas Layar)
-              </span>
-            </div>
-            <span className="text-[10px] font-semibold text-slate-500">
-              Taruh 1 balok di Baris 1 Papan Fisik
+        {/* Tip Pintasan Taktil Mandiri (Zero-Screen TUI) Ringkas */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-purple-50/30 to-blue-50/40 px-3.5 py-2 text-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-2xs shrink-0">
+              <Zap className="h-3 w-3" />
             </span>
+            <p className="text-[11.5px] text-slate-700 leading-snug">
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik:</strong> Letakkan 1 balok di kotak baris atas papan (<span className="font-mono font-bold text-indigo-700">A1 – E1</span>) untuk langsung memulai materi tanpa layar.
+            </p>
           </div>
-
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Siswa tunanetra cukup meraba dan meletakkan 1 balok pada kotak baris atas papan (A1 – E1) untuk langsung memulai materi tanpa melihat layar:
-          </p>
-
-          <div className="grid grid-cols-5 gap-2 text-center">
-            {/* A1 */}
-            <button
-              onClick={() => startGuide("recognition")}
-              className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                currentProgress.modules.component_recognition
-                  ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                  : "bg-white border-amber-200 text-slate-800 hover:border-amber-400"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full px-1">
-                <span className="text-[10px] font-black font-mono text-amber-600">A1</span>
-                {currentProgress.modules.component_recognition ? (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                ) : (
-                  <span className="text-[9px] text-slate-400">1</span>
-                )}
-              </div>
-              <span className="text-[11px] font-extrabold mt-0.5 truncate w-full">Pengenalan</span>
-              <span className="text-[9px] text-slate-500 truncate w-full">6 Balok</span>
-            </button>
-
-            {/* B1 */}
-            <button
-              onClick={() => startGuide("quiz")}
-              className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                currentProgress.modules.component_quiz
-                  ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                  : "bg-white border-indigo-200 text-slate-800 hover:border-indigo-400"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full px-1">
-                <span className="text-[10px] font-black font-mono text-indigo-600">B1</span>
-                {currentProgress.modules.component_quiz ? (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                ) : (
-                  <span className="text-[9px] text-slate-400">2</span>
-                )}
-              </div>
-              <span className="text-[11px] font-extrabold mt-0.5 truncate w-full">Kuis Taktil</span>
-              <span className="text-[9px] text-slate-500 truncate w-full">4 Soal</span>
-            </button>
-
-            {/* C1 */}
-            <button
-              onClick={() => startGuide("series")}
-              className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                currentProgress.modules.series_circuit
-                  ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                  : "bg-white border-violet-200 text-slate-800 hover:border-violet-400"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full px-1">
-                <span className="text-[10px] font-black font-mono text-violet-600">C1</span>
-                {currentProgress.modules.series_circuit ? (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                ) : (
-                  <span className="text-[9px] text-slate-400">3</span>
-                )}
-              </div>
-              <span className="text-[11px] font-extrabold mt-0.5 truncate w-full">Sirkuit Seri</span>
-              <span className="text-[9px] text-slate-500 truncate w-full">1 Loop</span>
-            </button>
-
-            {/* D1 */}
-            <button
-              onClick={() => startGuide("parallel")}
-              className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                currentProgress.modules.parallel_circuit
-                  ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                  : "bg-white border-sky-200 text-slate-800 hover:border-sky-400"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full px-1">
-                <span className="text-[10px] font-black font-mono text-sky-600">D1</span>
-                {currentProgress.modules.parallel_circuit ? (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                ) : (
-                  <span className="text-[9px] text-slate-400">4</span>
-                )}
-              </div>
-              <span className="text-[11px] font-extrabold mt-0.5 truncate w-full">Paralel</span>
-              <span className="text-[9px] text-slate-500 truncate w-full">Cabang T</span>
-            </button>
-
-            {/* E1 */}
-            <button
-              onClick={() => startGuide("troubleshoot")}
-              className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${
-                currentProgress.modules.circuit_troubleshoot
-                  ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                  : "bg-white border-rose-200 text-slate-800 hover:border-rose-400"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full px-1">
-                <span className="text-[10px] font-black font-mono text-rose-600">E1</span>
-                {currentProgress.modules.circuit_troubleshoot ? (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                ) : (
-                  <span className="text-[9px] text-slate-400">5</span>
-                )}
-              </div>
-              <span className="text-[11px] font-extrabold mt-0.5 truncate w-full">Detektif</span>
-              <span className="text-[9px] text-slate-500 truncate w-full">Tingkat Mahir</span>
-            </button>
-          </div>
+          <button
+            onClick={speakMenuGuidance}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-2.5 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-50 active:scale-95 transition-all shadow-2xs self-start sm:self-auto shrink-0"
+            title="Dengarkan panduan suara cara memilih materi"
+          >
+            <Volume2 className="h-3.5 w-3.5 text-indigo-600" />
+            <span>Dengarkan Menu</span>
+          </button>
         </div>
 
-        {/* KATALOG 5 TAHAPAN KURIKULUM PEMBELAJARAN LENGKAP */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-heading text-xs font-black uppercase tracking-wider text-slate-700">
-              Kurikulum Lengkap 5 Tahap Pembelajaran
-            </h4>
-            <span className="text-[11px] font-semibold text-slate-500">
-              Progres Siswa: {completedCount} / 5 Modul Selesai
-            </span>
-          </div>
+        {/* Daftar 5 Modul Pembelajaran */}
+        <div className="space-y-2">
+          {MODULES.map((item) => {
+            const isRecommended = item.mode === recommendedMode && !item.isCompleted;
 
-          {/* LEVEL 1: Pengenalan Komponen */}
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/30 p-4 transition-all hover:border-amber-300 hover:shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800 uppercase">
-                    Tahap 1 • Kotak A1
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    6 Komponen Fisik • Rabaan Sel C3
-                  </span>
-                  {currentProgress.modules.component_recognition ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
-                      <CheckCircle2 className="h-3 w-3" /> Dikuasai (+50 XP)
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">
-                      Reward: +50 XP
-                    </span>
-                  )}
-                </div>
-                <h5 className="font-heading text-sm font-extrabold text-slate-900">
-                  Pengenalan Bentuk Taktil Komponen Listrik
-                </h5>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                  Siswa meletakkan dan meraba 6 balok sirkuit (baterai, saklar, lampu, kabel lurus, kabel L, kabel T) di posisi C3. Asisten suara menjelaskan simbol timbul dan fungsinya secara detail.
-                </p>
-              </div>
-
-              <button
-                onClick={() => startGuide("recognition")}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-amber-600 active:scale-95 shrink-0 transition-colors"
+            return (
+              <div
+                key={item.id}
+                className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl transition-all ${
+                  isRecommended
+                    ? "bg-gradient-to-r from-indigo-50/70 via-white to-purple-50/30 border-2 border-indigo-400/90 shadow-sm shadow-indigo-500/5 ring-1 ring-indigo-200/50"
+                    : item.isCompleted
+                    ? "bg-emerald-50/20 border border-emerald-200/70 hover:border-emerald-300"
+                    : "bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
+                }`}
               >
-                <Play className="h-3.5 w-3.5 fill-white" />
-                <span>{currentProgress.modules.component_recognition ? "Ulangi Pengenalan" : "Mulai Pengenalan"}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* LEVEL 2: Kuis Tebak Komponen */}
-          <div className="rounded-2xl border border-indigo-200 bg-indigo-50/30 p-4 transition-all hover:border-indigo-300 hover:shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-[10px] font-black text-indigo-800 uppercase">
-                    Tahap 2 • Kotak B1
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    4 Soal Gamifikasi Taktil
-                  </span>
-                  {currentProgress.modules.component_quiz ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
-                      <CheckCircle2 className="h-3 w-3" /> Dikuasai (+50 XP)
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded-full">
-                      Reward: +50 XP
-                    </span>
-                  )}
-                </div>
-                <h5 className="font-heading text-sm font-extrabold text-slate-900">
-                  Kuis Tebak Komponen Taktil & Pemahaman Konsep
-                </h5>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                  Siswa mendengarkan pertanyaan fungsi (sumber energi, pengubah cahaya, saklar pemutus, kabel T) lalu menjawab secara mandiri dengan meletakkan balok di papan fisik.
-                </p>
-              </div>
-
-              <button
-                onClick={() => startGuide("quiz")}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 active:scale-95 shrink-0 transition-colors"
-              >
-                <Play className="h-3.5 w-3.5 fill-white" />
-                <span>{currentProgress.modules.component_quiz ? "Ulangi Kuis" : "Mulai Kuis Taktil"}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* LEVEL 3: Rangkaian Seri */}
-          <div className="rounded-2xl border border-violet-200 bg-violet-50/30 p-4 transition-all hover:border-violet-300 hover:shadow-sm">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-800 uppercase">
-                    Tahap 3 • Kotak C1
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    Sirkuit 1 Loop Tertutup & Saklar
-                  </span>
-                  {currentProgress.modules.series_circuit ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
-                      <CheckCircle2 className="h-3 w-3" /> Dikuasai (+100 XP)
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-violet-700 bg-violet-100/70 px-2 py-0.5 rounded-full">
-                      Reward: +100 XP
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <h5 className="font-heading text-sm font-extrabold text-slate-900">
-                Perakitan Rangkaian Listrik Seri
-              </h5>
-              <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                Menyusun baterai, kabel, saklar, dan lampu dalam satu jalur tertutup tanpa percabangan. Siswa membuktikan bahwa memutus saklar akan memadamkan seluruh lampu sekaligus.
-              </p>
-
-              {/* Pilihan Mode Belajar Seri yang Jelas */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1.5">
-                <button
-                  onClick={() => startGuide("series")}
-                  className="flex items-start gap-2.5 rounded-xl border border-violet-200 bg-white p-3 text-left hover:border-violet-400 hover:bg-violet-50/50 transition-all shadow-xs"
-                >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 font-bold text-xs mt-0.5">
-                    1
+                {/* Info Kiri: Badge Sel + Judul + Deskripsi */}
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <div
+                    className={`flex flex-col items-center justify-center h-10 w-10 sm:h-11 sm:w-11 rounded-xl font-mono shrink-0 transition-all ${
+                      item.isCompleted
+                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                        : isRecommended
+                        ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
+                        : "bg-slate-100 text-slate-700 border border-slate-200"
+                    }`}
+                  >
+                    <span className="text-xs font-black">{item.cell}</span>
+                    <span className="text-[8.5px] font-bold opacity-80 leading-none">Tahap {item.stage}</span>
                   </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-violet-950 flex items-center gap-1">
-                      <span>Panduan Langkah per Sel</span>
-                      <Play className="h-2.5 w-2.5 fill-violet-700 text-violet-700" />
+
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <h4 className="font-heading text-xs sm:text-sm font-extrabold text-slate-900">
+                        {item.title}
+                      </h4>
+                      {item.isCompleted ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                          <span>Dikuasai</span>
+                        </span>
+                      ) : isRecommended ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-indigo-700">
+                          <Sparkles className="h-2.5 w-2.5 text-indigo-600" />
+                          <span>Rekomendasi</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                          +{item.xp} XP
+                        </span>
+                      )}
                     </div>
-                    <p className="text-[10.5px] text-slate-500 leading-snug mt-0.5">
-                      Dipandu langkah demi langkah meletakkan balok ke koordinat (C5, B5, A5, dst). Cocok untuk pemula.
+                    <p className="text-[11.5px] text-slate-500 leading-snug">
+                      {item.desc}
                     </p>
                   </div>
-                </button>
+                </div>
 
-                <button
-                  onClick={() => startGuide("adaptive_series")}
-                  className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white p-3 text-left hover:border-violet-300 hover:bg-slate-50 transition-all shadow-xs"
-                >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-xs mt-0.5">
-                    2
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900 flex items-center gap-1">
-                      <span>Merakit Bebas (Adaptif)</span>
-                      <Play className="h-2.5 w-2.5 fill-slate-700 text-slate-700" />
+                {/* Tombol Aksi Kanan */}
+                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                  {item.hasSubModes ? (
+                    <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5 shadow-2xs">
+                      <button
+                        onClick={() => startGuide(item.mode)}
+                        className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
+                          isRecommended
+                            ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700"
+                            : "bg-white text-slate-800 shadow-2xs hover:text-indigo-600"
+                        }`}
+                        title="Mode Terpandu: Langkah per sel koordinat"
+                      >
+                        <Play className={`h-2.5 w-2.5 ${isRecommended ? "fill-white text-white" : "fill-current"}`} />
+                        <span>Panduan</span>
+                      </button>
+                      <button
+                        onClick={() =>
+                          startGuide(item.mode === "series" ? "adaptive_series" : "adaptive_parallel")
+                        }
+                        className="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-all active:scale-95"
+                        title="Mode Bebas: Rakit mandiri adaptif tanpa urutan koordinat"
+                      >
+                        <span>Bebas</span>
+                      </button>
                     </div>
-                    <p className="text-[10.5px] text-slate-500 leading-snug mt-0.5">
-                      Siswa bebas meletakkan balok di posisi mana saja, AI memvalidasi sirkuit loop tertutup secara otomatis.
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* LEVEL 4: Rangkaian Paralel */}
-          <div className="rounded-2xl border border-sky-200 bg-sky-50/30 p-4 transition-all hover:border-sky-300 hover:shadow-sm">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-sky-100 px-2 py-0.5 text-[10px] font-black text-sky-800 uppercase">
-                    Tahap 4 • Kotak D1
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    Sirkuit Bercabang Kabel T & 2 Lampu
-                  </span>
-                  {currentProgress.modules.parallel_circuit ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
-                      <CheckCircle2 className="h-3 w-3" /> Dikuasai (+100 XP)
-                    </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-sky-700 bg-sky-100/70 px-2 py-0.5 rounded-full">
-                      Reward: +100 XP
-                    </span>
+                    <button
+                      onClick={() => startGuide(item.mode)}
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all active:scale-95 shadow-xs ${
+                        isRecommended
+                          ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/25"
+                          : item.isCompleted
+                          ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
+                          : "bg-slate-900 hover:bg-indigo-600 text-white"
+                      }`}
+                    >
+                      <Play className={`h-3 w-3 ${item.isCompleted ? "text-slate-600 fill-slate-600" : "fill-white text-white"}`} />
+                      <span>{item.isCompleted ? "Ulangi" : "Mulai"}</span>
+                    </button>
                   )}
                 </div>
               </div>
-
-              <h5 className="font-heading text-sm font-extrabold text-slate-900">
-                Perakitan Rangkaian Listrik Paralel
-              </h5>
-              <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                Menyusun sirkuit bercabang menggunakan balok Kabel T dengan saklar mandiri untuk setiap lampu. Lampu cabang pertama tetap menyala meski cabang kedua dimatikan.
-              </p>
-
-              {/* Pilihan Mode Belajar Paralel */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1.5">
-                <button
-                  onClick={() => startGuide("parallel")}
-                  className="flex items-start gap-2.5 rounded-xl border border-sky-200 bg-white p-3 text-left hover:border-sky-400 hover:bg-sky-50/50 transition-all shadow-xs"
-                >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-700 font-bold text-xs mt-0.5">
-                    1
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-sky-950 flex items-center gap-1">
-                      <span>Panduan Langkah per Sel</span>
-                      <Play className="h-2.5 w-2.5 fill-sky-700 text-sky-700" />
-                    </div>
-                    <p className="text-[10.5px] text-slate-500 leading-snug mt-0.5">
-                      Dipandu merakit cabang atas, tengah, dan bawah langkah demi langkah.
-                    </p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => startGuide("adaptive_parallel")}
-                  className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white p-3 text-left hover:border-sky-300 hover:bg-slate-50 transition-all shadow-xs"
-                >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-xs mt-0.5">
-                    2
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900 flex items-center gap-1">
-                      <span>Merakit Bebas (Adaptif)</span>
-                      <Play className="h-2.5 w-2.5 fill-slate-700 text-slate-700" />
-                    </div>
-                    <p className="text-[10.5px] text-slate-500 leading-snug mt-0.5">
-                      Rancang rangkaian bercabang mandiri dengan minimal dua lampu di mana saja.
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* LEVEL 5: Detektif Sirkuit (Tingkat Mahir) */}
-          <div className="rounded-2xl border border-rose-200 bg-rose-50/30 p-4 transition-all hover:border-rose-300 hover:shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-800 uppercase">
-                    Tahap 5 • Kotak E1 • Tingkat Mahir
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">
-                    3 Misi Troubleshooting & Kendali Saklar
-                  </span>
-                  {currentProgress.modules.circuit_troubleshoot ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">
-                      <CheckCircle2 className="h-3 w-3" /> Dikuasai (+150 XP)
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-rose-700 bg-rose-100/70 px-2 py-0.5 rounded-full">
-                      Reward: +150 XP
-                    </span>
-                  )}
-                </div>
-                <h5 className="font-heading text-sm font-extrabold text-slate-900">
-                  Tantangan Detektif Sirkuit & Pemecahan Masalah
-                </h5>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                  Tantangan tingkat lanjut tanpa panduan koordinat visual: merakit sirkuit kendali saklar, menguji pemutus arus tanpa melepas balok komponen, dan merancang sirkuit paralel mandiri.
-                </p>
-              </div>
-
-              <button
-                onClick={() => startGuide("troubleshoot")}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:from-rose-600 hover:to-pink-700 active:scale-95 shrink-0 transition-colors"
-              >
-                <Play className="h-3.5 w-3.5 fill-white" />
-                <span>{currentProgress.modules.circuit_troubleshoot ? "Ulangi Misi Detektif" : "Mulai Misi Detektif"}</span>
-              </button>
-            </div>
-          </div>
-
+            );
+          })}
         </div>
-
       </div>
     );
   }
