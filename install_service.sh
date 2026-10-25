@@ -56,7 +56,9 @@ EOF
 
 # Konfigurasi izin shutdown aman tanpa password untuk service lentera
 echo "$USER ALL=(ALL) NOPASSWD: /sbin/poweroff, /sbin/shutdown, /bin/systemctl" | sudo tee /etc/sudoers.d/lentera_shutdown > /dev/null
-sudo chmod 0440 /etc/sudoers.d/lentera_shutdown
+# Pasang hook nada safe-to-unplug pada systemd-shutdown
+sudo cp scripts/lentera_poweroff_buzzer.sh /lib/systemd/system-shutdown/lentera_poweroff_buzzer.sh 2>/dev/null || true
+sudo chmod +x /lib/systemd/system-shutdown/lentera_poweroff_buzzer.sh 2>/dev/null || true
 
 # Reload systemd, enable, dan start kedua service
 sudo systemctl daemon-reload

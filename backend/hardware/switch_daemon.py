@@ -43,6 +43,10 @@ def play_buzzer_pulses(pulses):
         except Exception:
             pass
 
+def play_standby_ready_beep():
+    """Tanda 2x bip bahwa OS Raspberry Pi selesai boot dan siap ditekan tombol ON."""
+    play_buzzer_pulses([(0.08, 0.06), (0.08, 0.00)])
+
 def play_power_on_chirp():
     play_buzzer_pulses([(0.06, 0.04), (0.14, 0.00)])
 
@@ -65,10 +69,6 @@ def main():
     # LED tombol
     GPIO.setup(LED_PIN, GPIO.OUT)
     GPIO.output(LED_PIN, GPIO.LOW)
-    
-    # Buzzer untuk nada feedback
-    GPIO.setup(BUZZER_PIN, GPIO.OUT)
-    GPIO.output(BUZZER_PIN, GPIO.LOW)
 
     print(f"[SWITCH DAEMON] Aktif. Memantau Switch di GPIO {SWITCH_PIN} (Pin 5) dan LED di GPIO {LED_PIN}...")
 
@@ -82,8 +82,10 @@ def main():
         play_power_on_chirp()
         run_cmd("sudo systemctl start lentera.service")
     else:
-        print("[SWITCH DAEMON] Saklar terdeteksi OFF saat boot. Menunggu tombol ditekan...")
+        # Saklar posisi OFF saat Pi baru dicolok adaptor (OS siap standby)
+        print("[SWITCH DAEMON] OS Raspberry Pi selesai boot (Standby Siap). Menunggu tombol ON ditekan...")
         GPIO.output(LED_PIN, GPIO.LOW)
+        play_standby_ready_beep()
         run_cmd("sudo systemctl stop lentera.service")
 
     try:
@@ -107,13 +109,10 @@ def main():
                         # Saklar ditekan lepas (OFF)
                         print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Mengeksekusi shutdown aman Raspberry Pi...")
                         GPIO.output(LED_PIN, GPIO.LOW)
+                        # 1x bip pendek konfirmasi bahwa perintah shutdown diterima
+                        play_buzzer_pulses([(0.08, 0.00)])
                         run_cmd("sudo systemctl stop lentera.service")
-                        
-                        # Nada konfirmasi shutdown
-                        play_power_off_melody()
-
-                        # Safe shutdown OS
-                        time.sleep(0.5)
+                        time.sleep(0.3)
                         run_cmd("sudo poweroff")
             
             time.sleep(0.3)

@@ -132,23 +132,28 @@ python3 -c "import RPi.GPIO as G, time; G.setwarnings(False); G.setmode(G.BCM); 
 ```
 - **Hasil yang benar:** Cincin LED tombol menyala terang selama 3 detik lalu padam.
 
-### Uji 3: Tes Respon Tombol Detent & Service
-Jalankan monitor log service:
-```bash
-sudo journalctl -u lentera-switch -f
-```
-1. **Tekan tombol ke dalam (posisi ON mengunci):**
-   - LED tombol menyala dan buzzer langsung berbunyi *chirp* 2-nada konfirmasi (*G5 ➔ C6*).
+### Uji 3: Siklus Lengkap Sinyal Audio Buzzer (Boot ➔ ON ➔ OFF ➔ Cabut Adaptor)
+1. **Colok Adaptor ke Listrik (Pi Mulai Booting):**
+   - Pi loading OS Linux (~15 detik). Hening.
+   - **Sinyal OS Siap Standby**: Buzzer membunyikan **2x bip pendek (*pip - pip!*)**.
+   - *Artinya:* OS Raspberry Pi sudah selesai boot dan siap standby. Tombol saklar ON sudah bisa ditekan kapan saja!
+2. **Tekan Tombol ke Dalam (Posisi ON Mengunci):**
+   - LED tombol menyala biru terang.
+   - Buzzer membunyikan **chirp konfirmasi (*pip - PIIP!*)**.
    - Terminal menampilkan: `[SWITCH DAEMON] Tombol DETENT ON ditekan! Menyalakan sistem Lentera...`
-   - Setelah WiFi & kamera siap (~15 detik), **Buzzer otomatis memainkan melodi signature siap (Do-Mi-Sol...Sol-Do')**.
-2. **Tekan tombol sekali lagi (posisi OFF lepas):**
-   - LED tombol padam.
-   - Buzzer memainkan melodi turun konfirmasi shutdown (*C6 ➔ G5 ➔ C5*).
+   - Setelah WiFi & kamera siap (~15 detik), **Buzzer otomatis memainkan melodi signature siap (*pip-pip-piip... pi-PIIIIP!*)** dan speaker berkata: *"Sistem pengamat siap digunakan."*
+3. **Tekan Tombol Sekali Lagi (Posisi OFF Lepas):**
+   - LED tombol padam seketika.
+   - Buzzer membunyikan **1x bip pendek (*pip!*)**.
    - Terminal menampilkan: `[SWITCH DAEMON] Tombol DETENT OFF dilepas! Mengeksekusi shutdown aman Raspberry Pi...`
-   - Raspberry Pi mengeksekusi `poweroff` secara aman dan OS mati total.
-3. **Menyalakan kembali dari kondisi mati:**
+   - Linux mulai menutup aplikasi, melakukan sync, dan meng-unmount storage (~5-7 detik).
+4. **Sinyal OS Selesai Mati Total (100% Aman Cabut Adaptor):**
+   - Tepat saat systemd menyelesaikan unmount disk dan siap halt:
+   - **Buzzer membunyikan nada penutup 3x bip: *tiit ➔ tiit ➔ TIIIIIIIT!***
+   - *Artinya:* Seluruh data dan storage telah di-unmount 100%. **Detik itu juga AMAN MENCABUT ADAPTOR LISTRIK**, tanpa perlu memelototi lampu indikator hijau ACT di board Raspberry Pi!
+5. **Menyalakan Kembali dari Kondisi Mati (Tanpa Cabut Adaptor):**
    - Tekan tombol ke dalam (posisi ON mengunci).
-   - Karena terhubung ke Pin 5 (GPIO 3), Raspberry Pi **otomatis BANGUN (*Wake up*) dan BOOTING kembali** tanpa cabut adaptor!
+   - Karena saklar terhubung ke Pin 5 (GPIO 3), Raspberry Pi **otomatis BANGUN (*Wake up*) dan BOOTING kembali**!
 
 ---
 
