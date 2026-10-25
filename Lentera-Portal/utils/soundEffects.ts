@@ -51,15 +51,30 @@ export function playEarcon(type: EarconType) {
       osc.start(now);
       osc.stop(now + 0.025);
     } else if (type === "step") {
-      // Cheerful double chime (C5 -> E5, ~120ms)
-      playTone(ctx, 523.25, now, 0.08, "triangle", 0.18);
-      playTone(ctx, 659.25, now + 0.07, 0.12, "triangle", 0.22);
+      // Joyful celebratory ascending chime (C5 -> E5 -> G5 -> C6 shimmer)
+      playTone(ctx, 523.25, now, 0.08, "sine", 0.22);
+      playTone(ctx, 523.25, now, 0.07, "triangle", 0.14);
+
+      playTone(ctx, 659.25, now + 0.07, 0.09, "sine", 0.24);
+      playTone(ctx, 659.25, now + 0.07, 0.08, "triangle", 0.15);
+
+      playTone(ctx, 783.99, now + 0.14, 0.11, "sine", 0.26);
+      playTone(ctx, 783.99, now + 0.14, 0.09, "triangle", 0.16);
+
+      // Final sparkling high chime with overtone
+      playTone(ctx, 1046.5, now + 0.22, 0.26, "sine", 0.30);
+      playTone(ctx, 1046.5, now + 0.22, 0.20, "triangle", 0.18);
+      playTone(ctx, 2093.0, now + 0.23, 0.16, "sine", 0.08); // Sparkle overtone
     } else if (type === "success") {
-      // Fanfare arpeggio (C5 -> E5 -> G5 -> C6)
-      playTone(ctx, 523.25, now, 0.08, "triangle", 0.2);
-      playTone(ctx, 659.25, now + 0.08, 0.08, "triangle", 0.22);
-      playTone(ctx, 783.99, now + 0.16, 0.09, "triangle", 0.25);
-      playTone(ctx, 1046.5, now + 0.25, 0.28, "triangle", 0.28);
+      // Grand celebratory fanfare: C5 -> E5 -> G5 -> C6 -> E6 + C-Major chord burst
+      playTone(ctx, 523.25, now, 0.10, "triangle", 0.22);
+      playTone(ctx, 659.25, now + 0.09, 0.10, "triangle", 0.24);
+      playTone(ctx, 783.99, now + 0.18, 0.12, "triangle", 0.26);
+      playTone(ctx, 1046.5, now + 0.27, 0.35, "triangle", 0.30);
+      playTone(ctx, 1318.5, now + 0.32, 0.40, "sine", 0.25);
+      // Harmonizing chord sustain
+      playTone(ctx, 523.25, now + 0.32, 0.45, "sine", 0.15);
+      playTone(ctx, 783.99, now + 0.32, 0.45, "sine", 0.18);
     } else if (type === "clue") {
       // Gentle curious marimba tone (G4 -> A4)
       playTone(ctx, 392.0, now, 0.09, "sine", 0.15);

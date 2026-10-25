@@ -520,7 +520,12 @@ export default function VoiceGuide() {
       if (onEnd) onEnd();
       return;
     }
-    synthRef.current.cancel();
+    try {
+      if (synthRef.current.paused) {
+        synthRef.current.resume();
+      }
+      synthRef.current.cancel();
+    } catch {}
     const spokenText = normalizeIndonesianPhonetics(text);
     const utterance = new SpeechSynthesisUtterance(spokenText);
     const voices = synthRef.current.getVoices();
@@ -545,16 +550,15 @@ export default function VoiceGuide() {
       }
       if (onEnd) onEnd();
     };
-    utterance.onerror = (e) => {
+    utterance.onerror = () => {
       isSpeakingRef.current = false;
       setIsSpeaking(false);
       if (typeof window !== "undefined") {
         (window as any).__lenteraSpeaking = false;
         (window as any).__lenteraActiveUtterance = null;
       }
-      if (onEnd && (e as any)?.error !== "interrupted" && (e as any)?.error !== "canceled") {
-        onEnd();
-      }
+      // PENTING: Selalu panggil onEnd saat error agar alur langkah tidak pernah terblokir / freeze
+      if (onEnd) onEnd();
     };
     utteranceRef.current = utterance;
     if (typeof window !== "undefined") (window as any).__lenteraActiveUtterance = utterance;
@@ -1066,34 +1070,52 @@ export default function VoiceGuide() {
         setStepCompleted(true);
         setCompletedCells(newCompleted);
         playEarcon("step");
+
+        let hasAdvanced = false;
+        const doAdvance = () => {
+          if (hasAdvanced) return;
+          hasAdvanced = true;
+          if (advanceTimerRef.current) {
+            clearTimeout(advanceTimerRef.current);
+            advanceTimerRef.current = null;
+          }
+          if (currentStep < totalSteps - 1) {
+            setCurrentStep((prev) => prev + 1);
+            setStepCompleted(false);
+            setCompletedCells(new Set());
+          } else {
+            setCurrentStep(totalSteps);
+          }
+        };
+
         if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
 
         if (step.explanation) {
-          // Putar penjelasan komponen lalu jeda sebelum lanjut
+          // Fallback safety timer 4.5s
+          advanceTimerRef.current = setTimeout(doAdvance, 4500);
           speak(step.explanation, () => {
-            advanceTimerRef.current = setTimeout(() => {
-              if (currentStep < totalSteps - 1) {
-                setCurrentStep((prev) => prev + 1);
-                setStepCompleted(false);
-                setCompletedCells(new Set());
-              } else {
-                setCurrentStep(totalSteps);
-              }
-            }, 3500);
+            setTimeout(doAdvance, 500);
           });
         } else if (currentStep < totalSteps - 1) {
-          speak("Bagus sekali! Lanjut ke langkah berikutnya.", () => {
-            advanceTimerRef.current = setTimeout(() => {
-              setCurrentStep((prev) => prev + 1);
-              setStepCompleted(false);
-              setCompletedCells(new Set());
-            }, 400);
+          const praises = [
+            "Bagus sekali! Lanjut ke langkah berikutnya.",
+            "Hebat! Satu balok terpasang sempurna.",
+            "Keren! Posisi balok sangat tepat.",
+            "Tepat sekali! Ayo pasang balok berikutnya.",
+            "Pintar! Rangkaianmu semakin lengkap.",
+          ];
+          const praise = praises[currentStep % praises.length];
+
+          // FALLBACK TIMER: Garansi 100% langkah MAJU dalam 2.8s walaupun speech engine browser macet/pause
+          advanceTimerRef.current = setTimeout(doAdvance, 2800);
+
+          speak(praise, () => {
+            setTimeout(doAdvance, 300);
           });
         } else {
-          speak("Bagus sekali! Seluruh balok telah terpasang.", () => {
-            advanceTimerRef.current = setTimeout(() => {
-              setCurrentStep(totalSteps);
-            }, 500);
+          advanceTimerRef.current = setTimeout(doAdvance, 2800);
+          speak("Luar biasa! Seluruh balok telah terpasang rapi.", () => {
+            setTimeout(doAdvance, 400);
           });
         }
       }
