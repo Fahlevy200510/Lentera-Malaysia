@@ -578,7 +578,7 @@ export default function VoiceGuide() {
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
-              const timer = setTimeout(() => startGuide("recognition"), 3000);
+              const timer = setTimeout(() => startGuide("recognition"), 8000);
               speak("Pilihan diterima: Tahap 1, Pengenalan Komponen! Angkat balok dari A1 untuk mulai meraba balok di sel C3.", () => {
                 clearTimeout(timer);
                 startGuide("recognition");
@@ -592,7 +592,7 @@ export default function VoiceGuide() {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
-                const timer = setTimeout(() => startGuide("quiz"), 3000);
+                const timer = setTimeout(() => startGuide("quiz"), 8000);
                 speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab kuis.", () => {
                   clearTimeout(timer);
                   startGuide("quiz");
@@ -607,7 +607,7 @@ export default function VoiceGuide() {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
-                const timer = setTimeout(() => startGuide("series"), 3000);
+                const timer = setTimeout(() => startGuide("series"), 8000);
                 speak("Pilihan diterima: Tahap 3, Rangkaian Seri! Angkat balok dari C1 untuk mulai merakit sirkuit satu loop.", () => {
                   clearTimeout(timer);
                   startGuide("series");
@@ -622,7 +622,7 @@ export default function VoiceGuide() {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
-                const timer = setTimeout(() => startGuide("parallel"), 3000);
+                const timer = setTimeout(() => startGuide("parallel"), 8000);
                 speak("Pilihan diterima: Tahap 4, Rangkaian Paralel! Angkat balok dari D1 untuk mulai merakit sirkuit percabangan kabel T.", () => {
                   clearTimeout(timer);
                   startGuide("parallel");
@@ -637,7 +637,7 @@ export default function VoiceGuide() {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
-                const timer = setTimeout(() => startGuide("troubleshoot"), 3000);
+                const timer = setTimeout(() => startGuide("troubleshoot"), 8000);
                 speak("Pilihan diterima: Tahap 5, Tantangan Detektif Sirkuit Mahir! Angkat balok dari E1 untuk memulai misi analisis.", () => {
                   clearTimeout(timer);
                   startGuide("troubleshoot");
@@ -720,7 +720,7 @@ export default function VoiceGuide() {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide(targetNext.mode), 3000);
+            const timer = setTimeout(() => startGuide(targetNext.mode), 8000);
             speak(
               `Pilihan IYA diterima! Silakan angkat kembali balok dari A1, kita mulai panduan ${targetNext?.title}.`,
               () => {
@@ -732,7 +732,7 @@ export default function VoiceGuide() {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("series"), 3000);
+            const timer = setTimeout(() => startGuide("series"), 8000);
             speak(
               "Pilihan diterima: Tahap 3, Rangkaian Seri! Silakan angkat kembali balok dari C1 untuk mulai merakit.",
               () => {
@@ -744,7 +744,7 @@ export default function VoiceGuide() {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("quiz"), 3000);
+            const timer = setTimeout(() => startGuide("quiz"), 8000);
             speak(
               "Pilihan diterima: Tahap 2, Kuis Taktil! Silakan angkat kembali balok dari B1 untuk mulai kuis.",
               () => {
@@ -756,7 +756,7 @@ export default function VoiceGuide() {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("parallel"), 3000);
+            const timer = setTimeout(() => startGuide("parallel"), 8000);
             speak(
               "Pilihan diterima: Tahap 4, Rangkaian Paralel! Silakan angkat kembali balok dari D1 untuk mulai.",
               () => {
@@ -769,7 +769,7 @@ export default function VoiceGuide() {
             setCheckpointPhase("confirmed");
             playEarcon("click");
             ignoreIdleMenuUntilLiftRef.current = true;
-            const timer = setTimeout(() => resetGuide(), 3000);
+            const timer = setTimeout(() => resetGuide(), 8000);
             speak(
               "Pilihan istirahat diterima. Silakan angkat kembali balok dari papan untuk bereksplorasi bebas.",
               () => {
