@@ -59,7 +59,6 @@ export default function ArucoPage() {
   const speakLabIntro = useCallback(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     if ((window as any).__lenteraGuideMode && (window as any).__lenteraGuideMode !== "idle") return;
-    if ((window as any).__lenteraSpeaking) return;
     const synth = window.speechSynthesis;
 
     if (synth.paused) synth.resume();

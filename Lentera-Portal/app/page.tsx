@@ -64,6 +64,7 @@ export default function PortalHome() {
   const hasSpokenOnFirstClickRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speakingRef = useRef(false);
+  const isRedirectingRef = useRef(false);
   const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 });
 
   // Typewriter effect state
@@ -282,7 +283,7 @@ export default function PortalHome() {
     return () => {
       window.removeEventListener("click", handleFirstInteraction);
       window.removeEventListener("touchstart", handleFirstInteraction);
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      if (!isRedirectingRef.current && typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
     };
@@ -323,15 +324,41 @@ export default function PortalHome() {
               const placed = (Object.values(data.cells).filter(Boolean) as Array<{ component: string; rotation: number }>);
               if (placed.length > 0) {
                 redirected = true;
+                isRedirectingRef.current = true;
                 const comp = placed[0]?.component;
                 const label = COMPONENT_LABEL[comp] || "komponen";
+
+                const navigateToLab = () => {
+                  router.push("/aruco");
+                };
+
                 if (typeof window !== "undefined" && "speechSynthesis" in window) {
                   window.speechSynthesis.cancel();
                   const notify = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(`Balok ${label} terdeteksi! Membuka LENTERA Lab.`));
                   notify.lang = "id-ID";
+                  const voices = window.speechSynthesis.getVoices();
+                  const idVoice = voices.find(
+                    (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
+                  );
+                  if (idVoice) notify.voice = idVoice;
+                  notify.rate = 0.95;
+                  notify.pitch = 1.05;
+
+                  let hasNavigated = false;
+                  const doNavigate = () => {
+                    if (hasNavigated) return;
+                    hasNavigated = true;
+                    navigateToLab();
+                  };
+
+                  notify.onend = doNavigate;
+                  notify.onerror = doNavigate;
+                  setTimeout(doNavigate, 2200);
+
                   window.speechSynthesis.speak(notify);
+                } else {
+                  navigateToLab();
                 }
-                router.push("/aruco");
               }
             }
           } catch {}
