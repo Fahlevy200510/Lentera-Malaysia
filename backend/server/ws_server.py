@@ -54,6 +54,10 @@ class WSServer:
                 disconnected = set()
                 for ws in list(self.clients):
                     try:
+                        # Drop frame jika socket masih ada antrean kirim (mencegah lag akumulatif)
+                        transport = getattr(ws, 'transport', None)
+                        if transport and transport.get_write_buffer_size() > 0:
+                            continue
                         await ws.send(message_str)
                     except Exception:
                         disconnected.add(ws)
@@ -106,7 +110,7 @@ class WSServer:
             ping_interval=None,
             ping_timeout=None,
             max_size=2**22,
-            max_queue=32
+            max_queue=4
         ):
             print(f"[WS] WebSocket server berjalan di ws://{self.host}:{self.port}")
             await asyncio.Future()  # run forever

@@ -83,7 +83,7 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
     process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
   let targetEndpoint = DEFAULT_TUNNEL;
 
-  // 1. Cek auto-discovery dari Cloudflare Quick Tunnel relay
+  // 1. Prioritas Utama: Auto-discovery Cloudflare Quick Tunnel (100% Zero-Config bagi pengguna)
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
@@ -96,17 +96,17 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
       const lines = raw.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
       const latest = lines[lines.length - 1];
       if (latest && latest.includes("trycloudflare.com")) {
-        targetEndpoint = latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        return latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
       }
     }
   } catch {}
 
-  // 2. Cek localStorage
+  // 2. Fallback jika tunnel offline: Cek penyimpanan lokal atau default
   try {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lentera_edge_endpoint") || localStorage.getItem("lentera_endpoint");
-      if (saved && saved !== "edge.lentera.id" && !targetEndpoint.includes("trycloudflare.com")) {
-        targetEndpoint = saved;
+      if (saved && saved !== "edge.lentera.id") {
+        return saved;
       }
     }
   } catch {}
@@ -430,17 +430,17 @@ export default function ArUcoDetector() {
               </button>
             </div>
 
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-500">
               <span>Preset Cepat:</span>
               <button
                 type="button"
                 onClick={() => {
-                  setCustomInput("anchor-scruffy-clerk.ngrok-free.dev");
-                  handleManualConnect("anchor-scruffy-clerk.ngrok-free.dev");
+                  setCustomInput("192.168.137.16");
+                  handleManualConnect("192.168.137.16");
                 }}
-                className="underline hover:text-cs-primary font-semibold"
+                className="underline hover:text-emerald-700 font-bold text-emerald-600"
               >
-                Ngrok Tunnel (anchor-scruffy-clerk.ngrok-free.dev)
+                Hotspot Pi (192.168.137.16)
               </button>
               <span>•</span>
               <button
@@ -451,7 +451,18 @@ export default function ArUcoDetector() {
                 }}
                 className="underline hover:text-cs-primary font-semibold"
               >
-                Localhost (127.0.0.1)
+                Localhost
+              </button>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomInput("anchor-scruffy-clerk.ngrok-free.dev");
+                  handleManualConnect("anchor-scruffy-clerk.ngrok-free.dev");
+                }}
+                className="underline hover:text-cs-primary font-semibold"
+              >
+                Cloud Tunnel
               </button>
             </div>
           </div>
