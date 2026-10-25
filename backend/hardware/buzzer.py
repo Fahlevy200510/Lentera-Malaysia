@@ -16,12 +16,10 @@ class BuzzerController:
                 import RPi.GPIO as GPIO
                 GPIO.setwarnings(False)
                 GPIO.setmode(GPIO.BCM)
-                GPIO.setup(self.pin, GPIO.OUT)
-                GPIO.output(self.pin, GPIO.LOW)  # Pastikan mati saat inisialisasi
                 self.gpio = GPIO
-                print(f"[BUZZER] Buzzer aktif di pin BCM {self.pin} (Pin Fisik 11).")
+                print(f"[BUZZER] Driver RPi.GPIO siap untuk pin BCM {self.pin} (Pin Fisik 11).")
             except Exception as e:
-                print(f"[BUZZER] Gagal inisialisasi Buzzer: {e}")
+                print(f"[BUZZER] Gagal import RPi.GPIO: {e}")
                 self.is_pi = False
         else:
             print(f"[BUZZER] Berjalan di simulator ({platform.system()}). Buzzer menggunakan console beep.")
@@ -29,9 +27,8 @@ class BuzzerController:
     def play_melody(self, notes):
         """
         Memainkan rangkaian nada [(frekuensi, durasi), ...].
-        Menggunakan single PWM instance dengan ChangeFrequency dan ChangeDutyCycle
-        agar transisi nada halus, musikal, dan tanpa letupan (pop/click).
-        Jika buzzer berupa active buzzer fixed-oscillator, durasi nada akan menghasilkan irama ceria.
+        Menggunakan alokasi on-demand (setup -> play -> cleanup) agar kompatibel
+        dengan kernel linux rpi-lgpio dan tidak mengunci pin secara permanen.
         """
         if not self.is_pi or not hasattr(self, 'gpio'):
             note_names = []
@@ -61,6 +58,9 @@ class BuzzerController:
             return
 
         try:
+            self.gpio.setwarnings(False)
+            self.gpio.setmode(self.gpio.BCM)
+            self.gpio.setup(self.pin, self.gpio.OUT)
             pwm = self.gpio.PWM(self.pin, 1000)
             pwm.start(0)
             for freq, duration in notes:
@@ -74,15 +74,19 @@ class BuzzerController:
                 time.sleep(0.02)
             pwm.stop()
             self.gpio.output(self.pin, self.gpio.LOW)
+            self.gpio.cleanup(self.pin)
         except Exception:
             # Fallback untuk active buzzer fixed-oscillator
             try:
+                self.gpio.setmode(self.gpio.BCM)
+                self.gpio.setup(self.pin, self.gpio.OUT)
                 for freq, duration in notes:
                     if freq > 0:
                         self.gpio.output(self.pin, self.gpio.HIGH)
                     time.sleep(duration)
                     self.gpio.output(self.pin, self.gpio.LOW)
                     time.sleep(0.02)
+                self.gpio.cleanup(self.pin)
             except Exception:
                 pass
 
