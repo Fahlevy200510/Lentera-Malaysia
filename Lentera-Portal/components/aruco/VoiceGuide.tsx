@@ -195,10 +195,19 @@ const SERIES_STEPS: StepDef[] = [
     hint: "Raba kabel sudut L. Pasang di B2 menghadap ke kanan dan ke atas.",
   },
   {
-    instruction: "Langkah 12: Pasang Kabel Lurus di posisi B3 untuk Menutup Rangkaian",
-    voice: "Langkah 12: Langkah terakhir! Ambil kabel lurus, pasang tegak di posisi B3 di antara B2 dan baterai. Seluruh loop rangkaian seri kini tersambung! Tutup kedua saklar di C5 dan E4, kedua lampu akan menyala bersamaan!",
+    instruction: "Langkah 12: Pasang Kabel Lurus di posisi B3 untuk Menyambungkan Jalur",
+    voice: "Langkah 12: Pasang balok kabel terakhir! Ambil kabel lurus, pasang tegak di posisi B3 di antara B2 dan baterai untuk menyatukan seluruh jalur rangkaian.",
     targetCells: { "B3": "straight_cable" },
-    hint: "Pasang kabel lurus tegak di B3. Nyalakan kedua saklar di C5 dan E4 untuk melihat kedua lampu menyala.",
+    hint: "Pasang kabel lurus tegak di B3 di antara B2 dan baterai.",
+    explanation: "Hebat! Semua balok sudah tersambung di papan. Tapi perhatikan, lampu belum menyala karena saklar masih terbuka atau mati.",
+  },
+  {
+    instruction: "Langkah 13: Putar Saklar di C5 & E4 ke Posisi ON untuk Menyalakan Lampu",
+    voice: "Langkah 13: Sekarang saklarnya masih NO atau mati. Raba tuas saklar di posisi C5 dan E4, lalu putar saklar tersebut ke posisi ON untuk menutup sirkuit dan menyalakan kedua lampu!",
+    targetCells: { "C5": "switch", "E4": "switch" },
+    validator: (cells, status) => status === "success",
+    hint: "Raba tuas saklar di C5 dan E4. Putar tuasnya 90 derajat ke posisi ON hingga lampu menyala bersamaan.",
+    explanation: "Sempurna! Kedua saklar sudah ON dan arus listrik mengalir lancar ke seluruh rangkaian seri. Kedua lampu menyala terang bersamaan! Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
   },
 ];
 
@@ -270,10 +279,19 @@ const PARALLEL_STEPS: StepDef[] = [
     hint: "Raba kubah lampu LED. Pasang di D3 dengan tanda plus menghadap ke kiri.",
   },
   {
-    instruction: "Langkah 12: Pasang Kabel Sudut L di posisi E3 untuk Menutup Rangkaian",
-    voice: "Langkah 12: Langkah terakhir! Ambil kabel sudut L, letakkan di posisi E3 menghadap ke kiri dan ke atas. Rangkaian paralel lengkap! Kedua cabang kini mandiri. Coba nyalakan atau matikan salah satu saklar, lampu di cabang lainnya akan tetap menyala!",
+    instruction: "Langkah 12: Pasang Kabel Sudut L di posisi E3 untuk Menyambungkan Cabang Kedua",
+    voice: "Langkah 12: Pasang balok kabel terakhir! Ambil kabel sudut L, letakkan di posisi E3 menghadap ke kiri dan ke atas untuk menyambung dari D3 ke cabang T di E4.",
     targetCells: { "E3": "l_cable" },
-    hint: "Pasang kabel sudut L di E3 untuk menyambung dari D3 ke E4. Uji kedua saklar secara terpisah!",
+    hint: "Pasang kabel sudut L di E3 menyambung dari D3 ke arah cabang T di E4.",
+    explanation: "Hebat! Seluruh 12 balok rangkaian paralel telah terpasang di papan. Tapi lampu belum menyala karena kedua saklar masih terbuka atau mati.",
+  },
+  {
+    instruction: "Langkah 13: Putar Saklar di C4 atau C3 ke Posisi ON untuk Menyalakan Lampu",
+    voice: "Langkah 13: Sekarang saklarnya masih NO atau mati. Putar tuas saklar di posisi C4 atau C3 ke posisi ON untuk mengalirkan arus dan menyalakan lampu pada cabangnya!",
+    targetCells: { "C4": "switch", "C3": "switch" },
+    validator: (cells, status) => status === "success",
+    hint: "Raba tuas saklar di C4 atau C3. Putar tuasnya 90 derajat ke posisi ON hingga lampu pada cabangnya menyala.",
+    explanation: "Luar biasa! Lampu berhasil menyala! Di rangkaian paralel, tiap cabang bekerja secara mandiri sehingga lampu bisa dinyalakan dan dimatikan tanpa mempengaruhi cabang lain. Selamat, kamu berhasil menyelesaikan misi rangkaian paralel!",
   },
 ];
 
@@ -1096,6 +1114,20 @@ export default function VoiceGuide() {
         }
       }
       
+      // Reminder bila saklar masih posisi OFF/NO saat rangkaian sudah terpasang
+      if (detail?.status === "switch_off" && !allFound && !stepCompleted && !isFinished && !isSpeakingRef.current) {
+        const now = Date.now();
+        if (now - lastClueRef.current > 14000) {
+          lastClueRef.current = now;
+          playEarcon("warning");
+          if (mode === "series") {
+            speak("Rangkaian seri belum menyala karena saklar masih terbuka atau mati. Putar saklar di C5 dan E4 ke posisi ON.");
+          } else {
+            speak("Putar saklar di C4 atau C3 ke posisi ON agar lampu pada cabang menyala.");
+          }
+        }
+      }
+
       // Jika langkah belum selesai, perbarui completed cells
       if (!stepCompleted) {
         setCompletedCells(newCompleted);
@@ -1104,7 +1136,13 @@ export default function VoiceGuide() {
       if (allFound && !stepCompleted) {
         setStepCompleted(true);
         setCompletedCells(newCompleted);
-        playEarcon("step");
+
+        const isLastStep = currentStep >= totalSteps - 1;
+        if (isLastStep) {
+          playEarcon("victory");
+        } else {
+          playEarcon("step");
+        }
 
         let hasAdvanced = false;
         const doAdvance = () => {
@@ -1125,13 +1163,19 @@ export default function VoiceGuide() {
 
         if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
 
-        if (step.explanation) {
+        if (isLastStep) {
+          const finalSpeech = step.explanation || "Luar biasa! Saklar sudah ON dan sirkuit tertutup. Lampu berhasil menyala terang!";
+          advanceTimerRef.current = setTimeout(doAdvance, 5000);
+          speak(finalSpeech, () => {
+            setTimeout(doAdvance, 500);
+          });
+        } else if (step.explanation) {
           // Fallback safety timer 4.5s
           advanceTimerRef.current = setTimeout(doAdvance, 4500);
           speak(step.explanation, () => {
             setTimeout(doAdvance, 500);
           });
-        } else if (currentStep < totalSteps - 1) {
+        } else {
           const praises = [
             "Bagus sekali! Lanjut ke langkah berikutnya.",
             "Hebat! Satu balok terpasang sempurna.",
@@ -1146,12 +1190,6 @@ export default function VoiceGuide() {
 
           speak(praise, () => {
             setTimeout(doAdvance, 300);
-          });
-        } else {
-          playEarcon("victory");
-          advanceTimerRef.current = setTimeout(doAdvance, 2800);
-          speak("Luar biasa! Seluruh balok telah terpasang rapi.", () => {
-            setTimeout(doAdvance, 400);
           });
         }
       }
