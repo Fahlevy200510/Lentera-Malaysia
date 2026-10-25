@@ -61,7 +61,8 @@ class BuzzerController:
                 if off_time > 0:
                     time.sleep(off_time)
             self.gpio.cleanup(self.pin)
-        except Exception:
+        except Exception as e:
+            print(f"[BUZZER ERROR] Gagal akses pin {self.pin}: {e}")
             try:
                 self.gpio.output(self.pin, self.gpio.LOW)
                 self.gpio.cleanup(self.pin)
