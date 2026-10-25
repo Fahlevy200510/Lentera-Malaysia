@@ -11,7 +11,7 @@ import subprocess
 import os
 import sys
 
-SWITCH_PIN = 26  # BCM 26 (Pin Fisik 37) - terhubung ke Kontak NO saklar
+SWITCH_PIN = 3  # BCM 3 (Pin Fisik 5 - SCL) - terhubung ke Kontak NO saklar
 LED_PIN = 16     # BCM 16 (Pin Fisik 36) - terhubung ke LED (+) saklar
 BUZZER_PIN = 17  # BCM 17 (Pin Fisik 11) - Buzzer
 
@@ -42,7 +42,7 @@ def main():
     GPIO.setup(BUZZER_PIN, GPIO.OUT)
     GPIO.output(BUZZER_PIN, GPIO.LOW)
 
-    print(f"[SWITCH DAEMON] Aktif. Memantau Switch di GPIO {SWITCH_PIN} dan LED di GPIO {LED_PIN}...")
+    print(f"[SWITCH DAEMON] Aktif. Memantau Switch di GPIO {SWITCH_PIN} (Pin 5) dan LED di GPIO {LED_PIN}...")
 
     # Cek status awal saklar saat Pi baru boot
     last_state = GPIO.input(SWITCH_PIN)
@@ -75,19 +75,23 @@ def main():
                         run_cmd("sudo systemctl start lentera.service")
                     else:
                         # Saklar ditekan lepas (OFF)
-                        print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Menghentikan sistem Lentera...")
+                        print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Mengeksekusi shutdown aman Raspberry Pi...")
                         GPIO.output(LED_PIN, GPIO.LOW)
                         run_cmd("sudo systemctl stop lentera.service")
                         
-                        # Beep konfirmasi mati (2x bip pendek)
+                        # Beep konfirmasi mati (3x bip pendek)
                         try:
-                            for _ in range(2):
+                            for _ in range(3):
                                 GPIO.output(BUZZER_PIN, GPIO.HIGH)
-                                time.sleep(0.06)
+                                time.sleep(0.08)
                                 GPIO.output(BUZZER_PIN, GPIO.LOW)
-                                time.sleep(0.06)
+                                time.sleep(0.08)
                         except Exception:
                             pass
+
+                        # Safe shutdown OS
+                        time.sleep(0.5)
+                        run_cmd("sudo poweroff")
             
             time.sleep(0.3)
     except KeyboardInterrupt:

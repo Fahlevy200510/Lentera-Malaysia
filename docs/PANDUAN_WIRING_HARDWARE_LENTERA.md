@@ -90,8 +90,8 @@ Di bagian belakang tombol terdapat 4 terminal:
  ┌──────────────────────┼────────────────┼──────────────────────┐
  │                      │                │                      │
  ▼                      ▼                ▼                      ▼
-Pin 37 (GPIO 26)     Pin 36 (GPIO 16)   Pin 39 (GND)          Pin 34 (GND)
-(Deteksi Saklar)     (Lampu LED Saklar) (Ground Kontak)       (Ground LED)
+Pin 5 (GPIO 3)        Pin 36 (GPIO 16)   Pin 39 (GND)          Pin 34 (GND)
+(Deteksi & Wake-Up)   (Lampu LED Saklar) (Ground Kontak)       (Ground LED)
 ```
 
 ---
@@ -103,13 +103,13 @@ Semua komponen terhubung ke pin header tanpa ada yang tumpang tindih:
 | Pin Fisik Header | Label Pin | Terhubung Ke | Keterangan Fungsi |
 | :---: | :---: | :--- | :--- |
 | **Pin 2** | **5V Power** | **Kaki Positif (+) Buzzer** | Sumber tegangan 5V utama buzzer |
+| **Pin 5** | **GPIO 3** | **Kontak Saklar NO 1 Tombol** | Input sensor saklar ON/OFF & Hardware Wake-up |
 | **Pin 6** atau **14** | **GND** | **Emitter (Kaki 1) 2N2222** | Ground untuk rangkaian transistor buzzer |
 | **Pin 11** | **GPIO 17** | **Salah satu ujung Resistor 1kΩ** | Sinyal kontrol audio buzzer (PWM / Logika HIGH) |
 | — | — | *Ujung Resistor 1kΩ lainnya ke Base (Kaki 2) 2N2222* | Pembatas arus pengaman GPIO |
 | — | — | *Collector (Kaki 3) 2N2222 ke Kaki Negatif (-) Buzzer* | Jalur saklar arus buzzer |
 | **Pin 34** | **GND** | **Kaki LED (-) Tombol** | Ground lampu ring LED tombol |
 | **Pin 36** | **GPIO 16** | **Kaki LED (+) Tombol** | Pengendali nyala LED tombol saat sistem aktif |
-| **Pin 37** | **GPIO 26** | **Kontak Saklar NO 1 Tombol** | Input sensor saklar ON/OFF (Pull-Up Internal) |
 | **Pin 39** | **GND** | **Kontak Saklar NO 2 Tombol** | Ground kontak saklar tombol |
 
 ---
@@ -143,8 +143,12 @@ sudo journalctl -u lentera-switch -f
    - Setelah WiFi & kamera siap, **Buzzer otomatis memainkan melodi ceria 4 nada**.
 2. **Tekan tombol sekali lagi (posisi OFF lepas):**
    - LED tombol padam.
-   - Buzzer membunyikan 2x bip pendek tanda istirahat.
-   - Terminal menampilkan: `[SWITCH DAEMON] Tombol DETENT OFF dilepas! Menghentikan sistem Lentera...`
+   - Buzzer membunyikan 3x bip pendek tanda shutdown.
+   - Terminal menampilkan: `[SWITCH DAEMON] Tombol DETENT OFF dilepas! Mengeksekusi shutdown aman Raspberry Pi...`
+   - Raspberry Pi mengeksekusi `poweroff` secara aman dan OS mati total.
+3. **Menyalakan kembali dari kondisi mati:**
+   - Tekan tombol ke dalam (posisi ON mengunci).
+   - Karena terhubung ke Pin 5 (GPIO 3), Raspberry Pi **otomatis BANGUN (*Wake up*) dan BOOTING kembali** tanpa cabut adaptor!
 
 ---
 
