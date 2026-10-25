@@ -1,0 +1,16 @@
+[Unit]
+Description=LENTERA Physical Detent Switch Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pilentera/Lentera-Malaysia
+ExecStart=/usr/bin/python3 /home/pilentera/Lentera-Malaysia/backend/hardware/switch_daemon.py
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -19,6 +19,8 @@ from backend.server.audio import AudioNarrator
 from backend.server.ws_server import WSServer
 from backend.hardware.buzzer import BuzzerController
 
+import socket
+
 # Tangani sinyal dari systemd untuk mencegah hang saat shutdown
 def signal_handler(sig, frame):
     print(f"Menerima sinyal {sig}, menutup LENTERA dengan aman...")
@@ -26,6 +28,18 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
+
+def check_wifi_connection(timeout=1.5):
+    """Memeriksa apakah Raspberry Pi telah terhubung ke jaringan / WiFi dan mendapatkan IP."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(timeout)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return True, local_ip
+    except Exception:
+        return False, None
 
 def run_ws_server(ws_server):
     loop = asyncio.new_event_loop()
@@ -90,12 +104,27 @@ def main():
     mjpeg_thread = threading.Thread(target=run_mjpeg_server, daemon=True)
     mjpeg_thread.start()
     
-    # Verifikasi warm-up sensor kamera sebelum membunyikan tanda siap (mencegah false alarm)
-    print("Memverifikasi kesiapan sensor kamera...")
+    # Verifikasi WiFi dan kesiapan sensor kamera sebelum membunyikan tanda siap
+    print("Memverifikasi kesiapan jaringan WiFi dan sensor kamera...")
+    wifi_ok = False
+    local_ip = None
+    for _ in range(8):  # Toleransi koneksi WiFi hingga 8 detik
+        wifi_ok, local_ip = check_wifi_connection(timeout=1.0)
+        if wifi_ok:
+            break
+        time.sleep(1.0)
+
     warmup_frame = camera.get_frame()
-    if warmup_frame is not None and getattr(warmup_frame, "size", 0) > 0:
-        buzzer.beep(times=2, duration=0.08, interval=0.06)
+    camera_ok = warmup_frame is not None and getattr(warmup_frame, "size", 0) > 0
+
+    if camera_ok and wifi_ok:
+        print(f"[READY] Sistem & WiFi Aktif! IP: {local_ip}")
+        buzzer.play_ready_melody()
         audio.enqueue_narration("Sistem pengamat siap digunakan.")
+    elif camera_ok:
+        print("[WARNING] Kamera siap, namun WiFi belum terhubung.")
+        buzzer.beep(times=2, duration=0.12, interval=0.08)
+        audio.enqueue_narration("Sistem pengamat aktif. Perhatian: Jaringan WiFi belum terhubung.")
     else:
         print("[WARNING] Kamera belum siap atau menghasilkan frame kosong.")
     
@@ -149,10 +178,12 @@ def main():
             try:
                 if pattern == "step":
                     buzzer.beep(times=1, duration=0.08, interval=0.05)
-                elif pattern == "success":
-                    buzzer.beep(times=2, duration=0.10, interval=0.07)
+                elif pattern in ["success", "victory"]:
+                    buzzer.play_victory_melody()
                 elif pattern in ["warning", "short_circuit"]:
                     buzzer.beep(times=3, duration=0.15, interval=0.08)
+                elif pattern == "wrong":
+                    buzzer.beep(times=2, duration=0.18, interval=0.08)
                 elif pattern == "clear":
                     buzzer.beep(times=2, duration=0.05, interval=0.05)
                 elif pattern in ["clue", "hint"]:
