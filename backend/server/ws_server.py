@@ -102,15 +102,15 @@ class WSServer:
             self._is_sending_frame = False
 
     async def _run_server(self):
-        # ping_interval=None mencegah pemutusan sepihak saat lalu lintas frame padat
+        # ping_interval=20 & ping_timeout=20 menjaga koneksi WebSocket Cloudflare Tunnel tetap hidup (anti putus-nyambung)
         async with websockets.serve(
             self.handler,
             self.host,
             self.port,
-            ping_interval=None,
-            ping_timeout=None,
+            ping_interval=20,
+            ping_timeout=20,
             max_size=2**22,
-            max_queue=4
+            max_queue=32
         ):
             print(f"[WS] WebSocket server berjalan di ws://{self.host}:{self.port}")
             await asyncio.Future()  # run forever

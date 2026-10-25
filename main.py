@@ -267,10 +267,10 @@ def main():
             global_frame = display
             
             # Broadcast frame kamera via WebSocket (terproteksi anti-clogging & anti-disconnect)
-            if hasattr(ws, 'clients') and ws.clients and frame_count % 3 == 0:
+            if hasattr(ws, 'clients') and ws.clients and frame_count % 4 == 0:
                 try:
-                    small_frame = cv2.resize(display, (360, 270))
-                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 38])
+                    small_frame = cv2.resize(display, (320, 240))
+                    ret, jpg_buf = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 30])
                     if ret:
                         b64_img = base64.b64encode(jpg_buf).decode('utf-8')
                         ws.broadcast_frame_sync({

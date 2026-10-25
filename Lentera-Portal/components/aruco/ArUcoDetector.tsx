@@ -208,12 +208,19 @@ export default function ArUcoDetector() {
 
       websocket.onclose = () => {
         setDetections((prev) => ({ ...prev, status: "disconnected" }));
-        // Auto-reconnect jika tidak sengaja terputus
+        // Auto-reconnect jika tidak sengaja terputus: selalu ambil endpoint terbaru dari relay Cloudflare
         if (!manualDisconnectRef.current) {
           if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-          reconnectTimerRef.current = setTimeout(() => {
-            connectWebSocket(targetEndpoint);
-          }, 3500);
+          reconnectTimerRef.current = setTimeout(async () => {
+            try {
+              const freshEndpoint = await getActiveLenteraEndpoint();
+              setEndpoint(freshEndpoint);
+              setCustomInput(freshEndpoint);
+              connectWebSocket(freshEndpoint);
+            } catch {
+              connectWebSocket(targetEndpoint);
+            }
+          }, 3000);
         }
       };
 
@@ -354,9 +361,16 @@ export default function ArUcoDetector() {
               </button>
             ) : (
               <button
-                onClick={() => {
+                onClick={async () => {
                   manualDisconnectRef.current = false;
-                  connectWebSocket(endpoint);
+                  try {
+                    const freshEndpoint = await getActiveLenteraEndpoint();
+                    setEndpoint(freshEndpoint);
+                    setCustomInput(freshEndpoint);
+                    connectWebSocket(freshEndpoint);
+                  } catch {
+                    connectWebSocket(endpoint);
+                  }
                 }}
                 className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 hover:bg-emerald-500/20 transition-colors"
               >
