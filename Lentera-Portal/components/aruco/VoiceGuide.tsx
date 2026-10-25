@@ -350,6 +350,7 @@ export default function VoiceGuide() {
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(false);
+  const idleMenuHandledRef = useRef<boolean>(false);
   const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSpeakingRef = useRef<boolean>(false);
   const recognitionPromptReadyRef = useRef<boolean>(false);
@@ -559,6 +560,7 @@ export default function VoiceGuide() {
 
       // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1)
       if (mode === "idle") {
+        if (idleMenuHandledRef.current) return;
         if (ignoreIdleMenuUntilLiftRef.current) {
           if (placedCount === 0) {
             ignoreIdleMenuUntilLiftRef.current = false;
@@ -573,10 +575,13 @@ export default function VoiceGuide() {
             const isRecognitionDone = Boolean(currentProgress.modules.component_recognition);
 
             if (cells["A1"]) {
+              idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
+              const timer = setTimeout(() => startGuide("recognition"), 3000);
               speak("Pilihan diterima: Tahap 1, Pengenalan Komponen! Angkat balok dari A1 untuk mulai meraba balok di sel C3.", () => {
-                setTimeout(() => startGuide("recognition"), 1200);
+                clearTimeout(timer);
+                startGuide("recognition");
               });
             } else if (cells["B1"]) {
               if (!isRecognitionDone) {
@@ -584,10 +589,13 @@ export default function VoiceGuide() {
                 playEarcon("warning");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
+                idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
+                const timer = setTimeout(() => startGuide("quiz"), 3000);
                 speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab kuis.", () => {
-                  setTimeout(() => startGuide("quiz"), 1200);
+                  clearTimeout(timer);
+                  startGuide("quiz");
                 });
               }
             } else if (cells["C1"]) {
@@ -596,10 +604,13 @@ export default function VoiceGuide() {
                 playEarcon("warning");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
+                idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
+                const timer = setTimeout(() => startGuide("series"), 3000);
                 speak("Pilihan diterima: Tahap 3, Rangkaian Seri! Angkat balok dari C1 untuk mulai merakit sirkuit satu loop.", () => {
-                  setTimeout(() => startGuide("series"), 1200);
+                  clearTimeout(timer);
+                  startGuide("series");
                 });
               }
             } else if (cells["D1"]) {
@@ -608,10 +619,13 @@ export default function VoiceGuide() {
                 playEarcon("warning");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
+                idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
+                const timer = setTimeout(() => startGuide("parallel"), 3000);
                 speak("Pilihan diterima: Tahap 4, Rangkaian Paralel! Angkat balok dari D1 untuk mulai merakit sirkuit percabangan kabel T.", () => {
-                  setTimeout(() => startGuide("parallel"), 1200);
+                  clearTimeout(timer);
+                  startGuide("parallel");
                 });
               }
             } else if (cells["E1"]) {
@@ -620,10 +634,13 @@ export default function VoiceGuide() {
                 playEarcon("warning");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
+                idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
+                const timer = setTimeout(() => startGuide("troubleshoot"), 3000);
                 speak("Pilihan diterima: Tahap 5, Tantangan Detektif Sirkuit Mahir! Angkat balok dari E1 untuk memulai misi analisis.", () => {
-                  setTimeout(() => startGuide("troubleshoot"), 1200);
+                  clearTimeout(timer);
+                  startGuide("troubleshoot");
                 });
               }
             }
@@ -703,48 +720,48 @@ export default function VoiceGuide() {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
+            const timer = setTimeout(() => startGuide(targetNext.mode), 3000);
             speak(
               `Pilihan IYA diterima! Silakan angkat kembali balok dari A1, kita mulai panduan ${targetNext?.title}.`,
               () => {
-                setTimeout(() => {
-                  startGuide(targetNext.mode);
-                }, 1200);
+                clearTimeout(timer);
+                startGuide(targetNext.mode);
               }
             );
           } else if (cells["C1"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
+            const timer = setTimeout(() => startGuide("series"), 3000);
             speak(
               "Pilihan diterima: Tahap 3, Rangkaian Seri! Silakan angkat kembali balok dari C1 untuk mulai merakit.",
               () => {
-                setTimeout(() => {
-                  startGuide("series");
-                }, 1200);
+                clearTimeout(timer);
+                startGuide("series");
               }
             );
           } else if (cells["B1"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
+            const timer = setTimeout(() => startGuide("quiz"), 3000);
             speak(
               "Pilihan diterima: Tahap 2, Kuis Taktil! Silakan angkat kembali balok dari B1 untuk mulai kuis.",
               () => {
-                setTimeout(() => {
-                  startGuide("quiz");
-                }, 1200);
+                clearTimeout(timer);
+                startGuide("quiz");
               }
             );
           } else if (cells["D1"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
+            const timer = setTimeout(() => startGuide("parallel"), 3000);
             speak(
               "Pilihan diterima: Tahap 4, Rangkaian Paralel! Silakan angkat kembali balok dari D1 untuk mulai.",
               () => {
-                setTimeout(() => {
-                  startGuide("parallel");
-                }, 1200);
+                clearTimeout(timer);
+                startGuide("parallel");
               }
             );
           } else if (cells["E1"]) {
@@ -752,12 +769,12 @@ export default function VoiceGuide() {
             setCheckpointPhase("confirmed");
             playEarcon("click");
             ignoreIdleMenuUntilLiftRef.current = true;
+            const timer = setTimeout(() => resetGuide(), 3000);
             speak(
               "Pilihan istirahat diterima. Silakan angkat kembali balok dari papan untuk bereksplorasi bebas.",
               () => {
-                setTimeout(() => {
-                  resetGuide();
-                }, 1200);
+                clearTimeout(timer);
+                resetGuide();
               }
             );
           }
@@ -1031,6 +1048,7 @@ export default function VoiceGuide() {
     lastQuizWrongRef.current = 0;
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
+    idleMenuHandledRef.current = false;
     ignoreIdleMenuUntilLiftRef.current = false;
     setMode(guideMode);
     setCurrentStep(0);
@@ -1069,6 +1087,7 @@ export default function VoiceGuide() {
     lastQuizWrongRef.current = 0;
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
+    idleMenuHandledRef.current = false;
     setMode("idle");
     setCurrentStep(0);
     setStepCompleted(false);
