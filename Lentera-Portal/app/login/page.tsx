@@ -171,7 +171,14 @@ function LoginFormContent() {
               </Link>
 
               <div className="flex items-center gap-3 mb-6">
-                <img src="/logo-lentera.png" alt="Logo LENTERA" className="h-12 w-12 rounded-2xl object-cover shadow-lg" />
+                <img
+                  src="/logo-lentera.png"
+                  alt="Logo LENTERA"
+                  width={48}
+                  height={48}
+                  style={{ width: 48, height: 48, maxWidth: "100%", flexShrink: 0 }}
+                  className="h-12 w-12 rounded-2xl object-cover shadow-lg"
+                />
                 <div>
                   <div className="font-heading text-xl font-extrabold tracking-tight">LENTERA</div>
                   <div className="text-[9px] font-bold tracking-[0.22em] text-violet-200">

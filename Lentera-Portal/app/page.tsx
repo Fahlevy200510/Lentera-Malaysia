@@ -395,7 +395,14 @@ export default function PortalHome() {
 
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10 print:hidden">
         <Link href="/" className="flex items-center gap-3" aria-label="Beranda LENTERA">
-          <img src="/logo-lentera.png" alt="Logo LENTERA" className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl object-cover shadow-lg" />
+          <img
+            src="/logo-lentera.png"
+            alt="Logo LENTERA"
+            width={44}
+            height={44}
+            style={{ width: 44, height: 44, maxWidth: "100%", flexShrink: 0 }}
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl object-cover shadow-lg"
+          />
           <div>
             <div className="font-heading text-lg font-extrabold tracking-tight text-white">LENTERA</div>
             <div className="hidden sm:block text-[10px] font-semibold tracking-[0.24em] text-violet-200">SENTUH · PAHAMI · BELAJAR MANDIRI</div>
@@ -684,7 +691,14 @@ export default function PortalHome() {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo-lentera.png" alt="" className="h-9 w-9 rounded-xl" />
+            <img
+              src="/logo-lentera.png"
+              alt=""
+              width={36}
+              height={36}
+              style={{ width: 36, height: 36, maxWidth: "100%", flexShrink: 0 }}
+              className="h-9 w-9 rounded-xl"
+            />
             <div>
               <div className="font-heading font-extrabold text-white">LENTERA</div>
               <div className="text-[10px] tracking-[.2em] text-slate-400">EKOSISTEM</div>
