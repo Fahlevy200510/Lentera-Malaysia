@@ -177,7 +177,9 @@ def main():
         def run_beep():
             try:
                 if pattern == "step":
-                    buzzer.beep(times=1, duration=0.08, interval=0.05)
+                    buzzer.play_step_success()
+                elif pattern in ["ready", "startup"]:
+                    buzzer.play_ready_melody()
                 elif pattern in ["success", "victory"]:
                     buzzer.play_victory_melody()
                 elif pattern in ["warning", "short_circuit"]:

@@ -26,72 +26,131 @@ class BuzzerController:
         else:
             print(f"[BUZZER] Berjalan di simulator ({platform.system()}). Buzzer menggunakan console beep.")
 
-    def play_note(self, freq, duration):
-        """Membunyikan frekuensi nada menggunakan PWM hardware jika didukung."""
+    def play_melody(self, notes):
+        """
+        Memainkan rangkaian nada [(frekuensi, durasi), ...].
+        Menggunakan single PWM instance dengan ChangeFrequency dan ChangeDutyCycle
+        agar transisi nada halus, musikal, dan tanpa letupan (pop/click).
+        Jika buzzer berupa active buzzer fixed-oscillator, durasi nada akan menghasilkan irama ceria.
+        """
         if not self.is_pi or not hasattr(self, 'gpio'):
-            print(f"[BUZZER SIM] Tone {freq}Hz for {duration}s")
-            time.sleep(duration)
+            note_names = []
+            for f, d in notes:
+                if f == 0:
+                    note_names.append(f"Pause({int(d*1000)}ms)")
+                else:
+                    note_names.append(f"{f}Hz({int(d*1000)}ms)")
+            print(f"[BUZZER SIM] Melodi: {' -> '.join(note_names)}")
+
+            # Jika di Windows, bunyikan speaker PC agar developer dapat mendengar langsung
+            if platform.system() == "Windows":
+                try:
+                    import winsound
+                    for freq, duration in notes:
+                        if freq > 0:
+                            winsound.Beep(int(freq), int(duration * 1000))
+                        else:
+                            time.sleep(duration)
+                        time.sleep(0.02)
+                    return
+                except Exception:
+                    pass
+
+            for _, duration in notes:
+                time.sleep(duration + 0.02)
             return
 
         try:
-            pwm = self.gpio.PWM(self.pin, freq)
-            pwm.start(50)
-            time.sleep(duration)
+            pwm = self.gpio.PWM(self.pin, 1000)
+            pwm.start(0)
+            for freq, duration in notes:
+                if freq > 0:
+                    pwm.ChangeFrequency(int(freq))
+                    pwm.ChangeDutyCycle(50)
+                else:
+                    pwm.ChangeDutyCycle(0)
+                time.sleep(duration)
+                pwm.ChangeDutyCycle(0)
+                time.sleep(0.02)
             pwm.stop()
+            self.gpio.output(self.pin, self.gpio.LOW)
         except Exception:
             # Fallback untuk active buzzer fixed-oscillator
-            self.gpio.output(self.pin, self.gpio.HIGH)
-            time.sleep(duration)
-            self.gpio.output(self.pin, self.gpio.LOW)
+            try:
+                for freq, duration in notes:
+                    if freq > 0:
+                        self.gpio.output(self.pin, self.gpio.HIGH)
+                    time.sleep(duration)
+                    self.gpio.output(self.pin, self.gpio.LOW)
+                    time.sleep(0.02)
+            except Exception:
+                pass
+
+    def play_note(self, freq, duration):
+        """Membunyikan satu nada frekuensi tertentu."""
+        self.play_melody([(freq, duration)])
 
     def beep(self, times=2, duration=0.08, interval=0.06):
-        """
-        Membunyikan nada bip dengan jumlah dan durasi tertentu.
-        Default: 2x bip pendek (0.08s) sebagai penanda sistem siap (ready signal).
-        """
-        if not self.is_pi or not hasattr(self, 'gpio'):
-            print(f"[BUZZER SIM] Beep {times}x (durasi: {duration}s, jeda: {interval}s)")
-            return
-
-        try:
-            for _ in range(times):
-                self.gpio.output(self.pin, self.gpio.HIGH)
-                time.sleep(duration)
-                self.gpio.output(self.pin, self.gpio.LOW)
-                time.sleep(interval)
-        except Exception:
-            pass
+        """Membunyikan nada bip dengan jumlah dan durasi tertentu."""
+        notes = []
+        for i in range(times):
+            notes.append((880, duration))
+            if i < times - 1:
+                notes.append((0, interval))
+        self.play_melody(notes)
 
     def play_ready_melody(self):
         """
         Melodi ceria penanda sistem LENTERA siap & WiFi terhubung:
-        Nada naik ceria C5 (523Hz) -> E5 (659Hz) -> G5 (784Hz) -> C6 (1046Hz).
+        Irama naik khas: Do(C5) -> Mi(E5) -> Sol(G5) ... jeda ... Sol(G5) -> Do Tinggi(C6)!
         """
+        notes = [
+            (523, 0.08),  # C5 (Do)
+            (659, 0.08),  # E5 (Mi)
+            (784, 0.10),  # G5 (Sol)
+            (0,   0.05),  # jeda staccato
+            (784, 0.09),  # G5 (Sol)
+            (1046, 0.32), # C6 (Do Tinggi sustained)
+        ]
+        self.play_melody(notes)
+
+    def play_power_on_chirp(self):
+        """Chirp cepat konfirmasi saklar ON ditekan (G5 -> C6)."""
+        notes = [
+            (784, 0.07),  # G5
+            (1046, 0.14), # C6
+        ]
+        self.play_melody(notes)
+
+    def play_power_off_melody(self):
+        """Melodi turun penanda shutdown sistem aman (C6 -> G5 -> C5)."""
+        notes = [
+            (1046, 0.09), # C6
+            (784,  0.09), # G5
+            (523,  0.24), # C5
+        ]
+        self.play_melody(notes)
+
+    def play_victory_melody(self):
+        """Fanfare kemenangan modul sirkuit selesai."""
         notes = [
             (523, 0.08),  # C5
             (659, 0.08),  # E5
-            (784, 0.10),  # G5
-            (1046, 0.22), # C6
+            (784, 0.08),  # G5
+            (1046, 0.12), # C6
+            (0, 0.04),
+            (784, 0.08),  # G5
+            (1046, 0.30), # C6
         ]
-        for freq, dur in notes:
-            self.play_note(freq, dur)
-            time.sleep(0.03)
+        self.play_melody(notes)
 
-    def play_victory_melody(self):
-        """
-        Fanfare kemenangan modul sirkuit selesai:
-        C5 -> E5 -> G5 -> C6 -> E6 sustain
-        """
+    def play_step_success(self):
+        """Chime 2 nada saat satu langkah atau balok berhasil terpasang tepat."""
         notes = [
-            (523, 0.10),
-            (659, 0.10),
-            (783, 0.12),
-            (1046, 0.28),
-            (1318, 0.35),
+            (659, 0.07),  # E5
+            (880, 0.13),  # A5
         ]
-        for freq, dur in notes:
-            self.play_note(freq, dur)
-            time.sleep(0.04)
+        self.play_melody(notes)
 
     def cleanup(self):
         if self.is_pi and hasattr(self, 'gpio'):

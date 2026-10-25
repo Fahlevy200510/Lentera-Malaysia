@@ -123,7 +123,7 @@ Jalankan perintah ini di terminal Raspberry Pi:
 ```bash
 python3 -c "from backend.hardware.buzzer import BuzzerController; b = BuzzerController(pin=17); b.play_ready_melody()"
 ```
-- **Hasil yang benar:** Buzzer langsung melantunkan nada ceria 4 tangga nada bertingkat: *Do ➔ Mi ➔ Sol ➔ Do Tinggi* (C5 ➔ E5 ➔ G5 ➔ C6).
+- **Hasil yang benar:** Buzzer langsung melantunkan melodi khas ceria 5 nada bertingkat: *Do ➔ Mi ➔ Sol ... Sol ➔ Do Tinggi* (C5 ➔ E5 ➔ G5 ➔ G5 ➔ C6).
 
 ### Uji 2: Tes Nyala Ring LED Tombol
 Jalankan perintah ini untuk menyalakan LED tombol selama 3 detik:
@@ -138,12 +138,12 @@ Jalankan monitor log service:
 sudo journalctl -u lentera-switch -f
 ```
 1. **Tekan tombol ke dalam (posisi ON mengunci):**
-   - LED tombol menyala.
+   - LED tombol menyala dan buzzer langsung berbunyi *chirp* 2-nada konfirmasi (*G5 ➔ C6*).
    - Terminal menampilkan: `[SWITCH DAEMON] Tombol DETENT ON ditekan! Menyalakan sistem Lentera...`
-   - Setelah WiFi & kamera siap, **Buzzer otomatis memainkan melodi ceria 4 nada**.
+   - Setelah WiFi & kamera siap (~15 detik), **Buzzer otomatis memainkan melodi signature siap (Do-Mi-Sol...Sol-Do')**.
 2. **Tekan tombol sekali lagi (posisi OFF lepas):**
    - LED tombol padam.
-   - Buzzer membunyikan 3x bip pendek tanda shutdown.
+   - Buzzer memainkan melodi turun konfirmasi shutdown (*C6 ➔ G5 ➔ C5*).
    - Terminal menampilkan: `[SWITCH DAEMON] Tombol DETENT OFF dilepas! Mengeksekusi shutdown aman Raspberry Pi...`
    - Raspberry Pi mengeksekusi `poweroff` secara aman dan OS mati total.
 3. **Menyalakan kembali dari kondisi mati:**

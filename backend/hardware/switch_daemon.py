@@ -21,6 +21,41 @@ def run_cmd(cmd):
     except Exception as e:
         print(f"[SWITCH DAEMON] Gagal eksekusi '{cmd}': {e}")
 
+def play_buzzer_notes(notes):
+    """Memainkan melodi singkat pada BUZZER_PIN."""
+    try:
+        import RPi.GPIO as GPIO
+        pwm = GPIO.PWM(BUZZER_PIN, 1000)
+        pwm.start(0)
+        for freq, duration in notes:
+            if freq > 0:
+                pwm.ChangeFrequency(int(freq))
+                pwm.ChangeDutyCycle(50)
+            else:
+                pwm.ChangeDutyCycle(0)
+            time.sleep(duration)
+            pwm.ChangeDutyCycle(0)
+            time.sleep(0.02)
+        pwm.stop()
+        GPIO.output(BUZZER_PIN, GPIO.LOW)
+    except Exception:
+        try:
+            import RPi.GPIO as GPIO
+            for freq, duration in notes:
+                if freq > 0:
+                    GPIO.output(BUZZER_PIN, GPIO.HIGH)
+                time.sleep(duration)
+                GPIO.output(BUZZER_PIN, GPIO.LOW)
+                time.sleep(0.02)
+        except Exception:
+            pass
+
+def play_power_on_chirp():
+    play_buzzer_notes([(784, 0.07), (1046, 0.14)])
+
+def play_power_off_melody():
+    play_buzzer_notes([(1046, 0.09), (784, 0.09), (523, 0.24)])
+
 def main():
     try:
         import RPi.GPIO as GPIO
@@ -51,6 +86,7 @@ def main():
         # Saklar sudah dalam posisi ON saat Pi menyala
         print("[SWITCH DAEMON] Saklar terdeteksi ON saat boot. Memulai lentera.service...")
         GPIO.output(LED_PIN, GPIO.HIGH)
+        play_power_on_chirp()
         run_cmd("sudo systemctl start lentera.service")
     else:
         print("[SWITCH DAEMON] Saklar terdeteksi OFF saat boot. Menunggu tombol ditekan...")
@@ -72,6 +108,7 @@ def main():
                         # Saklar ditekan masuk (ON)
                         print("[SWITCH DAEMON] Tombol DETENT ON ditekan! Menyalakan sistem Lentera...")
                         GPIO.output(LED_PIN, GPIO.HIGH)
+                        play_power_on_chirp()
                         run_cmd("sudo systemctl start lentera.service")
                     else:
                         # Saklar ditekan lepas (OFF)
@@ -79,15 +116,8 @@ def main():
                         GPIO.output(LED_PIN, GPIO.LOW)
                         run_cmd("sudo systemctl stop lentera.service")
                         
-                        # Beep konfirmasi mati (3x bip pendek)
-                        try:
-                            for _ in range(3):
-                                GPIO.output(BUZZER_PIN, GPIO.HIGH)
-                                time.sleep(0.08)
-                                GPIO.output(BUZZER_PIN, GPIO.LOW)
-                                time.sleep(0.08)
-                        except Exception:
-                            pass
+                        # Nada konfirmasi shutdown
+                        play_power_off_melody()
 
                         # Safe shutdown OS
                         time.sleep(0.5)
