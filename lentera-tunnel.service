@@ -1,0 +1,15 @@
+[Unit]
+Description=LENTERA Cloudflare Auto-Sync Tunnel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pilentera
+WorkingDirectory=/home/pilentera/Lentera-Malaysia
+ExecStart=/bin/bash /home/pilentera/Lentera-Malaysia/start_tunnel_autosync.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
