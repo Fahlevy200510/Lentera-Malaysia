@@ -67,11 +67,12 @@ export default function ArucoPage() {
     const hasLearnedComponents = Boolean(progress?.modules?.component_recognition);
 
     const text = hasLearnedComponents
-      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Mau belajar apa hari ini? Kamu bisa memilih langsung dari papan fisik: letakkan satu balok di A1 untuk Pengenalan Taktil, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, atau di E1 untuk Tantangan Detektif Sirkuit. Atau langsung merangkai di papan untuk eksplorasi bebas."
-      : "Selamat datang di LENTERA Lab! Di ruang belajar ini, kamu dapat bereksperimen merangkai sirkuit listrik secara mandiri melalui papan rabaan taktil dan panduan suara interaktif langkah demi langkah. Sebelum kita mulai merangkai sirkuit, mari kita berkenalan terlebih dahulu dengan bentuk rabaan dan fungsi tiap balok komponen.";
+      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Letakkan balok di A1 untuk Pengenalan Taktil, atau langsung mulai merangkai di papan."
+      : "Selamat datang di LENTERA Lab! Papan siap digunakan. Mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.";
 
     const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     utteranceRef.current = utterance;
+    if (typeof window !== "undefined") (window as any).__lenteraActiveUtterance = utterance;
 
     const voices = synth.getVoices();
     const idVoice = voices.find(
@@ -90,7 +91,10 @@ export default function ArucoPage() {
     utterance.onend = () => {
       speakingRef.current = false;
       setSpeaking(false);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
+      if (typeof window !== "undefined") {
+        (window as any).__lenteraSpeaking = false;
+        (window as any).__lenteraActiveUtterance = null;
+      }
       utteranceRef.current = null;
 
       // Jika siswa belum menyelesaikan Pengenalan Bentuk Taktil, otomatis lanjut ke panduan modul Tahap 1
@@ -104,7 +108,10 @@ export default function ArucoPage() {
       console.warn("Speech synthesis notice in Lab:", err);
       speakingRef.current = false;
       setSpeaking(false);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
+      if (typeof window !== "undefined") {
+        (window as any).__lenteraSpeaking = false;
+        (window as any).__lenteraActiveUtterance = null;
+      }
       utteranceRef.current = null;
     };
 

@@ -447,17 +447,24 @@ export default function VoiceGuide() {
     };
     utterance.onend = () => {
       setIsSpeaking(false);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
+      if (typeof window !== "undefined") {
+        (window as any).__lenteraSpeaking = false;
+        (window as any).__lenteraActiveUtterance = null;
+      }
       if (onEnd) onEnd();
     };
     utterance.onerror = (e) => {
       setIsSpeaking(false);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
+      if (typeof window !== "undefined") {
+        (window as any).__lenteraSpeaking = false;
+        (window as any).__lenteraActiveUtterance = null;
+      }
       if (onEnd && (e as any)?.error !== "interrupted" && (e as any)?.error !== "canceled") {
         onEnd();
       }
     };
     utteranceRef.current = utterance;
+    if (typeof window !== "undefined") (window as any).__lenteraActiveUtterance = utterance;
     synthRef.current.speak(utterance);
   }, [isMuted]);
 

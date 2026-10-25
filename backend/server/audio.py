@@ -34,18 +34,23 @@ class AudioNarrator:
         if not text:
             return
             
+        now = time.time()
+        # Cegah narasi yang persis sama berulang dalam waktu singkat (<3 detik)
+        if text == getattr(self, '_last_text', None) and now - getattr(self, '_last_time', 0) < 3.0:
+            return
+        self._last_text = text
+        self._last_time = now
+
         try:
             self.q.put_nowait(text)
         except queue.Full:
-            # Jika antrean penuh, sesuai PRD 9.3: gabungkan atau buang yang lama
-            # Untuk simpelnya, kita bisa clear antrean dan taruh yang paling baru (ringkasan)
-            # Di sini kita drop event lama
+            # Jika ada antrean lama yang belum terucap, buang yang lama dan ganti dengan yang paling baru
             while not self.q.empty():
                 try:
                     self.q.get_nowait()
                 except queue.Empty:
                     break
-            self.q.put_nowait("Beberapa perubahan terdeteksi. " + text)
+            self.q.put_nowait(text)
 
     def _worker(self):
         while self.running:

@@ -200,24 +200,7 @@ export default function ArUcoDetector() {
             );
           }
 
-          if (data.narration && typeof window !== "undefined" && "speechSynthesis" in window) {
-            const isGuiding = (window as any).__lenteraGuideMode && (window as any).__lenteraGuideMode !== "idle";
-            const isSpeaking = (window as any).__lenteraSpeaking || window.speechSynthesis.speaking;
-
-            const now = Date.now();
-            const isNewNarration = data.narration !== lastNarrationRef.current;
-            const cooldownPassed = now - lastNarrationTimeRef.current > 7000;
-
-            // Prioritaskan tutorial/panduan: jangan looping narasi yang sama saat stay di halaman
-            if (!isGuiding && !isSpeaking && isNewNarration && cooldownPassed) {
-              lastNarrationRef.current = data.narration;
-              lastNarrationTimeRef.current = now;
-              const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(data.narration));
-              utterance.lang = "id-ID";
-              utterance.rate = 1.0;
-              window.speechSynthesis.speak(utterance);
-            }
-          }
+          // Narasi suara dikelola terpusat oleh VoiceGuide untuk mencegah audio bertabrakan & looping
         } catch (parseErr) {
           console.error("Gagal memproses data WS:", parseErr);
         }
