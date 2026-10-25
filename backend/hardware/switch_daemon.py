@@ -70,16 +70,16 @@ def main():
     
     if last_state == GPIO.LOW:
         # Saklar sudah dalam posisi ON saat Pi menyala
-        print("[SWITCH DAEMON] Saklar terdeteksi ON saat boot. Menyalakan LED dan memulai lentera.service...")
+        print("[SWITCH DAEMON] Saklar terdeteksi ON saat boot. Menyalakan LED dan memulai lentera & tunnel service...")
         GPIO.output(LED_PIN, GPIO.HIGH)
         play_buzzer_async([(0.06, 0.04), (0.14, 0.00)])
-        run_cmd("sudo systemctl start --no-block lentera.service")
+        run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
     else:
         # Saklar posisi OFF saat Pi baru dicolok adaptor (OS siap standby)
         print("[SWITCH DAEMON] OS Raspberry Pi selesai boot (Standby Siap). Menunggu tombol ON ditekan...")
         GPIO.output(LED_PIN, GPIO.LOW)
         play_buzzer_async([(0.08, 0.06), (0.08, 0.00)])
-        run_cmd("sudo systemctl stop --no-block lentera.service")
+        run_cmd("sudo systemctl stop --no-block lentera.service lentera-tunnel.service")
 
     try:
         while True:
@@ -97,7 +97,7 @@ def main():
                         print("[SWITCH DAEMON] Tombol DETENT ON ditekan! Menyalakan LED & sistem Lentera...")
                         GPIO.output(LED_PIN, GPIO.HIGH)
                         play_buzzer_async([(0.06, 0.04), (0.14, 0.00)])
-                        run_cmd("sudo systemctl start --no-block lentera.service")
+                        run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
                     else:
                         # Saklar ditekan lepas (OFF): LANGSUNG PADAMKAN LED SEKETIKA!
                         print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Menutup layanan Lentera...")
