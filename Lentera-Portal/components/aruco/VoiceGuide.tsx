@@ -129,86 +129,50 @@ const QUIZ_STEPS: StepDef[] = [
 
 const SERIES_STEPS: StepDef[] = [
   {
-    instruction: "Letakkan Baterai di posisi C5",
-    voice: "Ayo mulai membuat rangkaian seri! Pertama, letakkan komponen baterai di posisi C5, tepat di tengah baris atas. Baterai adalah sumber listrik rangkaian kita.",
-    targetCells: { "C5": "battery" },
-    hint: "Baterai memiliki simbol plus dan minus. Letakkan di tengah baris atas (paling jauh dari kamu).",
+    instruction: "Letakkan Baterai di posisi B4",
+    voice: "Ayo mulai membuat rangkaian seri yang ringkas! Pertama, letakkan balok baterai di posisi B4. Pastikan kutub positif bertanda plus menghadap ke atas menuju baris 5.",
+    targetCells: { "B4": "battery" },
+    hint: "Baterai di B4, di baris 4 kolom B dengan tanda plus di atas.",
   },
   {
-    instruction: "Sambungkan kabel dari Baterai ke kedua sisi",
-    voice: "Bagus sekali! Sekarang sambungkan baterai ke bagian rangkaian lainnya. Letakkan kabel lurus di posisi B5 dan D5, di kedua sisi baterai.",
-    targetCells: { "B5": "straight_cable", "D5": "straight_cable" },
-    hint: "Kabel lurus dipasang mendatar untuk menyambungkan komponen dalam satu garis.",
+    instruction: "Pasang jalur atas: B5, C5, D5, E5",
+    voice: "Hebat! Sekarang kita buat jalur atas. Letakkan kabel sudut L di B5, saklar pertama di C5, lampu pertama di D5, dan kabel sudut L di E5 untuk membelokkan arus ke bawah.",
+    targetCells: { "B5": "l_cable", "C5": "switch", "D5": "lamp", "E5": "l_cable" },
+    hint: "Pasang kabel sudut L di B5 dan E5. Di antaranya pasang saklar di C5 dan lampu di D5.",
   },
   {
-    instruction: "Pasang kabel sudut di A5 dan E5",
-    voice: "Sekarang kita perlu membelokkan jalur rangkaian ke atas. Letakkan kabel sudut berbentuk L di posisi A5 dan E5. Kabel ini akan membelokkan arus dari mendatar menjadi tegak.",
-    targetCells: { "A5": "l_cable", "E5": "l_cable" },
-    hint: "Kabel L membuat belokan 90 derajat. A5 belok ke atas-kanan, E5 belok ke atas-kiri.",
+    instruction: "Pasang jalur kanan: E4, E3, E2",
+    voice: "Bagus sekali! Sekarang di sisi kanan, pasang saklar kedua di E4 secara tegak, lampu kedua di E3 juga secara tegak, dan kabel sudut L di E2 untuk membelokkan jalur ke arah kiri.",
+    targetCells: { "E4": "switch", "E3": "lamp", "E2": "l_cable" },
+    hint: "Pasang saklar di E4, lampu di E3, dan kabel sudut L di E2. Perhatikan kutub positif lampu menghadap ke atas.",
   },
   {
-    instruction: "Pasang kabel tegak di sisi kiri: A2, A3, A4",
-    voice: "Hebat! Sekarang teruskan rangkaian ke atas di sisi kiri. Letakkan tiga kabel lurus secara tegak di posisi A4, A3, dan A2. Kabel ini membentuk jalur kiri dari loop rangkaian.",
-    targetCells: { "A2": "straight_cable", "A3": "straight_cable", "A4": "straight_cable" },
-    hint: "Kabel-kabel ini harus dipasang tegak (90 derajat).",
-  },
-  {
-    instruction: "Pasang kabel tegak di sisi kanan: E2, E4",
-    voice: "Sekarang lakukan hal yang sama di sisi kanan. Letakkan kabel lurus tegak di posisi E2 dan E4. Biarkan E3 kosong untuk komponen saklar.",
-    targetCells: { "E2": "straight_cable", "E4": "straight_cable" },
-    hint: "Biarkan E3 kosong dulu, di situlah saklar akan dipasang!",
-  },
-  {
-    instruction: "Letakkan Saklar di E3",
-    voice: "Sekarang letakkan saklar di posisi E3 di sisi kanan. Saklar mengatur apakah arus mengalir melalui rangkaian. Saat saklar tertutup, lampu akan menyala!",
-    targetCells: { "E3": "switch" },
-    hint: "Saklar membuka dan menutup jalur rangkaian.",
-  },
-  {
-    instruction: "Pasang kabel sudut di atas: A1 dan E1",
-    voice: "Hampir selesai! Letakkan kabel sudut berbentuk L di posisi A1 dan E1 untuk menyambungkan bagian atas loop rangkaian.",
-    targetCells: { "A1": "l_cable", "E1": "l_cable" },
-    hint: "Sudut-sudut ini menyambungkan jalur tegak kiri dan kanan melintasi bagian atas.",
-  },
-  {
-    instruction: "Letakkan 2 Lampu di B1 dan D1, dan Saklar di C1",
-    voice: "Langkah terakhir! Letakkan dua komponen lampu di posisi B1 dan D1, lalu letakkan saklar kedua tepat di antaranya di C1. Ingat polaritas lampu LED: pastikan kutub positif bertanda plus menghadap arah kutub positif baterai. Jika lampu belum menyala saat saklar dinyalakan, cukup angkat balok lampu dan putar posisinya 180 derajat. Selamat, kamu berhasil membuat rangkaian seri!",
-    targetCells: { "B1": "lamp", "D1": "lamp", "C1": "switch" },
-    hint: "Perhatikan polaritas lampu LED: kutub positif (+) harus menghadap arah kutub positif baterai. Jika lampu belum menyala saat saklar tertutup, putar balok lampu 180 derajat.",
+    instruction: "Tutup rangkaian di bawah dan kiri: D2, C2, B2, B3",
+    voice: "Langkah terakhir! Lengkapi penutup rangkaian. Letakkan dua kabel lurus mendatar di D2 dan C2, kabel sudut L di B2, dan kabel lurus tegak di B3 untuk menyambung kembali ke baterai. Jika kedua saklar di C5 dan E4 dinyalakan, kedua lampu akan menyala bersamaan dalam satu lintasan seri!",
+    targetCells: { "D2": "straight_cable", "C2": "straight_cable", "B2": "l_cable", "B3": "straight_cable" },
+    hint: "Pasang kabel lurus di D2 dan C2, kabel sudut L di B2, dan kabel lurus di B3. Tutup kedua saklar untuk menyalakan lampu.",
   },
 ];
 
 const PARALLEL_STEPS: StepDef[] = [
   {
-    instruction: "Letakkan Baterai di posisi C5",
-    voice: "Sekarang ayo buat rangkaian paralel! Mulai dengan meletakkan baterai di posisi C5, di tengah baris atas. Ini adalah sumber listrik kita.",
-    targetCells: { "C5": "battery" },
-    hint: "Titik awalnya sama seperti rangkaian seri, baterai di tengah baris atas.",
+    instruction: "Buat sumber listrik di baris bawah: B2, C2, D2, E2",
+    voice: "Ayo buat rangkaian paralel yang hemat balok dengan 2 lampu dan 2 saklar! Mulai dari baris 2: letakkan baterai di C2 dengan kutub positif menghadap ke kiri, kabel lurus di D2, serta kabel sudut L di B2 dan E2 menghadap ke atas.",
+    targetCells: { "B2": "l_cable", "C2": "battery", "D2": "straight_cable", "E2": "l_cable" },
+    hint: "Baris 2: kabel sudut L di B2 dan E2, baterai di C2 dengan kutub positif di kiri, dan kabel lurus di D2.",
   },
   {
-    instruction: "Buat bagian atas",
-    voice: "Tambahkan kabel lurus di samping baterai di B5 dan D5, lalu pasang kabel sudut berbentuk L di A5 dan E5 untuk berbelok ke bawah.",
-    targetCells: { "B5": "straight_cable", "D5": "straight_cable", "A5": "l_cable", "E5": "l_cable" },
-    hint: "Sambungkan kabel dari baterai ke arah luar sampai sudut A5 dan E5.",
+    instruction: "Buat cabang pertama di baris 3: B3, C3, D3, E3",
+    voice: "Hebat! Sekarang kita buat cabang pertama di baris 3. Letakkan kabel cabang T di B3 dan E3 untuk membagi arus. Di antara kedua kabel T, pasang saklar pertama di C3 dan lampu pertama di D3.",
+    targetCells: { "B3": "t_cable", "C3": "switch", "D3": "lamp", "E3": "t_cable" },
+    hint: "Baris 3: kabel cabang T di B3 dan E3, saklar di C3, dan lampu di D3 dengan kutub positif di kiri.",
   },
   {
-    instruction: "Buat cabang tengah",
-    voice: "Sekarang ayo buat cabang paralel pertama! Letakkan kabel T di A3 dan E3 untuk membagi arus. Lalu, pasang saklar di B3, lampu di C3, dan kabel lurus di D3.",
-    targetCells: { "A3": "t_cable", "E3": "t_cable", "B3": "switch", "C3": "lamp", "D3": "straight_cable" },
-    hint: "Cabang tengah membutuhkan kabel T di tepi, saklar di B3, dan lampu di tengah (C3).",
+    instruction: "Buat cabang kedua di baris 4: B4, C4, D4, E4",
+    voice: "Langkah terakhir! Di baris 4 tepat di atasnya, pasang kabel sudut L di B4 dan E4 menghadap ke bawah. Lalu pasang saklar kedua di C4 dan lampu kedua di D4. Rangkaian paralel selesai! Masing-masing lampu memiliki saklar sendiri. Coba nyalakan atau matikan salah satu saklar, lampu di cabang lainnya akan tetap menyala mandiri!",
+    targetCells: { "B4": "l_cable", "C4": "switch", "D4": "lamp", "E4": "l_cable" },
+    hint: "Baris 4: kabel sudut L di B4 dan E4, saklar di C4, dan lampu di D4 dengan kutub positif di kiri.",
   },
-  {
-    instruction: "Buat cabang bawah",
-    voice: "Terakhir, ayo buat cabang paralel kedua di bagian bawah. Letakkan kabel sudut L di A1 dan E1. Lalu, tambahkan saklar di B1, lampu di C1, dan kabel lurus di D1.",
-    targetCells: { "A1": "l_cable", "E1": "l_cable", "B1": "switch", "C1": "lamp", "D1": "straight_cable" },
-    hint: "Cabang bawah membutuhkan kabel L di sudut, saklar di B1, dan lampu di tengah (C1).",
-  },
-  {
-    instruction: "Sambungkan cabang-cabangnya",
-    voice: "Untuk menyelesaikan rangkaian, kita perlu menyambungkan bagian atas, tengah, dan bawah. Letakkan kabel lurus di sepanjang sisi pada A4, E4, A2, dan E2. Selamat, kamu berhasil membuat rangkaian paralel dengan saklar terpisah untuk setiap lampu!",
-    targetCells: { "A4": "straight_cable", "E4": "straight_cable", "A2": "straight_cable", "E2": "straight_cable" },
-    hint: "Gunakan kabel lurus untuk menyambungkan kabel T ke sudut di sisi kiri dan kanan.",
-  }
 ];
 
 
@@ -350,6 +314,8 @@ export default function VoiceGuide() {
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(true);
+  const clearBoardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountTimeRef = useRef<number>(Date.now());
   const idleMenuHandledRef = useRef<boolean>(false);
   const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSpeakingRef = useRef<boolean>(false);
@@ -433,6 +399,7 @@ export default function VoiceGuide() {
     return () => {
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
       if (recognitionLiftTimerRef.current) clearTimeout(recognitionLiftTimerRef.current);
+      if (clearBoardTimerRef.current) clearTimeout(clearBoardTimerRef.current);
       if (typeof window !== "undefined") {
         (window as any).__lenteraGuideMode = "idle";
         (window as any).__lenteraSpeaking = false;
@@ -561,9 +528,22 @@ export default function VoiceGuide() {
       // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1)
       if (mode === "idle") {
         if (idleMenuHandledRef.current) return;
+        // Tahan deteksi menu 2.5s awal saat baru masuk lab agar tidak memotong intro dan tidak salah baca balok lama
+        if (Date.now() - mountTimeRef.current < 2500) return;
+
         if (ignoreIdleMenuUntilLiftRef.current) {
           if (placedCount === 0) {
-            ignoreIdleMenuUntilLiftRef.current = false;
+            if (!clearBoardTimerRef.current) {
+              clearBoardTimerRef.current = setTimeout(() => {
+                ignoreIdleMenuUntilLiftRef.current = false;
+                clearBoardTimerRef.current = null;
+              }, 800);
+            }
+          } else {
+            if (clearBoardTimerRef.current) {
+              clearTimeout(clearBoardTimerRef.current);
+              clearBoardTimerRef.current = null;
+            }
           }
           return;
         }

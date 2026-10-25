@@ -256,8 +256,19 @@ def evaluate_circuit(grid_state_cells):
             return {"status": "not_connected", "narration": "Baterai dan lampu belum terhubung."}
         return {"status": "open_circuit", "narration": "Rangkaian masih terbuka dan belum membentuk loop tertutup."}
         
-    # Klasifikasi topologi: Seri (1 loop), Paralel (>1 loop)
-    graph_type = "series" if len(loops_with_lamp) == 1 else "parallel"
+    # Klasifikasi topologi: Seri (1 loop fisik), Paralel (>1 loop fisik)
+    unique_loops = []
+    seen_edge_sets = []
+    for loop in loops_with_lamp:
+        edge_set = frozenset(
+            tuple(sorted([loop[i], loop[(i + 1) % len(loop)]]))
+            for i in range(len(loop))
+        )
+        if edge_set not in seen_edge_sets:
+            seen_edge_sets.append(edge_set)
+            unique_loops.append(loop)
+
+    graph_type = "series" if len(unique_loops) == 1 else "parallel"
     
     # 2. Cek Saklar (Switch)
     active_loops = []

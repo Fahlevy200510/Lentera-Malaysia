@@ -18,52 +18,37 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
     isComplete = true; // Preset referensi selalu menyala
     if (variant === "series") {
       cells = {
-        "A5": { component: "l_cable", rotation: 90 },
-        "B5": { component: "straight_cable", rotation: 0 },
-        "C5": { component: "battery", rotation: 270 },
-        "D5": { component: "straight_cable", rotation: 0 },
+        "B4": { component: "battery", rotation: 0 },
+        "B5": { component: "l_cable", rotation: 90 },
+        "C5": { component: "switch", rotation: 0 },
+        "D5": { component: "lamp", rotation: 0 },
         "E5": { component: "l_cable", rotation: 180 },
         
-        "A4": { component: "straight_cable", rotation: 90 },
-        "E4": { component: "straight_cable", rotation: 90 },
+        "E4": { component: "switch", rotation: 90 },
+        "E3": { component: "lamp", rotation: 90 },
+        "E2": { component: "l_cable", rotation: 270 },
         
-        "A3": { component: "straight_cable", rotation: 90 },
-        "E3": { component: "switch", rotation: 90 },
-        
-        "A2": { component: "straight_cable", rotation: 90 },
-        "E2": { component: "straight_cable", rotation: 90 },
-        
-        "A1": { component: "l_cable", rotation: 0 },
-        "B1": { component: "lamp", rotation: 0 },
-        "C1": { component: "switch", rotation: 0 },
-        "D1": { component: "lamp", rotation: 0 },
-        "E1": { component: "l_cable", rotation: 270 },
+        "D2": { component: "straight_cable", rotation: 0 },
+        "C2": { component: "straight_cable", rotation: 0 },
+        "B2": { component: "l_cable", rotation: 0 },
+        "B3": { component: "straight_cable", rotation: 90 },
       };
     } else if (variant === "parallel") {
       cells = {
-        "A5": { component: "l_cable", rotation: 90 },
-        "B5": { component: "straight_cable", rotation: 0 },
-        "C5": { component: "battery", rotation: 270 },
-        "D5": { component: "straight_cable", rotation: 0 },
-        "E5": { component: "l_cable", rotation: 180 },
-        
-        "A4": { component: "straight_cable", rotation: 90 },
-        "E4": { component: "straight_cable", rotation: 90 },
-        
-        "A3": { component: "t_cable", rotation: 270 },
-        "B3": { component: "switch", rotation: 0 },
-        "C3": { component: "lamp", rotation: 0 },
-        "D3": { component: "straight_cable", rotation: 0 },
+        "B4": { component: "l_cable", rotation: 90 },
+        "C4": { component: "switch", rotation: 0 },
+        "D4": { component: "lamp", rotation: 0 },
+        "E4": { component: "l_cable", rotation: 180 },
+
+        "B3": { component: "t_cable", rotation: 270 },
+        "C3": { component: "switch", rotation: 0 },
+        "D3": { component: "lamp", rotation: 0 },
         "E3": { component: "t_cable", rotation: 90 },
-        
-        "A2": { component: "straight_cable", rotation: 90 },
-        "E2": { component: "straight_cable", rotation: 90 },
-        
-        "A1": { component: "l_cable", rotation: 0 },
-        "B1": { component: "switch", rotation: 0 },
-        "C1": { component: "lamp", rotation: 0 },
-        "D1": { component: "straight_cable", rotation: 0 },
-        "E1": { component: "l_cable", rotation: 270 },
+
+        "B2": { component: "l_cable", rotation: 0 },
+        "C2": { component: "battery", rotation: 270 },
+        "D2": { component: "straight_cable", rotation: 0 },
+        "E2": { component: "l_cable", rotation: 270 },
       };
     } else if (variant === "closed") {
       cells = {
