@@ -350,6 +350,7 @@ export default function VoiceGuide() {
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(false);
+  const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
   const [activeStudentState, setActiveStudentState] = useState<StudentProfile>(PRESET_STUDENTS[0]);
   const [mounted, setMounted] = useState<boolean>(false);
@@ -428,6 +429,7 @@ export default function VoiceGuide() {
     }
     return () => {
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+      if (recognitionLiftTimerRef.current) clearTimeout(recognitionLiftTimerRef.current);
       if (typeof window !== "undefined") {
         (window as any).__lenteraGuideMode = "idle";
         (window as any).__lenteraSpeaking = false;
@@ -759,19 +761,30 @@ export default function VoiceGuide() {
 
         // 1. Balok baru diletakkan di C3 -> Jelaskan & tanyakan kejelasan
         if (isTargetMatched && !recognitionExplainedRef.current) {
+          if (recognitionLiftTimerRef.current) {
+            clearTimeout(recognitionLiftTimerRef.current);
+            recognitionLiftTimerRef.current = null;
+          }
           recognitionExplainedRef.current = true;
           recognitionRotationRef.current = placedC3.rotation ?? 0;
           setCompletedCells(new Set(["C3"]));
           playEarcon("step");
-          const questionPrompt = `${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di tempatnya. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
+          const questionPrompt = `${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di sel C3. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
           speak(questionPrompt);
           return;
         }
 
-        // 2. Balok sudah dijelaskan & masih berada di C3
+        // 2. Balok sudah dijelaskan
         if (recognitionExplainedRef.current) {
-          // A. Deteksi jika balok diputar oleh siswa untuk dengar ulang
+          // A. Balok diletakkan kembali / masih berada di C3
           if (isTargetMatched) {
+            // Jika ada lift timer yang sedang berjalan (karena siswa sempat mengangkat untuk memutar), batalkan!
+            if (recognitionLiftTimerRef.current) {
+              clearTimeout(recognitionLiftTimerRef.current);
+              recognitionLiftTimerRef.current = null;
+            }
+
+            // Deteksi jika balok diputar (baik diputar langsung di papan atau diangkat lalu diletakkan dengan orientasi baru)
             const curRot = placedC3.rotation ?? 0;
             const lastRot = recognitionRotationRef.current ?? 0;
             const rawDiff = Math.abs(curRot - lastRot);
@@ -787,22 +800,31 @@ export default function VoiceGuide() {
               );
               return;
             }
+            return;
           }
 
-          // B. Deteksi jika balok diangkat oleh siswa -> Lanjut ke komponen berikutnya
+          // B. Deteksi jika balok diangkat oleh siswa
+          // Catatan penting: Siswa mungkin mengangkat balok sejenak untuk memutarnya di tangan, atau mengangkatnya untuk lanjut ke komponen berikutnya.
+          // Oleh karena itu, kita beri jeda toleransi 2.5 detik. Jika dalam 2.5 detik balok ditaruh kembali, timer dibatalkan.
+          // Jika tetap terangkat setelah 2.5 detik, barulah sistem mengonfirmasi lanjut ke langkah berikutnya.
           if (!placedC3 || placedC3.component !== targetExpected) {
-            playEarcon("step");
-            recognitionExplainedRef.current = false;
-            recognitionRotationRef.current = null;
-            setCompletedCells(new Set());
-            if (currentStep < totalSteps - 1) {
-              speak("Bagus sekali! Balok sudah diangkat. Mari lanjut ke komponen berikutnya.", () => {
-                setCurrentStep((prev) => prev + 1);
-              });
-            } else {
-              speak("Bagus sekali! Seluruh komponen dasar telah berhasil kamu kenali.", () => {
-                setCurrentStep(totalSteps);
-              });
+            if (!recognitionLiftTimerRef.current) {
+              recognitionLiftTimerRef.current = setTimeout(() => {
+                recognitionLiftTimerRef.current = null;
+                playEarcon("step");
+                recognitionExplainedRef.current = false;
+                recognitionRotationRef.current = null;
+                setCompletedCells(new Set());
+                if (currentStep < totalSteps - 1) {
+                  speak("Bagus sekali! Balok sudah diangkat. Mari lanjut ke komponen berikutnya.", () => {
+                    setCurrentStep((prev) => prev + 1);
+                  });
+                } else {
+                  speak("Bagus sekali! Seluruh komponen dasar telah berhasil kamu kenali.", () => {
+                    setCurrentStep(totalSteps);
+                  });
+                }
+              }, 2500);
             }
             return;
           }
@@ -810,6 +832,10 @@ export default function VoiceGuide() {
 
         // C. Siswa meletakkan balok yang salah di C3
         if (placedC3 && targetExpected && placedC3.component !== targetExpected && !recognitionExplainedRef.current) {
+          if (recognitionLiftTimerRef.current) {
+            clearTimeout(recognitionLiftTimerRef.current);
+            recognitionLiftTimerRef.current = null;
+          }
           const now = Date.now();
           if (now - lastClueRef.current > 5000) {
             lastClueRef.current = now;
@@ -969,6 +995,10 @@ export default function VoiceGuide() {
     }
     playEarcon("click");
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (recognitionLiftTimerRef.current) {
+      clearTimeout(recognitionLiftTimerRef.current);
+      recognitionLiftTimerRef.current = null;
+    }
     recognitionExplainedRef.current = false;
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
@@ -1002,6 +1032,10 @@ export default function VoiceGuide() {
   const resetGuide = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (recognitionLiftTimerRef.current) {
+      clearTimeout(recognitionLiftTimerRef.current);
+      recognitionLiftTimerRef.current = null;
+    }
     recognitionExplainedRef.current = false;
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
@@ -1023,6 +1057,10 @@ export default function VoiceGuide() {
   const skipStep = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (recognitionLiftTimerRef.current) {
+      clearTimeout(recognitionLiftTimerRef.current);
+      recognitionLiftTimerRef.current = null;
+    }
     if (currentStep < totalSteps - 1) {
       setCurrentStep((prev) => prev + 1);
       setStepCompleted(false);
