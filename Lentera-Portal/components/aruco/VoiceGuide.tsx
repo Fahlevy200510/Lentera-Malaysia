@@ -351,6 +351,8 @@ export default function VoiceGuide() {
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(false);
   const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSpeakingRef = useRef<boolean>(false);
+  const recognitionPromptReadyRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
   const [activeStudentState, setActiveStudentState] = useState<StudentProfile>(PRESET_STUDENTS[0]);
   const [mounted, setMounted] = useState<boolean>(false);
@@ -460,10 +462,12 @@ export default function VoiceGuide() {
     utterance.rate = 0.92;
     utterance.pitch = 1.05;
     utterance.onstart = () => {
+      isSpeakingRef.current = true;
       setIsSpeaking(true);
       if (typeof window !== "undefined") (window as any).__lenteraSpeaking = true;
     };
     utterance.onend = () => {
+      isSpeakingRef.current = false;
       setIsSpeaking(false);
       if (typeof window !== "undefined") {
         (window as any).__lenteraSpeaking = false;
@@ -472,6 +476,7 @@ export default function VoiceGuide() {
       if (onEnd) onEnd();
     };
     utterance.onerror = (e) => {
+      isSpeakingRef.current = false;
       setIsSpeaking(false);
       if (typeof window !== "undefined") {
         (window as any).__lenteraSpeaking = false;
@@ -489,6 +494,7 @@ export default function VoiceGuide() {
   const stopSpeaking = useCallback(() => {
     if (synthRef.current) {
       synthRef.current.cancel();
+      isSpeakingRef.current = false;
       setIsSpeaking(false);
       if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
     }
@@ -626,8 +632,14 @@ export default function VoiceGuide() {
         return;
       }
 
-      // Evaluasi Darurat Korsleting Fisika (Short Circuit Safety Alert)
-      if (detail?.status === "short_circuit") {
+      // Evaluasi Darurat Korsleting Fisika (Hanya aktif saat merangkai sirkuit, dan tidak sedang berbicara narasi utama)
+      if (
+        detail?.status === "short_circuit" &&
+        !isFinished &&
+        !stepCompleted &&
+        !isSpeakingRef.current &&
+        !["idle", "recognition", "quiz"].includes(mode)
+      ) {
         const now = Date.now();
         if (now - lastShortCircuitRef.current > 9000) {
           lastShortCircuitRef.current = now;
@@ -636,8 +648,14 @@ export default function VoiceGuide() {
         }
       }
 
-      // Evaluasi Polaritas Terbalik pada Lampu LED
-      if (detail?.status === "polarity_reversed") {
+      // Evaluasi Polaritas Terbalik pada Lampu LED (Hanya aktif saat merangkai sirkuit, dan tidak sedang berbicara narasi utama)
+      if (
+        detail?.status === "polarity_reversed" &&
+        !isFinished &&
+        !stepCompleted &&
+        !isSpeakingRef.current &&
+        !["idle", "recognition", "quiz"].includes(mode)
+      ) {
         const now = Date.now();
         if (now - lastPolarityAlertRef.current > 9000) {
           lastPolarityAlertRef.current = now;
@@ -766,11 +784,14 @@ export default function VoiceGuide() {
             recognitionLiftTimerRef.current = null;
           }
           recognitionExplainedRef.current = true;
+          recognitionPromptReadyRef.current = false;
           recognitionRotationRef.current = placedC3.rotation ?? 0;
           setCompletedCells(new Set(["C3"]));
           playEarcon("step");
           const questionPrompt = `${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di sel C3. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
-          speak(questionPrompt);
+          speak(questionPrompt, () => {
+            recognitionPromptReadyRef.current = true;
+          });
           return;
         }
 
@@ -784,35 +805,37 @@ export default function VoiceGuide() {
               recognitionLiftTimerRef.current = null;
             }
 
-            // Deteksi jika balok diputar (baik diputar langsung di papan atau diangkat lalu diletakkan dengan orientasi baru)
-            const curRot = placedC3.rotation ?? 0;
-            const lastRot = recognitionRotationRef.current ?? 0;
-            const rawDiff = Math.abs(curRot - lastRot);
-            const diff = Math.min(rawDiff, 360 - rawDiff);
-            const isRotated = diff >= 35;
-            const now = Date.now();
-            if (isRotated && now - lastRecognitionReplayRef.current > 3500) {
-              lastRecognitionReplayRef.current = now;
-              recognitionRotationRef.current = curRot;
-              playEarcon("clue");
-              speak(
-                `Memutar balok terdeteksi. Mengulang penjelasan: ${step.explanation} Jika kamu sudah jelas dan ingin lanjut, silakan angkat baloknya dari sel C3.`
-              );
-              return;
+            // Putar ulang hanya boleh dipicu jika audio narasi penjelasan awal telah selesai dan tidak sedang berbicara
+            if (recognitionPromptReadyRef.current && !isSpeakingRef.current) {
+              const curRot = placedC3.rotation ?? 0;
+              const lastRot = recognitionRotationRef.current ?? 0;
+              const rawDiff = Math.abs(curRot - lastRot);
+              const diff = Math.min(rawDiff, 360 - rawDiff);
+              const isRotated = diff >= 35;
+              const now = Date.now();
+              if (isRotated && now - lastRecognitionReplayRef.current > 3500) {
+                lastRecognitionReplayRef.current = now;
+                recognitionRotationRef.current = curRot;
+                playEarcon("clue");
+                speak(
+                  `Memutar balok terdeteksi. Mengulang penjelasan: ${step.explanation} Jika kamu sudah jelas dan ingin lanjut, silakan angkat baloknya dari sel C3.`
+                );
+                return;
+              }
             }
             return;
           }
 
           // B. Deteksi jika balok diangkat oleh siswa
           // Catatan penting: Siswa mungkin mengangkat balok sejenak untuk memutarnya di tangan, atau mengangkatnya untuk lanjut ke komponen berikutnya.
-          // Oleh karena itu, kita beri jeda toleransi 2.5 detik. Jika dalam 2.5 detik balok ditaruh kembali, timer dibatalkan.
-          // Jika tetap terangkat setelah 2.5 detik, barulah sistem mengonfirmasi lanjut ke langkah berikutnya.
+          // Hanya aktifkan timer angkat jika penjelasan awal sudah selesai diperdengarkan
           if (!placedC3 || placedC3.component !== targetExpected) {
-            if (!recognitionLiftTimerRef.current) {
+            if (!recognitionLiftTimerRef.current && recognitionPromptReadyRef.current) {
               recognitionLiftTimerRef.current = setTimeout(() => {
                 recognitionLiftTimerRef.current = null;
                 playEarcon("step");
                 recognitionExplainedRef.current = false;
+                recognitionPromptReadyRef.current = false;
                 recognitionRotationRef.current = null;
                 setCompletedCells(new Set());
                 if (currentStep < totalSteps - 1) {
@@ -882,6 +905,7 @@ export default function VoiceGuide() {
           const placedComp = (placedData as any)?.component;
           const expectedComp = step.expectedComponent;
           if (placedComp && expectedComp && placedComp !== expectedComp) {
+            if (isSpeakingRef.current) return;
             const now = Date.now();
             if (now - lastQuizWrongRef.current > 5000) {
               lastQuizWrongRef.current = now;
@@ -916,7 +940,7 @@ export default function VoiceGuide() {
       }
 
       // Socratic Clue Feedback saat komponen yang diletakkan salah di sel target
-      if (step.targetCells && !allFound && !stepCompleted) {
+      if (step.targetCells && !allFound && !stepCompleted && !isFinished && !isSpeakingRef.current) {
         for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
           const placed = cells[cell];
           if (placed && placed.component !== expectedComponent) {
@@ -993,6 +1017,7 @@ export default function VoiceGuide() {
       speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil agar materi berikutnya terbuka.");
       return;
     }
+    stopSpeaking();
     playEarcon("click");
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     if (recognitionLiftTimerRef.current) {
@@ -1000,6 +1025,7 @@ export default function VoiceGuide() {
       recognitionLiftTimerRef.current = null;
     }
     recognitionExplainedRef.current = false;
+    recognitionPromptReadyRef.current = false;
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
     lastQuizWrongRef.current = 0;
@@ -1037,6 +1063,7 @@ export default function VoiceGuide() {
       recognitionLiftTimerRef.current = null;
     }
     recognitionExplainedRef.current = false;
+    recognitionPromptReadyRef.current = false;
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
     lastQuizWrongRef.current = 0;
