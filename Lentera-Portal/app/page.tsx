@@ -288,8 +288,9 @@ export default function PortalHome() {
     };
   }, [readIntro]);
 
-  // Background WebSocket: Auto-redirect ke /aruco (LENTERA Lab) jika ada balok Baterai diletakkan di papan
+  // Background WebSocket: Auto-redirect ke /aruco (LENTERA Lab) jika ada balok diletakkan di papan
   useEffect(() => {
+    router.prefetch("/aruco");
     let ws: WebSocket | null = null;
     let redirected = false;
     let cancelled = false;
