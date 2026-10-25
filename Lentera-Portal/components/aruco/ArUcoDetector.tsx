@@ -83,10 +83,10 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
     process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
   let targetEndpoint = DEFAULT_TUNNEL;
 
-  // 1. Prioritas Utama: Auto-discovery Cloudflare Quick Tunnel (100% Zero-Config bagi pengguna)
+  // 1. Prioritas Utama: Auto-discovery Cloudflare Quick Tunnel dari ntfy relay (100% Zero-Config)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
     const res = await fetch("https://ntfy.sh/lentera_malaysia_edge_tunnel/raw?poll=1", {
       signal: controller.signal,
     });
@@ -101,17 +101,17 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
     }
   } catch {}
 
-  // 2. Fallback jika tunnel offline: Cek penyimpanan lokal atau default
+  // 2. Fallback jika offline: Cek penyimpanan lokal (hanya jika valid dan bukan domain ngrok lama)
   try {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lentera_edge_endpoint") || localStorage.getItem("lentera_endpoint");
-      if (saved && saved !== "edge.lentera.id") {
+      if (saved && saved !== "edge.lentera.id" && !saved.includes("ngrok")) {
         return saved;
       }
     }
   } catch {}
 
-  return targetEndpoint;
+  return "localhost";
 }
 
 export default function ArUcoDetector() {
@@ -276,6 +276,19 @@ export default function ArUcoDetector() {
     connectWebSocket(clean);
   };
 
+  const handleResetToAuto = async () => {
+    try {
+      localStorage.removeItem("lentera_edge_endpoint");
+      localStorage.removeItem("lentera_endpoint");
+    } catch {}
+    showToast("Mendeteksi Cloudflare Tunnel otomatis...");
+    setDetections((prev) => ({ ...prev, status: "connecting" }));
+    const target = await getActiveLenteraEndpoint();
+    setEndpoint(target);
+    setCustomInput(target);
+    connectWebSocket(target);
+  };
+
   const handleDisconnect = () => {
     manualDisconnectRef.current = true;
     if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
@@ -418,7 +431,7 @@ export default function ArUcoDetector() {
                     handleManualConnect(customInput);
                   }
                 }}
-                placeholder="Domain Tunnel (anchor-scruffy-clerk.ngrok-free.dev)"
+                placeholder="Auto: Cloudflare Tunnel (*.trycloudflare.com)"
                 className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:border-cs-primary"
               />
               <button
@@ -434,13 +447,11 @@ export default function ArUcoDetector() {
               <span>Preset Cepat:</span>
               <button
                 type="button"
-                onClick={() => {
-                  setCustomInput("192.168.137.16");
-                  handleManualConnect("192.168.137.16");
-                }}
-                className="underline hover:text-emerald-700 font-bold text-emerald-600"
+                onClick={handleResetToAuto}
+                className="underline hover:text-sky-700 font-bold text-sky-600"
+                title="Deteksi otomatis Cloudflare Tunnel tanpa perlu ketik IP"
               >
-                Hotspot Pi (192.168.137.16)
+                Cloudflare Tunnel (Otomatis)
               </button>
               <span>•</span>
               <button
@@ -451,18 +462,7 @@ export default function ArUcoDetector() {
                 }}
                 className="underline hover:text-cs-primary font-semibold"
               >
-                Localhost
-              </button>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomInput("anchor-scruffy-clerk.ngrok-free.dev");
-                  handleManualConnect("anchor-scruffy-clerk.ngrok-free.dev");
-                }}
-                className="underline hover:text-cs-primary font-semibold"
-              >
-                Cloud Tunnel
+                Localhost (127.0.0.1)
               </button>
             </div>
           </div>
