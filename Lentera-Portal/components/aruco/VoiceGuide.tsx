@@ -349,7 +349,7 @@ export default function VoiceGuide() {
   const lastQuizWrongRef = useRef<number>(0);
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
-  const ignoreIdleMenuUntilLiftRef = useRef<boolean>(false);
+  const ignoreIdleMenuUntilLiftRef = useRef<boolean>(true);
   const idleMenuHandledRef = useRef<boolean>(false);
   const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSpeakingRef = useRef<boolean>(false);
