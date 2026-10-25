@@ -86,9 +86,14 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
   // 1. Prioritas Utama: Auto-discovery Cloudflare Quick Tunnel dari ntfy relay (100% Zero-Config)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
-    const res = await fetch("https://ntfy.sh/lentera_malaysia_edge_tunnel/raw?poll=1", {
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`https://ntfy.sh/lentera_malaysia_edge_tunnel/raw?poll=1&_t=${Date.now()}`, {
       signal: controller.signal,
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     });
     clearTimeout(timeoutId);
     if (res.ok) {

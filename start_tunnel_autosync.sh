@@ -15,6 +15,9 @@ rm -f "$LOG_FILE"
 # Jalankan cloudflared di background dan catat log-nya
 cloudflared tunnel --url http://localhost:8765 > "$LOG_FILE" 2>&1 &
 
+# Catat PID cloudflared
+CF_PID=$!
+
 echo "Menunggu Cloudflare menerbitkan link publik..."
 TUNNEL_URL=""
 for i in {1..25}; do
@@ -30,6 +33,7 @@ done
 if [ -z "$TUNNEL_URL" ]; then
     echo "[ERROR] Gagal mendapatkan URL dari Cloudflare. Periksa koneksi internet."
     cat "$LOG_FILE" 2>/dev/null || true
+    kill $CF_PID 2>/dev/null || true
     exit 1
 fi
 
@@ -38,12 +42,18 @@ echo " BERHASIL! Tunnel Aktif: $TUNNEL_URL"
 echo " Mengirim alamat otomatis ke Web Portal Lentera..."
 echo "=========================================================="
 
-# Kirim ke relay global (bebas CORS, realtime)
+# Kirim pertama kali ke relay global
 curl -s -X POST -d "$TUNNEL_URL" "https://ntfy.sh/$RELAY_TOPIC" > /dev/null 2>&1 || true
 
 echo "Selesai! Web Lentera sekarang otomatis terhubung ke:"
 echo "wss://$TUNNEL_URL"
 echo "=========================================================="
 
-# Biarkan tetap berjalan
-wait
+# Keep-alive loop: re-broadcast URL tiap 25 detik agar relay ntfy selalu segar & pantau proses
+while kill -0 "$CF_PID" 2>/dev/null; do
+    sleep 25
+    curl -s -X POST -d "$TUNNEL_URL" "https://ntfy.sh/$RELAY_TOPIC" > /dev/null 2>&1 || true
+done
+
+echo "[WARN] Proses cloudflared berhenti. Mengulang service..."
+exit 1

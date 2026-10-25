@@ -12,6 +12,7 @@ sudo bash -c "cat > $SERVICE_FILE" << 'EOF'
 [Unit]
 Description=LENTERA Computer Vision Observer Service
 After=network.target
+Wants=lentera-tunnel.service
 
 [Service]
 Type=simple
