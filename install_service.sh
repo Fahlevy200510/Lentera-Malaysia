@@ -61,10 +61,16 @@ sudo mkdir -p /lib/systemd/system-shutdown
 sudo cp scripts/lentera_poweroff_buzzer.sh /lib/systemd/system-shutdown/lentera_poweroff_buzzer.sh 2>/dev/null || true
 sudo chmod +x /lib/systemd/system-shutdown/lentera_poweroff_buzzer.sh 2>/dev/null || true
 
-# Reload systemd, enable, dan start kedua service
+# Pasang switch daemon service
+sudo cp lentera-switch.service /etc/systemd/system/ 2>/dev/null || true
+
+# Reload systemd
 sudo systemctl daemon-reload
-sudo systemctl enable lentera.service lentera-tunnel.service
-sudo systemctl restart lentera.service lentera-tunnel.service
+# Nonaktifkan autostart lentera.service (dikontrol sepenuhnya oleh switch daemon saat tombol ON ditekan)
+sudo systemctl disable lentera.service 2>/dev/null || true
+# Aktifkan switch daemon & tunnel
+sudo systemctl enable lentera-switch.service lentera-tunnel.service
+sudo systemctl restart lentera-switch.service lentera-tunnel.service
 
 echo ""
 echo "=========================================================="
