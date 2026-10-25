@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
   CheckCircle2, Sparkles, Zap, Lightbulb, ToggleLeft,
-  SlidersHorizontal, RefreshCw, Globe, ShieldCheck, ChevronDown, ChevronUp, Power, Camera
+  SlidersHorizontal, RefreshCw, Globe, ShieldCheck, ChevronDown, ChevronUp, Camera
 } from "lucide-react";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 
@@ -122,8 +122,6 @@ export default function ArUcoDetector() {
   const [showConfig, setShowConfig] = useState(false);
   const [customInput, setCustomInput] = useState("");
   const [liveFrame, setLiveFrame] = useState<string | null>(null);
-  const [showShutdownConfirm, setShowShutdownConfirm] = useState(false);
-  const [isShuttingDown, setIsShuttingDown] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -162,7 +160,6 @@ export default function ArUcoDetector() {
           const data = JSON.parse(event.data);
 
           if (data.type === "system_event" && data.event === "shutting_down") {
-            setIsShuttingDown(true);
             showToast(data.message || "Alat LENTERA sedang dimatikan secara aman.");
             return;
           }
@@ -299,16 +296,7 @@ export default function ArUcoDetector() {
     }
   };
 
-  const handleConfirmShutdown = () => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "command", action: "shutdown" }));
-      setIsShuttingDown(true);
-      setShowShutdownConfirm(false);
-      showToast("Perintah mematikan dikirim. Sistem LENTERA sedang dimatikan secara aman...");
-    } else {
-      showToast("Gagal: Raspberry Pi belum terhubung.");
-    }
-  };
+
 
   // Meneruskan trigger buzzer ke Raspberry Pi via WebSocket
   useEffect(() => {
@@ -387,17 +375,7 @@ export default function ArUcoDetector() {
               {isCalibrating ? "Mengkalibrasi…" : "Kalibrasi"}
             </button>
 
-            {detections.status === "connected" && (
-              <button
-                onClick={() => setShowShutdownConfirm(true)}
-                disabled={isShuttingDown}
-                className="flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-500/20 disabled:opacity-40 transition-colors"
-                title="Matikan Daya Alat LENTERA Secara Aman"
-              >
-                <Power className="h-3.5 w-3.5" />
-                {isShuttingDown ? "Mematikan…" : "Matikan Alat"}
-              </button>
-            )}
+
 
             <button
               onClick={() => setShowConfig(!showConfig)}
@@ -522,39 +500,7 @@ export default function ArUcoDetector() {
         </div>
       </div>
 
-      {/* Modal Konfirmasi Shutdown */}
-      {showShutdownConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center gap-3 text-rose-600 mb-3">
-              <div className="rounded-full bg-rose-50 p-2.5">
-                <Power className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 text-base">Matikan Alat LENTERA?</h3>
-                <p className="text-xs text-slate-500">Shutdown sistem secara aman</p>
-              </div>
-            </div>
-            <p className="text-xs text-slate-600 mb-5 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-              Sistem operasi Raspberry Pi akan menutup semua proses dan menyimpan data ke kartu memori secara tertib. Silakan tunggu hingga lampu indikator di alat padam sebelum mencabut kabel adaptor daya.
-            </p>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowShutdownConfirm(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleConfirmShutdown}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition-colors flex items-center gap-1.5"
-              >
-                <Power className="h-3.5 w-3.5" /> Ya, Matikan Sekarang
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Toast Notification */}
       <div
