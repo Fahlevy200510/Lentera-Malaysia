@@ -200,7 +200,7 @@ export default function ArucoPage() {
       </div>
 
       <section className="mx-auto flex min-h-screen max-w-screen-2xl flex-col md:flex-row gap-8 px-5 py-8 lg:px-10 lg:py-10 print:hidden">
-        <div className="rise relative z-40 flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-64 md:flex-shrink-0">
+        <div className="rise relative z-40 flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-72 md:flex-shrink-0">
           <div>
             <div className="flex items-center gap-3 font-heading text-xl font-extrabold tracking-tight text-cs-text">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-primary text-white shadow-lg shadow-cs-primary/30">
@@ -228,11 +228,13 @@ export default function ArucoPage() {
           <div className="space-y-3">
             <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
               <p className="text-xs font-bold uppercase tracking-wider text-cs-text/50 mb-2">Siswa Sedang Belajar</p>
-              <div className="flex items-center justify-between">
-                <StudentProfileSwitcher />
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <StudentProfileSwitcher compact />
+                </div>
                 <button
                   onClick={logout}
-                  className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-100 transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
                   title="Keluar"
                 >
                   <LogOut className="h-3.5 w-3.5" />

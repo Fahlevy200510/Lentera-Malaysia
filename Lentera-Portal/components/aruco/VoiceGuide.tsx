@@ -439,6 +439,7 @@ export default function VoiceGuide() {
   const mountTimeRef = useRef<number>(Date.now());
   const idleMenuHandledRef = useRef<boolean>(false);
   const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recognitionExplainedStepRef = useRef<number>(-1);
   const isSpeakingRef = useRef<boolean>(false);
   const recognitionPromptReadyRef = useRef<boolean>(false);
   const lastSpokenTextRef = useRef<string>("");
@@ -914,12 +915,13 @@ export default function VoiceGuide() {
         const placedC3 = cells["C3"];
         const isTargetMatched = Boolean(placedC3 && targetExpected && placedC3.component === targetExpected);
 
-        // 1. Balok baru diletakkan di C3 -> Jelaskan & tanyakan kejelasan
-        if (isTargetMatched && !recognitionExplainedRef.current) {
+        // 1. Balok baru diletakkan di C3 -> Jelaskan & tanyakan kejelasan (HANYA SEKALI PER LANGKAH)
+        if (isTargetMatched && recognitionExplainedStepRef.current !== currentStep) {
           if (recognitionLiftTimerRef.current) {
             clearTimeout(recognitionLiftTimerRef.current);
             recognitionLiftTimerRef.current = null;
           }
+          recognitionExplainedStepRef.current = currentStep;
           recognitionExplainedRef.current = true;
           recognitionPromptReadyRef.current = false;
           recognitionRotationRef.current = placedC3.rotation ?? 0;
@@ -934,25 +936,25 @@ export default function VoiceGuide() {
           return;
         }
 
-        // 2. Balok sudah dijelaskan
-        if (recognitionExplainedRef.current) {
+        // 2. Balok langkah ini sudah dijelaskan
+        if (recognitionExplainedStepRef.current === currentStep) {
           // A. Balok diletakkan kembali / masih berada di C3
           if (isTargetMatched) {
-            // Jika ada lift timer yang sedang berjalan (karena siswa sempat mengangkat untuk memutar), batalkan!
+            // Jika ada lift timer yang sedang berjalan, batalkan!
             if (recognitionLiftTimerRef.current) {
               clearTimeout(recognitionLiftTimerRef.current);
               recognitionLiftTimerRef.current = null;
             }
 
-            // Putar ulang hanya boleh dipicu jika audio narasi penjelasan awal telah selesai dan tidak sedang berbicara
+            // Putar ulang hanya jika audio penjelasan selesai, tidak sedang berbicara, dan diputar sengaja >= 75 derajat
             if (recognitionPromptReadyRef.current && !isSpeakingRef.current) {
               const curRot = placedC3.rotation ?? 0;
               const lastRot = recognitionRotationRef.current ?? 0;
               const rawDiff = Math.abs(curRot - lastRot);
               const diff = Math.min(rawDiff, 360 - rawDiff);
-              const isRotated = diff >= 65; // Toleransi 65 derajat untuk mencegah jitter camera
+              const isRotated = diff >= 75; // 75 derajat mencegah jari rabaan memicu replay
               const now = Date.now();
-              if (isRotated && now - lastRecognitionReplayRef.current > 8000) {
+              if (isRotated && now - lastRecognitionReplayRef.current > 12000 && now - lastSpokenTimeRef.current > 8000) {
                 lastRecognitionReplayRef.current = now;
                 recognitionRotationRef.current = curRot;
                 playEarcon("clue");
@@ -973,7 +975,6 @@ export default function VoiceGuide() {
               recognitionLiftTimerRef.current = setTimeout(() => {
                 recognitionLiftTimerRef.current = null;
                 playEarcon("step");
-                recognitionExplainedRef.current = false;
                 recognitionPromptReadyRef.current = false;
                 recognitionRotationRef.current = null;
                 setCompletedCells(new Set());
@@ -985,23 +986,23 @@ export default function VoiceGuide() {
                     "Pintar! Satu komponen telah tuntas. Sekarang lanjut ke komponen berikutnya.",
                   ];
                   const advanceText = advancePraises[currentStep % advancePraises.length];
-                  speak(advanceText, () => {
-                    setCurrentStep((prev) => prev + 1);
-                  });
+                  // Segera majukan currentStep ke langkah berikutnya agar frame kamera
+                  // berikutnya tidak pernah memicu ulang penjelasan balok yang baru saja diangkat
+                  setCurrentStep((prev) => prev + 1);
+                  speak(advanceText);
                 } else {
                   playEarcon("victory");
-                  speak("Luar biasa! Seluruh balok komponen dasar telah berhasil kamu kenali dengan sempurna.", () => {
-                    setCurrentStep(totalSteps);
-                  });
+                  setCurrentStep(totalSteps);
+                  speak("Luar biasa! Seluruh balok komponen dasar telah berhasil kamu kenali dengan sempurna.");
                 }
-              }, 4000); // 4 detik agar tangan siswa yang meraba tidak memicu false lift
+              }, 3000);
             }
             return;
           }
         }
 
         // C. Siswa meletakkan balok yang salah di C3
-        if (placedC3 && targetExpected && placedC3.component !== targetExpected && !recognitionExplainedRef.current) {
+        if (placedC3 && targetExpected && placedC3.component !== targetExpected && recognitionExplainedStepRef.current !== currentStep) {
           if (recognitionLiftTimerRef.current) {
             clearTimeout(recognitionLiftTimerRef.current);
             recognitionLiftTimerRef.current = null;
@@ -1244,6 +1245,7 @@ export default function VoiceGuide() {
       recognitionLiftTimerRef.current = null;
     }
     recognitionExplainedRef.current = false;
+    recognitionExplainedStepRef.current = -1;
     recognitionPromptReadyRef.current = false;
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
