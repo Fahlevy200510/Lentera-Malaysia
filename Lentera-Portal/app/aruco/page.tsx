@@ -200,7 +200,7 @@ export default function ArucoPage() {
       </div>
 
       <section className="mx-auto flex min-h-screen max-w-screen-2xl flex-col md:flex-row gap-8 px-5 py-8 lg:px-10 lg:py-10 print:hidden">
-        <div className="rise flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-64 md:flex-shrink-0">
+        <div className="rise relative z-40 flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-64 md:flex-shrink-0">
           <div>
             <div className="flex items-center gap-3 font-heading text-xl font-extrabold tracking-tight text-cs-text">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-primary text-white shadow-lg shadow-cs-primary/30">
@@ -257,7 +257,7 @@ export default function ArucoPage() {
           </div>
         </div>
 
-        <div className="flex-1 grid gap-8 lg:grid-cols-2">
+        <div className="relative z-10 flex-1 grid gap-8 lg:grid-cols-2">
           {/* Left: Edge Info + Detector */}
           <div className="space-y-6">
             <div className="rise space-y-4" style={{ animationDelay: ".05s" }}>

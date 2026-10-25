@@ -110,7 +110,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
   };
 
   return (
-    <div className="relative inline-block" ref={containerRef}>
+    <div className="relative inline-block z-40" ref={containerRef}>
       {/* Tombol Utama Switcher */}
       <button
         onClick={() => setIsOpen(!isOpen)}
