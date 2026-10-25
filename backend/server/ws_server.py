@@ -42,8 +42,11 @@ class WSServer:
         for ws in list(self.clients):
             try:
                 await ws.send(message_str)
-            except Exception:
+            except websockets.exceptions.ConnectionClosed:
                 disconnected.add(ws)
+            except Exception:
+                if getattr(ws, 'closed', False):
+                    disconnected.add(ws)
                 
         for ws in disconnected:
             self.clients.discard(ws)
@@ -54,13 +57,17 @@ class WSServer:
                 disconnected = set()
                 for ws in list(self.clients):
                     try:
-                        # Drop frame jika socket masih ada antrean kirim (mencegah lag akumulatif)
+                        # Drop frame jika write buffer terlalu padat (>64KB) untuk mencegah lag
                         transport = getattr(ws, 'transport', None)
-                        if transport and transport.get_write_buffer_size() > 0:
-                            continue
+                        if transport and hasattr(transport, 'get_write_buffer_size'):
+                            if transport.get_write_buffer_size() > 65536:
+                                continue
                         await ws.send(message_str)
-                    except Exception:
+                    except websockets.exceptions.ConnectionClosed:
                         disconnected.add(ws)
+                    except Exception:
+                        if getattr(ws, 'closed', False):
+                            disconnected.add(ws)
                 for ws in disconnected:
                     self.clients.discard(ws)
         finally:
@@ -81,7 +88,7 @@ class WSServer:
 
     def broadcast_frame_sync(self, message_dict):
         """
-        Khusus frame kamera: batasi maksimal ~5 FPS (interval 0.20s) dan lewati frame
+        Khusus frame kamera: batasi maksimal ~4 FPS (interval 0.25s) dan lewati frame
         jika antrean sebelumnya masih berjalan agar buffer hotspot 4G tidak tersumbat.
         Ini menghentikan masalah WebSocket putus-nyambung secara tuntas.
         """
@@ -90,7 +97,7 @@ class WSServer:
             
         import time
         now = time.time()
-        if now - getattr(self, '_last_frame_sent', 0) < 0.20:
+        if now - getattr(self, '_last_frame_sent', 0) < 0.25:
             return
 
         self._last_frame_sent = now
@@ -102,13 +109,13 @@ class WSServer:
             self._is_sending_frame = False
 
     async def _run_server(self):
-        # ping_interval=20 & ping_timeout=20 menjaga koneksi WebSocket Cloudflare Tunnel tetap hidup (anti putus-nyambung)
+        # ping_interval=25 & ping_timeout=45 menjaga koneksi stabil tanpa false-positive timeout
         async with websockets.serve(
             self.handler,
             self.host,
             self.port,
-            ping_interval=20,
-            ping_timeout=20,
+            ping_interval=25,
+            ping_timeout=45,
             max_size=2**22,
             max_queue=32
         ):

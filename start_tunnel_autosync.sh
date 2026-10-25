@@ -20,7 +20,7 @@ TUNNEL_URL=""
 for i in {1..25}; do
     sleep 1
     if [ -f "$LOG_FILE" ]; then
-        TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9-]*\.trycloudflare\.com' "$LOG_FILE" 2>/dev/null | head -n 1 | sed 's#https://##' || true)
+        TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9-]*\.trycloudflare\.com' "$LOG_FILE" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1 | sed 's#https://##' || true)
         if [ -n "$TUNNEL_URL" ]; then
             break
         fi

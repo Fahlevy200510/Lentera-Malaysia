@@ -94,8 +94,11 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
     if (res.ok) {
       const raw = await res.text();
       const lines = raw.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-      const latest = lines[lines.length - 1];
-      if (latest && latest.includes("trycloudflare.com")) {
+      const validTunnels = lines.filter(
+        (l) => l.includes("trycloudflare.com") && !l.includes("api.trycloudflare.com")
+      );
+      const latest = validTunnels[validTunnels.length - 1];
+      if (latest) {
         return latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
       }
     }
