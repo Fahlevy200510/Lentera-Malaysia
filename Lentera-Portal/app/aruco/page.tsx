@@ -68,7 +68,7 @@ export default function ArucoPage() {
     const hasLearnedComponents = Boolean(progress?.modules?.component_recognition);
 
     const text = hasLearnedComponents
-      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Sebelum mulai, silakan angkat terlebih dahulu balok komponen dari papan fisik agar papan bersih. Setelah itu, kamu bisa meletakkan balok di baris atas untuk memilih materi, atau langsung mulai merangkai di papan."
+      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Sebelum mulai, silakan angkat terlebih dahulu balok komponen dari papan fisik agar papan bersih. Ada lima tahapan belajar yang bisa kamu pilih di baris atas papan: letakkan satu balok di kotak A1 untuk Pengenalan Taktil, di kotak B1 untuk Kuis Taktil, di kotak C1 untuk Rangkaian Seri, di kotak D1 untuk Rangkaian Paralel, atau di kotak E1 untuk Tantangan Detektif Sirkuit. Kamu juga bisa langsung merangkai di mana saja di papan untuk eksplorasi bebas."
       : "Selamat datang di LENTERA Lab! Papan siap digunakan. Sebelum kita mulai, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar papan bersih dan siap digunakan. Setelah itu, mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.";
 
     const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
