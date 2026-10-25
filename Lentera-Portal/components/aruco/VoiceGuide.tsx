@@ -129,49 +129,151 @@ const QUIZ_STEPS: StepDef[] = [
 
 const SERIES_STEPS: StepDef[] = [
   {
-    instruction: "Letakkan Baterai di posisi B4",
-    voice: "Ayo mulai membuat rangkaian seri yang ringkas! Pertama, letakkan balok baterai di posisi B4. Pastikan kutub positif bertanda plus menghadap ke atas menuju baris 5.",
+    instruction: "Langkah 1: Letakkan Baterai di posisi B4",
+    voice: "Langkah 1: Ayo mulai membuat rangkaian seri! Ambil balok baterai, lalu letakkan di posisi B4. Pastikan kutub positif bertanda plus menghadap ke atas menuju baris 5.",
     targetCells: { "B4": "battery" },
-    hint: "Baterai di B4, di baris 4 kolom B dengan tanda plus di atas.",
+    hint: "Raba simbol plus dan minus pada baterai. Letakkan di kolom B baris ke-4 dengan tanda plus di atas.",
   },
   {
-    instruction: "Pasang jalur atas: B5, C5, D5, E5",
-    voice: "Hebat! Sekarang kita buat jalur atas. Letakkan kabel sudut L di B5, saklar pertama di C5, lampu pertama di D5, dan kabel sudut L di E5 untuk membelokkan arus ke bawah.",
-    targetCells: { "B5": "l_cable", "C5": "switch", "D5": "lamp", "E5": "l_cable" },
-    hint: "Pasang kabel sudut L di B5 dan E5. Di antaranya pasang saklar di C5 dan lampu di D5.",
+    instruction: "Langkah 2: Pasang Kabel Sudut L di posisi B5",
+    voice: "Langkah 2: Ambil balok kabel sudut L. Letakkan di posisi B5, tepat di atas baterai, untuk membelokkan arus ke arah kanan.",
+    targetCells: { "B5": "l_cable" },
+    hint: "Raba alur kabel L yang membelok 90 derajat. Pasang di B5 menghadap ke kanan dan ke bawah.",
   },
   {
-    instruction: "Pasang jalur kanan: E4, E3, E2",
-    voice: "Bagus sekali! Sekarang di sisi kanan, pasang saklar kedua di E4 secara tegak, lampu kedua di E3 juga secara tegak, dan kabel sudut L di E2 untuk membelokkan jalur ke arah kiri.",
-    targetCells: { "E4": "switch", "E3": "lamp", "E2": "l_cable" },
-    hint: "Pasang saklar di E4, lampu di E3, dan kabel sudut L di E2. Perhatikan kutub positif lampu menghadap ke atas.",
+    instruction: "Langkah 3: Pasang Saklar pertama di posisi C5",
+    voice: "Langkah 3: Ambil balok saklar pertama. Letakkan mendatar di posisi C5, tepat di sebelah kanan kabel sudut B5.",
+    targetCells: { "C5": "switch" },
+    hint: "Raba tuas saklar di bagian atas balok. Letakkan mendatar di C5 di tengah baris atas.",
   },
   {
-    instruction: "Tutup rangkaian di bawah dan kiri: D2, C2, B2, B3",
-    voice: "Langkah terakhir! Lengkapi penutup rangkaian. Letakkan dua kabel lurus mendatar di D2 dan C2, kabel sudut L di B2, dan kabel lurus tegak di B3 untuk menyambung kembali ke baterai. Jika kedua saklar di C5 dan E4 dinyalakan, kedua lampu akan menyala bersamaan dalam satu lintasan seri!",
-    targetCells: { "D2": "straight_cable", "C2": "straight_cable", "B2": "l_cable", "B3": "straight_cable" },
-    hint: "Pasang kabel lurus di D2 dan C2, kabel sudut L di B2, dan kabel lurus di B3. Tutup kedua saklar untuk menyalakan lampu.",
+    instruction: "Langkah 4: Pasang Lampu pertama di posisi D5",
+    voice: "Langkah 4: Ambil balok lampu pertama. Letakkan di posisi D5, di sebelah kanan saklar. Pastikan tanda kutub positif menghadap ke kiri ke arah saklar.",
+    targetCells: { "D5": "lamp" },
+    hint: "Raba kubah lampu LED di tengah balok. Pasang di D5 dengan tanda plus menghadap ke kiri.",
+  },
+  {
+    instruction: "Langkah 5: Pasang Kabel Sudut L di posisi E5",
+    voice: "Langkah 5: Ambil kabel sudut L kedua. Letakkan di sudut kanan atas pada posisi E5 untuk membelokkan arus ke bawah.",
+    targetCells: { "E5": "l_cable" },
+    hint: "Raba kabel sudut L. Pasang di sudut kanan atas E5 menghadap ke kiri dan ke bawah.",
+  },
+  {
+    instruction: "Langkah 6: Pasang Saklar kedua di posisi E4",
+    voice: "Langkah 6: Ambil balok saklar kedua. Letakkan di posisi E4 secara tegak, tepat di bawah sudut E5.",
+    targetCells: { "E4": "switch" },
+    hint: "Raba tuas saklar. Letakkan di E4 dalam posisi jalur tegak menyambung dari E5.",
+  },
+  {
+    instruction: "Langkah 7: Pasang Lampu kedua di posisi E3",
+    voice: "Langkah 7: Ambil balok lampu kedua. Letakkan di posisi E3 di bawah saklar kedua. Pastikan kutub positif menghadap ke atas menuju saklar.",
+    targetCells: { "E3": "lamp" },
+    hint: "Raba kubah lampu LED. Pasang di E3 secara tegak dengan tanda plus menghadap ke atas.",
+  },
+  {
+    instruction: "Langkah 8: Pasang Kabel Sudut L di posisi E2",
+    voice: "Langkah 8: Ambil kabel sudut L ketiga. Letakkan di sudut kanan bawah pada posisi E2 untuk membelokkan jalur ke arah kiri.",
+    targetCells: { "E2": "l_cable" },
+    hint: "Raba kabel sudut L. Pasang di E2 menghadap ke atas dan ke kiri.",
+  },
+  {
+    instruction: "Langkah 9: Pasang Kabel Lurus di posisi D2",
+    voice: "Langkah 9: Ambil balok kabel lurus. Letakkan mendatar di posisi D2 di sebelah kiri sudut E2.",
+    targetCells: { "D2": "straight_cable" },
+    hint: "Raba garis lurus timbul melintang. Pasang mendatar di posisi D2.",
+  },
+  {
+    instruction: "Langkah 10: Pasang Kabel Lurus di posisi C2",
+    voice: "Langkah 10: Ambil balok kabel lurus berikutnya. Letakkan mendatar di posisi C2 untuk meneruskan jalur ke kiri.",
+    targetCells: { "C2": "straight_cable" },
+    hint: "Raba kabel garis lurus. Pasang mendatar di posisi C2 di sebelah D2.",
+  },
+  {
+    instruction: "Langkah 11: Pasang Kabel Sudut L di posisi B2",
+    voice: "Langkah 11: Ambil kabel sudut L terakhir. Letakkan di sudut kiri bawah pada posisi B2 untuk membelokkan jalur ke atas menuju baterai.",
+    targetCells: { "B2": "l_cable" },
+    hint: "Raba kabel sudut L. Pasang di B2 menghadap ke kanan dan ke atas.",
+  },
+  {
+    instruction: "Langkah 12: Pasang Kabel Lurus di posisi B3 untuk Menutup Rangkaian",
+    voice: "Langkah 12: Langkah terakhir! Ambil kabel lurus, pasang tegak di posisi B3 di antara B2 dan baterai. Seluruh loop rangkaian seri kini tersambung! Tutup kedua saklar di C5 dan E4, kedua lampu akan menyala bersamaan!",
+    targetCells: { "B3": "straight_cable" },
+    hint: "Pasang kabel lurus tegak di B3. Nyalakan kedua saklar di C5 dan E4 untuk melihat kedua lampu menyala.",
   },
 ];
 
 const PARALLEL_STEPS: StepDef[] = [
   {
-    instruction: "Buat sumber listrik di baris atas: B5, C5, D5, E5",
-    voice: "Ayo buat rangkaian paralel yang hemat balok dengan 2 lampu dan 2 saklar! Mulai dari baris paling atas baris kelima: letakkan baterai di C5 dengan kutub positif menghadap ke kiri, kabel lurus di D5, serta kabel sudut L di B5 dan E5 menghadap ke bawah.",
-    targetCells: { "B5": "l_cable", "C5": "battery", "D5": "straight_cable", "E5": "l_cable" },
-    hint: "Baris 5: kabel sudut L di B5 dan E5, baterai di C5 dengan kutub positif di kiri, dan kabel lurus di D5.",
+    instruction: "Langkah 1: Letakkan Baterai di posisi C5",
+    voice: "Langkah 1: Ayo buat rangkaian paralel yang hemat balok! Mulai dari baris paling atas, letakkan baterai di posisi C5. Pastikan kutub positif bertanda plus menghadap ke kiri ke arah B5.",
+    targetCells: { "C5": "battery" },
+    hint: "Raba tanda plus dan minus pada baterai. Letakkan mendatar di C5 di tengah baris atas dengan tanda plus di kiri.",
   },
   {
-    instruction: "Buat cabang pertama di baris 4: B4, C4, D4, E4",
-    voice: "Hebat! Sekarang kita buat cabang pertama di baris 4 tepat di bawahnya. Letakkan kabel cabang T di B4 dan E4 untuk membagi arus. Di antara kedua kabel T, pasang saklar pertama di C4 dan lampu pertama di D4.",
-    targetCells: { "B4": "t_cable", "C4": "switch", "D4": "lamp", "E4": "t_cable" },
-    hint: "Baris 4: kabel cabang T di B4 dan E4, saklar di C4, dan lampu di D4 dengan kutub positif di kiri.",
+    instruction: "Langkah 2: Pasang Kabel Lurus di posisi D5",
+    voice: "Langkah 2: Ambil balok kabel lurus. Letakkan mendatar di posisi D5, tepat di sebelah kanan baterai.",
+    targetCells: { "D5": "straight_cable" },
+    hint: "Raba alur garis lurus. Pasang mendatar di D5 menyambung dari kutub minus baterai.",
   },
   {
-    instruction: "Buat cabang kedua di baris 3: B3, C3, D3, E3",
-    voice: "Langkah terakhir! Di baris 3 di bawahnya, pasang kabel sudut L di B3 dan E3 menghadap ke atas. Lalu pasang saklar kedua di C3 dan lampu kedua di D3. Rangkaian paralel selesai! Masing-masing lampu memiliki saklar sendiri. Coba matikan salah satu saklar, lampu di cabang lainnya akan tetap menyala mandiri!",
-    targetCells: { "B3": "l_cable", "C3": "switch", "D3": "lamp", "E3": "l_cable" },
-    hint: "Baris 3: kabel sudut L di B3 dan E3, saklar di C3, dan lampu di D3 dengan kutub positif di kiri.",
+    instruction: "Langkah 3: Pasang Kabel Sudut L di posisi B5",
+    voice: "Langkah 3: Ambil kabel sudut L. Letakkan di posisi B5, di sebelah kiri baterai, menghadap ke kanan dan ke bawah.",
+    targetCells: { "B5": "l_cable" },
+    hint: "Raba kabel sudut L. Pasang di B5 menyambung dari kutub plus baterai dan membelok ke bawah.",
+  },
+  {
+    instruction: "Langkah 4: Pasang Kabel Sudut L di posisi E5",
+    voice: "Langkah 4: Ambil kabel sudut L kedua. Letakkan di posisi E5, di sebelah kanan D5, menghadap ke kiri dan ke bawah.",
+    targetCells: { "E5": "l_cable" },
+    hint: "Raba kabel sudut L. Pasang di sudut kanan atas E5 membelok dari D5 ke arah bawah.",
+  },
+  {
+    instruction: "Langkah 5: Pasang Kabel Cabang T di posisi B4",
+    voice: "Langkah 5: Sekarang kita buat percabangan pertama di baris 4. Ambil balok kabel cabang T, pasang di posisi B4 untuk membagi aliran listrik ke dua cabang.",
+    targetCells: { "B4": "t_cable" },
+    hint: "Raba alur timbul bercabang tiga seperti huruf T. Pasang di B4 dengan cabang membuka ke atas, bawah, dan kanan.",
+  },
+  {
+    instruction: "Langkah 6: Pasang Saklar pertama di posisi C4",
+    voice: "Langkah 6: Ambil balok saklar pertama. Letakkan mendatar di posisi C4, di sebelah kanan kabel T.",
+    targetCells: { "C4": "switch" },
+    hint: "Raba tuas saklar di atas balok. Letakkan mendatar di C4 untuk mengendalikan cabang pertama.",
+  },
+  {
+    instruction: "Langkah 7: Pasang Lampu pertama di posisi D4",
+    voice: "Langkah 7: Ambil balok lampu pertama. Letakkan di posisi D4 di sebelah saklar. Pastikan tanda kutub positif menghadap ke kiri ke arah saklar.",
+    targetCells: { "D4": "lamp" },
+    hint: "Raba kubah lampu LED. Pasang di D4 dengan kutub positif bertanda plus menghadap ke kiri.",
+  },
+  {
+    instruction: "Langkah 8: Pasang Kabel Cabang T di posisi E4",
+    voice: "Langkah 8: Ambil kabel cabang T kedua. Pasang di posisi E4 di sebelah kanan lampu untuk menyatukan kembali aliran listrik.",
+    targetCells: { "E4": "t_cable" },
+    hint: "Raba kabel T bercabang tiga. Pasang di E4 dengan cabang membuka ke atas, bawah, dan kiri.",
+  },
+  {
+    instruction: "Langkah 9: Pasang Kabel Sudut L di posisi B3",
+    voice: "Langkah 9: Sekarang kita buat cabang kedua di baris 3. Ambil kabel sudut L, letakkan di posisi B3 menghadap ke atas dan ke kanan.",
+    targetCells: { "B3": "l_cable" },
+    hint: "Raba kabel sudut L. Pasang di B3 di bawah kabel T, membelokkan arus ke arah kanan.",
+  },
+  {
+    instruction: "Langkah 10: Pasang Saklar kedua di posisi C3",
+    voice: "Langkah 10: Ambil balok saklar kedua. Letakkan mendatar di posisi C3, tepat di bawah saklar pertama.",
+    targetCells: { "C3": "switch" },
+    hint: "Raba tuas saklar. Letakkan mendatar di C3 untuk mengendalikan lampu kedua secara terpisah.",
+  },
+  {
+    instruction: "Langkah 11: Pasang Lampu kedua di posisi D3",
+    voice: "Langkah 11: Ambil balok lampu kedua. Letakkan di posisi D3 di sebelah saklar kedua. Pastikan kutub positif menghadap ke kiri ke arah saklar.",
+    targetCells: { "D3": "lamp" },
+    hint: "Raba kubah lampu LED. Pasang di D3 dengan tanda plus menghadap ke kiri.",
+  },
+  {
+    instruction: "Langkah 12: Pasang Kabel Sudut L di posisi E3 untuk Menutup Rangkaian",
+    voice: "Langkah 12: Langkah terakhir! Ambil kabel sudut L, letakkan di posisi E3 menghadap ke kiri dan ke atas. Rangkaian paralel lengkap! Kedua cabang kini mandiri. Coba nyalakan atau matikan salah satu saklar, lampu di cabang lainnya akan tetap menyala!",
+    targetCells: { "E3": "l_cable" },
+    hint: "Pasang kabel sudut L di E3 untuk menyambung dari D3 ke E4. Uji kedua saklar secara terpisah!",
   },
 ];
 
@@ -980,17 +1082,19 @@ export default function VoiceGuide() {
             }, 3500);
           });
         } else if (currentStep < totalSteps - 1) {
-          speak("Bagus sekali! Lanjut ke langkah berikutnya.");
-          advanceTimerRef.current = setTimeout(() => {
-            setCurrentStep((prev) => prev + 1);
-            setStepCompleted(false);
-            setCompletedCells(new Set());
-          }, 2500);
+          speak("Bagus sekali! Lanjut ke langkah berikutnya.", () => {
+            advanceTimerRef.current = setTimeout(() => {
+              setCurrentStep((prev) => prev + 1);
+              setStepCompleted(false);
+              setCompletedCells(new Set());
+            }, 400);
+          });
         } else {
-          speak("Bagus sekali! Rangkaian selesai.");
-          advanceTimerRef.current = setTimeout(() => {
-            setCurrentStep(totalSteps);
-          }, 1500);
+          speak("Bagus sekali! Seluruh balok telah terpasang.", () => {
+            advanceTimerRef.current = setTimeout(() => {
+              setCurrentStep(totalSteps);
+            }, 500);
+          });
         }
       }
     };
