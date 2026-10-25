@@ -581,6 +581,9 @@ export default function VoiceGuide() {
     checkpointHandledRef.current = false;
     checkpointClearSpokenRef.current = false;
 
+    // Bunyikan fanfare kemenangan ceria saat modul selesai
+    playEarcon("victory");
+
     const currentCells = latestCellsRef.current || {};
     const placed = Object.values(currentCells).filter(Boolean).length;
     setBoardBlockCount(placed);
@@ -672,7 +675,7 @@ export default function VoiceGuide() {
             } else if (cells["B1"]) {
               if (!isRecognitionDone) {
                 lastMenuSelectRef.current = now;
-                playEarcon("warning");
+                playEarcon("wrong");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
                 idleMenuHandledRef.current = true;
@@ -687,7 +690,7 @@ export default function VoiceGuide() {
             } else if (cells["C1"]) {
               if (!isRecognitionDone) {
                 lastMenuSelectRef.current = now;
-                playEarcon("warning");
+                playEarcon("wrong");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
                 idleMenuHandledRef.current = true;
@@ -702,7 +705,7 @@ export default function VoiceGuide() {
             } else if (cells["D1"]) {
               if (!isRecognitionDone) {
                 lastMenuSelectRef.current = now;
-                playEarcon("warning");
+                playEarcon("wrong");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
                 idleMenuHandledRef.current = true;
@@ -717,7 +720,7 @@ export default function VoiceGuide() {
             } else if (cells["E1"]) {
               if (!isRecognitionDone) {
                 lastMenuSelectRef.current = now;
-                playEarcon("warning");
+                playEarcon("wrong");
                 speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
               } else {
                 idleMenuHandledRef.current = true;
@@ -891,7 +894,9 @@ export default function VoiceGuide() {
           recognitionRotationRef.current = placedC3.rotation ?? 0;
           setCompletedCells(new Set(["C3"]));
           playEarcon("step");
-          const questionPrompt = `${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di sel C3. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
+          const praises = ["Hebat!", "Bagus sekali!", "Pintar!", "Tepat sekali!", "Keren!"];
+          const praise = praises[currentStep % praises.length];
+          const questionPrompt = `${praise} ${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di sel C3. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
           speak(questionPrompt, () => {
             recognitionPromptReadyRef.current = true;
           });
@@ -942,11 +947,19 @@ export default function VoiceGuide() {
                 recognitionRotationRef.current = null;
                 setCompletedCells(new Set());
                 if (currentStep < totalSteps - 1) {
-                  speak("Bagus sekali! Balok sudah diangkat. Mari lanjut ke komponen berikutnya.", () => {
+                  playEarcon("step");
+                  const advancePraises = [
+                    "Bagus sekali! Balok sudah diangkat. Mari lanjut ke komponen berikutnya.",
+                    "Hebat! Balok berhasil kamu kenali. Ayo lanjut ke komponen berikutnya.",
+                    "Pintar! Satu komponen telah tuntas. Sekarang lanjut ke komponen berikutnya.",
+                  ];
+                  const advanceText = advancePraises[currentStep % advancePraises.length];
+                  speak(advanceText, () => {
                     setCurrentStep((prev) => prev + 1);
                   });
                 } else {
-                  speak("Bagus sekali! Seluruh komponen dasar telah berhasil kamu kenali.", () => {
+                  playEarcon("victory");
+                  speak("Luar biasa! Seluruh balok komponen dasar telah berhasil kamu kenali dengan sempurna.", () => {
                     setCurrentStep(totalSteps);
                   });
                 }
@@ -965,7 +978,7 @@ export default function VoiceGuide() {
           const now = Date.now();
           if (now - lastClueRef.current > 5000) {
             lastClueRef.current = now;
-            playEarcon("clue");
+            playEarcon("wrong");
             const placedName = COMPONENT_LABEL[placedC3.component] || placedC3.component;
             const expectedName = COMPONENT_LABEL[targetExpected] || targetExpected;
             const clue = COMPONENT_TACTILE_HINT[targetExpected] || "ciri taktilnya";
@@ -988,15 +1001,37 @@ export default function VoiceGuide() {
           setStepCompleted(true);
           playEarcon("step");
           if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-          speak(step.explanation || "Jawabanmu tepat sekali!", () => {
-            advanceTimerRef.current = setTimeout(() => {
-              if (currentStep < totalSteps - 1) {
-                setCurrentStep((prev) => prev + 1);
-                setStepCompleted(false);
-              } else {
-                setCurrentStep(totalSteps);
-              }
-            }, 3000);
+
+          const quizPraises = [
+            "Luar biasa!",
+            "Tepat sekali!",
+            "Hebat!",
+            "Keren!",
+            "Pintar!",
+          ];
+          const praisePrefix = quizPraises[currentStep % quizPraises.length];
+          const explanationText = step.explanation ? `${praisePrefix} ${step.explanation}` : `${praisePrefix} Jawabanmu tepat sekali!`;
+
+          let hasAdvanced = false;
+          const doAdvanceQuiz = () => {
+            if (hasAdvanced) return;
+            hasAdvanced = true;
+            if (advanceTimerRef.current) {
+              clearTimeout(advanceTimerRef.current);
+              advanceTimerRef.current = null;
+            }
+            if (currentStep < totalSteps - 1) {
+              setCurrentStep((prev) => prev + 1);
+              setStepCompleted(false);
+            } else {
+              playEarcon("victory");
+              setCurrentStep(totalSteps);
+            }
+          };
+
+          advanceTimerRef.current = setTimeout(doAdvanceQuiz, 4500);
+          speak(explanationText, () => {
+            setTimeout(doAdvanceQuiz, 400);
           });
           return;
         }
@@ -1012,7 +1047,7 @@ export default function VoiceGuide() {
             const now = Date.now();
             if (now - lastQuizWrongRef.current > 5000) {
               lastQuizWrongRef.current = now;
-              playEarcon("warning");
+              playEarcon("wrong");
               const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
               const hintText = step.hint || "raba ciri fisiknya";
               speak(`Kurang tepat. Kamu meletakkan balok ${wrongName}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
@@ -1053,7 +1088,7 @@ export default function VoiceGuide() {
               const placedName = COMPONENT_LABEL[placed.component] || placed.component;
               const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
               const clue = COMPONENT_TACTILE_HINT[expectedComponent] || "bentuk yang sesuai";
-              playEarcon("clue");
+              playEarcon("wrong");
               speak(`Kamu meletakkan balok ${placedName} di ${cell}. Untuk langkah ini kita membutuhkan ${expectedName}. Coba raba balok yang ${clue}.`);
             }
             break;
@@ -1113,6 +1148,7 @@ export default function VoiceGuide() {
             setTimeout(doAdvance, 300);
           });
         } else {
+          playEarcon("victory");
           advanceTimerRef.current = setTimeout(doAdvance, 2800);
           speak("Luar biasa! Seluruh balok telah terpasang rapi.", () => {
             setTimeout(doAdvance, 400);

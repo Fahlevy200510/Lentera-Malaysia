@@ -20,7 +20,7 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-export type EarconType = "click" | "step" | "success" | "warning" | "clue" | "clear";
+export type EarconType = "click" | "step" | "success" | "warning" | "clue" | "clear" | "wrong" | "victory";
 
 export function playEarcon(type: EarconType) {
   // 1. Trigger hardware buzzer via event (handled by ArUcoDetector WebSocket)
@@ -75,6 +75,34 @@ export function playEarcon(type: EarconType) {
       // Harmonizing chord sustain
       playTone(ctx, 523.25, now + 0.32, 0.45, "sine", 0.15);
       playTone(ctx, 783.99, now + 0.32, 0.45, "sine", 0.18);
+    } else if (type === "victory") {
+      // Grand celebratory triumphant victory fanfare (C5 -> E5 -> G5 -> C6 -> Chord Burst)
+      playTone(ctx, 523.25, now, 0.10, "triangle", 0.24);
+      playTone(ctx, 523.25, now, 0.10, "sine", 0.16);
+
+      playTone(ctx, 659.25, now + 0.10, 0.11, "triangle", 0.26);
+      playTone(ctx, 659.25, now + 0.10, 0.11, "sine", 0.18);
+
+      playTone(ctx, 783.99, now + 0.21, 0.13, "triangle", 0.28);
+      playTone(ctx, 783.99, now + 0.21, 0.13, "sine", 0.20);
+
+      playTone(ctx, 1046.5, now + 0.33, 0.25, "triangle", 0.32);
+      playTone(ctx, 1046.5, now + 0.33, 0.25, "sine", 0.24);
+
+      // Triumphant sustained C-Major triad chord burst with sparkle overtones
+      playTone(ctx, 523.25, now + 0.52, 0.55, "triangle", 0.18);
+      playTone(ctx, 659.25, now + 0.52, 0.55, "triangle", 0.20);
+      playTone(ctx, 783.99, now + 0.52, 0.55, "triangle", 0.22);
+      playTone(ctx, 1046.5, now + 0.52, 0.60, "sine", 0.30);
+      playTone(ctx, 1318.5, now + 0.52, 0.50, "sine", 0.22);
+      playTone(ctx, 2093.0, now + 0.54, 0.35, "sine", 0.10); // High shimmer
+    } else if (type === "wrong") {
+      // Gentle, friendly 2-note descending cue (F4 -> C4, ~260ms) - educational & clear, not scary
+      playTone(ctx, 349.23, now, 0.11, "triangle", 0.20);
+      playTone(ctx, 349.23, now, 0.11, "sine", 0.14);
+
+      playTone(ctx, 261.63, now + 0.11, 0.20, "triangle", 0.22);
+      playTone(ctx, 261.63, now + 0.11, 0.20, "sine", 0.16);
     } else if (type === "clue") {
       // Gentle curious marimba tone (G4 -> A4)
       playTone(ctx, 392.0, now, 0.09, "sine", 0.15);
