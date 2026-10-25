@@ -97,12 +97,15 @@ export function playEarcon(type: EarconType) {
       playTone(ctx, 1318.5, now + 0.52, 0.50, "sine", 0.22);
       playTone(ctx, 2093.0, now + 0.54, 0.35, "sine", 0.10); // High shimmer
     } else if (type === "wrong") {
-      // Gentle, friendly 2-note descending cue (F4 -> C4, ~260ms) - educational & clear, not scary
-      playTone(ctx, 349.23, now, 0.11, "triangle", 0.20);
-      playTone(ctx, 349.23, now, 0.11, "sine", 0.14);
+      // Audible, friendly 2-note descending educational cue (A4 -> C#4, ~300ms)
+      // Crisp attack with warm harmonic richness so it's clearly heard on any laptop/mobile speaker
+      playTone(ctx, 440.0, now, 0.12, "triangle", 0.30);
+      playTone(ctx, 440.0, now, 0.12, "sine", 0.22);
+      playTone(ctx, 440.0, now, 0.10, "sawtooth", 0.08);
 
-      playTone(ctx, 261.63, now + 0.11, 0.20, "triangle", 0.22);
-      playTone(ctx, 261.63, now + 0.11, 0.20, "sine", 0.16);
+      playTone(ctx, 277.18, now + 0.12, 0.22, "triangle", 0.34);
+      playTone(ctx, 277.18, now + 0.12, 0.22, "sine", 0.24);
+      playTone(ctx, 277.18, now + 0.12, 0.18, "sawtooth", 0.10);
     } else if (type === "clue") {
       // Gentle curious marimba tone (G4 -> A4)
       playTone(ctx, 392.0, now, 0.09, "sine", 0.15);

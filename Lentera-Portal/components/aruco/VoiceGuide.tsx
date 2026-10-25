@@ -431,6 +431,7 @@ export default function VoiceGuide() {
   const recognitionRotationRef = useRef<number | null>(null);
   const lastRecognitionReplayRef = useRef<number>(0);
   const lastQuizWrongRef = useRef<number>(0);
+  const lastQuizWrongCompRef = useRef<string | null>(null);
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(true);
@@ -1017,6 +1018,7 @@ export default function VoiceGuide() {
 
         if (isQuizCorrect) {
           setStepCompleted(true);
+          lastQuizWrongCompRef.current = null;
           playEarcon("step");
           if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
 
@@ -1041,6 +1043,8 @@ export default function VoiceGuide() {
             if (currentStep < totalSteps - 1) {
               setCurrentStep((prev) => prev + 1);
               setStepCompleted(false);
+              lastQuizWrongRef.current = 0;
+              lastQuizWrongCompRef.current = null;
             } else {
               playEarcon("victory");
               setCurrentStep(totalSteps);
@@ -1061,16 +1065,22 @@ export default function VoiceGuide() {
           const placedComp = (placedData as any)?.component;
           const expectedComp = step.expectedComponent;
           if (placedComp && expectedComp && placedComp !== expectedComp) {
-            if (isSpeakingRef.current) return;
             const now = Date.now();
-            if (now - lastQuizWrongRef.current > 5000) {
+            const isNewWrong = lastQuizWrongCompRef.current !== placedComp;
+            const cooldownOver = now - lastQuizWrongRef.current > 4000;
+
+            if (isNewWrong || cooldownOver) {
               lastQuizWrongRef.current = now;
+              lastQuizWrongCompRef.current = placedComp;
               playEarcon("wrong");
               const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
               const hintText = step.hint || "raba ciri fisiknya";
               speak(`Kurang tepat. Kamu meletakkan balok ${wrongName}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
             }
           }
+        } else {
+          // Reset saat papan diangkat/dikosongkan agar balok berikutnya dapat dideteksi instan
+          lastQuizWrongCompRef.current = null;
         }
         return;
       }
@@ -1096,12 +1106,12 @@ export default function VoiceGuide() {
       }
 
       // Socratic Clue Feedback saat komponen yang diletakkan salah di sel target
-      if (step.targetCells && !allFound && !stepCompleted && !isFinished && !isSpeakingRef.current) {
+      if (step.targetCells && !allFound && !stepCompleted && !isFinished) {
         for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
           const placed = cells[cell];
           if (placed && placed.component !== expectedComponent) {
             const now = Date.now();
-            if (now - lastClueRef.current > 16000) {
+            if (now - lastClueRef.current > 4500) {
               lastClueRef.current = now;
               const placedName = COMPONENT_LABEL[placed.component] || placed.component;
               const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
@@ -1226,6 +1236,7 @@ export default function VoiceGuide() {
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
     lastQuizWrongRef.current = 0;
+    lastQuizWrongCompRef.current = null;
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
     idleMenuHandledRef.current = false;
@@ -1265,6 +1276,7 @@ export default function VoiceGuide() {
     recognitionRotationRef.current = null;
     lastRecognitionReplayRef.current = 0;
     lastQuizWrongRef.current = 0;
+    lastQuizWrongCompRef.current = null;
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
     idleMenuHandledRef.current = false;
