@@ -40,6 +40,7 @@ type StepDef = {
   instruction: string;
   voice: string;
   targetCells?: Record<string, string>; // cell -> expected component
+  expectedComponent?: string; // Khusus kuis untuk verifikasi jawaban salah
   validator?: (cells: Record<string, any>, status: string, graphType?: string) => boolean;
   hint?: string;
   explanation?: string;
@@ -48,46 +49,46 @@ type StepDef = {
 /* ---------------------------------------------------------------- Guide Data */
 const RECOGNITION_STEPS: StepDef[] = [
   {
-    instruction: "Cari balok Baterai (memiliki tanda plus (+) dan minus (-) timbul di kedua sisinya), lalu letakkan di sel C3 tepat di tengah papan.",
-    voice: "Mari berkenalan dengan komponen listrik! Komponen pertama adalah Baterai, sumber energi utama rangkaian. Coba raba balok-balok di mejamu: cari balok yang memiliki simbol timbul tanda tambah plus untuk kutub positif, dan tanda minus garis mendatar untuk kutub negatif. Jika sudah menemukannya, letakkan balok Baterai di sel C3 tepat di tengah papan.",
+    instruction: "Raba dan cari balok Baterai (simbol + dan - timbul), letakkan di sel C3 tepat di tengah papan.",
+    voice: "Mari berkenalan dengan komponen listrik! Komponen pertama adalah Baterai, sumber energi utama rangkaian. Raba balok di mejamu: cari balok yang memiliki simbol timbul tanda tambah plus untuk kutub positif, dan tanda minus mendatar untuk kutub negatif. Letakkan balok Baterai ini di sel C3 tepat di tengah papan.",
     targetCells: { "C3": "battery" },
     hint: "Raba kedua sisi balok: temukan tanda tambah (+) timbul untuk kutub positif dan tanda minus (-) garis mendatar untuk kutub negatif.",
-    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik. Raba kedua ujungnya: kamu merasakan simbol timbul tanda plus untuk kutub positif, dan tanda minus untuk kutub negatif. Arus listrik mengalir keluar dari kutub positif menuju kutub negatif melalui rangkaian tertutup.",
+    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik dari kutub positif menuju kutub negatif melalui rangkaian tertutup.",
   },
   {
-    instruction: "Angkat baterai. Raba dan cari balok Saklar (memiliki tuas mekanik timbul yang dapat diklik atau digeser), lalu letakkan di sel C3.",
-    voice: "Bagus! Sekarang angkat baterainya. Komponen kedua adalah Saklar, pengendali aliran listrik. Coba raba balok yang memiliki tuas mekanik timbul di bagian atasnya yang bisa kamu klik atau geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
+    instruction: "Raba dan cari balok Saklar (tuas mekanik timbul), letakkan di sel C3.",
+    voice: "Komponen kedua adalah Saklar, pengendali aliran listrik. Raba balok yang memiliki tuas mekanik timbul di bagian atasnya yang bisa kamu klik atau geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
     targetCells: { "C3": "switch" },
     hint: "Raba bagian atas balok: temukan tuas mekanik yang dapat diklik atau digeser untuk menyambung dan memutus aliran listrik.",
-    explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Raba bagian atasnya, terdapat tuas yang dapat diklik. Saat saklar ditutup atau dinyalakan, arus listrik mengalir. Saat saklar dibuka, aliran listrik terputus dan lampu akan padam.",
+    explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Saat tuas saklar ditutup, arus listrik mengalir. Saat tuas dibuka, aliran listrik terputus dan lampu akan padam.",
   },
   {
-    instruction: "Angkat saklar. Raba dan cari balok Lampu LED (memiliki kubah bundar timbul serta tanda plus (+) dan minus (-) di sisinya untuk polaritas), lalu letakkan di sel C3.",
-    voice: "Hebat! Sekarang angkat saklarnya. Komponen ketiga adalah Lampu. Lampu pada Lentera menggunakan LED yang memiliki polaritas atau kutub positif dan negatif! Coba raba baloknya: di bagian atas terdapat kubah bundar timbul seperti bohlam kecil, dan di kedua sisinya kamu akan merasakan simbol timbul tanda tambah plus untuk kutub positif atau anoda, dan tanda minus untuk kutub negatif atau katoda. Arus dari kutub positif baterai harus masuk ke kutub positif lampu agar lampu bisa menyala. Jika terbalik, lampu tidak akan menyala. Letakkan balok Lampu ini di sel C3.",
+    instruction: "Raba dan cari balok Lampu LED (kubah bundar timbul & polaritas + / -), letakkan di sel C3.",
+    voice: "Komponen ketiga adalah Lampu. Lampu pada Lentera menggunakan LED yang memiliki polaritas kutub positif dan negatif. Raba baloknya: di bagian atas terdapat kubah bundar timbul seperti bohlam kecil, dan di kedua sisinya terdapat simbol timbul plus untuk anoda dan minus untuk katoda. Letakkan balok Lampu ini di sel C3.",
     targetCells: { "C3": "lamp" },
-    hint: "Raba kubah bundar dan simbol timbul di sisinya: tanda tambah (+) adalah anoda (kutub positif), dan tanda minus (-) adalah katoda (kutub negatif). Polaritas ini menentukan arah arus agar lampu LED menyala.",
-    explanation: "Luar biasa! Ini adalah balok Lampu LED. Sangat penting diingat: Lampu memiliki sifat polaritas satu arah (forward bias). Arus listrik harus mengalir masuk melalui kutub positif bertanda plus menuju kutub negatif bertanda minus. Jika kamu merakit rangkaian dan lampu belum menyala padahal rangkaian sudah tertutup, jangan panik: cukup angkat balok lampu dan putar posisinya 180 derajat!",
+    hint: "Raba kubah bundar dan simbol timbul di sisinya: tanda tambah (+) adalah anoda (kutub positif), dan tanda minus (-) adalah katoda (kutub negatif).",
+    explanation: "Luar biasa! Ini adalah balok Lampu LED. Lampu memiliki sifat polaritas satu arah: arus dari kutub positif baterai harus masuk ke kutub positif lampu bertanda plus. Jika terbalik, lampu tidak akan menyala. Jika lampu belum menyala, cukup angkat balok lampu dan putar posisinya 180 derajat!",
   },
   {
-    instruction: "Angkat lampu. Raba dan cari balok Kabel Lurus (memiliki alur garis timbul lurus melintang), lalu letakkan di sel C3.",
-    voice: "Bagus sekali! Sekarang angkat lampunya. Komponen keempat adalah Kabel Lurus, penghantar arus listrik. Coba raba permukaan balok: kamu akan merasakan alur garis timbul lurus yang membentang dari satu sisi tembus ke sisi seberangnya. Letakkan balok Kabel Lurus ini di sel C3.",
+    instruction: "Raba dan cari balok Kabel Lurus (alur garis timbul lurus), letakkan di sel C3.",
+    voice: "Komponen keempat adalah Kabel Lurus, penghantar arus listrik. Raba permukaan balok: rasakan alur garis timbul lurus yang membentang dari satu sisi tembus ke sisi seberangnya. Letakkan balok Kabel Lurus ini di sel C3.",
     targetCells: { "C3": "straight_cable" },
     hint: "Raba alur timbul: garis lurus melintang berfungsi mengalirkan arus listrik lurus tanpa belokan.",
     explanation: "Bagus sekali! Ini adalah balok Kabel Lurus. Di dalamnya terdapat jalur konduktor tembaga untuk mengalirkan arus listrik secara mendatar atau tegak dalam satu garis lurus tanpa belokan.",
   },
   {
-    instruction: "Angkat kabel lurus. Raba dan cari balok Kabel Sudut L (memiliki garis timbul berbelok siku 90 derajat), lalu letakkan di sel C3.",
-    voice: "Sekarang angkat kabel lurus. Komponen kelima adalah Kabel Sudut L, pemutar arah aliran listrik. Coba raba permukaannya: rasakan alur garis timbul yang berbelok siku membentuk huruf L. Balok ini dipasang di setiap sudut papan agar lintasan sirkuit bisa berputar kembali ke baterai. Letakkan di sel C3.",
+    instruction: "Raba dan cari balok Kabel Sudut L (garis timbul siku 90 derajat), letakkan di sel C3.",
+    voice: "Komponen kelima adalah Kabel Sudut L, pemutar arah aliran listrik. Raba permukaannya: rasakan alur garis timbul yang berbelok siku membentuk huruf L. Balok ini dipasang di setiap sudut papan agar lintasan sirkuit bisa berputar kembali ke baterai. Letakkan di sel C3.",
     targetCells: { "C3": "l_cable" },
     hint: "Raba alur siku 90 derajat menyerupai huruf L: kabel ini menghubungkan sisi horizontal dan vertikal di setiap sudut papan.",
-    explanation: "Hebat! Ini adalah balok Kabel Sudut L. Kabel ini membelokkan aliran listrik sebesar 90 derajat. Kabel L digunakan di setiap sudut papan agar rangkaian dapat berputar kembali ke baterai dan membentuk lintasan tertutup.",
+    explanation: "Hebat! Ini adalah balok Kabel Sudut L. Kabel ini membelokkan aliran listrik sebesar 90 derajat agar rangkaian dapat berputar kembali ke baterai dan membentuk lintasan tertutup.",
   },
   {
-    instruction: "Angkat kabel sudut. Raba dan cari balok Kabel Cabang T (memiliki garis timbul bercabang tiga membentuk huruf T), lalu letakkan di sel C3.",
-    voice: "Terakhir, angkat kabel sudut. Komponen keenam adalah Kabel Cabang T, pembagi arus pada rangkaian paralel. Raba permukaannya: rasakan alur garis timbul bercabang tiga menyerupai huruf T. Balok ini membagi arus listrik menjadi cabang-cabang terpisah untuk setiap lampu. Letakkan di sel C3.",
+    instruction: "Raba dan cari balok Kabel Cabang T (garis timbul cabang tiga), letakkan di sel C3.",
+    voice: "Terakhir, komponen keenam adalah Kabel Cabang T, pembagi arus pada rangkaian paralel. Raba permukaannya: rasakan alur garis timbul bercabang tiga menyerupai huruf T. Balok ini membagi arus listrik menjadi cabang-cabang terpisah untuk setiap lampu. Letakkan di sel C3.",
     targetCells: { "C3": "t_cable" },
     hint: "Raba alur timbul bercabang tiga menyerupai huruf T: kabel utama untuk merakit rangkaian bercabang paralel.",
-    explanation: "Luar biasa! Ini adalah balok Kabel Cabang T. Kabel ini memiliki tiga percabangan koneksi. Kabel T sangat penting pada rangkaian paralel karena membagi aliran listrik menjadi beberapa cabang terpisah untuk masing-masing lampu.",
+    explanation: "Luar biasa! Ini adalah balok Kabel Cabang T. Kabel ini memiliki tiga percabangan koneksi untuk membagi aliran listrik menjadi beberapa cabang terpisah untuk masing-masing lampu pada rangkaian paralel.",
   },
 ];
 
@@ -95,6 +96,7 @@ const QUIZ_STEPS: StepDef[] = [
   {
     instruction: "Tebak: Sumber Energi Listrik",
     voice: "Kuis Taktil dimulai! Pertanyaan pertama: Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik? Raba dan letakkan komponen tersebut di posisi mana saja di papan untuk menjawab.",
+    expectedComponent: "battery",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "battery"),
     hint: "Cari balok yang memiliki simbol timbul plus dan minus di kedua ujungnya.",
     explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi listrik yang menghasilkan tegangan untuk mendorong arus.",
@@ -102,6 +104,7 @@ const QUIZ_STEPS: StepDef[] = [
   {
     instruction: "Tebak: Pengubah Listrik Menjadi Cahaya",
     voice: "Pertanyaan kedua! Angkat baterai. Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Letakkan di papan untuk menjawab.",
+    expectedComponent: "lamp",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "lamp"),
     hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya.",
     explanation: "Luar biasa! Benar sekali, itu adalah Lampu! Lampu berperan sebagai beban yang bersinar terang saat dialiri arus listrik.",
@@ -109,6 +112,7 @@ const QUIZ_STEPS: StepDef[] = [
   {
     instruction: "Tebak: Pengendali Aliran Listrik",
     voice: "Pertanyaan ketiga! Angkat lampu. Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Letakkan di papan untuk menjawab.",
+    expectedComponent: "switch",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "switch"),
     hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser.",
     explanation: "Tepat sekali! Itu adalah Saklar. Saat saklar ditutup rangkaian terhubung, dan saat dibuka rangkaian terputus.",
@@ -116,6 +120,7 @@ const QUIZ_STEPS: StepDef[] = [
   {
     instruction: "Tebak: Kabel Cabang T Rangkaian Paralel",
     voice: "Pertanyaan terakhir! Angkat saklar. Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Letakkan di papan untuk menjawab.",
+    expectedComponent: "t_cable",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "t_cable"),
     hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
     explanation: "Sempurna! Itu adalah Kabel Cabang T. Kabel T membagi arus listrik menjadi cabang-cabang mandiri untuk setiap lampu.",
@@ -338,6 +343,13 @@ export default function VoiceGuide() {
   const lastPolarityAlertRef = useRef<number>(0);
   const lastMenuSelectRef = useRef<number>(0);
   const hasTriggeredSuccessEarconRef = useRef<boolean>(false);
+  const recognitionExplainedRef = useRef<boolean>(false);
+  const recognitionRotationRef = useRef<number | null>(null);
+  const lastRecognitionReplayRef = useRef<number>(0);
+  const lastQuizWrongRef = useRef<number>(0);
+  const checkpointClearSpokenRef = useRef<boolean>(false);
+  const checkpointHandledRef = useRef<boolean>(false);
+  const ignoreIdleMenuUntilLiftRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
   const [activeStudentState, setActiveStudentState] = useState<StudentProfile>(PRESET_STUDENTS[0]);
   const [mounted, setMounted] = useState<boolean>(false);
@@ -367,16 +379,20 @@ export default function VoiceGuide() {
   }, []);
 
   const handleGuideFinish = useCallback((targetMode: string) => {
+    let updated: StudentProgress | null = null;
     if (targetMode === "recognition") {
-      completeModule("component_recognition");
+      updated = completeModule("component_recognition");
     } else if (targetMode === "quiz") {
-      completeModule("component_quiz");
+      updated = completeModule("component_quiz");
     } else if (targetMode === "series" || targetMode === "adaptive_series") {
-      completeModule("series_circuit");
+      updated = completeModule("series_circuit");
     } else if (targetMode === "parallel" || targetMode === "adaptive_parallel") {
-      completeModule("parallel_circuit");
+      updated = completeModule("parallel_circuit");
     } else if (targetMode === "troubleshoot") {
-      completeModule("circuit_troubleshoot");
+      updated = completeModule("circuit_troubleshoot");
+    }
+    if (updated) {
+      setStudentProgress(updated);
     }
   }, []);
 
@@ -476,9 +492,12 @@ export default function VoiceGuide() {
     }
   }, []);
 
-  // Checkpoint Handler: saat panduan selesai, pandu pembersihan papan dan pilihan taktil A1/E1
+  // Checkpoint Handler: saat panduan selesai, pandu pembersihan papan dan pilihan taktil A1 - E1
   useEffect(() => {
     if (!isFinished || mode === "idle" || checkpointPhase !== "idle") return;
+
+    checkpointHandledRef.current = false;
+    checkpointClearSpokenRef.current = false;
 
     const currentCells = latestCellsRef.current || {};
     const placed = Object.values(currentCells).filter(Boolean).length;
@@ -491,6 +510,10 @@ export default function VoiceGuide() {
       if (mode === "recognition") {
         speak(
           "Selamat! Kamu telah menyelesaikan pengenalan seluruh balok komponen Lentera. Kerja yang luar biasa! Sebelum kita lanjut ke panduan berikutnya, silakan angkat terlebih dahulu semua balok yang ada di papan."
+        );
+      } else if (mode === "quiz") {
+        speak(
+          "Hebat sekali! Kamu berhasil menyelesaikan Kuis Taktil dengan sangat baik! Sebelum kita lanjut ke Rangkaian Seri, silakan angkat terlebih dahulu semua balok dari papan."
         );
       } else if (mode === "series" || mode === "adaptive_series") {
         speak(
@@ -505,11 +528,7 @@ export default function VoiceGuide() {
       if (targetNext) {
         setCheckpointPhase("waiting_choice");
         speak(
-          `Selamat! Kamu telah menyelesaikan ${
-            mode === "recognition" ? "pengenalan komponen" : "rangkaian seri"
-          }. Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${
-            targetNext.title
-          }? Letakkan balok di sudut kiri posisi A1 untuk IYA, atau di sudut kanan posisi E1 untuk TIDAK.`
+          `Selamat! Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, di C1 untuk Rangkaian Seri, atau di E1 untuk Istirahat.`
         );
       } else {
         setCheckpointPhase("confirmed");
@@ -532,10 +551,17 @@ export default function VoiceGuide() {
 
       // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1)
       if (mode === "idle") {
+        if (ignoreIdleMenuUntilLiftRef.current) {
+          if (placedCount === 0) {
+            ignoreIdleMenuUntilLiftRef.current = false;
+          }
+          return;
+        }
+
         if (placedCount === 1) {
           const now = Date.now();
-          if (now - lastMenuSelectRef.current > 4000) {
-            const currentProgress = mounted ? studentProgress : DEFAULT_PROGRESS;
+          if (now - lastMenuSelectRef.current > 3500) {
+            const currentProgress = getStudentProgress();
             const isRecognitionDone = Boolean(currentProgress.modules.component_recognition);
 
             if (cells["A1"]) {
@@ -544,30 +570,48 @@ export default function VoiceGuide() {
               speak("Pilihan diterima: Tahap 1, Pengenalan Komponen! Angkat balok dari A1 untuk mulai meraba balok di sel C3.", () => {
                 setTimeout(() => startGuide("recognition"), 1200);
               });
-            } else if (cells["B1"] || cells["C1"] || cells["D1"] || cells["E1"]) {
+            } else if (cells["B1"]) {
               if (!isRecognitionDone) {
                 lastMenuSelectRef.current = now;
                 playEarcon("warning");
-                speak("Tahap ini masih terkunci. Silakan letakkan balok di kotak A1 terlebih dahulu untuk menyelesaikan Pengenalan Bentuk Komponen.");
-              } else if (cells["B1"]) {
+                speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
+              } else {
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
-                speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab tebak fungsi komponen.", () => {
+                speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab kuis.", () => {
                   setTimeout(() => startGuide("quiz"), 1200);
                 });
-              } else if (cells["C1"]) {
+              }
+            } else if (cells["C1"]) {
+              if (!isRecognitionDone) {
+                lastMenuSelectRef.current = now;
+                playEarcon("warning");
+                speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
+              } else {
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
                 speak("Pilihan diterima: Tahap 3, Rangkaian Seri! Angkat balok dari C1 untuk mulai merakit sirkuit satu loop.", () => {
                   setTimeout(() => startGuide("series"), 1200);
                 });
-              } else if (cells["D1"]) {
+              }
+            } else if (cells["D1"]) {
+              if (!isRecognitionDone) {
+                lastMenuSelectRef.current = now;
+                playEarcon("warning");
+                speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
+              } else {
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
                 speak("Pilihan diterima: Tahap 4, Rangkaian Paralel! Angkat balok dari D1 untuk mulai merakit sirkuit percabangan kabel T.", () => {
                   setTimeout(() => startGuide("parallel"), 1200);
                 });
-              } else if (cells["E1"]) {
+              }
+            } else if (cells["E1"]) {
+              if (!isRecognitionDone) {
+                lastMenuSelectRef.current = now;
+                playEarcon("warning");
+                speak("Tahap ini masih terkunci. Silakan selesaikan terlebih dahulu Tahap 1 Pengenalan Komponen di A1.");
+              } else {
                 lastMenuSelectRef.current = now;
                 playEarcon("click");
                 speak("Pilihan diterima: Tahap 5, Tantangan Detektif Sirkuit Mahir! Angkat balok dari E1 untuk memulai misi analisis.", () => {
@@ -609,17 +653,18 @@ export default function VoiceGuide() {
         hasTriggeredSuccessEarconRef.current = false;
       }
 
-      // KETIKA MODUL TELAH SELESAI (CHECKPOINT TAKTIL A1 / E1)
+      // KETIKA MODUL TELAH SELESAI (CHECKPOINT TAKTIL A1 - E1)
       if (isFinished) {
         const targetNext = NEXT_GUIDE_MAP[mode];
 
         if (checkpointPhase === "waiting_clear") {
-          if (placedCount === 0) {
+          if (placedCount === 0 && !checkpointClearSpokenRef.current) {
+            checkpointClearSpokenRef.current = true;
             playEarcon("clear");
+            setCheckpointPhase("waiting_choice");
             if (targetNext) {
-              setCheckpointPhase("waiting_choice");
               speak(
-                `Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di sudut kiri posisi A1 untuk IYA, atau di sudut kanan posisi E1 untuk TIDAK.`
+                `Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, di C1 untuk Rangkaian Seri, atau di E1 untuk Istirahat.`
               );
             } else {
               setCheckpointPhase("confirmed");
@@ -628,38 +673,75 @@ export default function VoiceGuide() {
               );
             }
           }
-        } else if (checkpointPhase === "waiting_choice") {
-          if (cells["A1"]) {
-            playEarcon("click");
+          return;
+        }
+
+        if (checkpointPhase === "waiting_choice") {
+          if (checkpointHandledRef.current) return;
+
+          if (cells["A1"] && targetNext) {
+            checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
+            playEarcon("click");
             speak(
               `Pilihan IYA diterima! Silakan angkat kembali balok dari A1, kita mulai panduan ${targetNext?.title}.`,
               () => {
                 setTimeout(() => {
-                  if (targetNext) {
-                    startGuide(targetNext.mode);
-                  }
+                  startGuide(targetNext.mode);
+                }, 1200);
+              }
+            );
+          } else if (cells["C1"]) {
+            checkpointHandledRef.current = true;
+            setCheckpointPhase("confirmed");
+            playEarcon("click");
+            speak(
+              "Pilihan diterima: Tahap 3, Rangkaian Seri! Silakan angkat kembali balok dari C1 untuk mulai merakit.",
+              () => {
+                setTimeout(() => {
+                  startGuide("series");
+                }, 1200);
+              }
+            );
+          } else if (cells["B1"]) {
+            checkpointHandledRef.current = true;
+            setCheckpointPhase("confirmed");
+            playEarcon("click");
+            speak(
+              "Pilihan diterima: Tahap 2, Kuis Taktil! Silakan angkat kembali balok dari B1 untuk mulai kuis.",
+              () => {
+                setTimeout(() => {
+                  startGuide("quiz");
+                }, 1200);
+              }
+            );
+          } else if (cells["D1"]) {
+            checkpointHandledRef.current = true;
+            setCheckpointPhase("confirmed");
+            playEarcon("click");
+            speak(
+              "Pilihan diterima: Tahap 4, Rangkaian Paralel! Silakan angkat kembali balok dari D1 untuk mulai.",
+              () => {
+                setTimeout(() => {
+                  startGuide("parallel");
                 }, 1200);
               }
             );
           } else if (cells["E1"]) {
-            playEarcon("click");
+            checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
+            playEarcon("click");
+            ignoreIdleMenuUntilLiftRef.current = true;
             speak(
-              "Baik, kamu memilih istirahat. Silakan angkat kembali baloknya. Kamu bisa merangkai bebas di papan fisik kapan saja.",
+              "Pilihan istirahat diterima. Silakan angkat kembali balok dari papan untuk bereksplorasi bebas.",
               () => {
                 setTimeout(() => {
                   resetGuide();
                 }, 1200);
               }
             );
-          } else if (placedCount > 0) {
-            const now = Date.now();
-            if (now - lastRemindRef.current > 18000) {
-              lastRemindRef.current = now;
-              speak("Letakkan balok di sudut kiri A1 untuk IYA, atau di sudut kanan E1 untuk TIDAK.");
-            }
           }
+          return;
         }
         return;
       }
@@ -667,6 +749,129 @@ export default function VoiceGuide() {
       // KETIKA MASIH DALAM PROSES LANGKAH PANDUAN
       if (!step) return;
 
+      // =========================================================================
+      // KHUSUS MODE 1: PENGENALAN KOMPONEN (INTERAKTIF PUTAR ULANG & ANGKAT LANJUT)
+      // =========================================================================
+      if (mode === "recognition") {
+        const targetExpected = step.targetCells?.["C3"];
+        const placedC3 = cells["C3"];
+        const isTargetMatched = Boolean(placedC3 && targetExpected && placedC3.component === targetExpected);
+
+        // 1. Balok baru diletakkan di C3 -> Jelaskan & tanyakan kejelasan
+        if (isTargetMatched && !recognitionExplainedRef.current) {
+          recognitionExplainedRef.current = true;
+          recognitionRotationRef.current = placedC3.rotation ?? 0;
+          setCompletedCells(new Set(["C3"]));
+          playEarcon("step");
+          const questionPrompt = `${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di tempatnya. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
+          speak(questionPrompt);
+          return;
+        }
+
+        // 2. Balok sudah dijelaskan & masih berada di C3
+        if (recognitionExplainedRef.current) {
+          // A. Deteksi jika balok diputar oleh siswa untuk dengar ulang
+          if (isTargetMatched) {
+            const curRot = placedC3.rotation ?? 0;
+            const lastRot = recognitionRotationRef.current ?? 0;
+            const rawDiff = Math.abs(curRot - lastRot);
+            const diff = Math.min(rawDiff, 360 - rawDiff);
+            const isRotated = diff >= 35;
+            const now = Date.now();
+            if (isRotated && now - lastRecognitionReplayRef.current > 3500) {
+              lastRecognitionReplayRef.current = now;
+              recognitionRotationRef.current = curRot;
+              playEarcon("clue");
+              speak(
+                `Memutar balok terdeteksi. Mengulang penjelasan: ${step.explanation} Jika kamu sudah jelas dan ingin lanjut, silakan angkat baloknya dari sel C3.`
+              );
+              return;
+            }
+          }
+
+          // B. Deteksi jika balok diangkat oleh siswa -> Lanjut ke komponen berikutnya
+          if (!placedC3 || placedC3.component !== targetExpected) {
+            playEarcon("step");
+            recognitionExplainedRef.current = false;
+            recognitionRotationRef.current = null;
+            setCompletedCells(new Set());
+            if (currentStep < totalSteps - 1) {
+              speak("Bagus sekali! Balok sudah diangkat. Mari lanjut ke komponen berikutnya.", () => {
+                setCurrentStep((prev) => prev + 1);
+              });
+            } else {
+              speak("Bagus sekali! Seluruh komponen dasar telah berhasil kamu kenali.", () => {
+                setCurrentStep(totalSteps);
+              });
+            }
+            return;
+          }
+        }
+
+        // C. Siswa meletakkan balok yang salah di C3
+        if (placedC3 && targetExpected && placedC3.component !== targetExpected && !recognitionExplainedRef.current) {
+          const now = Date.now();
+          if (now - lastClueRef.current > 5000) {
+            lastClueRef.current = now;
+            playEarcon("clue");
+            const placedName = COMPONENT_LABEL[placedC3.component] || placedC3.component;
+            const expectedName = COMPONENT_LABEL[targetExpected] || targetExpected;
+            const clue = COMPONENT_TACTILE_HINT[targetExpected] || "ciri taktilnya";
+            speak(`Kamu meletakkan balok ${placedName} di C3. Untuk langkah ini kita mencari ${expectedName}. Coba raba balok yang ${clue}.`);
+          }
+        }
+        return;
+      }
+
+      // =========================================================================
+      // KHUSUS MODE 2: KUIS TAKTIL (RESPONS REALTIME JIKA JAWABAN SALAH)
+      // =========================================================================
+      if (mode === "quiz" && !stepCompleted) {
+        let isQuizCorrect = false;
+        if (step.validator) {
+          isQuizCorrect = step.validator(cells, detail?.status, detail?.graph_type);
+        }
+
+        if (isQuizCorrect) {
+          setStepCompleted(true);
+          playEarcon("step");
+          if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+          speak(step.explanation || "Jawabanmu tepat sekali!", () => {
+            advanceTimerRef.current = setTimeout(() => {
+              if (currentStep < totalSteps - 1) {
+                setCurrentStep((prev) => prev + 1);
+                setStepCompleted(false);
+              } else {
+                setCurrentStep(totalSteps);
+              }
+            }, 3000);
+          });
+          return;
+        }
+
+        // Respons jika meletakkan komponen yang salah di kuis
+        const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
+        if (placedEntries.length > 0) {
+          const [cell, placedData] = placedEntries[0];
+          const placedComp = (placedData as any)?.component;
+          const expectedComp = step.expectedComponent;
+          if (placedComp && expectedComp && placedComp !== expectedComp) {
+            const now = Date.now();
+            if (now - lastQuizWrongRef.current > 5000) {
+              lastQuizWrongRef.current = now;
+              playEarcon("warning");
+              const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
+              const hintText = step.hint || "raba ciri fisiknya";
+              speak(`Kurang tepat. Kamu meletakkan balok ${wrongName}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
+            }
+          }
+        }
+        return;
+      }
+
+      // =========================================================================
+      // MODE LAINNYA: RANGKAIAN SERI, PARALEL, TROUBLESHOOT
+      // =========================================================================
       const newCompleted = new Set<string>();
       let allFound = true;
       if (step.targetCells) {
@@ -756,7 +961,7 @@ export default function VoiceGuide() {
 
   const startGuide = (guideMode: GuideMode) => {
     if (guideMode === "idle") return;
-    const currentProgress = mounted ? studentProgress : DEFAULT_PROGRESS;
+    const currentProgress = getStudentProgress();
     if (!currentProgress.modules.component_recognition && guideMode !== "recognition") {
       playEarcon("warning");
       speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil agar materi berikutnya terbuka.");
@@ -764,6 +969,13 @@ export default function VoiceGuide() {
     }
     playEarcon("click");
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    recognitionExplainedRef.current = false;
+    recognitionRotationRef.current = null;
+    lastRecognitionReplayRef.current = 0;
+    lastQuizWrongRef.current = 0;
+    checkpointClearSpokenRef.current = false;
+    checkpointHandledRef.current = false;
+    ignoreIdleMenuUntilLiftRef.current = false;
     setMode(guideMode);
     setCurrentStep(0);
     setStepCompleted(false);
@@ -790,6 +1002,12 @@ export default function VoiceGuide() {
   const resetGuide = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    recognitionExplainedRef.current = false;
+    recognitionRotationRef.current = null;
+    lastRecognitionReplayRef.current = 0;
+    lastQuizWrongRef.current = 0;
+    checkpointClearSpokenRef.current = false;
+    checkpointHandledRef.current = false;
     setMode("idle");
     setCurrentStep(0);
     setStepCompleted(false);
