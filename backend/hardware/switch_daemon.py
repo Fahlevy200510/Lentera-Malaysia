@@ -21,40 +21,33 @@ def run_cmd(cmd):
     except Exception as e:
         print(f"[SWITCH DAEMON] Gagal eksekusi '{cmd}': {e}")
 
-def play_buzzer_notes(notes):
-    """Memainkan melodi singkat pada BUZZER_PIN."""
+def play_buzzer_pulses(pulses):
+    """Memainkan pola pulsa DC murni pada BUZZER_PIN untuk active buzzer SFM-27."""
     try:
         import RPi.GPIO as GPIO
-        pwm = GPIO.PWM(BUZZER_PIN, 1000)
-        pwm.start(0)
-        for freq, duration in notes:
-            if freq > 0:
-                pwm.ChangeFrequency(int(freq))
-                pwm.ChangeDutyCycle(50)
-            else:
-                pwm.ChangeDutyCycle(0)
-            time.sleep(duration)
-            pwm.ChangeDutyCycle(0)
-            time.sleep(0.02)
-        pwm.stop()
-        GPIO.output(BUZZER_PIN, GPIO.LOW)
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(BUZZER_PIN, GPIO.OUT)
+        for on_time, off_time in pulses:
+            GPIO.output(BUZZER_PIN, GPIO.HIGH)
+            time.sleep(on_time)
+            GPIO.output(BUZZER_PIN, GPIO.LOW)
+            if off_time > 0:
+                time.sleep(off_time)
+        GPIO.cleanup(BUZZER_PIN)
     except Exception:
         try:
             import RPi.GPIO as GPIO
-            for freq, duration in notes:
-                if freq > 0:
-                    GPIO.output(BUZZER_PIN, GPIO.HIGH)
-                time.sleep(duration)
-                GPIO.output(BUZZER_PIN, GPIO.LOW)
-                time.sleep(0.02)
+            GPIO.output(BUZZER_PIN, GPIO.LOW)
+            GPIO.cleanup(BUZZER_PIN)
         except Exception:
             pass
 
 def play_power_on_chirp():
-    play_buzzer_notes([(784, 0.07), (1046, 0.14)])
+    play_buzzer_pulses([(0.06, 0.04), (0.14, 0.00)])
 
 def play_power_off_melody():
-    play_buzzer_notes([(1046, 0.09), (784, 0.09), (523, 0.24)])
+    play_buzzer_pulses([(0.16, 0.06), (0.10, 0.06), (0.06, 0.00)])
 
 def main():
     try:
