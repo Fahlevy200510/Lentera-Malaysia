@@ -35,20 +35,20 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
       };
     } else if (variant === "parallel") {
       cells = {
-        "B4": { component: "l_cable", rotation: 90 },
+        "B5": { component: "l_cable", rotation: 90 },
+        "C5": { component: "battery", rotation: 270 },
+        "D5": { component: "straight_cable", rotation: 0 },
+        "E5": { component: "l_cable", rotation: 180 },
+
+        "B4": { component: "t_cable", rotation: 270 },
         "C4": { component: "switch", rotation: 0 },
         "D4": { component: "lamp", rotation: 0 },
-        "E4": { component: "l_cable", rotation: 180 },
+        "E4": { component: "t_cable", rotation: 90 },
 
-        "B3": { component: "t_cable", rotation: 270 },
+        "B3": { component: "l_cable", rotation: 0 },
         "C3": { component: "switch", rotation: 0 },
         "D3": { component: "lamp", rotation: 0 },
-        "E3": { component: "t_cable", rotation: 90 },
-
-        "B2": { component: "l_cable", rotation: 0 },
-        "C2": { component: "battery", rotation: 270 },
-        "D2": { component: "straight_cable", rotation: 0 },
-        "E2": { component: "l_cable", rotation: 270 },
+        "E3": { component: "l_cable", rotation: 270 },
       };
     } else if (variant === "closed") {
       cells = {

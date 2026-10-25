@@ -156,22 +156,22 @@ const SERIES_STEPS: StepDef[] = [
 
 const PARALLEL_STEPS: StepDef[] = [
   {
-    instruction: "Buat sumber listrik di baris bawah: B2, C2, D2, E2",
-    voice: "Ayo buat rangkaian paralel yang hemat balok dengan 2 lampu dan 2 saklar! Mulai dari baris 2: letakkan baterai di C2 dengan kutub positif menghadap ke kiri, kabel lurus di D2, serta kabel sudut L di B2 dan E2 menghadap ke atas.",
-    targetCells: { "B2": "l_cable", "C2": "battery", "D2": "straight_cable", "E2": "l_cable" },
-    hint: "Baris 2: kabel sudut L di B2 dan E2, baterai di C2 dengan kutub positif di kiri, dan kabel lurus di D2.",
+    instruction: "Buat sumber listrik di baris atas: B5, C5, D5, E5",
+    voice: "Ayo buat rangkaian paralel yang hemat balok dengan 2 lampu dan 2 saklar! Mulai dari baris paling atas baris kelima: letakkan baterai di C5 dengan kutub positif menghadap ke kiri, kabel lurus di D5, serta kabel sudut L di B5 dan E5 menghadap ke bawah.",
+    targetCells: { "B5": "l_cable", "C5": "battery", "D5": "straight_cable", "E5": "l_cable" },
+    hint: "Baris 5: kabel sudut L di B5 dan E5, baterai di C5 dengan kutub positif di kiri, dan kabel lurus di D5.",
   },
   {
-    instruction: "Buat cabang pertama di baris 3: B3, C3, D3, E3",
-    voice: "Hebat! Sekarang kita buat cabang pertama di baris 3. Letakkan kabel cabang T di B3 dan E3 untuk membagi arus. Di antara kedua kabel T, pasang saklar pertama di C3 dan lampu pertama di D3.",
-    targetCells: { "B3": "t_cable", "C3": "switch", "D3": "lamp", "E3": "t_cable" },
-    hint: "Baris 3: kabel cabang T di B3 dan E3, saklar di C3, dan lampu di D3 dengan kutub positif di kiri.",
+    instruction: "Buat cabang pertama di baris 4: B4, C4, D4, E4",
+    voice: "Hebat! Sekarang kita buat cabang pertama di baris 4 tepat di bawahnya. Letakkan kabel cabang T di B4 dan E4 untuk membagi arus. Di antara kedua kabel T, pasang saklar pertama di C4 dan lampu pertama di D4.",
+    targetCells: { "B4": "t_cable", "C4": "switch", "D4": "lamp", "E4": "t_cable" },
+    hint: "Baris 4: kabel cabang T di B4 dan E4, saklar di C4, dan lampu di D4 dengan kutub positif di kiri.",
   },
   {
-    instruction: "Buat cabang kedua di baris 4: B4, C4, D4, E4",
-    voice: "Langkah terakhir! Di baris 4 tepat di atasnya, pasang kabel sudut L di B4 dan E4 menghadap ke bawah. Lalu pasang saklar kedua di C4 dan lampu kedua di D4. Rangkaian paralel selesai! Masing-masing lampu memiliki saklar sendiri. Coba nyalakan atau matikan salah satu saklar, lampu di cabang lainnya akan tetap menyala mandiri!",
-    targetCells: { "B4": "l_cable", "C4": "switch", "D4": "lamp", "E4": "l_cable" },
-    hint: "Baris 4: kabel sudut L di B4 dan E4, saklar di C4, dan lampu di D4 dengan kutub positif di kiri.",
+    instruction: "Buat cabang kedua di baris 3: B3, C3, D3, E3",
+    voice: "Langkah terakhir! Di baris 3 di bawahnya, pasang kabel sudut L di B3 dan E3 menghadap ke atas. Lalu pasang saklar kedua di C3 dan lampu kedua di D3. Rangkaian paralel selesai! Masing-masing lampu memiliki saklar sendiri. Coba matikan salah satu saklar, lampu di cabang lainnya akan tetap menyala mandiri!",
+    targetCells: { "B3": "l_cable", "C3": "switch", "D3": "lamp", "E3": "l_cable" },
+    hint: "Baris 3: kabel sudut L di B3 dan E3, saklar di C3, dan lampu di D3 dengan kutub positif di kiri.",
   },
 ];
 
