@@ -68,8 +68,8 @@ export default function ArucoPage() {
     const hasLearnedComponents = Boolean(progress?.modules?.component_recognition);
 
     const text = hasLearnedComponents
-      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Letakkan balok di A1 untuk Pengenalan Taktil, atau langsung mulai merangkai di papan."
-      : "Selamat datang di LENTERA Lab! Papan siap digunakan. Mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.";
+      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Sebelum mulai, silakan angkat terlebih dahulu balok komponen dari papan fisik agar papan bersih. Setelah itu, kamu bisa meletakkan balok di baris atas untuk memilih materi, atau langsung mulai merangkai di papan."
+      : "Selamat datang di LENTERA Lab! Papan siap digunakan. Sebelum kita mulai, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar papan bersih dan siap digunakan. Setelah itu, mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.";
 
     const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     utteranceRef.current = utterance;
