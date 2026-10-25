@@ -134,13 +134,13 @@ export default function ArucoPage() {
   useEffect(() => {
     hasSpokenLabIntroRef.current = false;
 
-    // 1. Autoplay otomatis dengan jeda 400ms
+    // 1. Autoplay otomatis dengan jeda 750ms agar transisi audio dari halaman sebelumnya tuntas
     const timer = setTimeout(() => {
       if (!hasSpokenLabIntroRef.current && !speakingRef.current) {
         hasSpokenLabIntroRef.current = true;
         speakLabIntro();
       }
-    }, 400);
+    }, 750);
 
     // 2. Fallback sentuhan/klik pertama di mana saja jika browser menahan autoplay
     const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {

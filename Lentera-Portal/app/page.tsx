@@ -344,16 +344,21 @@ export default function PortalHome() {
                   notify.rate = 0.95;
                   notify.pitch = 1.05;
 
+                  utteranceRef.current = notify;
+                  (window as any).__lenteraActiveUtterance = notify;
+
                   let hasNavigated = false;
                   const doNavigate = () => {
                     if (hasNavigated) return;
                     hasNavigated = true;
-                    navigateToLab();
+                    setTimeout(() => {
+                      navigateToLab();
+                    }, 300);
                   };
 
                   notify.onend = doNavigate;
                   notify.onerror = doNavigate;
-                  setTimeout(doNavigate, 2200);
+                  setTimeout(doNavigate, 4500); // Safety fallback jika speech engine macet
 
                   window.speechSynthesis.speak(notify);
                 } else {
