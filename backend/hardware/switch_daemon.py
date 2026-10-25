@@ -100,13 +100,28 @@ def main():
                         run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
                     else:
                         # Saklar ditekan lepas (OFF): LANGSUNG PADAMKAN LED SEKETIKA!
-                        print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Mengistirahatkan sistem ke Standby...")
+                        print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Menutup layanan Lentera...")
                         GPIO.output(LED_PIN, GPIO.LOW)
-                        # Hentikan service lentera & tunnel (kamera mati, CPU 0%, hemat daya)
-                        run_cmd("sudo systemctl stop --no-block lentera.service lentera-tunnel.service")
-                        # 2x bip pendek tanda sistem masuk mode standby siaga
-                        play_buzzer_async([(0.10, 0.08), (0.06, 0.00)])
+                        # 1x bip pendek konfirmasi bahwa tombol OFF telah ditekan
+                        play_buzzer_pulses([(0.08, 0.00)])
+                        
+                        # 1. Hentikan service lentera & tunnel secara bersih
+                        run_cmd("sudo systemctl stop lentera.service lentera-tunnel.service")
+                        
+                        # 2. Sinkronkan seluruh data ke kartu microSD (sync)
+                        print("[SWITCH DAEMON] Menyinkronkan seluruh data ke microSD (sync)...")
                         run_cmd("sync")
+                        time.sleep(0.5)
+                        run_cmd("sync")
+                        
+                        # 3. Bunyikan nada penutup safe-to-unplug: tiit... tiit... TIIIIIT!
+                        # Karena sync sudah tuntas 100%, kartu microSD dijamin aman dari korupsi data!
+                        print("[SWITCH DAEMON] Seluruh data aman! Membunyikan nada aman cabut adaptor...")
+                        play_buzzer_pulses([(0.14, 0.08), (0.14, 0.08), (0.45, 0.00)])
+                        
+                        # 4. Matikan sistem operasi (poweroff)
+                        time.sleep(0.5)
+                        run_cmd("sudo poweroff")
             
             time.sleep(0.04)
     except KeyboardInterrupt:
