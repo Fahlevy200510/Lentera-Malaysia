@@ -441,6 +441,8 @@ export default function VoiceGuide() {
   const recognitionLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSpeakingRef = useRef<boolean>(false);
   const recognitionPromptReadyRef = useRef<boolean>(false);
+  const lastSpokenTextRef = useRef<string>("");
+  const lastSpokenTimeRef = useRef<number>(0);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
   const [activeStudentState, setActiveStudentState] = useState<StudentProfile>(PRESET_STUDENTS[0]);
   const [mounted, setMounted] = useState<boolean>(false);
@@ -539,13 +541,23 @@ export default function VoiceGuide() {
       if (onEnd) onEnd();
       return;
     }
+    const cleanText = text.trim();
+    const now = Date.now();
+    // Anti-looping: Cegah memutar ulang kalimat persis sama saat sedang berbicara atau dalam jeda 5 detik
+    if (cleanText === lastSpokenTextRef.current && (isSpeakingRef.current || now - lastSpokenTimeRef.current < 5000)) {
+      if (onEnd && !isSpeakingRef.current) onEnd();
+      return;
+    }
+    lastSpokenTextRef.current = cleanText;
+    lastSpokenTimeRef.current = now;
+
     try {
       if (synthRef.current.paused) {
         synthRef.current.resume();
       }
       synthRef.current.cancel();
     } catch {}
-    const spokenText = normalizeIndonesianPhonetics(text);
+    const spokenText = normalizeIndonesianPhonetics(cleanText);
     const utterance = new SpeechSynthesisUtterance(spokenText);
     const voices = synthRef.current.getVoices();
     const idVoice = voices.find(
@@ -938,9 +950,9 @@ export default function VoiceGuide() {
               const lastRot = recognitionRotationRef.current ?? 0;
               const rawDiff = Math.abs(curRot - lastRot);
               const diff = Math.min(rawDiff, 360 - rawDiff);
-              const isRotated = diff >= 35;
+              const isRotated = diff >= 65; // Toleransi 65 derajat untuk mencegah jitter camera
               const now = Date.now();
-              if (isRotated && now - lastRecognitionReplayRef.current > 3500) {
+              if (isRotated && now - lastRecognitionReplayRef.current > 8000) {
                 lastRecognitionReplayRef.current = now;
                 recognitionRotationRef.current = curRot;
                 playEarcon("clue");
@@ -982,7 +994,7 @@ export default function VoiceGuide() {
                     setCurrentStep(totalSteps);
                   });
                 }
-              }, 2500);
+              }, 4000); // 4 detik agar tangan siswa yang meraba tidak memicu false lift
             }
             return;
           }
