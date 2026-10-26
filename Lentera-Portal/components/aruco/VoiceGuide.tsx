@@ -94,39 +94,39 @@ const RECOGNITION_STEPS: StepDef[] = [
 
 const QUIZ_STEPS: StepDef[] = [
   {
-    instruction: "Tebak di C3: Sumber Energi Listrik",
-    voice: "Kuis Taktil dimulai! Pertanyaan pertama: Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik? Raba dan letakkan balok jawabanmu di kotak tengah C3 untuk menjawab.",
-    targetCells: { "C3": "battery" },
+    instruction: "Tebak di B3: Sumber Energi Listrik",
+    voice: "Kuis Taktil dimulai! Pertanyaan pertama: Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik? Raba dan letakkan balok jawabanmu di kotak B3, yaitu kolom B baris ke-3 di sisi kiri papan.",
+    targetCells: { "B3": "battery" },
     expectedComponent: "battery",
-    validator: (cells) => Boolean(cells["C3"] && cells["C3"].component === "battery"),
-    hint: "Cari balok yang memiliki simbol timbul plus dan minus di kedua ujungnya, lalu letakkan di kotak tengah C3.",
+    validator: (cells) => Boolean(cells["B3"] && cells["B3"].component === "battery"),
+    hint: "Cari balok yang memiliki simbol timbul plus dan minus di kedua ujungnya, lalu letakkan di kotak B3 di sisi kiri papan.",
     explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi listrik yang menghasilkan tegangan untuk mendorong arus.",
   },
   {
-    instruction: "Tebak di C3: Pengubah Listrik Menjadi Cahaya",
-    voice: "Pertanyaan kedua: Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Raba dan letakkan balok jawabanmu di kotak tengah C3 untuk menjawab.",
-    targetCells: { "C3": "lamp" },
+    instruction: "Tebak di D3: Pengubah Listrik Menjadi Cahaya",
+    voice: "Pertanyaan kedua: Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Raba dan letakkan balok jawabanmu di kotak D3, yaitu kolom D baris ke-3 di sisi kanan papan.",
+    targetCells: { "D3": "lamp" },
     expectedComponent: "lamp",
-    validator: (cells) => Boolean(cells["C3"] && cells["C3"].component === "lamp"),
-    hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya, lalu letakkan di kotak tengah C3.",
+    validator: (cells) => Boolean(cells["D3"] && cells["D3"].component === "lamp"),
+    hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya, lalu letakkan di kotak D3 di sisi kanan papan.",
     explanation: "Luar biasa! Benar sekali, itu adalah Lampu! Lampu berperan sebagai beban yang bersinar terang saat dialiri arus listrik.",
   },
   {
-    instruction: "Tebak di C3: Pengendali Aliran Listrik",
-    voice: "Pertanyaan ketiga: Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Raba dan letakkan balok jawabanmu di kotak tengah C3 untuk menjawab.",
-    targetCells: { "C3": "switch" },
+    instruction: "Tebak di C4: Pengendali Aliran Listrik",
+    voice: "Pertanyaan ketiga: Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Raba dan letakkan balok jawabanmu di kotak C4, yaitu kolom tengah C baris ke-4 di bawah.",
+    targetCells: { "C4": "switch" },
     expectedComponent: "switch",
-    validator: (cells) => Boolean(cells["C3"] && cells["C3"].component === "switch"),
-    hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser, lalu letakkan di kotak tengah C3.",
+    validator: (cells) => Boolean(cells["C4"] && cells["C4"].component === "switch"),
+    hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser, lalu letakkan di kotak C4 di tengah bawah.",
     explanation: "Tepat sekali! Itu adalah Saklar. Saat saklar ditutup rangkaian terhubung, dan saat dibuka rangkaian terputus.",
   },
   {
-    instruction: "Tebak di C3: Kabel Cabang T Rangkaian Paralel",
-    voice: "Pertanyaan terakhir: Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Raba dan letakkan balok jawabanmu di kotak tengah C3 untuk menjawab.",
-    targetCells: { "C3": "t_cable" },
+    instruction: "Tebak di C2: Kabel Cabang T Rangkaian Paralel",
+    voice: "Pertanyaan terakhir: Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Raba dan letakkan balok jawabanmu di kotak C2, yaitu kolom tengah C baris ke-2 di atas.",
+    targetCells: { "C2": "t_cable" },
     expectedComponent: "t_cable",
-    validator: (cells) => Boolean(cells["C3"] && cells["C3"].component === "t_cable"),
-    hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T, lalu letakkan di kotak tengah C3.",
+    validator: (cells) => Boolean(cells["C2"] && cells["C2"].component === "t_cable"),
+    hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T, lalu letakkan di kotak C2 di tengah atas.",
     explanation: "Sempurna! Itu adalah Kabel Cabang T. Kabel T membagi arus listrik menjadi cabang-cabang mandiri untuk setiap lampu.",
   },
 ];
@@ -1030,10 +1030,11 @@ export default function VoiceGuide() {
       }
 
       // =========================================================================
-      // KHUSUS MODE 2: KUIS TAKTIL (TERPANDU DI KOTAK C3)
+      // KHUSUS MODE 2: KUIS TAKTIL (TERPANDU KOORDINAT GRID BERVARIASI)
       // =========================================================================
       if (mode === "quiz") {
         const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
+        const targetCell = step.targetCells ? Object.keys(step.targetCells)[0] : "C3";
 
         // 1. Setelah menjawab benar, tunggu siswa mengangkat balok hingga papan bersih
         if (quizWaitingForClearRef.current) {
@@ -1056,7 +1057,7 @@ export default function VoiceGuide() {
               const compLabel = step.expectedComponent
                 ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
                 : "balok";
-              speak(`Silakan angkat balok ${compLabel} dari kotak C3 agar kita bisa lanjut ke pertanyaan berikutnya.`);
+              speak(`Silakan angkat balok ${compLabel} dari kotak ${targetCell} agar kita bisa lanjut ke pertanyaan berikutnya.`);
             }
           } else {
             // Papan terdeteksi bersih: pastikan sudah ada jeda minimal setelah pengumuman jawaban benar
@@ -1092,7 +1093,7 @@ export default function VoiceGuide() {
 
           if (isQuizCorrect) {
             setStepCompleted(true);
-            setCompletedCells(new Set(["C3"]));
+            setCompletedCells(new Set([targetCell]));
             lastQuizWrongCompRef.current = null;
             playEarcon("step");
             if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
@@ -1114,7 +1115,7 @@ export default function VoiceGuide() {
               const compLabel = step.expectedComponent
                 ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
                 : "balok";
-              speak(`${explanationText} Sekarang, silakan angkat balok ${compLabel} dari kotak C3 untuk lanjut ke pertanyaan berikutnya.`);
+              speak(`${explanationText} Sekarang, silakan angkat balok ${compLabel} dari kotak ${targetCell} untuk lanjut ke pertanyaan berikutnya.`);
             } else {
               // Soal terakhir: langsung majukan ke totalSteps setelah penjelasan selesai
               let finishedQuiz = false;
@@ -1135,11 +1136,11 @@ export default function VoiceGuide() {
             return;
           }
 
-          // Respons cerdas jika meletakkan komponen di luar kotak C3 atau balok yang salah
+          // Respons cerdas jika meletakkan komponen di luar kotak target atau balok yang salah
           const expectedComp = step.expectedComponent;
           if (placedEntries.length > 0 && expectedComp) {
 
-            // Kasus A: Komponen yang dicari SUDAH BENAR, tapi diletakkan di kotak selain C3
+            // Kasus A: Komponen yang dicari SUDAH BENAR, tapi diletakkan di kotak selain targetCell
             const correctCompEntry = placedEntries.find(([_, d]) => (d as any)?.component === expectedComp);
             if (correctCompEntry) {
               const [cell] = correctCompEntry;
@@ -1152,15 +1153,15 @@ export default function VoiceGuide() {
                 lastQuizWrongCompRef.current = `${expectedComp}_${cell}`;
                 playEarcon("clue");
                 const compName = COMPONENT_LABEL[expectedComp] || expectedComp;
-                speak(`Pilihan balok ${compName} sudah benar! Tapi kamu meletakkannya di kotak ${cell}. Geser balok tersebut ke kotak tengah C3.`);
+                speak(`Pilihan balok ${compName} sudah benar! Tapi kamu meletakkannya di kotak ${cell}. Geser balok tersebut ke kotak ${targetCell}.`);
               }
               return;
             }
 
-            // Kasus B: Balok salah diletakkan tepat di kotak C3
-            const placedC3 = cells["C3"];
-            if (placedC3 && placedC3.component !== expectedComp) {
-              const wrongComp = placedC3.component;
+            // Kasus B: Balok salah diletakkan tepat di kotak targetCell
+            const placedTarget = cells[targetCell];
+            if (placedTarget && placedTarget.component !== expectedComp) {
+              const wrongComp = placedTarget.component;
               const now = Date.now();
               const isNewWrong = lastQuizWrongCompRef.current !== wrongComp;
               const cooldownOver = now - lastQuizWrongRef.current > 4000;
@@ -1171,12 +1172,12 @@ export default function VoiceGuide() {
                 playEarcon("wrong");
                 const wrongName = COMPONENT_LABEL[wrongComp] || wrongComp;
                 const hintText = step.hint || "raba ciri fisiknya";
-                speak(`Kurang tepat. Kamu meletakkan balok ${wrongName} di kotak C3. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
+                speak(`Kurang tepat. Kamu meletakkan balok ${wrongName} di kotak ${targetCell}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
               }
               return;
             }
 
-            // Kasus C: Balok salah diletakkan di kotak selain C3
+            // Kasus C: Balok salah diletakkan di kotak selain targetCell
             const [cell, placedData] = placedEntries[0];
             const placedComp = (placedData as any)?.component;
             if (placedComp && placedComp !== expectedComp) {
@@ -1190,7 +1191,7 @@ export default function VoiceGuide() {
                 playEarcon("wrong");
                 const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
                 const hintText = step.hint || "raba ciri fisiknya";
-                speak(`Kamu meletakkan balok ${wrongName} di kotak ${cell}. Untuk kuis ini, cari balok yang tepat dan letakkan di kotak tengah C3.`);
+                speak(`Kamu meletakkan balok ${wrongName} di kotak ${cell}. Untuk kuis ini, cari balok yang tepat dan letakkan di kotak ${targetCell}.`);
               }
               return;
             }
@@ -1453,11 +1454,12 @@ export default function VoiceGuide() {
   const replayVoice = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     if (mode === "quiz") {
+      const targetCell = step?.targetCells ? Object.keys(step.targetCells)[0] : "papan";
       if (stepCompleted && quizWaitingForClearRef.current) {
         const compLabel = step?.expectedComponent
           ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
           : "balok";
-        speak(`${step?.explanation || "Jawabanmu tepat!"} Silakan angkat balok ${compLabel} dari papan untuk lanjut ke pertanyaan berikutnya.`);
+        speak(`${step?.explanation || "Jawabanmu tepat!"} Silakan angkat balok ${compLabel} dari kotak ${targetCell} untuk lanjut ke pertanyaan berikutnya.`);
       } else if (step) {
         speak(step.voice);
       }
