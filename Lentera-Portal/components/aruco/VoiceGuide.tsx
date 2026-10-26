@@ -103,7 +103,7 @@ const QUIZ_STEPS: StepDef[] = [
   },
   {
     instruction: "Tebak: Pengubah Listrik Menjadi Cahaya",
-    voice: "Pertanyaan kedua! Angkat baterai. Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Letakkan di papan untuk menjawab.",
+    voice: "Pertanyaan kedua: Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Letakkan di papan untuk menjawab.",
     expectedComponent: "lamp",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "lamp"),
     hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya.",
@@ -111,7 +111,7 @@ const QUIZ_STEPS: StepDef[] = [
   },
   {
     instruction: "Tebak: Pengendali Aliran Listrik",
-    voice: "Pertanyaan ketiga! Angkat lampu. Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Letakkan di papan untuk menjawab.",
+    voice: "Pertanyaan ketiga: Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Letakkan di papan untuk menjawab.",
     expectedComponent: "switch",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "switch"),
     hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser.",
@@ -119,7 +119,7 @@ const QUIZ_STEPS: StepDef[] = [
   },
   {
     instruction: "Tebak: Kabel Cabang T Rangkaian Paralel",
-    voice: "Pertanyaan terakhir! Angkat saklar. Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Letakkan di papan untuk menjawab.",
+    voice: "Pertanyaan terakhir: Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Letakkan di papan untuk menjawab.",
     expectedComponent: "t_cable",
     validator: (cells) => Object.values(cells).some((c: any) => c && c.component === "t_cable"),
     hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
@@ -432,6 +432,10 @@ export default function VoiceGuide() {
   const lastRecognitionReplayRef = useRef<number>(0);
   const lastQuizWrongRef = useRef<number>(0);
   const lastQuizWrongCompRef = useRef<string | null>(null);
+  const quizWaitingForClearRef = useRef<boolean>(false);
+  const quizClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const quizLiftGraceStartRef = useRef<number>(0);
+  const lastQuizRemindRef = useRef<number>(0);
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(true);
@@ -522,6 +526,7 @@ export default function VoiceGuide() {
     }
     return () => {
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+      if (quizClearTimerRef.current) clearTimeout(quizClearTimerRef.current);
       if (recognitionLiftTimerRef.current) clearTimeout(recognitionLiftTimerRef.current);
       if (clearBoardTimerRef.current) clearTimeout(clearBoardTimerRef.current);
       if (typeof window !== "undefined") {
@@ -645,7 +650,7 @@ export default function VoiceGuide() {
       if (targetNext) {
         setCheckpointPhase("waiting_choice");
         speak(
-          `Selamat! Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, di C1 untuk Rangkaian Seri, atau di E1 untuk Istirahat.`
+          `Selamat! Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, atau di E1 untuk Istirahat.`
         );
       } else {
         setCheckpointPhase("confirmed");
@@ -822,7 +827,7 @@ export default function VoiceGuide() {
             setCheckpointPhase("waiting_choice");
             if (targetNext) {
               speak(
-                `Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, di C1 untuk Rangkaian Seri, atau di E1 untuk Istirahat.`
+                `Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, atau di E1 untuk Istirahat.`
               );
             } else {
               setCheckpointPhase("confirmed");
@@ -1021,79 +1026,133 @@ export default function VoiceGuide() {
       }
 
       // =========================================================================
-      // KHUSUS MODE 2: KUIS TAKTIL (RESPONS REALTIME JIKA JAWABAN SALAH)
+      // KHUSUS MODE 2: KUIS TAKTIL (TUNGGU ANGKAT BALOK SEBELUM LANJUT SOAL)
       // =========================================================================
-      if (mode === "quiz" && !stepCompleted) {
-        let isQuizCorrect = false;
-        if (step.validator) {
-          isQuizCorrect = step.validator(cells, detail?.status, detail?.graph_type);
-        }
+      if (mode === "quiz") {
+        const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
 
-        if (isQuizCorrect) {
-          setStepCompleted(true);
-          lastQuizWrongCompRef.current = null;
-          playEarcon("step");
-          if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-
-          const quizPraises = [
-            "Luar biasa!",
-            "Tepat sekali!",
-            "Hebat!",
-            "Keren!",
-            "Pintar!",
-          ];
-          const praisePrefix = quizPraises[currentStep % quizPraises.length];
-          const explanationText = step.explanation ? `${praisePrefix} ${step.explanation}` : `${praisePrefix} Jawabanmu tepat sekali!`;
-
-          let hasAdvanced = false;
-          const doAdvanceQuiz = () => {
-            if (hasAdvanced) return;
-            hasAdvanced = true;
-            if (advanceTimerRef.current) {
-              clearTimeout(advanceTimerRef.current);
-              advanceTimerRef.current = null;
+        // 1. Setelah menjawab benar, tunggu siswa mengangkat balok hingga papan bersih
+        if (quizWaitingForClearRef.current) {
+          if (placedEntries.length > 0) {
+            // Balok masih berada di papan atau sedang diraba/diangkat
+            if (quizClearTimerRef.current) {
+              clearTimeout(quizClearTimerRef.current);
+              quizClearTimerRef.current = null;
             }
-            if (currentStep < totalSteps - 1) {
-              setCurrentStep((prev) => prev + 1);
-              setStepCompleted(false);
-              lastQuizWrongRef.current = 0;
-              lastQuizWrongCompRef.current = null;
-            } else {
-              playEarcon("victory");
-              setCurrentStep(totalSteps);
-            }
-          };
 
-          advanceTimerRef.current = setTimeout(doAdvanceQuiz, 4500);
-          speak(explanationText, () => {
-            setTimeout(doAdvanceQuiz, 400);
-          });
+            // Pengingat ramah jika siswa belum mengangkat balok setelah 12 detik
+            const now = Date.now();
+            if (
+              now - quizLiftGraceStartRef.current > 12000 &&
+              now - lastQuizRemindRef.current > 10000 &&
+              !isSpeakingRef.current
+            ) {
+              lastQuizRemindRef.current = now;
+              playEarcon("clue");
+              const compLabel = step.expectedComponent
+                ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
+                : "balok";
+              speak(`Silakan angkat balok ${compLabel} dari papan agar kita bisa lanjut ke pertanyaan berikutnya.`);
+            }
+          } else {
+            // Papan terdeteksi bersih: pastikan sudah ada jeda minimal setelah pengumuman jawaban benar
+            const elapsed = Date.now() - quizLiftGraceStartRef.current;
+            if (elapsed >= 1000 && !quizClearTimerRef.current) {
+              quizClearTimerRef.current = setTimeout(() => {
+                quizClearTimerRef.current = null;
+                quizWaitingForClearRef.current = false;
+                setStepCompleted(false);
+                lastQuizWrongRef.current = 0;
+                lastQuizWrongCompRef.current = null;
+
+                if (currentStep < totalSteps - 1) {
+                  playEarcon("step");
+                  setCurrentStep((prev) => prev + 1);
+                } else {
+                  playEarcon("victory");
+                  setCurrentStep(totalSteps);
+                }
+              }, 500);
+            }
+          }
           return;
         }
 
-        // Respons jika meletakkan komponen yang salah di kuis
-        const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
-        if (placedEntries.length > 0) {
-          const [cell, placedData] = placedEntries[0];
-          const placedComp = (placedData as any)?.component;
-          const expectedComp = step.expectedComponent;
-          if (placedComp && expectedComp && placedComp !== expectedComp) {
-            const now = Date.now();
-            const isNewWrong = lastQuizWrongCompRef.current !== placedComp;
-            const cooldownOver = now - lastQuizWrongRef.current > 4000;
-
-            if (isNewWrong || cooldownOver) {
-              lastQuizWrongRef.current = now;
-              lastQuizWrongCompRef.current = placedComp;
-              playEarcon("wrong");
-              const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
-              const hintText = step.hint || "raba ciri fisiknya";
-              speak(`Kurang tepat. Kamu meletakkan balok ${wrongName}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
-            }
+        // 2. Evaluasi jawaban jika langkah ini belum selesai
+        if (!stepCompleted) {
+          let isQuizCorrect = false;
+          if (step.validator) {
+            isQuizCorrect = step.validator(cells, detail?.status, detail?.graph_type);
           }
-        } else {
-          // Reset saat papan diangkat/dikosongkan agar balok berikutnya dapat dideteksi instan
-          lastQuizWrongCompRef.current = null;
+
+          if (isQuizCorrect) {
+            setStepCompleted(true);
+            lastQuizWrongCompRef.current = null;
+            playEarcon("step");
+            if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+
+            const quizPraises = [
+              "Luar biasa!",
+              "Tepat sekali!",
+              "Hebat!",
+              "Keren!",
+              "Pintar!",
+            ];
+            const praisePrefix = quizPraises[currentStep % quizPraises.length];
+            const explanationText = step.explanation ? `${praisePrefix} ${step.explanation}` : `${praisePrefix} Jawabanmu tepat sekali!`;
+
+            if (currentStep < totalSteps - 1) {
+              quizWaitingForClearRef.current = true;
+              quizLiftGraceStartRef.current = Date.now();
+              lastQuizRemindRef.current = Date.now();
+              const compLabel = step.expectedComponent
+                ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
+                : "balok";
+              speak(`${explanationText} Sekarang, silakan angkat balok ${compLabel} dari papan untuk lanjut ke pertanyaan berikutnya.`);
+            } else {
+              // Soal terakhir: langsung majukan ke totalSteps setelah penjelasan selesai
+              let finishedQuiz = false;
+              const doFinishQuiz = () => {
+                if (finishedQuiz) return;
+                finishedQuiz = true;
+                if (advanceTimerRef.current) {
+                  clearTimeout(advanceTimerRef.current);
+                  advanceTimerRef.current = null;
+                }
+                setCurrentStep(totalSteps);
+              };
+              advanceTimerRef.current = setTimeout(doFinishQuiz, 7000);
+              speak(explanationText, () => {
+                setTimeout(doFinishQuiz, 300);
+              });
+            }
+            return;
+          }
+
+          // Respons jika meletakkan komponen yang salah di kuis
+          if (placedEntries.length > 0) {
+            const [cell, placedData] = placedEntries[0];
+            const placedComp = (placedData as any)?.component;
+            const expectedComp = step.expectedComponent;
+            if (placedComp && expectedComp && placedComp !== expectedComp) {
+              const now = Date.now();
+              const isNewWrong = lastQuizWrongCompRef.current !== placedComp;
+              const cooldownOver = now - lastQuizWrongRef.current > 4000;
+
+              if (isNewWrong || cooldownOver) {
+                lastQuizWrongRef.current = now;
+                lastQuizWrongCompRef.current = placedComp;
+                playEarcon("wrong");
+                const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
+                const hintText = step.hint || "raba ciri fisiknya";
+                speak(`Kurang tepat. Kamu meletakkan balok ${wrongName}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
+              }
+            }
+          } else {
+            // Reset saat papan diangkat/dikosongkan agar balok berikutnya dapat dideteksi instan
+            lastQuizWrongCompRef.current = null;
+          }
+          return;
         }
         return;
       }
@@ -1240,6 +1299,12 @@ export default function VoiceGuide() {
     stopSpeaking();
     playEarcon("click");
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (quizClearTimerRef.current) {
+      clearTimeout(quizClearTimerRef.current);
+      quizClearTimerRef.current = null;
+    }
+    quizWaitingForClearRef.current = false;
+    quizLiftGraceStartRef.current = 0;
     if (recognitionLiftTimerRef.current) {
       clearTimeout(recognitionLiftTimerRef.current);
       recognitionLiftTimerRef.current = null;
@@ -1281,6 +1346,12 @@ export default function VoiceGuide() {
   const resetGuide = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (quizClearTimerRef.current) {
+      clearTimeout(quizClearTimerRef.current);
+      quizClearTimerRef.current = null;
+    }
+    quizWaitingForClearRef.current = false;
+    quizLiftGraceStartRef.current = 0;
     if (recognitionLiftTimerRef.current) {
       clearTimeout(recognitionLiftTimerRef.current);
       recognitionLiftTimerRef.current = null;
@@ -1309,6 +1380,12 @@ export default function VoiceGuide() {
   const skipStep = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (quizClearTimerRef.current) {
+      clearTimeout(quizClearTimerRef.current);
+      quizClearTimerRef.current = null;
+    }
+    quizWaitingForClearRef.current = false;
+    quizLiftGraceStartRef.current = 0;
     if (recognitionLiftTimerRef.current) {
       clearTimeout(recognitionLiftTimerRef.current);
       recognitionLiftTimerRef.current = null;
@@ -1329,6 +1406,17 @@ export default function VoiceGuide() {
 
   const replayVoice = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (mode === "quiz") {
+      if (stepCompleted && quizWaitingForClearRef.current) {
+        const compLabel = step?.expectedComponent
+          ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
+          : "balok";
+        speak(`${step?.explanation || "Jawabanmu tepat!"} Silakan angkat balok ${compLabel} dari papan untuk lanjut ke pertanyaan berikutnya.`);
+      } else if (step) {
+        speak(step.voice);
+      }
+      return;
+    }
     if (stepCompleted && step?.explanation) {
       speak(step.explanation, () => {
         advanceTimerRef.current = setTimeout(() => {
