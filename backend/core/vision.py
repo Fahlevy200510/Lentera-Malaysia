@@ -7,22 +7,22 @@ class VisionCore:
         # Setup ArUco Detector
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_params = cv2.aruco.DetectorParameters()
-        # Parameter stabil & akurat (bebas kedip dan anti-ghosting) untuk Raspberry Pi 3B
-        self.aruco_params.polygonalApproxAccuracyRate = 0.03
+        # Parameter adaptif, toleran terhadap silau/pantulan dan gradasi bayangan
+        self.aruco_params.polygonalApproxAccuracyRate = 0.04
         self.aruco_params.adaptiveThreshWinSizeMin = 3
-        self.aruco_params.adaptiveThreshWinSizeMax = 23
-        self.aruco_params.adaptiveThreshWinSizeStep = 10
-        self.aruco_params.minDistanceToBorder = 2
-        self.aruco_params.errorCorrectionRate = 0.5  # Cegah halusinasi bit pada bayangan/tekstur
-        self.aruco_params.maxErroneousBitsInBorderRate = 0.25  # Wajibkan border hitam yang bersih
-        self.aruco_params.minMarkerPerimeterRate = 0.04  # Tolak bintik noise kecil
+        self.aruco_params.adaptiveThreshWinSizeMax = 43  # Diperluas dari 23 ke 43 agar tahan gradasi terang-gelap
+        self.aruco_params.adaptiveThreshWinSizeStep = 8  # Langkah lebih rapat (3, 11, 19, 27, 35, 43)
+        self.aruco_params.minDistanceToBorder = 1
+        self.aruco_params.errorCorrectionRate = 0.6  # Lebih toleran terhadap noise
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.35  # Toleransi 35% jika ada pantulan/silau kecil di border
+        self.aruco_params.minMarkerPerimeterRate = 0.03  # Mampu mendeteksi marker sedikit lebih jauh/kecil
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
-        self.aruco_params.cornerRefinementWinSize = 3
-        self.aruco_params.cornerRefinementMaxIterations = 15
-        self.aruco_params.cornerRefinementMinAccuracy = 0.1
+        self.aruco_params.cornerRefinementWinSize = 5
+        self.aruco_params.cornerRefinementMaxIterations = 20
+        self.aruco_params.cornerRefinementMinAccuracy = 0.05
         
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
-        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        self.clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
         self.valid_ids = {1, 2, 3, 4, 5, 6, 7}  # 6 Komponen resmi Lentera urut 1-6 (Baterai=1, Lurus=2, L=3, T=4, Lampu=5, Saklar=6, fallback=7)
         
         # Kamera parameters (Intrinsic), default mock
@@ -36,31 +36,46 @@ class VisionCore:
 
     def detect_markers(self, frame):
         """
-        Deteksi marker ArUco yang cepat dan stabil.
-        Menyaring ID acak (> 9) agar bayangan atau pantulan akrilik tidak memunculkan ghost marker.
+        Deteksi marker ArUco yang cepat, adaptif, dan tahan terhadap distorsi inframerah/ungu.
+        Menggabungkan pembacaan Green Channel (kebal banjir IR) dan CLAHE untuk kontras maksimal.
         """
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        corners, ids, _ = self.detector.detectMarkers(gray)
+        has_channels = len(frame.shape) == 3 and frame.shape[2] >= 3
+        # Saluran hijau (channel 1) paling tahan terhadap radiasi inframerah pada sensor NoIR / bohlam filamen
+        green = frame[:, :, 1] if has_channels else frame
+
+        corners, ids, _ = self.detector.detectMarkers(green)
         
-        results = []
+        detected_map = {}
         if ids is not None:
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
                 m_id = int(flat_ids[i])
                 if m_id in self.valid_ids:
-                    results.append((m_id, corners[i][0]))
-        else:
-            # Fallback ke CLAHE hanya jika sama sekali tidak ada marker yang terdeteksi
-            enhanced = self.clahe.apply(gray)
+                    detected_map[m_id] = corners[i][0]
+
+        # Jika belum semua komponen terdeteksi, coba bantu dengan CLAHE kontras tinggi
+        if len(detected_map) < len(self.valid_ids):
+            enhanced = self.clahe.apply(green)
             e_corners, e_ids, _ = self.detector.detectMarkers(enhanced)
             if e_ids is not None:
                 e_flat_ids = np.ravel(e_ids)
                 for i in range(len(e_flat_ids)):
                     m_id = int(e_flat_ids[i])
-                    if m_id in self.valid_ids:
-                        results.append((m_id, e_corners[i][0]))
-        
-        return results
+                    if m_id in self.valid_ids and m_id not in detected_map:
+                        detected_map[m_id] = e_corners[i][0]
+
+        # Fallback terakhir ke grayscale standar jika green channel melewatkan marker
+        if len(detected_map) == 0 and has_channels:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            g_corners, g_ids, _ = self.detector.detectMarkers(gray)
+            if g_ids is not None:
+                g_flat_ids = np.ravel(g_ids)
+                for i in range(len(g_flat_ids)):
+                    m_id = int(g_flat_ids[i])
+                    if m_id in self.valid_ids and m_id not in detected_map:
+                        detected_map[m_id] = g_corners[i][0]
+
+        return list(detected_map.items())
 
     def undistort_corners(self, corners):
         """
