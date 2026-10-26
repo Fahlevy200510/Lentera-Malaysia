@@ -38,14 +38,19 @@ class PiCamera(BaseCamera):
         except ImportError:
             raise RuntimeError("Modul Picamera2 tidak ditemukan. Pastikan berjalan di Raspberry Pi.")
         
+        import time
         self.picam2 = Picamera2()
-        config = self.picam2.create_video_configuration({"size": resolution})
+        config = self.picam2.create_video_configuration(main={"size": resolution, "format": "BGR888"})
         self.picam2.configure(config)
         self.picam2.start()
+        time.sleep(1.0)  # Beri waktu bagi sensor AEC/AWB untuk konvergensi pencahayaan alami
 
     def get_frame(self):
-        # Mengembalikan frame numpy BGR/RGB tergantung picamera2
-        return self.picam2.capture_array()
+        # Mengembalikan frame numpy BGR 3-channel murni untuk OpenCV
+        frame = self.picam2.capture_array()
+        if frame is not None and len(frame.shape) == 3 and frame.shape[2] == 4:
+            return frame[:, :, :3]  # Pangkas alpha/padding jika ada XBGR
+        return frame
 
     def close(self):
         self.picam2.stop()
