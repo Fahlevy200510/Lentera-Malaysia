@@ -21,6 +21,8 @@ import {
   ArrowRight,
   Hand,
   Lightbulb,
+  Bot,
+  RefreshCw,
 } from "lucide-react";
 import {
   completeModule,
@@ -93,44 +95,103 @@ const RECOGNITION_STEPS: StepDef[] = [
   },
 ];
 
-const QUIZ_STEPS: StepDef[] = [
+// Bank Kuis Taktil Lengkap untuk 7 Komponen Fisik yang Terdaftar di LENTERA
+const ALL_REGISTERED_QUIZ_BANK: {
+  title: string;
+  question: string;
+  component: string;
+  hint: string;
+  explanation: string;
+}[] = [
   {
-    instruction: "Tebak di B3: Sumber Energi Listrik",
-    voice: "Kuis Taktil dimulai! Pertanyaan pertama: Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik? Raba dan letakkan balok jawabanmu di kotak B3, yaitu kolom B baris ke-3 di sisi kiri papan.",
-    targetCells: { "B3": "battery" },
-    expectedComponent: "battery",
-    validator: (cells) => Boolean(cells["B3"] && cells["B3"].component === "battery"),
-    hint: "Cari balok yang memiliki simbol timbul plus dan minus di kedua ujungnya, lalu letakkan di kotak B3 di sisi kiri papan.",
-    explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi listrik yang menghasilkan tegangan untuk mendorong arus.",
+    title: "Sumber Energi Listrik",
+    question: "Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik?",
+    component: "battery",
+    hint: "Cari balok yang memiliki simbol timbul tanda tambah (+) dan minus (-) di kedua ujungnya.",
+    explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi utama yang menghasilkan tegangan untuk mendorong arus.",
   },
   {
-    instruction: "Tebak di D3: Pengubah Listrik Menjadi Cahaya",
-    voice: "Pertanyaan kedua: Komponen manakah yang berfungsi mengubah energi listrik menjadi energi cahaya? Raba dan letakkan balok jawabanmu di kotak D3, yaitu kolom D baris ke-3 di sisi kanan papan.",
-    targetCells: { "D3": "lamp" },
-    expectedComponent: "lamp",
-    validator: (cells) => Boolean(cells["D3"] && cells["D3"].component === "lamp"),
-    hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya, lalu letakkan di kotak D3 di sisi kanan papan.",
-    explanation: "Luar biasa! Benar sekali, itu adalah Lampu! Lampu berperan sebagai beban yang bersinar terang saat dialiri arus listrik.",
+    title: "Pengubah Listrik Menjadi Cahaya",
+    question: "Komponen manakah yang berfungsi sebagai beban untuk mengubah energi listrik menjadi energi cahaya?",
+    component: "lamp",
+    hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya serta simbol tanda plus dan minus timbul di sisinya.",
+    explanation: "Luar biasa! Benar sekali, itu adalah Lampu LED yang bersinar terang saat dialiri arus listrik tertutup.",
   },
   {
-    instruction: "Tebak di C4: Pengendali Aliran Listrik",
-    voice: "Pertanyaan ketiga: Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik? Raba dan letakkan balok jawabanmu di kotak C4, yaitu kolom tengah C baris ke-4 di bawah.",
-    targetCells: { "C4": "switch" },
-    expectedComponent: "switch",
-    validator: (cells) => Boolean(cells["C4"] && cells["C4"].component === "switch"),
-    hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser, lalu letakkan di kotak C4 di tengah bawah.",
-    explanation: "Tepat sekali! Itu adalah Saklar. Saat saklar ditutup rangkaian terhubung, dan saat dibuka rangkaian terputus.",
+    title: "Pengendali Aliran Listrik",
+    question: "Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik dengan tuas mekanik?",
+    component: "switch",
+    hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser di bagian atasnya.",
+    explanation: "Tepat sekali! Itu adalah Saklar untuk menghubungkan dan memutuskan aliran listrik.",
   },
   {
-    instruction: "Tebak di C2: Kabel Cabang T Rangkaian Paralel",
-    voice: "Pertanyaan terakhir: Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel? Raba dan letakkan balok jawabanmu di kotak C2, yaitu kolom tengah C baris ke-2 di atas.",
-    targetCells: { "C2": "t_cable" },
-    expectedComponent: "t_cable",
-    validator: (cells) => Boolean(cells["C2"] && cells["C2"].component === "t_cable"),
-    hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T, lalu letakkan di kotak C2 di tengah atas.",
-    explanation: "Sempurna! Itu adalah Kabel Cabang T. Kabel T membagi arus listrik menjadi cabang-cabang mandiri untuk setiap lampu.",
+    title: "Penghantar Arus Jalur Lurus",
+    question: "Kabel manakah yang berfungsi mengalirkan arus listrik dalam satu garis lurus tanpa belokan?",
+    component: "straight_cable",
+    hint: "Cari balok yang memiliki alur garis timbul lurus melintang tembus dari satu sisi ke sisi seberangnya.",
+    explanation: "Bagus sekali! Itu adalah Kabel Lurus penghantar arus listrik searah tanpa belokan.",
+  },
+  {
+    title: "Pembelok Aliran Sudut 90 Derajat",
+    question: "Kabel manakah yang berfungsi membelokkan aliran listrik siku-siku di setiap sudut papan agar sirkuit bisa berputar?",
+    component: "l_cable",
+    hint: "Cari balok yang memiliki alur garis timbul siku-siku menyerupai huruf L.",
+    explanation: "Hebat! Itu adalah Kabel Sudut L yang membelokkan arus 90 derajat di sudut rangkaian.",
+  },
+  {
+    title: "Kabel Cabang T Rangkaian Paralel",
+    question: "Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel?",
+    component: "t_cable",
+    hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
+    explanation: "Sempurna! Itu adalah Kabel Cabang T untuk membagi arus listrik menjadi cabang-cabang mandiri.",
+  },
+  {
+    title: "Pembatas Kuat Arus (Resistor)",
+    question: "Komponen manakah yang berfungsi memberi hambatan listrik untuk membatasi besar arus yang mengalir?",
+    component: "resistor",
+    hint: "Cari balok yang memiliki permukaan alur garis gelombang timbul penahan arus.",
+    explanation: "Luar biasa! Itu adalah Resistor yang menahan laju arus listrik agar komponen lain tetap aman.",
   },
 ];
+
+// Generator Kuis Dinamis: Memilih 4 pertanyaan acak dari 7 komponen fisik terdaftar
+function createDynamicQuizSteps(shuffle = false): StepDef[] {
+  const targetSlots = [
+    { cell: "B3", desc: "kotak B3 di sisi kiri papan" },
+    { cell: "D3", desc: "kotak D3 di sisi kanan papan" },
+    { cell: "C4", desc: "kotak C4 di tengah bawah papan" },
+    { cell: "C2", desc: "kotak C2 di tengah atas papan" },
+  ];
+
+  let pool = [...ALL_REGISTERED_QUIZ_BANK];
+  if (shuffle) {
+    pool = pool.sort(() => Math.random() - 0.5);
+  } else {
+    // Susunan default standar (Baterai, Lampu, Saklar, Kabel T)
+    const defaults = ["battery", "lamp", "switch", "t_cable"];
+    pool = pool.filter((p) => defaults.includes(p.component));
+  }
+
+  const selected = pool.slice(0, 4);
+  const ordinals = ["pertama", "kedua", "ketiga", "terakhir"];
+
+  return selected.map((item, idx) => {
+    const slot = targetSlots[idx];
+    const ord = ordinals[idx];
+    return {
+      instruction: `Tebak di ${slot.cell}: ${item.title}`,
+      voice: `Kuis Taktil! Pertanyaan ${ord}: ${item.question} Raba dan letakkan balok jawabanmu di ${slot.desc}.`,
+      targetCells: { [slot.cell]: item.component },
+      expectedComponent: item.component,
+      validator: (cells: Record<string, any>) =>
+        Boolean(cells[slot.cell] && cells[slot.cell].component === item.component),
+      hint: `${item.hint} Lalu letakkan di ${slot.desc}.`,
+      explanation: item.explanation,
+    };
+  });
+}
+
+const QUIZ_STEPS: StepDef[] = createDynamicQuizSteps(false);
 
 const SERIES_STEPS: StepDef[] = [
   {
@@ -411,13 +472,15 @@ const COMPONENT_TACTILE_HINT: Record<string, string> = {
   t_cable: "memiliki alur timbul bercabang tiga seperti huruf T",
 };
 
-const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" | "parallel" | "troubleshoot"; title: string }> = {
+const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" | "parallel" | "troubleshoot" | "free_exploration"; title: string }> = {
   recognition: { mode: "quiz", title: "Kuis Taktil" },
   quiz: { mode: "series", title: "Rangkaian Seri" },
   series: { mode: "parallel", title: "Rangkaian Paralel" },
   adaptive_series: { mode: "parallel", title: "Rangkaian Paralel" },
   parallel: { mode: "troubleshoot", title: "Tantangan Detektif Sirkuit" },
   adaptive_parallel: { mode: "troubleshoot", title: "Tantangan Detektif Sirkuit" },
+  troubleshoot: { mode: "free_exploration", title: "Mode Eksplorasi Bebas" },
+  free_exploration: { mode: "recognition", title: "Pengenalan Komponen" },
 };
 
 type GuideMode =
@@ -428,7 +491,8 @@ type GuideMode =
   | "parallel"
   | "adaptive_series"
   | "adaptive_parallel"
-  | "troubleshoot";
+  | "troubleshoot"
+  | "free_exploration";
 
 /* ---------------------------------------------------------------- Component */
 export default function VoiceGuide() {
@@ -441,6 +505,14 @@ export default function VoiceGuide() {
   const [stepCompleted, setStepCompleted] = useState(false);
   const [checkpointPhase, setCheckpointPhase] = useState<"idle" | "waiting_clear" | "waiting_choice" | "confirmed">("idle");
   const [boardBlockCount, setBoardBlockCount] = useState<number>(0);
+  const [quizSteps, setQuizSteps] = useState<StepDef[]>(() => QUIZ_STEPS);
+  const [aiAdvisorText, setAiAdvisorText] = useState<string | null>(null);
+  const [aiAdvisorEngine, setAiAdvisorEngine] = useState<string | null>(null);
+  const [isAILoading, setIsAILoading] = useState<boolean>(false);
+  const lastAITimeRef = useRef<number>(0);
+  const lastEvaluatedCellsRef = useRef<string>("");
+  const freeExplorationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestStatusRef = useRef<string>("open");
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -523,7 +595,7 @@ export default function VoiceGuide() {
     mode === "recognition"
       ? RECOGNITION_STEPS
       : mode === "quiz"
-      ? QUIZ_STEPS
+      ? quizSteps
       : mode === "series"
       ? SERIES_STEPS
       : mode === "parallel"
@@ -602,6 +674,70 @@ export default function VoiceGuide() {
     isSpeakingRef.current = false;
     setIsSpeaking(false);
   }, []);
+
+  const handleShuffleQuiz = useCallback(() => {
+    const newSteps = createDynamicQuizSteps(true);
+    setQuizSteps(newSteps);
+    setCurrentStep(0);
+    setStepCompleted(false);
+    setCompletedCells(new Set());
+    playEarcon("step");
+    speak(
+      `Soal kuis baru telah diacak dari 7 komponen terdaftar! Mari mulai dengan pertanyaan pertama: ${newSteps[0].voice}`
+    );
+  }, [speak]);
+
+  const triggerAITutor = useCallback(
+    async (cells: Record<string, any>, status: string, isManual = false) => {
+      if (isAILoading) return;
+      const now = Date.now();
+      if (!isManual && now - lastAITimeRef.current < 16000) return;
+      if (!isManual && (isSpeakingRef.current || (window as any).__lenteraSpeaking)) return;
+
+      const placedEntries = Object.entries(cells).filter(([_, v]) => v && !isStudentToken(v));
+      if (placedEntries.length < 2 && !isManual) return;
+
+      lastAITimeRef.current = now;
+      setIsAILoading(true);
+      playEarcon("clue");
+
+      try {
+        const activeStudent = getActiveStudent();
+        const sName = activeStudent?.name || "Siswa";
+        const placedSummary = placedEntries
+          .map(([pos, v]) => `${COMPONENT_LABEL[(v as any).component] || (v as any).component} di sel ${pos}`)
+          .join(", ");
+
+        const res = await fetch("/api/tutor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "exploration",
+            message: `Siswa bernama ${sName} sedang merakit rangkaian bebas di lab. Komponen terpasang saat ini: ${placedSummary}. Status sirkuit: ${status}. Berikan bimbingan taktil singkat 2 kalimat yang ramah dan memotivasi untuk menyambungkan rangkaian tertutup.`,
+            circuitState: {
+              cells,
+              status,
+              placedCount: placedEntries.length,
+            },
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.text) {
+            setAiAdvisorText(data.text);
+            setAiAdvisorEngine(data.engine || "Groq AI");
+            speak(data.text);
+          }
+        }
+      } catch (err) {
+        console.error("AI live tutor error:", err);
+      } finally {
+        setIsAILoading(false);
+      }
+    },
+    [isAILoading, speak]
+  );
 
   // Checkpoint Handler: saat panduan selesai, pandu pembersihan papan dan pilihan taktil A1 - E1
   useEffect(() => {
@@ -820,6 +956,47 @@ export default function VoiceGuide() {
               }
             }
           }
+        }
+        return;
+      }
+
+      // =========================================================================
+      // KHUSUS MODE EKSPLORASI BEBAS (AUTONOMOUS CONTEXT-AWARE AI LIVE TUTOR)
+      // =========================================================================
+      if (mode === "free_exploration") {
+        latestStatusRef.current = detail?.status || "open";
+
+        // 1. Peringatan darurat korsleting (prioritas keamanan tertinggi)
+        if (detail?.status === "short_circuit") {
+          const now = Date.now();
+          if (now - lastShortCircuitRef.current > 8000) {
+            lastShortCircuitRef.current = now;
+            playEarcon("warning");
+            speak("Peringatan korsleting arus pendek! Arus listrik mengalir tanpa hambatan beban. Segera lepaskan salah satu kabel atau pasang lampu agar aman!");
+          }
+          return;
+        }
+
+        // 2. Apresiasi saat seluruh loop rangkaian berhasil menyala
+        if (detail?.isComplete || detail?.status === "success") {
+          if (!hasTriggeredSuccessEarconRef.current) {
+            hasTriggeredSuccessEarconRef.current = true;
+            playEarcon("victory");
+            speak("Luar biasa! Rangkaian bebasmu berhasil menyala sempurna! Arus listrik mengalir lancar ke seluruh lampu!");
+          }
+          return;
+        } else {
+          hasTriggeredSuccessEarconRef.current = false;
+        }
+
+        // 3. Jika rangkaian belum menyala dan ada >= 2 balok, jadwalkan pengamatan AI Live Tutor saat papan stabil 3.5s
+        if (placedCount >= 2) {
+          if (freeExplorationTimerRef.current) {
+            clearTimeout(freeExplorationTimerRef.current);
+          }
+          freeExplorationTimerRef.current = setTimeout(() => {
+            triggerAITutor(cells, detail?.status || "open");
+          }, 3500);
         }
         return;
       }
@@ -1382,6 +1559,32 @@ export default function VoiceGuide() {
 
   const startGuide = (guideMode: GuideMode) => {
     if (guideMode === "idle") return;
+
+    if (guideMode === "free_exploration") {
+      stopSpeaking();
+      playEarcon("click");
+      if (freeExplorationTimerRef.current) {
+        clearTimeout(freeExplorationTimerRef.current);
+        freeExplorationTimerRef.current = null;
+      }
+      setAiAdvisorText(null);
+      setAiAdvisorEngine(null);
+      setIsAILoading(false);
+      lastAITimeRef.current = 0;
+      lastEvaluatedCellsRef.current = "";
+      setMode("free_exploration");
+      setCurrentStep(0);
+      setStepCompleted(false);
+      setCompletedCells(new Set());
+      setCheckpointPhase("idle");
+      setBoardBlockCount(0);
+      setIsExpanded(true);
+      speak(
+        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu. AI Live Tutor akan otomatis mengamati dan menyapamu saat sirkuitmu membutuhkan bantuan."
+      );
+      return;
+    }
+
     const currentProgress = getStudentProgress();
     if (!currentProgress.modules.component_recognition && guideMode !== "recognition") {
       playEarcon("warning");
@@ -1426,7 +1629,7 @@ export default function VoiceGuide() {
       const targetMode = (e as CustomEvent).detail;
       if (
         targetMode &&
-        ["recognition", "quiz", "series", "parallel", "adaptive_series", "adaptive_parallel", "troubleshoot"].includes(targetMode)
+        ["recognition", "quiz", "series", "parallel", "adaptive_series", "adaptive_parallel", "troubleshoot", "free_exploration"].includes(targetMode)
       ) {
         startGuide(targetMode);
       }
@@ -1437,6 +1640,15 @@ export default function VoiceGuide() {
 
   const resetGuide = () => {
     stopSpeaking();
+    if (freeExplorationTimerRef.current) {
+      clearTimeout(freeExplorationTimerRef.current);
+      freeExplorationTimerRef.current = null;
+    }
+    setAiAdvisorText(null);
+    setAiAdvisorEngine(null);
+    setIsAILoading(false);
+    lastAITimeRef.current = 0;
+    lastEvaluatedCellsRef.current = "";
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     if (quizClearTimerRef.current) {
       clearTimeout(quizClearTimerRef.current);
@@ -1825,6 +2037,39 @@ export default function VoiceGuide() {
             );
           })}
         </div>
+
+        {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-indigo-500/15 p-3.5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/25 shrink-0">
+                <Bot className="h-5 w-5 animate-pulse" />
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <h4 className="font-heading text-xs sm:text-sm font-extrabold text-slate-900">
+                    Mode Eksplorasi Bebas (Lab Terbuka)
+                  </h4>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9.5px] font-extrabold text-emerald-800">
+                    <Sparkles className="h-2.5 w-2.5 text-emerald-600" />
+                    <span>Didukung Groq AI Tutor</span>
+                  </span>
+                </div>
+                <p className="text-[11.5px] text-slate-600 leading-snug">
+                  Rakit rangkaian sesukamu tanpa terikat urutan langkah. AI Live Tutor otomatis menganalisis dan membimbing saat sirkuitmu belum menyala.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => startGuide("free_exploration")}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-bold text-white shadow-sm shadow-emerald-600/30 hover:from-emerald-700 hover:to-teal-700 active:scale-95 transition-all shrink-0 self-end sm:self-auto"
+            >
+              <Play className="h-3.5 w-3.5 fill-white text-white" />
+              <span>Mulai Eksplorasi</span>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1832,7 +2077,9 @@ export default function VoiceGuide() {
   /* ---------------------------------------------------------------- Active Guide */
   const progressPercent = isFinished ? 100 : (currentStep / totalSteps) * 100;
   const headerBg =
-    mode === "recognition"
+    mode === "free_exploration"
+      ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600"
+      : mode === "recognition"
       ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600"
       : mode === "quiz"
       ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600"
@@ -1843,7 +2090,9 @@ export default function VoiceGuide() {
       : "bg-gradient-to-r from-sky-500 to-cyan-600";
 
   const progressBg =
-    mode === "recognition"
+    mode === "free_exploration"
+      ? "bg-emerald-500"
+      : mode === "recognition"
       ? "bg-amber-500"
       : mode === "quiz"
       ? "bg-indigo-500"
@@ -1854,7 +2103,9 @@ export default function VoiceGuide() {
       : "bg-sky-500";
 
   const guideTitle =
-    mode === "recognition"
+    mode === "free_exploration"
+      ? "Eksplorasi Bebas • AI Live Tutor"
+      : mode === "recognition"
       ? "Pengenalan Blok Komponen"
       : mode === "quiz"
       ? "Kuis Tebak Komponen Taktil"
@@ -1866,6 +2117,8 @@ export default function VoiceGuide() {
 
   const stepSubtitle = isFinished
     ? "Selesai!"
+    : mode === "free_exploration"
+    ? `${boardBlockCount} Balok Terdeteksi`
     : mode === "recognition"
     ? `Komponen ${currentStep + 1} dari ${totalSteps}`
     : mode === "quiz"
@@ -2044,6 +2297,102 @@ export default function VoiceGuide() {
                 </div>
               )}
             </div>
+          ) : mode === "free_exploration" ? (
+            /* =========================================================================
+               PANEL MODE EKSPLORASI BEBAS DENGAN AI LIVE TUTOR (AUTONOMOUS)
+               ========================================================================= */
+            <div className="space-y-3">
+              <div className="rounded-2xl border-2 border-emerald-400/80 bg-gradient-to-br from-emerald-50/90 via-teal-50/60 to-indigo-50/50 p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-2 border-b border-emerald-200/60 pb-3 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm shadow-emerald-600/30">
+                      <Bot className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-slate-900 leading-tight">
+                        Eksplorasi Bebas • AI Live Tutor
+                      </h4>
+                      <p className="text-[10.5px] text-emerald-800 font-semibold">
+                        Kamera mengamati papan fisik & menganalisis secara otomatis
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Live Aktif
+                  </span>
+                </div>
+
+                {/* Status Balok */}
+                <div className="flex items-center justify-between gap-2 text-xs text-slate-600 bg-white/80 rounded-xl px-3 py-2 border border-emerald-100 mb-3">
+                  <span className="font-bold flex items-center gap-1.5 text-slate-800">
+                    <Zap className="h-3.5 w-3.5 text-amber-500" /> Balok di Papan:
+                  </span>
+                  <span className="font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                    {boardBlockCount} balok terpasang
+                  </span>
+                </div>
+
+                {/* Kotak Bimbingan AI Live Tutor */}
+                <div className="rounded-xl bg-white p-3.5 shadow-2xs border border-emerald-200/80">
+                  <div className="flex items-center justify-between gap-2 text-xs mb-2">
+                    <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-600" /> Bimbingan Taktil Terkini
+                    </span>
+                    {aiAdvisorEngine && (
+                      <span className="text-[9.5px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                        {aiAdvisorEngine}
+                      </span>
+                    )}
+                  </div>
+
+                  {isAILoading ? (
+                    <div className="py-2.5 text-xs font-bold text-indigo-600 flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
+                      <span>AI Tutor sedang mengamati susunan balok di papanmu...</span>
+                    </div>
+                  ) : aiAdvisorText ? (
+                    <div className="space-y-2.5">
+                      <p className="text-xs leading-relaxed text-slate-800 font-medium bg-slate-50/80 p-2.5 rounded-lg border border-slate-100">
+                        "{aiAdvisorText}"
+                      </p>
+                      <button
+                        onClick={() => speak(aiAdvisorText)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 border border-indigo-200 px-3 py-1.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 transition-colors shadow-2xs"
+                      >
+                        <Volume2 className="h-3.5 w-3.5" /> Dengarkan Ulang Bimbingan AI
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Silakan rakit balok sirkuit sesukamu di papan fisik. Jika rangkaian belum tersambung dan kamu berhenti sejenak, AI Tutor akan otomatis bersuara membimbing rabaan tanganmu.
+                    </p>
+                  )}
+                </div>
+
+                {/* Tombol Aksi Bawah */}
+                <div className="flex items-center justify-between gap-2 pt-2">
+                  <button
+                    onClick={resetGuide}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" /> Menu Utama
+                  </button>
+                  <button
+                    onClick={() => triggerAITutor(latestCellsRef.current, latestStatusRef.current, true)}
+                    disabled={isAILoading}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:from-emerald-700 hover:to-indigo-700 disabled:opacity-50 transition-colors shadow-2xs"
+                    title="Minta evaluasi bimbingan AI Tutor saat ini juga"
+                  >
+                    {isAILoading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Bot className="h-3 w-3" />}
+                    {isAILoading ? "Menganalisis..." : "Minta Bimbingan AI"}
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <>
               {/* Current Instruction */}
@@ -2062,15 +2411,29 @@ export default function VoiceGuide() {
                     : "border-sky-200 bg-sky-50/50"
                 }`}
               >
-                <div className="flex items-start gap-2">
-                  {stepCompleted && (
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500 mt-1" />
-                  )}
-                  <div>
-                    <p className="text-sm font-bold text-cs-text leading-6">
-                      {step?.instruction}
-                    </p>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2">
+                    {stepCompleted && (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500 mt-1" />
+                    )}
+                    <div>
+                      <p className="text-sm font-bold text-cs-text leading-6">
+                        {step?.instruction}
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Tombol Acak Soal Kuis Baru jika sedang di Mode Kuis */}
+                  {mode === "quiz" && (
+                    <button
+                      onClick={handleShuffleQuiz}
+                      className="inline-flex items-center gap-1 rounded-lg bg-indigo-100/80 hover:bg-indigo-200 border border-indigo-200 px-2 py-1 text-[10px] font-bold text-indigo-700 transition-colors shrink-0 shadow-2xs"
+                      title="Acak pertanyaan kuis baru dari 7 komponen fisik terdaftar"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      <span>Acak Kuis Baru</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Target cells visual */}
