@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
-import { getStudentProgress, type StudentProgress } from "@/utils/progress";
+import { getStudentProgress, getActiveStudent, type StudentProgress } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { playEarcon } from "@/utils/soundEffects";
+import { getActiveLenteraEndpoint, resolveEndpoints } from "@/components/aruco/ArUcoDetector";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
   Battery, Cable, Lightbulb, ToggleRight, Bell, ChevronRight, Play,
@@ -309,14 +312,10 @@ function StudentHome() {
 
   const startLesson = () => setLessonStarted(true);
   const readLesson = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(
-      normalizeIndonesianPhonetics(`Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`)
-    );
-    u.lang = "id-ID";
-    u.rate = 0.94;
-    window.speechSynthesis.speak(u);
+    speakNarration(`Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`, {
+      tag: "lesson-overview",
+      rate: 0.94,
+    });
   };
 
   return (
@@ -1859,6 +1858,22 @@ export default function CircuitSenseDashboard() {
           setView("home");
           setAuthed(true);
         }
+      } else {
+        const activeStudent = getActiveStudent();
+        if (activeStudent) {
+          setName(activeStudent.name);
+          setRole("student");
+          setView("home");
+          setAuthed(true);
+          localStorage.setItem(
+            "lentera-session",
+            JSON.stringify({
+              name: activeStudent.name,
+              role: "student",
+              grade: activeStudent.grade,
+            })
+          );
+        }
       }
     } catch {
       localStorage.removeItem("lentera-session");
@@ -1867,7 +1882,147 @@ export default function CircuitSenseDashboard() {
     }
   }, []);
 
+  // Narasi sambutan selamat datang di LENTERA Learn (Overview Progres Siswa)
+  useEffect(() => {
+    if (!authed) return;
+    const active = getActiveStudent();
+    const studentName = active?.name || name || "Siswa";
+
+    const overviewText = `Selamat datang di Dashboard LENTERA Learn, ${studentName}! Kamu berada di Kelas 11 SMA. Di sini kamu dapat meninjau capaian belajarmu, materi sirkuit, dan nilai. Untuk kembali merakit sirkuit di LENTERA Lab, cukup letakkan balok komponen apa saja di papan fisik. Atau letakkan kartu identitasmu di sel keluar E5 untuk keluar mengakhiri sesi.`;
+
+    const timer = setTimeout(() => {
+      speakNarration(overviewText, {
+        rate: 0.94,
+        pitch: 1.02,
+        tag: "dashboard-overview",
+      });
+    }, 700);
+
+    return () => {
+      clearTimeout(timer);
+      cancelSpeech();
+    };
+  }, [authed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tangible Board Navigation di LENTERA Learn
+  // - Balok komponen sirkuit (ID 1-7) -> kembali ke /aruco
+  // - Kartu identitas siswa di E5 -> logout ke /
+  useEffect(() => {
+    if (!authed) return;
+
+    let ws: WebSocket | null = null;
+    let isRedirecting = false;
+    let cancelled = false;
+    const mountTime = Date.now();
+    let ignoreUntilLift = true;
+
+    const CIRCUIT_COMPONENTS = new Set([
+      "battery", "lamp", "switch", "straight_cable", "l_cable", "t_cable", "resistor"
+    ]);
+
+    async function initDashboardWS() {
+      const endpoint = await getActiveLenteraEndpoint();
+      if (cancelled) return;
+
+      const { wsUrl } = resolveEndpoints(endpoint);
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          if (isRedirecting) return;
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === "grid_state" && data.cells) {
+              const cells = data.cells;
+              const placed = Object.values(cells).filter(Boolean) as Array<{
+                component?: string;
+                rotation?: number;
+                id?: number;
+              }>;
+
+              // Wajib tunggu kartu awal terangkat agar tidak memicu re-redirect instan
+              if (ignoreUntilLift) {
+                if (placed.length === 0) {
+                  ignoreUntilLift = false;
+                }
+                return;
+              }
+
+              // Tahan 2 detik awal sejak masuk dashboard
+              if (Date.now() - mountTime < 2000) return;
+
+              const cellE5 = cells["E5"] as { component?: string; id?: number } | undefined;
+              const isE5Student = Boolean(
+                cellE5 &&
+                (String(cellE5.component || "").startsWith("student_") || [35, 36, 37].includes(Number(cellE5.id)))
+              );
+
+              // A. Kartu identitas siswa di E5 -> Logout / Selesai Sesi
+              if (isE5Student) {
+                isRedirecting = true;
+                cancelSpeech();
+                playEarcon("clear");
+                const active = getActiveStudent();
+                const sName = active?.name || name || "Siswa";
+                localStorage.removeItem("lentera-session");
+                const navTimer = setTimeout(() => {
+                  window.location.href = "/";
+                }, 4500);
+                speakNarration(
+                  `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
+                  {
+                    onEnd: () => {
+                      clearTimeout(navTimer);
+                      window.location.href = "/";
+                    },
+                  }
+                );
+                return;
+              }
+
+              // B. Balok komponen sirkuit apa saja terdeteksi di papan -> Kembali ke LENTERA Lab (/aruco)
+              const hasCircuitBlock = placed.some((c) => {
+                const comp = String(c?.component || "");
+                const id = Number(c?.id);
+                return CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
+              });
+
+              if (hasCircuitBlock) {
+                isRedirecting = true;
+                cancelSpeech();
+                playEarcon("click");
+                const navTimer = setTimeout(() => {
+                  window.location.href = "/aruco";
+                }, 4500);
+                speakNarration(
+                  "Balok komponen terdeteksi di papan. Membuka kembali LENTERA Lab untuk melanjutkan perakitan sirkuit.",
+                  {
+                    onEnd: () => {
+                      clearTimeout(navTimer);
+                      window.location.href = "/aruco";
+                    },
+                  }
+                );
+                return;
+              }
+            }
+          } catch {}
+        };
+      } catch (err) {
+        console.warn("[Dashboard WS] Connection error:", err);
+      }
+    }
+
+    initDashboardWS();
+
+    return () => {
+      cancelled = true;
+      if (ws) ws.close();
+    };
+  }, [authed, name]);
+
   const logout = () => {
+    cancelSpeech();
     localStorage.removeItem("lentera-session");
     setAuthed(false);
     setName("");

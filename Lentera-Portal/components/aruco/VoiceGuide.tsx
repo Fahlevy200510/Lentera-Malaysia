@@ -33,6 +33,7 @@ import {
 } from "@/utils/progress";
 import { playEarcon } from "@/utils/soundEffects";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 
 /* ---------------------------------------------------------------- Types */
 type CellData = { component: string; rotation: number };
@@ -380,6 +381,25 @@ const TROUBLESHOOT_STEPS: StepDef[] = [
 const COMPONENT_LABEL: Record<string, string> = {
   battery: "baterai", straight_cable: "kabel lurus", l_cable: "kabel L", t_cable: "kabel T",
   lamp: "lampu", resistor: "resistor", switch: "saklar",
+  student_via: "kartu identitas Via", student_amira: "kartu identitas Amira", student_ajib: "kartu identitas Ajib",
+};
+
+const isStudentToken = (cell: any): boolean => {
+  if (!cell || typeof cell !== "object") return false;
+  const comp = String(cell.component || "");
+  const id = Number(cell.id);
+  return comp.startsWith("student_") || [35, 36, 37].includes(id);
+};
+
+const getStudentNameFromToken = (cell: any): string => {
+  if (!cell) return "Siswa";
+  const comp = String(cell.component || "");
+  const id = Number(cell.id);
+  if (comp === "student_via" || id === 35) return "Via";
+  if (comp === "student_amira" || id === 36) return "Amira";
+  if (comp === "student_ajib" || id === 37) return "Ajib";
+  const active = getActiveStudent();
+  return active?.name || "Siswa";
 };
 
 const COMPONENT_TACTILE_HINT: Record<string, string> = {
@@ -452,6 +472,7 @@ export default function VoiceGuide() {
   const recognitionPromptReadyRef = useRef<boolean>(false);
   const lastSpokenTextRef = useRef<string>("");
   const lastSpokenTimeRef = useRef<number>(0);
+  const isRedirectingRef = useRef<boolean>(false);
   const [studentProgress, setStudentProgress] = useState<StudentProgress>(DEFAULT_PROGRESS);
   const [activeStudentState, setActiveStudentState] = useState<StudentProfile>(PRESET_STUDENTS[0]);
   const [mounted, setMounted] = useState<boolean>(false);
@@ -547,7 +568,7 @@ export default function VoiceGuide() {
   }, [mode]);
 
   const speak = useCallback((text: string, onEnd?: () => void) => {
-    if (!synthRef.current || isMuted) {
+    if (isMuted || !mounted || isRedirectingRef.current) {
       if (onEnd) onEnd();
       return;
     }
@@ -561,58 +582,25 @@ export default function VoiceGuide() {
     lastSpokenTextRef.current = cleanText;
     lastSpokenTimeRef.current = now;
 
-    try {
-      if (synthRef.current.paused) {
-        synthRef.current.resume();
-      }
-      synthRef.current.cancel();
-    } catch {}
-    const spokenText = normalizeIndonesianPhonetics(cleanText);
-    const utterance = new SpeechSynthesisUtterance(spokenText);
-    const voices = synthRef.current.getVoices();
-    const idVoice = voices.find(
-      (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
-    );
-    if (idVoice) utterance.voice = idVoice;
-    utterance.lang = idVoice ? idVoice.lang : "id-ID";
-    utterance.rate = 0.92;
-    utterance.pitch = 1.05;
-    utterance.onstart = () => {
-      isSpeakingRef.current = true;
-      setIsSpeaking(true);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = true;
-    };
-    utterance.onend = () => {
-      isSpeakingRef.current = false;
-      setIsSpeaking(false);
-      if (typeof window !== "undefined") {
-        (window as any).__lenteraSpeaking = false;
-        (window as any).__lenteraActiveUtterance = null;
-      }
-      if (onEnd) onEnd();
-    };
-    utterance.onerror = () => {
-      isSpeakingRef.current = false;
-      setIsSpeaking(false);
-      if (typeof window !== "undefined") {
-        (window as any).__lenteraSpeaking = false;
-        (window as any).__lenteraActiveUtterance = null;
-      }
-      // PENTING: Selalu panggil onEnd saat error agar alur langkah tidak pernah terblokir / freeze
-      if (onEnd) onEnd();
-    };
-    utteranceRef.current = utterance;
-    if (typeof window !== "undefined") (window as any).__lenteraActiveUtterance = utterance;
-    synthRef.current.speak(utterance);
-  }, [isMuted]);
+    isSpeakingRef.current = true;
+    setIsSpeaking(true);
+
+    speakNarration(cleanText, {
+      rate: 0.92,
+      pitch: 1.05,
+      tag: "voice-guide",
+      onEnd: () => {
+        isSpeakingRef.current = false;
+        setIsSpeaking(false);
+        if (onEnd) onEnd();
+      },
+    });
+  }, [isMuted, mounted]);
 
   const stopSpeaking = useCallback(() => {
-    if (synthRef.current) {
-      synthRef.current.cancel();
-      isSpeakingRef.current = false;
-      setIsSpeaking(false);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = false;
-    }
+    cancelSpeech();
+    isSpeakingRef.current = false;
+    setIsSpeaking(false);
   }, []);
 
   // Checkpoint Handler: saat panduan selesai, pandu pembersihan papan dan pilihan taktil A1 - E1
@@ -675,6 +663,62 @@ export default function VoiceGuide() {
       const placedCount = Object.values(cells).filter(Boolean).length;
       setBoardBlockCount(placedCount);
 
+      // =========================================================================
+      // TANGIBLE NAVIGATION KARTU IDENTITAS SISWA (A1 -> Learn, E5 -> Selesai / Logout)
+      // Berlaku kapan saja saat kartu siswa diletakkan (setelah papan terangkat dari sesi sebelumnya)
+      // =========================================================================
+      if (
+        !isRedirectingRef.current &&
+        Date.now() - mountTimeRef.current >= 2000 &&
+        !ignoreIdleMenuUntilLiftRef.current
+      ) {
+        const cellA1 = cells["A1"];
+        const cellE5 = cells["E5"];
+
+        // 1. Kartu identitas siswa di sel A1 -> Pindah ke LENTERA Learn
+        if (isStudentToken(cellA1)) {
+          isRedirectingRef.current = true;
+          cancelSpeech();
+          playEarcon("click");
+          const sName = getStudentNameFromToken(cellA1);
+          const navTimer = setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 4500);
+          speakNarration(
+            `Kartu identitas ${sName} terdeteksi di sel A1. Membuka LENTERA Learn untuk melihat nilai, materi, dan progres belajarmu.`,
+            {
+              onEnd: () => {
+                clearTimeout(navTimer);
+                window.location.href = "/dashboard";
+              },
+            }
+          );
+          return;
+        }
+
+        // 2. Kartu identitas siswa di sel E5 -> Logout / Selesai Sesi
+        if (isStudentToken(cellE5)) {
+          isRedirectingRef.current = true;
+          cancelSpeech();
+          playEarcon("clear");
+          const sName = getStudentNameFromToken(cellE5);
+          localStorage.removeItem("lentera-session");
+          const navTimer = setTimeout(() => {
+            window.location.href = "/";
+          }, 4500);
+          speakNarration(
+            `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
+            {
+              onEnd: () => {
+                clearTimeout(navTimer);
+                window.location.href = "/";
+              },
+            }
+          );
+          return;
+        }
+      }
+
       // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1)
       if (mode === "idle") {
         if (idleMenuHandledRef.current) return;
@@ -705,6 +749,7 @@ export default function VoiceGuide() {
             const isRecognitionDone = Boolean(currentProgress.modules.component_recognition);
 
             if (cells["A1"]) {
+              if (isStudentToken(cells["A1"])) return;
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
@@ -846,7 +891,7 @@ export default function VoiceGuide() {
         if (checkpointPhase === "waiting_choice") {
           if (checkpointHandledRef.current) return;
 
-          if (cells["A1"] && targetNext) {
+          if (cells["A1"] && targetNext && !isStudentToken(cells["A1"])) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");

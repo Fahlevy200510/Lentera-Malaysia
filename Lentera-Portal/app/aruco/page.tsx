@@ -8,8 +8,9 @@ import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import StudentReportModal from "@/components/StudentReportModal";
-import { getStudentProgress } from "@/utils/progress";
+import { getStudentProgress, getActiveStudent } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 
 const wiringPoints = [
   {
@@ -59,72 +60,35 @@ export default function ArucoPage() {
   const speakLabIntro = useCallback(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     if ((window as any).__lenteraGuideMode && (window as any).__lenteraGuideMode !== "idle") return;
-    const synth = window.speechSynthesis;
-
-    if (synth.paused) synth.resume();
-    synth.cancel();
+    if ((window as any).__lenteraSpeaking) return;
 
     const progress = getStudentProgress();
     const hasLearnedComponents = Boolean(progress?.modules?.component_recognition);
+    const activeStudent = getActiveStudent();
+    const studentName = activeStudent?.name || "Siswa";
 
     const text = hasLearnedComponents
-      ? "Selamat datang kembali di LENTERA Lab! Papan siap digunakan. Sebelum mulai, silakan angkat terlebih dahulu balok komponen dari papan fisik agar papan bersih. Ada lima tahapan belajar yang bisa kamu pilih di baris atas papan: letakkan satu balok di kotak A1 untuk Pengenalan Taktil, di kotak B1 untuk Kuis Taktil, di kotak C1 untuk Rangkaian Seri, di kotak D1 untuk Rangkaian Paralel, atau di kotak E1 untuk Tantangan Detektif Sirkuit. Kamu juga bisa langsung merangkai di mana saja di papan untuk eksplorasi bebas."
-      : "Selamat datang di LENTERA Lab! Papan siap digunakan. Sebelum kita mulai, silakan angkat terlebih dahulu balok komponen yang terpasang di papan fisik agar papan bersih dan siap digunakan. Setelah itu, mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.";
+      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di sel A1 hingga E1 untuk memilih tahapan modul belajar. Kamu juga bisa meletakkan kartu identitasmu di sel A1 untuk membuka LENTERA Learn, atau di sel E5 untuk keluar mengakhiri sesi.`
+      : `Selamat datang di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan kartu identitasmu di sel A1 untuk membuka LENTERA Learn, atau di sel E5 untuk keluar. Sebelum kita mulai, silakan angkat balok yang terpasang di papan fisik agar bersih, setelah itu mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.`;
 
-    const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
-    utteranceRef.current = utterance;
-    if (typeof window !== "undefined") (window as any).__lenteraActiveUtterance = utterance;
+    speakingRef.current = true;
+    setSpeaking(true);
 
-    const voices = synth.getVoices();
-    const idVoice = voices.find(
-      (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
-    );
-    if (idVoice) utterance.voice = idVoice;
-    utterance.lang = idVoice ? idVoice.lang : "id-ID";
-    utterance.rate = 0.94;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      speakingRef.current = true;
-      setSpeaking(true);
-      if (typeof window !== "undefined") (window as any).__lenteraSpeaking = true;
-    };
-    utterance.onend = () => {
-      speakingRef.current = false;
-      setSpeaking(false);
-      if (typeof window !== "undefined") {
-        (window as any).__lenteraSpeaking = false;
-        (window as any).__lenteraActiveUtterance = null;
-      }
-      utteranceRef.current = null;
-
-      // Jika siswa belum menyelesaikan Pengenalan Bentuk Taktil, otomatis lanjut ke panduan modul Tahap 1
-      if (!hasLearnedComponents && typeof window !== "undefined") {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent("lentera-start-guide", { detail: "recognition" }));
-        }, 600);
-      }
-    };
-    utterance.onerror = (err) => {
-      console.warn("Speech synthesis notice in Lab:", err);
-      speakingRef.current = false;
-      setSpeaking(false);
-      if (typeof window !== "undefined") {
-        (window as any).__lenteraSpeaking = false;
-        (window as any).__lenteraActiveUtterance = null;
-      }
-      utteranceRef.current = null;
-    };
-
-    // Beri jeda 250ms agar engine speech browser selesai melepaskan audio dari halaman landing page sebelumnya
-    setTimeout(() => {
-      try {
-        if (synth.paused) synth.resume();
-        synth.speak(utterance);
-      } catch (e) {
-        console.error("Gagal menjalankan speakLabIntro():", e);
-      }
-    }, 250);
+    speakNarration(text, {
+      rate: 0.94,
+      pitch: 1.0,
+      tag: "lab-intro",
+      onEnd: () => {
+        speakingRef.current = false;
+        setSpeaking(false);
+        // Jika siswa belum menyelesaikan Pengenalan Bentuk Taktil, otomatis lanjut ke panduan modul Tahap 1
+        if (!hasLearnedComponents && typeof window !== "undefined") {
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent("lentera-start-guide", { detail: "recognition" }));
+          }, 600);
+        }
+      },
+    });
   }, []);
 
   // Putar narasi sambutan & arahan saat masuk ke Lentera Lab:
@@ -134,13 +98,13 @@ export default function ArucoPage() {
   useEffect(() => {
     hasSpokenLabIntroRef.current = false;
 
-    // 1. Autoplay otomatis dengan jeda 750ms agar transisi audio dari halaman sebelumnya tuntas
+    // 1. Autoplay otomatis dengan jeda 800ms agar transisi audio dari halaman sebelumnya tuntas
     const timer = setTimeout(() => {
       if (!hasSpokenLabIntroRef.current && !speakingRef.current) {
         hasSpokenLabIntroRef.current = true;
         speakLabIntro();
       }
-    }, 750);
+    }, 800);
 
     // 2. Fallback sentuhan/klik pertama di mana saja jika browser menahan autoplay
     const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {
@@ -161,11 +125,8 @@ export default function ArucoPage() {
       clearTimeout(timer);
       window.removeEventListener("click", handleFirstInteraction);
       window.removeEventListener("touchstart", handleFirstInteraction);
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        speakingRef.current = false;
-        (window as any).__lenteraSpeaking = false;
-      }
+      cancelSpeech();
+      speakingRef.current = false;
     };
   }, [speakLabIntro]);
 

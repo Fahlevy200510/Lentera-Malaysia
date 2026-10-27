@@ -12,6 +12,7 @@ import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import StudentReportModal from "@/components/StudentReportModal";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { getActiveStudent, setActiveStudent } from "@/utils/progress";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 
 const TYPEWRITER_WORDS = [
   "sentuhan dan suara.",
@@ -201,60 +202,29 @@ export default function PortalHome() {
 
   const readIntro = useCallback(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    const synth = window.speechSynthesis;
 
-    if (speakingRef.current || synth.speaking) {
-      synth.cancel();
+    if (speakingRef.current || (window as any).__lenteraSpeaking) {
+      cancelSpeech();
       speakingRef.current = false;
       setSpeaking(false);
       return;
     }
 
-    if (synth.paused) {
-      synth.resume();
-    }
-    synth.cancel();
-
     const text =
       "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat meletakkan kartu identitas siswa di atas papan fisik, atau memilih tombol LENTERA Lab di layar. Selamat bereksplorasi!";
 
-    const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
-    utteranceRef.current = utterance; // Mencegah bug Chrome Garbage Collection
+    speakingRef.current = true;
+    setSpeaking(true);
 
-    const voices = synth.getVoices();
-    const idVoice = voices.find(
-      (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
-    );
-    if (idVoice) {
-      utterance.voice = idVoice;
-    }
-    utterance.lang = idVoice ? idVoice.lang : "id-ID";
-    utterance.rate = 0.94;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      speakingRef.current = true;
-      setSpeaking(true);
-    };
-    utterance.onend = () => {
-      speakingRef.current = false;
-      setSpeaking(false);
-      utteranceRef.current = null;
-    };
-    utterance.onerror = (err) => {
-      console.warn("Speech synthesis notice:", err);
-      speakingRef.current = false;
-      setSpeaking(false);
-      utteranceRef.current = null;
-    };
-
-    try {
-      synth.speak(utterance);
-      speakingRef.current = true;
-      setSpeaking(true);
-    } catch (e) {
-      console.error("Gagal menjalankan speak():", e);
-    }
+    speakNarration(text, {
+      rate: 0.94,
+      pitch: 1.0,
+      tag: "landing-intro",
+      onEnd: () => {
+        speakingRef.current = false;
+        setSpeaking(false);
+      },
+    });
   }, []);
 
   // Autoplay intro HANYA SEKALI pada sentuhan/klik pertama di area mana pun di landing page
@@ -370,6 +340,14 @@ export default function PortalHome() {
                     grade: detectedStudentMeta.grade,
                     avatar: detectedStudentMeta.avatar,
                   });
+                  localStorage.setItem(
+                    "lentera-session",
+                    JSON.stringify({
+                      name: detectedStudentMeta.name,
+                      role: "student",
+                      grade: detectedStudentMeta.grade,
+                    })
+                  );
                   speechText = `Selamat datang, ${detectedStudentMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedStudentCell}. Membuka LENTERA Lab.`;
                 } else {
                   // Fallback jika pengguna meletakkan komponen fisik sirkuit biasa
@@ -383,42 +361,16 @@ export default function PortalHome() {
                   router.push("/aruco");
                 };
 
-                if (typeof window !== "undefined" && "speechSynthesis" in window) {
-                  window.speechSynthesis.cancel();
-                  const notify = new SpeechSynthesisUtterance(
-                    normalizeIndonesianPhonetics(speechText)
-                  );
-                  notify.lang = "id-ID";
-                  const voices = window.speechSynthesis.getVoices();
-                  const idVoice = voices.find(
-                    (v) =>
-                      v.lang.toLowerCase().startsWith("id") ||
-                      v.name.toLowerCase().includes("indonesia")
-                  );
-                  if (idVoice) notify.voice = idVoice;
-                  notify.rate = 0.95;
-                  notify.pitch = 1.05;
-
-                  utteranceRef.current = notify;
-                  (window as any).__lenteraActiveUtterance = notify;
-
-                  let hasNavigated = false;
-                  const doNavigate = () => {
-                    if (hasNavigated) return;
-                    hasNavigated = true;
-                    setTimeout(() => {
-                      navigateToLab();
-                    }, 300);
-                  };
-
-                  notify.onend = doNavigate;
-                  notify.onerror = doNavigate;
-                  setTimeout(doNavigate, 4500); // Safety fallback jika speech engine macet
-
-                  window.speechSynthesis.speak(notify);
-                } else {
-                  navigateToLab();
-                }
+                const navTimer = setTimeout(navigateToLab, 4500);
+                speakNarration(speechText, {
+                  rate: 0.95,
+                  pitch: 1.05,
+                  tag: "landing-redirect",
+                  onEnd: () => {
+                    clearTimeout(navTimer);
+                    setTimeout(navigateToLab, 300);
+                  },
+                });
               }
             }
           } catch {}

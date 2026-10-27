@@ -9,6 +9,7 @@ import {
   resetStudentProgress, getStudentProgress, PRESET_STUDENTS, type StudentProfile
 } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
+import { speakNarration } from "@/utils/audioCoordinator";
 import StudentAvatarBadge from "@/components/StudentAvatarBadge";
 
 export default function StudentProfileSwitcher({ compact = false }: { compact?: boolean }) {
@@ -77,12 +78,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
     setIsOpen(false);
 
     // Audio pemberitahuan
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(`Siswa aktif: ${profile.name}`));
-      utterance.lang = "id-ID";
-      window.speechSynthesis.speak(utterance);
-    }
+    speakNarration(`Siswa aktif: ${profile.name}`, { tag: "student-switch" });
 
     setToast(`Siswa aktif diganti ke ${profile.name}`);
     setTimeout(() => setToast(null), 2500);
