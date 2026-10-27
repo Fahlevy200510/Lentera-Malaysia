@@ -298,3 +298,103 @@ export function completeModule(
   saveStudentProgress(updated, studentId);
   return updated;
 }
+
+export interface LearningNarration {
+  shortOverview: string;
+  fullReport: string;
+  skillsNarration: string;
+  modulesNarration: string;
+}
+
+export function buildStudentLearningNarration(
+  student: StudentProfile,
+  progress: StudentProgress
+): LearningNarration {
+  const name = student?.name || "Siswa";
+  const grade = student?.grade || "Kelas 11 SMA";
+
+  // Level & XP
+  const xp = progress.xp;
+  let levelTitle = "Level 1: Penjelajah";
+  if (xp >= 1000) {
+    levelTitle = "Level 3: Insinyur";
+  } else if (xp >= 500) {
+    levelTitle = "Level 2: Teknisi";
+  }
+  const xpPercent = Math.min(100, Math.round((xp / 1000) * 100));
+
+  // Modules
+  const modulesList = [
+    { key: "component_recognition", name: "Tahap 1, Pengenalan Bentuk Taktil Komponen", done: Boolean(progress.modules.component_recognition) },
+    { key: "component_quiz", name: "Tahap 2, Kuis Taktil", done: Boolean(progress.modules.component_quiz) },
+    { key: "series_circuit", name: "Tahap 3, Rangkaian Listrik Seri", done: Boolean(progress.modules.series_circuit) },
+    { key: "parallel_circuit", name: "Tahap 4, Rangkaian Listrik Paralel", done: Boolean(progress.modules.parallel_circuit) },
+    { key: "circuit_troubleshoot", name: "Tahap 5, Tantangan Detektif Sirkuit Mahir", done: Boolean(progress.modules.circuit_troubleshoot) },
+  ];
+
+  const completedModules = modulesList.filter((m) => m.done);
+  const uncompletedModules = modulesList.filter((m) => !m.done);
+  const completedCount = completedModules.length;
+
+  let modulesNarration = "";
+  if (completedCount === 0) {
+    modulesNarration = "Kamu belum menyelesaikan modul belajar. Mari kita mulai bersama dari Tahap 1, Pengenalan Bentuk Taktil Komponen di LENTERA Lab.";
+  } else {
+    const names = completedModules.map((m) => m.name).join(", ");
+    const nextName = uncompletedModules[0]?.name;
+    modulesNarration = `Kamu telah berhasil menuntaskan ${completedCount} dari 5 modul belajar, yaitu: ${names}. ${
+      nextName ? `Langkah berikutnya yang siap kamu pelajari adalah ${nextName}.` : "Hebat sekali, seluruh modul telah berhasil kamu selesaikan!"
+    }`;
+  }
+
+  // Skills
+  const skillEntries = [
+    { name: "Baterai", stars: progress.skills.battery },
+    { name: "Kabel", stars: progress.skills.cable },
+    { name: "Saklar", stars: progress.skills.switch },
+    { name: "Aliran Arus", stars: progress.skills.flow },
+    { name: "Rangkaian Seri", stars: progress.skills.series },
+    { name: "Rangkaian Paralel", stars: progress.skills.parallel },
+  ];
+
+  const topSkills = skillEntries.filter((s) => s.stars >= 4).map((s) => s.name);
+  let skillsNarration = `Penguasaan keterampilan komponenmu: Baterai ${progress.skills.battery} dari 5 bintang, Kabel ${progress.skills.cable} bintang, Saklar ${progress.skills.switch} bintang, Aliran Arus ${progress.skills.flow} bintang, Rangkaian Seri ${progress.skills.series} bintang, dan Rangkaian Paralel ${progress.skills.parallel} bintang.`;
+  if (topSkills.length > 0) {
+    skillsNarration += ` Kemampuan tertinggimu ada pada ${topSkills.join(" dan ")}, luar biasa!`;
+  }
+
+  // Achievements
+  let achievementsNarration = "";
+  if (progress.achievements.length === 0) {
+    achievementsNarration = "Kamu belum mengoleksi lencana. Selesaikan modul di lab untuk membuka lencana pertamamu.";
+  } else {
+    achievementsNarration = `Kamu telah mengoleksi ${progress.achievements.length} lencana prestasi, di antaranya: ${progress.achievements.join(", ")}.`;
+  }
+
+  // Focus Lesson Today
+  let lessonTitle = "Rangkaian Seri";
+  let lessonDesc = "Hubungkan baterai ke saklar dan lampu dalam satu lintasan tertutup searah.";
+  if (!progress.modules.component_recognition) {
+    lessonTitle = "Pengenalan Komponen";
+    lessonDesc = "Kenali bentuk taktil balok baterai, saklar, lampu, dan kabel di papan Lentera sebelum mulai merakit.";
+  } else if (!progress.modules.series_circuit) {
+    lessonTitle = "Rangkaian Seri";
+    lessonDesc = "Hubungkan baterai ke saklar dan lampu dalam satu lintasan tertutup searah.";
+  } else {
+    lessonTitle = "Rangkaian Paralel";
+    lessonDesc = "Gunakan kabel cabang Te untuk membagi aliran listrik ke dua lampu mandiri.";
+  }
+
+  // Short overview on enter
+  const shortOverview = `Selamat datang di Dashboard LENTERA Learn, ${name}! Kamu berada di ${grade}, berstatus ${levelTitle} dengan perolehan ${xp} XP. Pelajaran fokusmu hari ini adalah ${lessonTitle}. Letakkan balok di sel A1 untuk mendengarkan rincian lengkap capaian belajarmu, atau letakkan balok komponen di papan fisik untuk kembali merakit di LENTERA Lab. Letakkan kartu identitasmu di sel keluar E5 untuk mengakhiri sesi.`;
+
+  // Full comprehensive report
+  const fullReport = `Laporan data pembelajaran lengkap untuk ${name}, ${grade}. Pertama, ringkasan tingkatan: Kamu telah mengumpulkan ${xp} XP dan berada di ${levelTitle}, dengan progres ${xpPercent} persen menuju tingkatan berikutnya. Kedua, capaian modul: ${modulesNarration} Ketiga, peta penguasaan keterampilan: ${skillsNarration} Keempat, penghargaan dan pencapaian: ${achievementsNarration} Kelima, rekomendasi belajar hari ini adalah ${lessonTitle}: ${lessonDesc}. Tetap semangat belajar bersama LENTERA! Letakkan balok di papan untuk kembali merakit sirkuit di LENTERA Lab, atau letakkan kartu identitas di sel E5 untuk mengakhiri sesi.`;
+
+  return {
+    shortOverview,
+    fullReport,
+    skillsNarration,
+    modulesNarration,
+  };
+}

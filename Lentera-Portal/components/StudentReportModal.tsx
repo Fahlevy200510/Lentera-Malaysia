@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
-import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck } from "lucide-react";
-import { getActiveStudent, getStudentProgress, type StudentProfile, type StudentProgress } from "@/utils/progress";
+import React, { useState } from "react";
+import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck, Volume2, VolumeX } from "lucide-react";
+import { getActiveStudent, getStudentProgress, buildStudentLearningNarration, type StudentProfile, type StudentProgress } from "@/utils/progress";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { playEarcon } from "@/utils/soundEffects";
 import StudentAvatarBadge from "@/components/StudentAvatarBadge";
 
 interface StudentReportModalProps {
@@ -15,6 +17,25 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
 
   const student: StudentProfile = getActiveStudent();
   const progress: StudentProgress = getStudentProgress();
+
+  const [isSpeakingReport, setIsSpeakingReport] = useState(false);
+
+  const handleVoiceReport = () => {
+    if (isSpeakingReport) {
+      cancelSpeech();
+      setIsSpeakingReport(false);
+      return;
+    }
+    const nar = buildStudentLearningNarration(student, progress);
+    setIsSpeakingReport(true);
+    playEarcon("step");
+    speakNarration(nar.fullReport, {
+      tag: "modal-full-report",
+      rate: 0.94,
+      pitch: 1.02,
+      onEnd: () => setIsSpeakingReport(false),
+    });
+  };
 
   const handlePrint = () => {
     if (typeof window !== "undefined") {
@@ -168,13 +189,24 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={handleVoiceReport}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-violet-700 transition-colors"
+              title="Dengarkan seluruh isi laporan data pembelajaran"
+            >
+              {isSpeakingReport ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              {isSpeakingReport ? "Hentikan Suara" : "Dengarkan Laporan"}
+            </button>
+            <button
               onClick={handlePrint}
               className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-colors"
             >
               <Printer className="h-3.5 w-3.5" /> Cetak / PDF
             </button>
             <button
-              onClick={onClose}
+              onClick={() => {
+                cancelSpeech();
+                onClose();
+              }}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/80 hover:text-slate-600 transition-colors"
             >
               <X className="h-4 w-4" />

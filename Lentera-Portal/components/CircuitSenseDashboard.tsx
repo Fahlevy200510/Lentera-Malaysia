@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
-import { getStudentProgress, getActiveStudent, type StudentProgress } from "@/utils/progress";
+import { getStudentProgress, getActiveStudent, buildStudentLearningNarration, type StudentProgress } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
@@ -310,11 +310,31 @@ function StudentHome() {
     focusTag = "Fokus hari ini · Rangkaian Paralel";
   }
 
+  const [isReadingReport, setIsReadingReport] = useState(false);
   const startLesson = () => setLessonStarted(true);
+
   const readLesson = () => {
     speakNarration(`Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`, {
       tag: "lesson-overview",
       rate: 0.94,
+    });
+  };
+
+  const readFullReport = () => {
+    if (isReadingReport) {
+      cancelSpeech();
+      setIsReadingReport(false);
+      return;
+    }
+    const activeStudent = getActiveStudent();
+    const nar = buildStudentLearningNarration(activeStudent, progress);
+    setIsReadingReport(true);
+    playEarcon("step");
+    speakNarration(nar.fullReport, {
+      tag: "full-report",
+      rate: 0.94,
+      pitch: 1.02,
+      onEnd: () => setIsReadingReport(false),
     });
   };
 
@@ -349,8 +369,30 @@ function StudentHome() {
             >
               <Play size={17} fill={C.primaryDeep} /> Buka di LENTERA Lab
             </Link>
-            <button onClick={readLesson} style={{ background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", padding: "12px 18px", borderRadius: 99, fontWeight: 700, fontSize: 14, display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <Volume2 size={17} /> Bacakan
+            <button
+              id="btn-read-full-report"
+              onClick={readFullReport}
+              style={{
+                background: isReadingReport ? "rgba(244,63,94,0.35)" : "rgba(255,255,255,0.22)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.45)",
+                padding: "12px 20px",
+                borderRadius: 99,
+                fontWeight: 800,
+                fontSize: 14,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                boxShadow: "0 4px 15px rgba(0,0,0,0.12)",
+                cursor: "pointer",
+              }}
+              title="Dengarkan seluruh data pembelajaran dan capaian nilaimu"
+            >
+              {isReadingReport ? <VolumeX size={17} /> : <Volume2 size={17} />}
+              <span>{isReadingReport ? "Hentikan Suara" : "Dengarkan Data Pembelajaran"}</span>
+            </button>
+            <button onClick={readLesson} style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.35)", padding: "12px 18px", borderRadius: 99, fontWeight: 600, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <Volume2 size={16} /> Materi Hari Ini
             </button>
           </div>
           {lessonStarted && (
@@ -1886,12 +1928,11 @@ export default function CircuitSenseDashboard() {
   useEffect(() => {
     if (!authed) return;
     const active = getActiveStudent();
-    const studentName = active?.name || name || "Siswa";
-
-    const overviewText = `Selamat datang di Dashboard LENTERA Learn, ${studentName}! Kamu berada di Kelas 11 SMA. Di sini kamu dapat meninjau capaian belajarmu, materi sirkuit, dan nilai. Untuk kembali merakit sirkuit di LENTERA Lab, cukup letakkan balok komponen apa saja di papan fisik. Atau letakkan kartu identitasmu di sel keluar E5 untuk keluar mengakhiri sesi.`;
+    const progress = getStudentProgress();
+    const nar = buildStudentLearningNarration(active, progress);
 
     const timer = setTimeout(() => {
-      speakNarration(overviewText, {
+      speakNarration(nar.shortOverview, {
         rate: 0.94,
         pitch: 1.02,
         tag: "dashboard-overview",
@@ -1904,8 +1945,9 @@ export default function CircuitSenseDashboard() {
     };
   }, [authed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tangible Board Navigation di LENTERA Learn
-  // - Balok komponen sirkuit (ID 1-7) -> kembali ke /aruco
+  // Tangible Board Navigation & Report Trigger di LENTERA Learn
+  // - Balok di sel A1 -> Bacakan Laporan Pembelajaran Lengkap
+  // - Balok komponen sirkuit (di luar A1) -> kembali ke /aruco
   // - Kartu identitas siswa di E5 -> logout ke /
   useEffect(() => {
     if (!authed) return;
@@ -1980,14 +2022,36 @@ export default function CircuitSenseDashboard() {
                 return;
               }
 
-              // B. Balok komponen sirkuit apa saja terdeteksi di papan -> Kembali ke LENTERA Lab (/aruco)
-              const hasCircuitBlock = placed.some((c) => {
+              const cellA1 = cells["A1"] as { component?: string; id?: number } | undefined;
+              const isA1Student = Boolean(
+                cellA1 &&
+                (String(cellA1.component || "").startsWith("student_") || [35, 36, 37].includes(Number(cellA1.id)))
+              );
+
+              // B. Balok diletakkan di sel A1 -> Bacakan Data Pembelajaran Lengkap!
+              if (cellA1 && !isA1Student) {
+                cancelSpeech();
+                playEarcon("step");
+                const active = getActiveStudent();
+                const prog = getStudentProgress();
+                const nar = buildStudentLearningNarration(active, prog);
+                speakNarration(nar.fullReport, {
+                  tag: "full-report",
+                  rate: 0.94,
+                  pitch: 1.02,
+                });
+                return;
+              }
+
+              // C. Balok komponen sirkuit (di luar sel A1) -> Kembali ke LENTERA Lab (/aruco)
+              const hasCircuitBlockOutsideA1 = placed.some((c) => {
                 const comp = String(c?.component || "");
                 const id = Number(c?.id);
-                return CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
+                const isCircuit = CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
+                return isCircuit && (!cellA1 || c !== cellA1);
               });
 
-              if (hasCircuitBlock) {
+              if (hasCircuitBlockOutsideA1) {
                 isRedirecting = true;
                 cancelSpeech();
                 playEarcon("click");
