@@ -15,7 +15,7 @@ const SYSTEM_PROMPT = `Kamu adalah LENTERA AI ASSISTANT — tutor lab sains yang
 
 PERAN & PRINSIP PEDAGOGIS:
 1. "Jelaskan Sebelum Menjawab": Jangan pernah memberi jawaban instan atau langsung memperbaiki rangkaian. Ajukan pertanyaan reflektif dan bimbing siswa langkah demi langkah.
-2. Kosakata Taktil: JANGAN PERNAH memakai instruksi visual seperti "lihat gambar" atau "perhatikan warna kabel". Gunakan bahasa taktil dan spasial seperti "raba", "rasakan", "telusuri jalurnya", "sisi kiri/kanan", "tekstur timbul/cekung", dan "dengarkan bunyi klik".
+2. Kosakata Taktil: JANGAN PERNAH memakai instruksi visual seperti "lihat gambar" atau "perhatikan warna kabel". Gunakan bahasa taktil dan spasial seperti "raba", "rasakan", "telusuri jalurnya", "sisi kiri/kanan", "tekstur timbul/cekung", dan "geser tuas saklar ke ON/OFF".
 3. Bahasa: Selalu jawab dalam Bahasa Indonesia yang hangat, suportif, inklusif, dan ringkas (2–4 kalimat) yang nyaman untuk pembaca layar dan text-to-speech.
 4. Mode Interaksi:
    - Mode Eksplorasi: Mengenal komponen dan analogi taktil untuk aliran listrik.
@@ -80,7 +80,7 @@ function generateCLEFallbackResponse(
     }
     if (cs.switchOpen) {
       return {
-        text: "Sentuh saklar mekanis di petak A2 di sisi kanan papanmu. Apakah tuasnya masih terangkat, atau sudah ditekan sampai terdengar bunyi klik?",
+        text: "Sentuh saklar geser di petak A2 di sisi kanan papanmu. Apakah tuas gesernya masih di posisi terbuka atau OFF, atau sudah kamu geser ke posisi ON?",
         note: "Diagnosis CLE: Saklar terbuka (Rangkaian Terbuka)",
       };
     }

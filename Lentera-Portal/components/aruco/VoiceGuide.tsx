@@ -59,11 +59,11 @@ const RECOGNITION_STEPS: StepDef[] = [
     explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik dari kutub positif menuju kutub negatif melalui rangkaian tertutup.",
   },
   {
-    instruction: "Raba dan cari balok Saklar (tuas mekanik timbul), letakkan di sel C3.",
-    voice: "Komponen kedua adalah Saklar, pengendali aliran listrik. Raba balok yang memiliki tuas mekanik timbul di bagian atasnya yang bisa kamu klik atau geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
+    instruction: "Raba dan cari balok Saklar (tuas geser timbul), letakkan di sel C3.",
+    voice: "Komponen kedua adalah Saklar, pengendali aliran listrik. Raba balok yang memiliki tuas geser timbul di bagian atasnya yang bisa kamu geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
     targetCells: { "C3": "switch" },
-    hint: "Raba bagian atas balok: temukan tuas mekanik yang dapat diklik atau digeser untuk menyambung dan memutus aliran listrik.",
-    explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Saat tuas saklar ditutup, arus listrik mengalir. Saat tuas dibuka, aliran listrik terputus dan lampu akan padam.",
+    hint: "Raba bagian atas balok: temukan tuas geser timbul yang dapat digeser untuk menyambung dan memutus aliran listrik.",
+    explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Saat tuas saklar digeser ke posisi ON, arus listrik mengalir. Saat tuas digeser ke posisi OFF, aliran listrik terputus dan lampu akan padam.",
   },
   {
     instruction: "Raba dan cari balok Lampu LED (kubah bundar timbul & polaritas + / -), letakkan di sel C3.",
@@ -119,10 +119,10 @@ const ALL_REGISTERED_QUIZ_BANK: {
   },
   {
     title: "Pengendali Aliran Listrik",
-    question: "Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik dengan tuas mekanik?",
+    question: "Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik dengan tuas geser?",
     component: "switch",
-    hint: "Cari balok yang memiliki tuas mekanik timbul yang dapat diklik atau digeser di bagian atasnya.",
-    explanation: "Tepat sekali! Itu adalah Saklar untuk menghubungkan dan memutuskan aliran listrik.",
+    hint: "Cari balok yang memiliki tuas geser timbul yang dapat digeser ke posisi ON atau OFF di bagian atasnya.",
+    explanation: "Tepat sekali! Itu adalah Saklar geser untuk menghubungkan dan memutuskan aliran listrik.",
   },
   {
     title: "Penghantar Arus Jalur Lurus",
@@ -268,12 +268,12 @@ const SERIES_STEPS: StepDef[] = [
     explanation: "Hebat! Semua balok sudah tersambung di papan. Tapi perhatikan, lampu belum menyala karena saklar masih terbuka atau mati.",
   },
   {
-    instruction: "Langkah 13: Putar Saklar di C5 & E4 ke Posisi ON untuk Menyalakan Lampu",
-    voice: "Langkah 13: Sekarang saklarnya masih NO atau mati. Raba tuas saklar di posisi C5 dan E4, lalu putar saklar tersebut ke posisi ON untuk menutup sirkuit dan menyalakan kedua lampu!",
+    instruction: "Langkah 13: Geser Saklar di C5 & E4 ke Posisi ON untuk Menyalakan Lampu",
+    voice: "Langkah 13: Sekarang saklarnya masih terbuka atau mati. Raba tuas saklar di posisi C5 dan E4, lalu geser saklar tersebut ke posisi ON untuk menutup sirkuit dan menyalakan kedua lampu!",
     targetCells: { "C5": "switch", "E4": "switch" },
     validator: (cells, status) => status === "success",
-    hint: "Raba tuas saklar di C5 dan E4. Putar tuasnya 90 derajat ke posisi ON hingga lampu menyala bersamaan.",
-    explanation: "Sempurna! Kedua saklar sudah ON dan arus listrik mengalir lancar ke seluruh rangkaian seri. Kedua lampu menyala terang bersamaan! Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
+    hint: "Raba tuas saklar di C5 dan E4. Geser tuasnya ke posisi ON hingga lampu menyala bersamaan.",
+    explanation: "Sempurna! Kedua saklar sudah digeser ke ON dan arus listrik mengalir lancar ke seluruh rangkaian seri. Kedua lampu menyala terang bersamaan! Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
   },
 ];
 
@@ -419,13 +419,13 @@ const TROUBLESHOOT_STEPS: StepDef[] = [
   },
   {
     instruction: "Tantangan 2: Uji Pemutus Aliran Arus",
-    voice: "Misi kedua! Tanpa melepas balok komponen dari papan, putar tuas saklar ke posisi terbuka atau mati untuk memutus aliran listrik!",
+    voice: "Misi kedua! Tanpa melepas balok komponen dari papan, geser tuas saklar ke posisi terbuka atau OFF untuk memutus aliran listrik!",
     validator: (cells, status) => {
       const placedCount = Object.values(cells).filter(Boolean).length;
       return placedCount >= 4 && status !== "success" && status !== "short_circuit";
     },
-    hint: "Raba tuas timbul di atas saklar, lalu putar untuk mematikan sirkuit.",
-    explanation: "Sempurna! Kamu telah membuktikan saklar dapat memutuskan aliran listrik secara aman tanpa harus membongkar rangkaian.",
+    hint: "Raba tuas timbul di atas saklar, lalu geser ke posisi OFF untuk mematikan sirkuit.",
+    explanation: "Sempurna! Kamu telah membuktikan saklar geser dapat memutuskan aliran listrik secara aman tanpa harus membongkar rangkaian.",
   },
   {
     instruction: "Tantangan 3: Rancang Sirkuit Paralel Mandiri",
@@ -465,11 +465,12 @@ const getStudentNameFromToken = (cell: any): string => {
 
 const COMPONENT_TACTILE_HINT: Record<string, string> = {
   battery: "memiliki simbol plus dan minus timbul di kedua ujungnya",
-  switch: "memiliki tuas mekanik timbul yang dapat diklik atau digeser di atasnya",
+  switch: "memiliki tuas geser timbul yang dapat digeser ke posisi ON atau OFF di atasnya",
   lamp: "memiliki kubah bundar timbul serta tanda plus (+) dan minus (-) timbul untuk kutub polaritasnya",
   straight_cable: "memiliki alur garis lurus timbul melintang",
   l_cable: "memiliki alur timbul siku-siku seperti huruf L",
   t_cable: "memiliki alur timbul bercabang tiga seperti huruf T",
+  resistor: "memiliki permukaan alur garis gelombang timbul penahan arus",
 };
 
 const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" | "parallel" | "troubleshoot" | "free_exploration"; title: string }> = {
