@@ -1849,7 +1849,6 @@ export default function VoiceGuide() {
         xp: 50,
         isCompleted: currentProgress.modules.component_recognition,
         isLocked: false,
-        hasSubModes: false,
       },
       {
         id: "quiz",
@@ -1861,7 +1860,6 @@ export default function VoiceGuide() {
         xp: 50,
         isCompleted: currentProgress.modules.component_quiz,
         isLocked: !isRecognitionDone,
-        hasSubModes: false,
       },
       {
         id: "series",
@@ -1873,7 +1871,6 @@ export default function VoiceGuide() {
         xp: 100,
         isCompleted: currentProgress.modules.series_circuit,
         isLocked: !isRecognitionDone,
-        hasSubModes: true,
       },
       {
         id: "parallel",
@@ -1885,7 +1882,6 @@ export default function VoiceGuide() {
         xp: 100,
         isCompleted: currentProgress.modules.parallel_circuit,
         isLocked: !isRecognitionDone,
-        hasSubModes: true,
       },
       {
         id: "troubleshoot",
@@ -1897,7 +1893,6 @@ export default function VoiceGuide() {
         xp: 150,
         isCompleted: currentProgress.modules.circuit_troubleshoot,
         isLocked: !isRecognitionDone,
-        hasSubModes: false,
       },
     ];
 
@@ -2056,30 +2051,6 @@ export default function VoiceGuide() {
                       <Lock className="h-3 w-3 text-slate-400" />
                       <span>Terkunci</span>
                     </button>
-                  ) : item.hasSubModes ? (
-                    <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5 shadow-2xs">
-                      <button
-                        onClick={() => startGuide(item.mode)}
-                        className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
-                          isRecommended
-                            ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700"
-                            : "bg-white text-slate-800 shadow-2xs hover:text-indigo-600"
-                        }`}
-                        title="Mode Terpandu: Langkah per sel koordinat"
-                      >
-                        <Play className={`h-2.5 w-2.5 ${isRecommended ? "fill-white text-white" : "fill-current"}`} />
-                        <span>Panduan</span>
-                      </button>
-                      <button
-                        onClick={() =>
-                          startGuide(item.mode === "series" ? "adaptive_series" : "adaptive_parallel")
-                        }
-                        className="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-all active:scale-95"
-                        title="Mode Bebas: Rakit mandiri adaptif tanpa urutan koordinat"
-                      >
-                        <span>Bebas</span>
-                      </button>
-                    </div>
                   ) : (
                     <button
                       onClick={() => startGuide(item.mode)}
