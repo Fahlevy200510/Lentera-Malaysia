@@ -2,10 +2,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2 } from "lucide-react";
+import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2, Sparkles } from "lucide-react";
 import CircuitDiagram from "@/components/aruco/CircuitDiagram";
 import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
+import AITutorLab from "@/components/aruco/AITutorLab";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import { getStudentProgress, getActiveStudent } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
@@ -32,6 +33,7 @@ const wiringPoints = [
 export default function ArucoPage() {
   const router = useRouter();
   const [diagramMode, setDiagramMode] = useState("live");
+  const [activeTab, setActiveTab] = useState<"guide" | "tutor">("guide");
   const [session, setSession] = useState<{ name: string; role: string }>({
     name: "Pengguna LENTERA",
     role: "siswa",
@@ -40,6 +42,16 @@ export default function ArucoPage() {
   const [speaking, setSpeaking] = useState(false);
   const speakingRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    const handleSwitch = (e: any) => {
+      if (e?.detail === "tutor" || e?.detail === "guide") {
+        setActiveTab(e.detail);
+      }
+    };
+    window.addEventListener("lentera-switch-tab", handleSwitch);
+    return () => window.removeEventListener("lentera-switch-tab", handleSwitch);
+  }, []);
 
   // Pre-load daftar voice browser agar suara bahasa Indonesia langsung siap saat halaman terbuka
   useEffect(() => {
@@ -179,10 +191,28 @@ export default function ArucoPage() {
                 <BookOpen className="h-4 w-4" />
                 Lentera Learn
               </Link>
-              <div className="flex items-center gap-3 rounded-xl bg-cs-primary/10 px-4 py-3 text-sm font-bold text-cs-primaryDeep shadow-sm">
+              <button
+                onClick={() => setActiveTab("guide")}
+                className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                  activeTab === "guide"
+                    ? "bg-cs-primary/10 text-cs-primaryDeep shadow-sm"
+                    : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
+                }`}
+              >
                 <ScanEye className="h-4 w-4" />
-                Kamera Langsung
-              </div>
+                Panduan Modul
+              </button>
+              <button
+                onClick={() => setActiveTab("tutor")}
+                className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                  activeTab === "tutor"
+                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/25"
+                    : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
+                }`}
+              >
+                <Sparkles className="h-4 w-4" />
+                Tanya AI Tutor
+              </button>
             </div>
           </div>
           
@@ -311,8 +341,33 @@ export default function ArucoPage() {
               </div>
             </div>
 
-            {/* Voice Guide — Panduan suara interaktif langkah demi langkah */}
-            <VoiceGuide />
+            {/* Tab Switcher antara Panduan Modul Belajar & Tanya AI Tutor */}
+            <div className="flex items-center gap-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 shadow-2xs">
+              <button
+                onClick={() => setActiveTab("guide")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all active:scale-95 ${
+                  activeTab === "guide"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Panduan Modul Belajar</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("tutor")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all active:scale-95 ${
+                  activeTab === "tutor"
+                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/25"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Tanya AI Tutor (Voice Q&A)</span>
+              </button>
+            </div>
+
+            {activeTab === "guide" ? <VoiceGuide /> : <AITutorLab />}
           </div>
         </div>
       </section>

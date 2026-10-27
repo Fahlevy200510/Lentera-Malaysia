@@ -912,330 +912,7 @@ function ParentDashboard() {
     </div>
   );
 }
-interface Msg { role: "ai" | "user"; text: string; note?: string | null; error?: boolean; }
 
-interface CircuitState {
-  battery_connected: boolean;
-  switch_state: "on" | "off";
-  lamp_connected: boolean;
-  circuit_closed: boolean;
-  polarity_correct: boolean;
-}
-
-interface Scenario { id: string; label: string; icon: LucideIcon; state: CircuitState; prompt: string; }
-const scenarios: Scenario[] = [
-  {
-    id: "polarity",
-    label: "Polaritas Terbalik",
-    icon: AlertTriangle,
-    state: { battery_connected: true, switch_state: "on", lamp_connected: true, circuit_closed: true, polarity_correct: false },
-    prompt: "Saya sudah menyambungkan semua kabel, tapi lampu tidak menyala. Mengapa?",
-  },
-  {
-    id: "open",
-    label: "Rangkaian Terbuka",
-    icon: Unlink2,
-    state: { battery_connected: true, switch_state: "off", lamp_connected: true, circuit_closed: false, polarity_correct: true },
-    prompt: "Saya sudah menggerakkan saklar, tapi lampu masih mati.",
-  },
-  {
-    id: "closed",
-    label: "Rangkaian Berfungsi",
-    icon: CheckCircle2,
-    state: { battery_connected: true, switch_state: "on", lamp_connected: true, circuit_closed: true, polarity_correct: true },
-    prompt: "Saya sudah selesai merakit rangkaian. Tolong periksa apakah sudah benar.",
-  },
-];
-
-function AITutor() {
-  const [messages, setMessages] = useState<Msg[]>([
-    { role: "ai", text: "Halo! Siap merakit rangkaian hari ini? Raba papanmu kapan saja, atau coba tombol simulasi di bawah untuk menguji beberapa skenario.", note: null },
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [voiceOn, setVoiceOn] = useState(true);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [circuitState, setCircuitState] = useState<CircuitState | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
-
-  // Voices load asynchronously in most browsers — populate the list once
-  // available, and again whenever the browser updates it.
-  useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, []);
-
-  // Utamakan suara Bahasa Indonesia
-  const idVoice =
-    voices.find((v) => v.lang.toLowerCase() === "id-id") ||
-    voices.find((v) => v.lang.toLowerCase().startsWith("id")) ||
-    null;
-
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
-
-  const toggleListening = () => {
-    if (typeof window === "undefined") return;
-
-    if (isListening) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsListening(false);
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Browser Anda belum mendukung pengenalan suara mikrofon langsung. Silakan gunakan Google Chrome atau Microsoft Edge.");
-      return;
-    }
-
-    try {
-      playEarcon("click");
-      const recognition = new SpeechRecognition();
-      recognition.lang = "id-ID";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results?.[0]?.[0]?.transcript;
-        if (transcript) {
-          setInput(transcript);
-          setIsListening(false);
-          send(transcript);
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn("Speech recognition error:", event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (err) {
-      console.warn("Gagal memulai speech recognition:", err);
-      setIsListening(false);
-    }
-  };
-
-  const speak = (text: string) => {
-    if (!voiceOn) return;
-    speakNarration(text, {
-      tag: "ai-tutor-response",
-      rate: 0.95,
-      pitch: 1.0,
-    });
-  };
-
-  const callTutor = async (userText: string, state?: CircuitState | null) => {
-    setMessages((m) => [...m, { role: "user", text: userText }]);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/tutor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userText,
-          circuitState: state ?? circuitState,
-          history: messages.slice(-6).map((m) => ({ role: m.role, text: m.text })),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessages((m) => [...m, { role: "ai", text: `Tidak dapat terhubung ke AI: ${data.error ?? "kesalahan tidak diketahui"}. Periksa apakah GROQ_API_KEY sudah terkonfigurasi di .env.local.`, error: true }]);
-        return;
-      }
-      setMessages((m) => [...m, { role: "ai", text: data.text, note: data.note }]);
-      speak(data.text);
-    } catch (err) {
-      setMessages((m) => [...m, { role: "ai", text: `Gagal menghubungi server: ${(err as Error).message}`, error: true }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const send = (text?: string) => {
-    const t = (text ?? input).trim();
-    if (!t || loading) return;
-    setInput("");
-    callTutor(t);
-  };
-
-  const runScenario = (s: Scenario) => {
-    setCircuitState(s.state);
-    callTutor(s.prompt, s.state);
-  };
-
-  const chips = ["Pandu saya langkah demi langkah", "Jelaskan arah arus listrik", "Saya sudah selesai!"];
-
-  return (
-    <div style={{ display: "grid", gap: 20 }}>
-      <Card hover={false} style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", height: "min(64vh, 600px)" }}>
-        {/* header */}
-        <div className="flex items-center justify-between" style={{ padding: "16px 22px", borderBottom: "1px solid rgba(139,92,246,0.1)", background: "rgba(255,255,255,0.5)" }}>
-          <div className="flex items-center" style={{ gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${C.primary}, ${C.pink})`, display: "grid", placeItems: "center", boxShadow: C.shadowSm }}>
-              <Sparkles size={22} color="#fff" />
-            </div>
-            <div>
-              <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 16, color: C.text }}>Lentera AI Tutor</div>
-              <div className="flex items-center" style={{ gap: 6, fontSize: 12, color: C.textSoft, fontWeight: 600 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green }} /> Explain-Before-Answer engine · Groq (Llama 3.3)
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center" style={{ gap: 10 }}>
-            {voiceOn && (
-              <div className="hidden lg:flex items-center" style={{ gap: 6, fontSize: 11, fontWeight: 700, color: idVoice ? C.green : "#DB2777", background: idVoice ? C.greenSoft : C.pinkSoft, padding: "5px 10px", borderRadius: 99 }}>
-                {idVoice ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-                {idVoice ? `Suara Indonesia: ${idVoice.name}` : "Suara default (id-ID)"}
-              </div>
-            )}
-            <button
-              aria-label={voiceOn ? "Matikan suara" : "Nyalakan suara"}
-              onClick={() => { setVoiceOn((v) => !v); if (voiceOn) cancelSpeech(); }}
-              style={{ width: 40, height: 40, borderRadius: 12, background: C.primarySoft, border: "none", display: "grid", placeItems: "center" }}
-            >
-              {voiceOn ? <Volume2 size={19} color={C.primaryDeep} /> : <VolumeX size={19} color={C.textSoft} />}
-            </button>
-          </div>
-        </div>
-
-        {/* messages */}
-        <div className="cs-scroll" style={{ flex: 1, overflowY: "auto", padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
-          {messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{ maxWidth: "76%" }}>
-                <div
-                  style={{
-                    padding: "13px 17px", borderRadius: 20, fontSize: 14, lineHeight: 1.55,
-                    ...(m.role === "user"
-                      ? { background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, color: "#fff", borderBottomRightRadius: 6 }
-                      : m.error
-                      ? { background: C.pinkSoft, color: "#DB2777", border: "1px solid rgba(219,39,119,0.2)", borderBottomLeftRadius: 6 }
-                      : { background: "#fff", color: C.text, border: "1px solid rgba(139,92,246,0.12)", borderBottomLeftRadius: 6, boxShadow: C.shadowSm }),
-                  }}
-                >
-                  {m.text}
-                </div>
-                {m.note && (
-                  <div className="flex items-center" style={{ gap: 6, marginTop: 7, marginLeft: 4, fontSize: 11.5, fontWeight: 700, color: C.primaryDeep, background: C.primarySoft, padding: "5px 10px", borderRadius: 99, width: "fit-content" }}>
-                    <Brain size={13} /> {m.note}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          {loading && (
-            <div style={{ display: "flex" }}>
-              <div className="flex items-center" style={{ gap: 8, background: "#fff", border: "1px solid rgba(139,92,246,0.12)", padding: "13px 18px", borderRadius: 20, borderBottomLeftRadius: 6, fontSize: 13, color: C.textSoft, fontWeight: 600 }}>
-                <Loader2 size={15} className="spin" /> Sedang berpikir…
-              </div>
-            </div>
-          )}
-          <div ref={endRef} />
-        </div>
-
-        {/* quick chips */}
-        <div className="flex" style={{ gap: 8, padding: "0 22px 12px", flexWrap: "wrap" }}>
-          {chips.map((c) => (
-            <button key={c} className="chip" onClick={() => send(c)} disabled={loading} style={{ background: C.primarySoft, color: C.primaryDeep, border: "1px solid rgba(139,92,246,0.18)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 700, opacity: loading ? 0.5 : 1 }}>
-              {c}
-            </button>
-          ))}
-        </div>
-
-        {/* input */}
-        <div className="flex items-center" style={{ gap: 10, padding: "14px 18px", borderTop: "1px solid rgba(139,92,246,0.1)", background: "rgba(255,255,255,0.6)" }}>
-          <button
-            aria-label={isListening ? "Sedang mendengarkan... klik untuk berhenti" : "Tanya dengan suara"}
-            onClick={toggleListening}
-            title={isListening ? "Sedang mendengarkan... Bicara sekarang!" : "Tanya AI dengan suara mikrofon"}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 14,
-              background: isListening ? "#F43F5E" : C.pinkSoft,
-              border: isListening ? "2px solid #E11D48" : "none",
-              display: "grid",
-              placeItems: "center",
-              flexShrink: 0,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              boxShadow: isListening ? "0 0 16px rgba(244,63,94,0.55)" : "none",
-            }}
-          >
-            <Mic size={20} color={isListening ? "#fff" : C.pink} className={isListening ? "animate-pulse" : ""} />
-          </button>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder={isListening ? "🎙️ Sedang mendengarkan suaramu... silakan bicara..." : "Tanyakan apa saja ke LENTERA…"}
-            disabled={loading}
-            style={{ flex: 1, border: "1px solid rgba(139,92,246,0.18)", background: "#fff", borderRadius: 14, padding: "13px 16px", fontSize: 14, color: C.text, fontFamily: BODY, outline: "none" }}
-          />
-          <button aria-label="Kirim" onClick={() => send()} disabled={loading} style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`, border: "none", display: "grid", placeItems: "center", flexShrink: 0, boxShadow: C.shadowSm, opacity: loading ? 0.6 : 1 }}>
-            <Send size={19} color="#fff" />
-          </button>
-        </div>
-      </Card>
-
-      {/* simulator panel — for testing/demo without hardware */}
-      <Card style={{ padding: 22 }}>
-        <SectionTitle
-          icon={SlidersHorizontal}
-          title="Panel Simulasi"
-          sub="Uji alur AI Tutor tanpa perangkat fisik — berguna untuk latihan demo"
-          right={circuitState && (
-            <button onClick={() => setCircuitState(null)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid rgba(139,92,246,0.2)", color: C.textSoft, padding: "7px 12px", borderRadius: 99, fontSize: 12.5, fontWeight: 700 }}>
-              <RefreshCw size={13} /> Reset
-            </button>
-          )}
-        />
-        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-          {scenarios.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => runScenario(s)}
-              disabled={loading}
-              style={{ display: "flex", alignItems: "center", gap: 11, padding: "14px 16px", borderRadius: 16, border: "1px solid rgba(139,92,246,0.14)", background: "rgba(255,255,255,0.6)", textAlign: "left", opacity: loading ? 0.6 : 1 }}
-            >
-              <div style={{ width: 38, height: 38, borderRadius: 11, background: C.primarySoft, display: "grid", placeItems: "center", flexShrink: 0 }}>
-                <s.icon size={19} color={C.primaryDeep} />
-              </div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: C.text }}>{s.label}</div>
-            </button>
-          ))}
-        </div>
-        {circuitState && (
-          <div className="flex items-center" style={{ gap: 8, marginTop: 14, fontSize: 12, color: C.textSoft, fontWeight: 600, flexWrap: "wrap" }}>
-            <PlugZap size={14} /> Status simulasi: baterai {circuitState.battery_connected ? "✓" : "✗"} · saklar {circuitState.switch_state === "on" ? "ON" : "OFF"} · lampu {circuitState.lamp_connected ? "✓" : "✗"} · jalur {circuitState.circuit_closed ? "tertutup" : "terbuka"} · polaritas {circuitState.polarity_correct ? "benar" : "terbalik"}
-          </div>
-        )}
-      </Card>
-    </div>
-  );
-}
 
 /* =============================================================== HANDBOOK */
 function MiniBattery({ x, y }: { x: number; y: number }) {
@@ -1858,7 +1535,6 @@ function Sidebar({ view, setView, role, onLogout }: ShellProps) {
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: homeLabel, icon: LayoutDashboard },
     ...(role === "teacher" ? [{ id: "handbook", label: "Buku Panduan", icon: BookOpen }] : []),
-    { id: "ai", label: "AI Tutor", icon: Sparkles },
     { id: "lab", label: "Lentera Lab", icon: ScanEye, href: "/aruco" },
   ];
   return (
@@ -1908,7 +1584,6 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: "Beranda", icon: LayoutDashboard },
     ...(role === "teacher" ? [{ id: "handbook", label: "Panduan", icon: BookOpen }] : []),
-    { id: "ai", label: "AI", icon: Sparkles },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
   const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Bu Sari";
@@ -1946,7 +1621,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && search.trim()) {
-                setView(role === "teacher" ? "home" : "ai");
+                setView(role === "teacher" ? "home" : "home");
               }
             }}
             placeholder="Cari siswa, pelajaran…"
@@ -2298,18 +1973,14 @@ export default function CircuitSenseDashboard() {
   }
 
   const firstName = name ? name.split(" ")[0] : role === "student" ? "Kai" : role === "parent" ? "Bpk/Ibu" : "Bu Sari";
-  const heading = view === "ai"
-    ? "AI Tutor"
-    : view === "handbook"
+  const heading = view === "handbook"
     ? "Buku Panduan Guru"
     : role === "student"
     ? `Halo, ${firstName}`
     : role === "parent"
     ? `Halo, ${firstName}`
     : `Selamat datang kembali, ${firstName}`;
-  const subheading = view === "ai"
-    ? "Raba papannya, pikirkan baik-baik, pahami alasannya."
-    : view === "handbook"
+  const subheading = view === "handbook"
     ? "Panduan mengajar materi rangkaian listrik sederhana untuk siswa tunanetra dan low vision."
     : role === "student"
     ? "Kamu tinggal satu pelajaran lagi untuk meraih lencana berikutnya."
@@ -2334,7 +2005,7 @@ export default function CircuitSenseDashboard() {
                 <p style={{ fontSize: 14.5, color: C.textSoft, marginTop: 6 }}>{subheading}</p>
               </div>
 
-              {view === "ai" ? <AITutor /> : view === "handbook" ? <TeacherHandbook /> : role === "student" ? <StudentHome /> : role === "parent" ? <ParentDashboard /> : <TeacherOverview />}
+              {view === "handbook" ? <TeacherHandbook /> : role === "student" ? <StudentHome /> : role === "parent" ? <ParentDashboard /> : <TeacherOverview />}
             </div>
           </main>
         </div>
