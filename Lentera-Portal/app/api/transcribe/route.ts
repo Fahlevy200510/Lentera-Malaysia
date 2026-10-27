@@ -3,9 +3,26 @@ import { NextRequest, NextResponse } from "next/server";
 // ---------------------------------------------------------------------------
 // POST /api/transcribe
 // Accepts: multipart/form-data with "file" (audio blob)
-// Returns: { text: string }
+// Returns: { text: string, silent?: boolean }
 // Powered by Groq Whisper Large v3 Turbo (High-accuracy Indonesian STT)
 // ---------------------------------------------------------------------------
+
+const SILENCE_HALLUCINATIONS = new Set([
+  "terima kasih",
+  "terimakasih",
+  "terima kasih banyak",
+  "terimakasih banyak",
+  "terima kasih telah menonton",
+  "terima kasih sudah menonton",
+  "thank you",
+  "thank you very much",
+  "thanks for watching",
+  "subtitles by",
+  "you",
+  "kamu",
+  "halo",
+  "",
+]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,6 +48,8 @@ export async function POST(req: NextRequest) {
     groqForm.append("file", file, "audio.webm");
     groqForm.append("model", "whisper-large-v3-turbo");
     groqForm.append("language", "id");
+    groqForm.append("temperature", "0");
+    groqForm.append("prompt", "Pertanyaan sains siswa tentang rangkaian listrik seri dan paralel, baterai, lampu, saklar, kabel, dan komponen Lentera.");
     groqForm.append("response_format", "json");
 
     const groqRes = await fetch(
@@ -54,9 +73,15 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await groqRes.json();
-    const text = (data.text || "").trim();
+    const rawText = (data.text || "").trim();
+    const normalized = rawText.toLowerCase().replace(/[.,!?;:\"\'\-]/g, "").trim();
 
-    return NextResponse.json({ text });
+    // Deteksi halusinasi Whisper saat audio hening / suara mikrofon belum tertangkap
+    if (!normalized || SILENCE_HALLUCINATIONS.has(normalized)) {
+      return NextResponse.json({ text: "", silent: true });
+    }
+
+    return NextResponse.json({ text: rawText, silent: false });
   } catch (err: any) {
     console.error("[Transcribe] Error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
