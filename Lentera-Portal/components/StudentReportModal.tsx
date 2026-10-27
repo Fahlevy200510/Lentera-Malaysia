@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck, Volume2, VolumeX, Bot, RefreshCw, Edit3 } from "lucide-react";
 import { getActiveStudent, getStudentProgress, buildStudentLearningNarration, type StudentProfile, type StudentProgress } from "@/utils/progress";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
@@ -13,8 +13,6 @@ interface StudentReportModalProps {
 }
 
 export default function StudentReportModal({ isOpen, onClose }: StudentReportModalProps) {
-  if (!isOpen) return null;
-
   const student: StudentProfile = getActiveStudent();
   const progress: StudentProgress = getStudentProgress();
 
@@ -26,6 +24,39 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
   const [teacherNotes, setTeacherNotes] = useState<string>(() => {
     return `Ananda ${student.name} menunjukkan perkembangan kemandirian taktil yang sangat positif. Siswa membuktikan kepekaan rabaan yang konsisten dalam mengidentifikasi simbol timbul dan menyusun komponen kelistrikan secara mandiri.\n\nUntuk langkah belajar selanjutnya, disarankan penguatan bertahap pada konsep percabangan sirkuit paralel menggunakan kabel T dan analogi aliran arus. Berikan ruang latihan taktil mandiri sebelum menguji rangkaian secara langsung.\n\nSinergi antara guru dan orang tua dalam memberikan apresiasi verbal terbukti efektif meningkatkan kepercayaan diri ananda dalam bereksperimen.`;
   });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Auto-narasi ramah untuk guru & siswa tunanetra saat rapor dibuka
+    const nar = buildStudentLearningNarration(student, progress);
+    const welcome = `Rapor Hasil Belajar untuk ${student.name}, ${student.grade}. Total perolehan ${progress.xp} XP. ${nar.modulesNarration} Silakan dengarkan rincian lengkap atau tekan Escape untuk menutup rapor.`;
+
+    setIsSpeakingReport(true);
+    speakNarration(welcome, {
+      tag: "modal-intro",
+      rate: 0.94,
+      pitch: 1.02,
+      onEnd: () => setIsSpeakingReport(false),
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        cancelSpeech();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      cancelSpeech();
+      setIsSpeakingReport(false);
+      setIsSpeakingNotes(false);
+    };
+  }, [isOpen, onClose, student, progress]);
+
+  if (!isOpen) return null;
 
   const handleVoiceReport = () => {
     if (isSpeakingReport) {

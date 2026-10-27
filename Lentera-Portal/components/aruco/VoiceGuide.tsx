@@ -23,6 +23,7 @@ import {
   Lightbulb,
   Bot,
   RefreshCw,
+  FileText,
 } from "lucide-react";
 import {
   completeModule,
@@ -180,12 +181,12 @@ function createDynamicQuizSteps(shuffle = false): StepDef[] {
     const ord = ordinals[idx];
     return {
       instruction: `Tebak di ${slot.cell}: ${item.title}`,
-      voice: `Kuis Taktil! Pertanyaan ${ord}: ${item.question} Raba dan letakkan balok jawabanmu di ${slot.desc}.`,
+      voice: `Kuis Taktil! Pertanyaan ${ord}: ${item.question} Raba dan letakkan balok jawabanmu di ${slot.desc}. Kamu juga bisa meletakkan balok di kotak A1 kapan saja untuk mengacak paket soal baru.`,
       targetCells: { [slot.cell]: item.component },
       expectedComponent: item.component,
       validator: (cells: Record<string, any>) =>
         Boolean(cells[slot.cell] && cells[slot.cell].component === item.component),
-      hint: `${item.hint} Lalu letakkan di ${slot.desc}.`,
+      hint: `${item.hint} Lalu letakkan di ${slot.desc}. (Pintasan: kotak A1 untuk acak soal baru)`,
       explanation: item.explanation,
     };
   });
@@ -810,6 +811,7 @@ export default function VoiceGuide() {
         !ignoreIdleMenuUntilLiftRef.current
       ) {
         const cellA1 = cells["A1"];
+        const cellC5 = cells["C5"];
         const cellE5 = cells["E5"];
 
         // 1. Kartu identitas siswa di sel A1 -> Pindah ke LENTERA Learn
@@ -833,7 +835,25 @@ export default function VoiceGuide() {
           return;
         }
 
-        // 2. Kartu identitas siswa di sel E5 -> Logout / Selesai Sesi
+        // 2. Kartu identitas siswa di sel C5 -> Buka & Dengarkan Rapor Siswa
+        if (isStudentToken(cellC5)) {
+          cancelSpeech();
+          playEarcon("click");
+          const sName = getStudentNameFromToken(cellC5);
+          speakNarration(
+            `Kartu identitas ${sName} terdeteksi di sel C5. Membuka Rapor Hasil Belajar untuk ${sName}.`,
+            {
+              onEnd: () => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
+                }
+              },
+            }
+          );
+          return;
+        }
+
+        // 3. Kartu identitas siswa di sel E5 -> Logout / Selesai Sesi
         if (isStudentToken(cellE5)) {
           isRedirectingRef.current = true;
           cancelSpeech();
@@ -856,7 +876,7 @@ export default function VoiceGuide() {
         }
       }
 
-      // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1)
+      // KETIKA SEDANG MODE IDLE (TANGIBLE GRID MENU A1 - E1, A5, C5)
       if (mode === "idle") {
         if (idleMenuHandledRef.current) return;
         // Tahan deteksi menu 2.5s awal saat baru masuk lab agar tidak memotong intro dan tidak salah baca balok lama
@@ -955,6 +975,32 @@ export default function VoiceGuide() {
                   startGuide("troubleshoot");
                 });
               }
+            } else if (cells["A5"]) {
+              // Mode Eksplorasi Bebas bersama AI Live Tutor (Sudut Kiri Bawah)
+              idleMenuHandledRef.current = true;
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              const timer = setTimeout(() => startGuide("free_exploration"), 8000);
+              speak(
+                "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat balok dari kotak sudut kiri bawah A5 untuk mulai merakit.",
+                () => {
+                  clearTimeout(timer);
+                  startGuide("free_exploration");
+                }
+              );
+            } else if (cells["C5"]) {
+              // Rapor Hasil Belajar Siswa (Tengah Bawah)
+              idleMenuHandledRef.current = true;
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              speak(
+                "Pilihan diterima: Membuka Rapor Hasil Belajar Siswa. AI Pedagogis sedang menyiapkan evaluasi belajarmu.",
+                () => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
+                  }
+                }
+              );
             }
           }
         }
@@ -966,6 +1012,23 @@ export default function VoiceGuide() {
       // =========================================================================
       if (mode === "free_exploration") {
         latestStatusRef.current = detail?.status || "open";
+
+        // Pintasan Taktil E5: Kembali ke Menu Utama
+        if (cells["E5"] && placedCount === 1 && !isStudentToken(cells["E5"])) {
+          playEarcon("click");
+          speak("Kembali ke menu utama LENTERA Lab. Silakan angkat balok dari papan.", () => {
+            resetGuide();
+          });
+          return;
+        }
+
+        // Pintasan Taktil A1: On-demand AI Live Tutor
+        if (cells["A1"] && !isStudentToken(cells["A1"])) {
+          const now = Date.now();
+          if (now - lastAITimeRef.current > 5000 && !isAILoading) {
+            triggerAITutor(cells, detail?.status || "open", true);
+          }
+        }
 
         // 1. Peringatan darurat korsleting (prioritas keamanan tertinggi)
         if (detail?.status === "short_circuit") {
@@ -1130,6 +1193,18 @@ export default function VoiceGuide() {
                 resetGuide();
               }
             );
+          } else if (cells["A5"]) {
+            checkpointHandledRef.current = true;
+            setCheckpointPhase("confirmed");
+            playEarcon("click");
+            const timer = setTimeout(() => startGuide("free_exploration"), 8000);
+            speak(
+              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat kembali balok dari kotak sudut kiri bawah A5.",
+              () => {
+                clearTimeout(timer);
+                startGuide("free_exploration");
+              }
+            );
           }
           return;
         }
@@ -1258,6 +1333,26 @@ export default function VoiceGuide() {
       if (mode === "quiz") {
         const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
         const targetCell = step.targetCells ? Object.keys(step.targetCells)[0] : "C3";
+
+        // Pintasan Taktil A1: Acak Soal Kuis Baru dari 7 komponen kapan saja
+        if (cells["A1"] && targetCell !== "A1" && !isStudentToken(cells["A1"])) {
+          const now = Date.now();
+          if (now - lastMenuSelectRef.current > 4000) {
+            lastMenuSelectRef.current = now;
+            playEarcon("step");
+            handleShuffleQuiz();
+            return;
+          }
+        }
+
+        // Pintasan Taktil E5: Kembali ke Menu Utama jika hanya 1 balok di E5
+        if (cells["E5"] && targetCell !== "E5" && placedEntries.length === 1 && !isStudentToken(cells["E5"])) {
+          playEarcon("click");
+          speak("Kembali ke menu utama panduan. Silakan angkat balok dari papan.", () => {
+            resetGuide();
+          });
+          return;
+        }
 
         // 1. Setelah menjawab benar, tunggu siswa mengangkat balok hingga papan bersih
         if (quizWaitingForClearRef.current) {
@@ -1581,7 +1676,7 @@ export default function VoiceGuide() {
       setBoardBlockCount(0);
       setIsExpanded(true);
       speak(
-        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu. AI Live Tutor akan otomatis mengamati dan menyapamu saat sirkuitmu membutuhkan bantuan."
+        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu secara bebas. AI Live Tutor akan otomatis mengamati dan membimbingmu saat sirkuit belum menyala. Kamu juga bisa meletakkan balok di kotak sudut kiri atas A1 kapan saja untuk memanggil AI Tutor, atau di kotak sudut kanan bawah E5 untuk kembali ke menu utama."
       );
       return;
     }
@@ -1767,11 +1862,11 @@ export default function VoiceGuide() {
       playEarcon("click");
       if (!isRecognitionDone) {
         speak(
-          "Selamat datang di Panduan Suara LENTERA. Kamu berada di tahap awal. Silakan selesaikan Tahap 1 Pengenalan Bentuk Taktil terlebih dahulu dengan meletakkan satu balok di kotak A1 agar materi berikutnya terbuka."
+          "Selamat datang di Panduan Suara LENTERA. Kamu berada di tahap awal. Silakan selesaikan Tahap 1 Pengenalan Bentuk Taktil terlebih dahulu dengan meletakkan satu balok di kotak A1 agar materi berikutnya terbuka. Kamu juga bisa meletakkan balok di kotak A5 sudut kiri bawah untuk Mode Eksplorasi Bebas bersama AI Live Tutor."
         );
       } else {
         speak(
-          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan belajar yang bisa kamu pilih: Tahap satu di kotak A1, Tahap dua Kuis Taktil di kotak B1, Tahap tiga Rangkaian Seri di kotak C1, Tahap empat Rangkaian Paralel di kotak D1, dan Tahap lima Tantangan Detektif di kotak E1. Letakkan satu balok di baris atas papan fisik untuk mulai belajar secara mandiri."
+          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan modul belajar di baris atas papan dari kotak A1 hingga E1: Tahap satu di A1, Tahap dua Kuis Taktil di B1, Tahap tiga Rangkaian Seri di C1, Tahap empat Rangkaian Paralel di D1, dan Tahap lima Tantangan Detektif di E1. Selain itu, kamu bisa meletakkan balok di kotak A5 sudut kiri bawah untuk Mode Eksplorasi Bebas bersama AI Live Tutor, atau letakkan balok di kotak C5 tengah bawah untuk membuka dan mendengarkan Rapor Belajar Siswa. Silakan letakkan satu balok di papan untuk memulai."
         );
       }
     };
@@ -1900,7 +1995,7 @@ export default function VoiceGuide() {
               <Zap className="h-3 w-3" />
             </span>
             <p className="text-[11.5px] text-slate-700 leading-snug">
-              <strong className="font-extrabold text-indigo-950">Pintasan Fisik:</strong> Letakkan 1 balok di kotak baris atas papan (<span className="font-mono font-bold text-indigo-700">A1 – E1</span>) untuk langsung memulai materi tanpa layar.
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris atas (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri bawah (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Eksplorasi Bebas AI, tengah bawah (<span className="font-mono font-bold text-violet-700">C5</span>) untuk Rapor Siswa.
             </p>
           </div>
           <button
@@ -2039,12 +2134,13 @@ export default function VoiceGuide() {
           })}
         </div>
 
-        {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor */}
+        {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor (Pintasan A5) */}
         <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-indigo-500/15 p-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start sm:items-center gap-3 min-w-0">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/25 shrink-0">
-                <Bot className="h-5 w-5 animate-pulse" />
+              <div className="flex flex-col items-center justify-center h-11 w-11 rounded-xl font-mono shrink-0 bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
+                <span className="text-xs font-black">A5</span>
+                <span className="text-[8px] font-bold opacity-80 leading-none">Bebas</span>
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -2057,7 +2153,7 @@ export default function VoiceGuide() {
                   </span>
                 </div>
                 <p className="text-[11.5px] text-slate-600 leading-snug">
-                  Rakit rangkaian sesukamu tanpa terikat urutan langkah. AI Live Tutor otomatis menganalisis dan membimbing saat sirkuitmu belum menyala.
+                  <strong className="text-emerald-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di sudut kiri bawah (<span className="font-mono font-bold text-emerald-700">A5</span>). Rakit sirkuit sesukamu tanpa batasan langkah. AI Live Tutor otomatis membimbing saat sirkuit belum menyala.
                 </p>
               </div>
             </div>
@@ -2068,6 +2164,44 @@ export default function VoiceGuide() {
             >
               <Play className="h-3.5 w-3.5 fill-white text-white" />
               <span>Mulai Eksplorasi</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Rapor Hasil Belajar Siswa (AI Pedagogis — Pintasan C5) */}
+        <div className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-violet-50/70 via-indigo-50/40 to-white p-3.5 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="flex flex-col items-center justify-center h-11 w-11 rounded-xl font-mono shrink-0 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/20">
+                <span className="text-xs font-black">C5</span>
+                <span className="text-[8px] font-bold opacity-80 leading-none">Rapor</span>
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <h4 className="font-heading text-xs sm:text-sm font-extrabold text-slate-900">
+                    Rapor Hasil Belajar Siswa
+                  </h4>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[9.5px] font-extrabold text-violet-800">
+                    <FileText className="h-2.5 w-2.5 text-violet-600" />
+                    <span>Dukungan Suara Guru & Siswa</span>
+                  </span>
+                </div>
+                <p className="text-[11.5px] text-slate-600 leading-snug">
+                  <strong className="text-violet-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di kotak tengah bawah (<span className="font-mono font-bold text-violet-700">C5</span>). Sistem otomatis menganalisis dan membacakan ringkasan hasil belajar siswa.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
+                }
+              }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all active:scale-95 shrink-0 self-end sm:self-auto"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Buka & Dengarkan</span>
             </button>
           </div>
         </div>
@@ -2375,22 +2509,31 @@ export default function VoiceGuide() {
                 </div>
 
                 {/* Tombol Aksi Bawah */}
-                <div className="flex items-center justify-between gap-2 pt-2">
-                  <button
-                    onClick={resetGuide}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" /> Menu Utama
-                  </button>
-                  <button
-                    onClick={() => triggerAITutor(latestCellsRef.current, latestStatusRef.current, true)}
-                    disabled={isAILoading}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:from-emerald-700 hover:to-indigo-700 disabled:opacity-50 transition-colors shadow-2xs"
-                    title="Minta evaluasi bimbingan AI Tutor saat ini juga"
-                  >
-                    {isAILoading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Bot className="h-3 w-3" />}
-                    {isAILoading ? "Menganalisis..." : "Minta Bimbingan AI"}
-                  </button>
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      onClick={resetGuide}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shadow-2xs"
+                      title="Kembali ke Menu Utama atau letakkan balok di sel E5"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span>Menu Utama</span>
+                      <span className="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[9px] font-black border border-slate-200">E5</span>
+                    </button>
+                    <button
+                      onClick={() => triggerAITutor(latestCellsRef.current, latestStatusRef.current, true)}
+                      disabled={isAILoading}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:from-emerald-700 hover:to-indigo-700 disabled:opacity-50 transition-colors shadow-2xs"
+                      title="Minta evaluasi bimbingan AI Tutor saat ini juga atau letakkan balok di sel A1"
+                    >
+                      {isAILoading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Bot className="h-3 w-3" />}
+                      <span>{isAILoading ? "Menganalisis..." : "Minta Bimbingan AI"}</span>
+                      <span className="font-mono bg-white/20 text-white px-1.5 py-0.5 rounded text-[9px] font-black">A1</span>
+                    </button>
+                  </div>
+                  <p className="text-[10.5px] text-slate-500 text-center font-medium">
+                    Pintasan Taktil Mandiri: Letakkan balok di <span className="font-mono font-bold text-emerald-800">A1</span> untuk bimbingan tutor, atau di <span className="font-mono font-bold text-slate-800">E5</span> untuk kembali ke menu.
+                  </p>
                 </div>
               </div>
             </div>
@@ -2428,11 +2571,12 @@ export default function VoiceGuide() {
                   {mode === "quiz" && (
                     <button
                       onClick={handleShuffleQuiz}
-                      className="inline-flex items-center gap-1 rounded-lg bg-indigo-100/80 hover:bg-indigo-200 border border-indigo-200 px-2 py-1 text-[10px] font-bold text-indigo-700 transition-colors shrink-0 shadow-2xs"
-                      title="Acak pertanyaan kuis baru dari 7 komponen fisik terdaftar"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-100/90 hover:bg-indigo-200 border border-indigo-300 px-2.5 py-1 text-[11px] font-bold text-indigo-800 transition-colors shrink-0 shadow-2xs"
+                      title="Acak pertanyaan kuis baru atau letakkan balok di sel A1"
                     >
-                      <RefreshCw className="h-3 w-3" />
-                      <span>Acak Kuis Baru</span>
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      <span>Acak Kuis</span>
+                      <span className="font-mono bg-indigo-200/90 text-indigo-950 px-1 rounded text-[9px] font-black border border-indigo-300/80">A1</span>
                     </button>
                   )}
                 </div>
