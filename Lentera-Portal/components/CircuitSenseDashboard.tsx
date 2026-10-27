@@ -980,18 +980,70 @@ function AITutor() {
     voices.find((v) => v.lang.toLowerCase().startsWith("id")) ||
     null;
 
-  const speak = (text: string) => {
-    if (!voiceOn || typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
-    if (idVoice) {
-      utter.voice = idVoice;
-      utter.lang = idVoice.lang;
-    } else {
-      utter.lang = "id-ID";
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const toggleListening = () => {
+    if (typeof window === "undefined") return;
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+      return;
     }
-    utter.rate = 0.95;
-    window.speechSynthesis.speak(utter);
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Browser Anda belum mendukung pengenalan suara mikrofon langsung. Silakan gunakan Google Chrome atau Microsoft Edge.");
+      return;
+    }
+
+    try {
+      playEarcon("click");
+      const recognition = new SpeechRecognition();
+      recognition.lang = "id-ID";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          setInput(transcript);
+          setIsListening(false);
+          send(transcript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition error:", event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn("Gagal memulai speech recognition:", err);
+      setIsListening(false);
+    }
+  };
+
+  const speak = (text: string) => {
+    if (!voiceOn) return;
+    speakNarration(text, {
+      tag: "ai-tutor-response",
+      rate: 0.95,
+      pitch: 1.0,
+    });
   };
 
   const callTutor = async (userText: string, state?: CircuitState | null) => {
@@ -1060,7 +1112,7 @@ function AITutor() {
             )}
             <button
               aria-label={voiceOn ? "Matikan suara" : "Nyalakan suara"}
-              onClick={() => { setVoiceOn((v) => !v); if (voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel(); }}
+              onClick={() => { setVoiceOn((v) => !v); if (voiceOn) cancelSpeech(); }}
               style={{ width: 40, height: 40, borderRadius: 12, background: C.primarySoft, border: "none", display: "grid", placeItems: "center" }}
             >
               {voiceOn ? <Volume2 size={19} color={C.primaryDeep} /> : <VolumeX size={19} color={C.textSoft} />}
@@ -1114,14 +1166,31 @@ function AITutor() {
 
         {/* input */}
         <div className="flex items-center" style={{ gap: 10, padding: "14px 18px", borderTop: "1px solid rgba(139,92,246,0.1)", background: "rgba(255,255,255,0.6)" }}>
-          <button aria-label="Input suara" style={{ width: 44, height: 44, borderRadius: 14, background: C.pinkSoft, border: "none", display: "grid", placeItems: "center", flexShrink: 0 }}>
-            <Mic size={20} color={C.pink} />
+          <button
+            aria-label={isListening ? "Sedang mendengarkan... klik untuk berhenti" : "Tanya dengan suara"}
+            onClick={toggleListening}
+            title={isListening ? "Sedang mendengarkan... Bicara sekarang!" : "Tanya AI dengan suara mikrofon"}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              background: isListening ? "#F43F5E" : C.pinkSoft,
+              border: isListening ? "2px solid #E11D48" : "none",
+              display: "grid",
+              placeItems: "center",
+              flexShrink: 0,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: isListening ? "0 0 16px rgba(244,63,94,0.55)" : "none",
+            }}
+          >
+            <Mic size={20} color={isListening ? "#fff" : C.pink} className={isListening ? "animate-pulse" : ""} />
           </button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder="Tanyakan apa saja ke LENTERA…"
+            placeholder={isListening ? "🎙️ Sedang mendengarkan suaramu... silakan bicara..." : "Tanyakan apa saja ke LENTERA…"}
             disabled={loading}
             style={{ flex: 1, border: "1px solid rgba(139,92,246,0.18)", background: "#fff", borderRadius: 14, padding: "13px 16px", fontSize: 14, color: C.text, fontFamily: BODY, outline: "none" }}
           />
