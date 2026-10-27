@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { resolveEndpoints, getActiveLenteraEndpoint } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import InteractiveOrbit3D from "@/components/InteractiveOrbit3D";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { getActiveStudent, setActiveStudent } from "@/utils/progress";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
@@ -65,7 +66,6 @@ export default function PortalHome() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speakingRef = useRef(false);
   const isRedirectingRef = useRef(false);
-  const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 });
 
   // Typewriter effect state
   const [typedWord, setTypedWord] = useState("");
@@ -116,16 +116,6 @@ export default function PortalHome() {
     return () => clearTimeout(timer);
   }, [typedWord, isDeleting, wordIndex, hasStarted]);
 
-  const handleVisualMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMouseTilt({ x: Number((x * 12).toFixed(2)), y: Number((-y * 12).toFixed(2)) });
-  }, []);
-
-  const handleVisualMouseLeave = useCallback(() => {
-    setMouseTilt({ x: 0, y: 0 });
-  }, []);
 
   useEffect(() => {
     try {
@@ -527,143 +517,8 @@ export default function PortalHome() {
           </div>
         </div>
 
-        <div className="relative rise lg:pl-8" style={{ animationDelay: ".12s" }}>
-          <div
-            className="portal-visual transition-transform duration-300 ease-out"
-            style={{
-              transform: `perspective(1000px) rotateY(${mouseTilt.x}deg) rotateX(${mouseTilt.y}deg)`,
-            }}
-            onMouseMove={handleVisualMouseMove}
-            onMouseLeave={handleVisualMouseLeave}
-            aria-label="Visualisasi pembelajaran LENTERA"
-          >
-            <div className="portal-visual-glow portal-visual-glow-a" />
-            <div className="portal-visual-glow portal-visual-glow-b" />
-
-            <svg
-              className="portal-orbit-scene"
-              viewBox="0 0 620 620"
-              role="img"
-              aria-label="Visualisasi interaksi sentuhan, suara, dan pembelajaran"
-            >
-              <defs>
-                <radialGradient id="coreGradient" cx="50%" cy="45%" r="60%">
-                  <stop offset="0%" stopColor="#fff7ed" stopOpacity="1" />
-                  <stop offset="18%" stopColor="#e9d5ff" stopOpacity=".98" />
-                  <stop offset="52%" stopColor="#a78bfa" stopOpacity=".62" />
-                  <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
-                </radialGradient>
-                <linearGradient id="orbitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#c4b5fd" stopOpacity=".2" />
-                  <stop offset="48%" stopColor="#e9d5ff" stopOpacity=".95" />
-                  <stop offset="100%" stopColor="#67e8f9" stopOpacity=".35" />
-                </linearGradient>
-                <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
-                  <feGaussianBlur stdDeviation="8" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="tinyGlow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-
-              {/* 1. Orbit Horizontal Belakang & Tengah */}
-              <g className="portal-orbit-track">
-                <ellipse cx="310" cy="310" rx="235" ry="94" fill="none" stroke="url(#orbitGradient)" strokeWidth="2.5" />
-                <ellipse cx="310" cy="310" rx="235" ry="94" fill="none" stroke="#e9d5ff" strokeWidth="2" strokeDasharray="35 300" className="portal-orbit-stream-1" opacity="0.75" />
-              </g>
-              <g className="portal-orbit-track">
-                <ellipse cx="310" cy="310" rx="228" ry="88" fill="none" stroke="url(#orbitGradient)" strokeWidth="2" />
-                <ellipse cx="310" cy="310" rx="228" ry="88" fill="none" stroke="#67e8f9" strokeWidth="1.8" strokeDasharray="25 260" className="portal-orbit-stream-2" opacity="0.65" />
-              </g>
-              <g className="portal-orbit-track">
-                <ellipse cx="310" cy="310" rx="235" ry="100" fill="none" stroke="url(#orbitGradient)" strokeWidth="2.2" />
-              </g>
-
-              {/* 2. Cincin Giroskopik Diagonal Kosmik */}
-              <g className="portal-gyro-ring-a">
-                <ellipse cx="310" cy="310" rx="245" ry="108" fill="none" stroke="#8b5cf6" strokeOpacity=".3" strokeWidth="1.2" />
-              </g>
-              <g className="portal-gyro-ring-b">
-                <ellipse cx="310" cy="310" rx="242" ry="102" fill="none" stroke="#c4b5fd" strokeOpacity=".2" strokeWidth="1" strokeDasharray="8 6" />
-              </g>
-
-              {/* 3. Inti Cahaya & Gelombang Riak Pendaran (Pulsing Light Waves) */}
-              <circle cx="310" cy="310" r="115" fill="url(#coreGradient)" opacity=".25" filter="url(#softGlow)" />
-              <circle cx="310" cy="310" r="36" fill="none" stroke="#c4b5fd">
-                <animate attributeName="r" values="36;125" dur="3.8s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.75;0" dur="3.8s" repeatCount="indefinite" />
-                <animate attributeName="stroke-width" values="1.8;0.3" dur="3.8s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="310" cy="310" r="36" fill="none" stroke="#67e8f9">
-                <animate attributeName="r" values="36;125" begin="1.9s" dur="3.8s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.6;0" begin="1.9s" dur="3.8s" repeatCount="indefinite" />
-                <animate attributeName="stroke-width" values="1.5;0.2" begin="1.9s" dur="3.8s" repeatCount="indefinite" />
-              </circle>
-
-              <circle cx="310" cy="310" r="74" fill="#8b5cf6" fillOpacity=".13" stroke="#c4b5fd" strokeOpacity=".34" />
-              <circle cx="310" cy="310" r="49" fill="url(#coreGradient)" filter="url(#softGlow)" />
-
-              {/* Bintang Inti Bersinar (Breathing Star Core) */}
-              <g className="portal-star-core">
-                <circle cx="310" cy="310" r="22" fill="#fff7ed" opacity=".4" filter="url(#softGlow)" />
-                <circle cx="310" cy="310" r="16" fill="#fff7ed" filter="url(#tinyGlow)" />
-              </g>
-
-              {/* 4. Satelit Berevolusi di Jalur Orbit */}
-              <g>
-                <animateMotion
-                  path="M 545,310 A 235 94 0 0 1 75,310 A 235 94 0 0 1 545,310 Z"
-                  dur="16s"
-                  repeatCount="indefinite"
-                />
-                <circle r="12" fill="#c4b5fd" opacity=".3" filter="url(#softGlow)" />
-                <circle r="7" fill="#e9d5ff" filter="url(#tinyGlow)" />
-              </g>
-
-              <g>
-                <animateMotion
-                  path="M 82,310 A 228 88 0 0 0 538,310 A 228 88 0 0 0 82,310 Z"
-                  dur="13s"
-                  repeatCount="indefinite"
-                />
-                <circle r="11" fill="#67e8f9" opacity=".35" filter="url(#softGlow)" />
-                <circle r="6" fill="#67e8f9" filter="url(#tinyGlow)" />
-              </g>
-
-              <g>
-                <animateMotion
-                  path="M 310,210 A 235 100 0 0 1 310,410 A 235 100 0 0 1 310,210 Z"
-                  dur="20s"
-                  repeatCount="indefinite"
-                />
-                <circle r="12" fill="#f0abfc" opacity=".35" filter="url(#softGlow)" />
-                <circle r="7" fill="#f0abfc" filter="url(#tinyGlow)" />
-              </g>
-
-              {/* 5. Partikel Bintang Berkedip */}
-              <g className="portal-particle-field" fill="#c4b5fd">
-                <circle cx="138" cy="176" r="2.5" className="star-twinkle-a" />
-                <circle cx="176" cy="478" r="2" className="star-twinkle-b" />
-                <circle cx="448" cy="140" r="2.5" className="star-twinkle-c" fill="#e9d5ff" />
-                <circle cx="492" cy="466" r="2" className="star-twinkle-a" fill="#67e8f9" />
-                <circle cx="565" cy="232" r="2.2" className="star-twinkle-b" fill="#fff" />
-                <circle cx="104" cy="372" r="2" className="star-twinkle-c" fill="#f0abfc" />
-              </g>
-            </svg>
-
-            <div className="portal-visual-caption">
-              <span className="portal-caption-dot" />
-              <span>Sentuh · Pahami · Belajar Mandiri</span>
-            </div>
-          </div>
+        <div className="relative rise lg:pl-8 flex items-center justify-center w-full" style={{ animationDelay: ".12s" }}>
+          <InteractiveOrbit3D />
         </div>
 
       </section>
