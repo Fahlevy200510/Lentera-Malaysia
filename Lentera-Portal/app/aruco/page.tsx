@@ -68,8 +68,8 @@ export default function ArucoPage() {
     const studentName = activeStudent?.name || "Siswa";
 
     const text = hasLearnedComponents
-      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di baris atas kotak A1 hingga E1 untuk memilih modul belajar terpandu. Letakkan balok di sudut kiri bawah, kotak A5, untuk Mode Eksplorasi Bebas bersama AI Live Tutor. Atau letakkan balok di kotak C5 tengah bawah untuk mendengarkan Rapor Belajar Siswa. Kamu juga bisa meletakkan kartu identitasmu di sel A1 untuk membuka LENTERA Learn, atau di sel E5 untuk mengakhiri sesi.`
-      : `Selamat datang di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di sudut kiri bawah kotak A5 untuk Mode Eksplorasi Bebas bersama AI Tutor, atau letakkan kartu identitasmu di sel A1 untuk membuka LENTERA Learn dan di sel E5 untuk keluar. Sebelum kita mulai, silakan angkat balok yang terpasang di papan fisik agar bersih, setelah itu mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.`;
+      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di baris bawah kotak A1 hingga E1 yang paling dekat denganmu untuk memilih modul belajar terpandu. Letakkan balok di sudut kiri atas, kotak A5, untuk Mode Eksplorasi Bebas bersama AI Live Tutor. Atau letakkan balok di kotak C5 tengah atas untuk mendengarkan Rapor Belajar Siswa. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn, atau di sel E5 sudut kanan atas untuk keluar mengakhiri sesi.`
+      : `Selamat datang di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di sudut kiri atas kotak A5 untuk Mode Eksplorasi Bebas bersama AI Tutor, atau letakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan di sel E5 sudut kanan atas untuk keluar. Sebelum kita mulai, silakan angkat balok yang terpasang di papan fisik agar bersih, setelah itu mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.`;
 
     speakingRef.current = true;
     setSpeaking(true);

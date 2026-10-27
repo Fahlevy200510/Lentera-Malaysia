@@ -976,25 +976,25 @@ export default function VoiceGuide() {
                 });
               }
             } else if (cells["A5"]) {
-              // Mode Eksplorasi Bebas bersama AI Live Tutor (Sudut Kiri Bawah)
+              // Mode Eksplorasi Bebas bersama AI Live Tutor (Sudut Kiri Atas)
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
               const timer = setTimeout(() => startGuide("free_exploration"), 8000);
               speak(
-                "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat balok dari kotak sudut kiri bawah A5 untuk mulai merakit.",
+                "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat balok dari kotak sudut kiri atas A5 untuk mulai merakit.",
                 () => {
                   clearTimeout(timer);
                   startGuide("free_exploration");
                 }
               );
             } else if (cells["C5"]) {
-              // Rapor Hasil Belajar Siswa (Tengah Bawah)
+              // Rapor Hasil Belajar Siswa (Tengah Atas)
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
               speak(
-                "Pilihan diterima: Membuka Rapor Hasil Belajar Siswa. AI Pedagogis sedang menyiapkan evaluasi belajarmu.",
+                "Pilihan diterima: Membuka Rapor Hasil Belajar Siswa. AI Pedagogis sedang menyiapkan evaluasi belajarmu dari kotak tengah atas C5.",
                 () => {
                   if (typeof window !== "undefined") {
                     window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
@@ -1016,7 +1016,7 @@ export default function VoiceGuide() {
         // Pintasan Taktil E5: Kembali ke Menu Utama
         if (cells["E5"] && placedCount === 1 && !isStudentToken(cells["E5"])) {
           playEarcon("click");
-          speak("Kembali ke menu utama LENTERA Lab. Silakan angkat balok dari papan.", () => {
+          speak("Kembali ke menu utama LENTERA Lab dari sudut kanan atas E5. Silakan angkat balok dari papan.", () => {
             resetGuide();
           });
           return;
@@ -1199,7 +1199,7 @@ export default function VoiceGuide() {
             playEarcon("click");
             const timer = setTimeout(() => startGuide("free_exploration"), 8000);
             speak(
-              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat kembali balok dari kotak sudut kiri bawah A5.",
+              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat kembali balok dari kotak sudut kiri atas A5.",
               () => {
                 clearTimeout(timer);
                 startGuide("free_exploration");
@@ -1348,7 +1348,7 @@ export default function VoiceGuide() {
         // Pintasan Taktil E5: Kembali ke Menu Utama jika hanya 1 balok di E5
         if (cells["E5"] && targetCell !== "E5" && placedEntries.length === 1 && !isStudentToken(cells["E5"])) {
           playEarcon("click");
-          speak("Kembali ke menu utama panduan. Silakan angkat balok dari papan.", () => {
+          speak("Kembali ke menu utama panduan dari sudut kanan atas E5. Silakan angkat balok dari papan.", () => {
             resetGuide();
           });
           return;
@@ -1676,7 +1676,7 @@ export default function VoiceGuide() {
       setBoardBlockCount(0);
       setIsExpanded(true);
       speak(
-        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu secara bebas. AI Live Tutor akan otomatis mengamati dan membimbingmu saat sirkuit belum menyala. Kamu juga bisa meletakkan balok di kotak sudut kiri atas A1 kapan saja untuk memanggil AI Tutor, atau di kotak sudut kanan bawah E5 untuk kembali ke menu utama."
+        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu secara bebas. AI Live Tutor akan otomatis mengamati dan membimbingmu saat sirkuit belum menyala. Kamu juga bisa meletakkan balok di kotak sudut kiri bawah A1 kapan saja untuk memanggil AI Tutor, atau di kotak sudut kanan atas E5 untuk kembali ke menu utama."
       );
       return;
     }
@@ -1862,11 +1862,11 @@ export default function VoiceGuide() {
       playEarcon("click");
       if (!isRecognitionDone) {
         speak(
-          "Selamat datang di Panduan Suara LENTERA. Kamu berada di tahap awal. Silakan selesaikan Tahap 1 Pengenalan Bentuk Taktil terlebih dahulu dengan meletakkan satu balok di kotak A1 agar materi berikutnya terbuka. Kamu juga bisa meletakkan balok di kotak A5 sudut kiri bawah untuk Mode Eksplorasi Bebas bersama AI Live Tutor."
+          "Selamat datang di Panduan Suara LENTERA. Kamu berada di tahap awal. Silakan selesaikan Tahap 1 Pengenalan Bentuk Taktil terlebih dahulu dengan meletakkan satu balok di kotak sudut kiri bawah A1 agar materi berikutnya terbuka. Kamu juga bisa meletakkan balok di kotak sudut kiri atas A5 untuk Mode Eksplorasi Bebas bersama AI Live Tutor."
         );
       } else {
         speak(
-          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan modul belajar di baris atas papan dari kotak A1 hingga E1: Tahap satu di A1, Tahap dua Kuis Taktil di B1, Tahap tiga Rangkaian Seri di C1, Tahap empat Rangkaian Paralel di D1, dan Tahap lima Tantangan Detektif di E1. Selain itu, kamu bisa meletakkan balok di kotak A5 sudut kiri bawah untuk Mode Eksplorasi Bebas bersama AI Live Tutor, atau letakkan balok di kotak C5 tengah bawah untuk membuka dan mendengarkan Rapor Belajar Siswa. Silakan letakkan satu balok di papan untuk memulai."
+          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan modul belajar di baris bawah papan yang paling dekat denganmu, dari kotak A1 hingga E1: Tahap satu di sudut kiri bawah A1, Tahap dua di B1, Tahap tiga di C1, Tahap empat di D1, dan Tahap lima di sudut kanan bawah E1. Selain itu, kamu bisa meletakkan balok di kotak sudut kiri atas A5 untuk Mode Eksplorasi Bebas bersama AI Live Tutor, atau letakkan balok di kotak tengah atas C5 untuk membuka dan mendengarkan Rapor Belajar Siswa. Silakan letakkan satu balok di papan untuk memulai."
         );
       }
     };
@@ -1995,7 +1995,7 @@ export default function VoiceGuide() {
               <Zap className="h-3 w-3" />
             </span>
             <p className="text-[11.5px] text-slate-700 leading-snug">
-              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris atas (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri bawah (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Eksplorasi Bebas AI, tengah bawah (<span className="font-mono font-bold text-violet-700">C5</span>) untuk Rapor Siswa.
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Eksplorasi Bebas AI, tengah atas (<span className="font-mono font-bold text-violet-700">C5</span>) untuk Rapor Siswa, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
             </p>
           </div>
           <button
@@ -2153,7 +2153,7 @@ export default function VoiceGuide() {
                   </span>
                 </div>
                 <p className="text-[11.5px] text-slate-600 leading-snug">
-                  <strong className="text-emerald-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di sudut kiri bawah (<span className="font-mono font-bold text-emerald-700">A5</span>). Rakit sirkuit sesukamu tanpa batasan langkah. AI Live Tutor otomatis membimbing saat sirkuit belum menyala.
+                  <strong className="text-emerald-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>). Rakit sirkuit sesukamu tanpa batasan langkah. AI Live Tutor otomatis membimbing saat sirkuit belum menyala.
                 </p>
               </div>
             </div>
@@ -2187,7 +2187,7 @@ export default function VoiceGuide() {
                   </span>
                 </div>
                 <p className="text-[11.5px] text-slate-600 leading-snug">
-                  <strong className="text-violet-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di kotak tengah bawah (<span className="font-mono font-bold text-violet-700">C5</span>). Sistem otomatis menganalisis dan membacakan ringkasan hasil belajar siswa.
+                  <strong className="text-violet-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di kotak tengah atas (<span className="font-mono font-bold text-violet-700">C5</span>). Sistem otomatis menganalisis dan membacakan ringkasan hasil belajar siswa.
                 </p>
               </div>
             </div>
@@ -2532,7 +2532,7 @@ export default function VoiceGuide() {
                     </button>
                   </div>
                   <p className="text-[10.5px] text-slate-500 text-center font-medium">
-                    Pintasan Taktil Mandiri: Letakkan balok di <span className="font-mono font-bold text-emerald-800">A1</span> untuk bimbingan tutor, atau di <span className="font-mono font-bold text-slate-800">E5</span> untuk kembali ke menu.
+                    Pintasan Taktil Mandiri: Letakkan balok di <span className="font-mono font-bold text-emerald-800">A1</span> (sudut kiri bawah) untuk bimbingan tutor, atau di <span className="font-mono font-bold text-slate-800">E5</span> (sudut kanan atas) untuk kembali ke menu.
                   </p>
                 </div>
               </div>
@@ -2572,7 +2572,7 @@ export default function VoiceGuide() {
                     <button
                       onClick={handleShuffleQuiz}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-100/90 hover:bg-indigo-200 border border-indigo-300 px-2.5 py-1 text-[11px] font-bold text-indigo-800 transition-colors shrink-0 shadow-2xs"
-                      title="Acak pertanyaan kuis baru atau letakkan balok di sel A1"
+                      title="Acak pertanyaan kuis baru atau letakkan balok di sel sudut kiri bawah A1"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       <span>Acak Kuis</span>
