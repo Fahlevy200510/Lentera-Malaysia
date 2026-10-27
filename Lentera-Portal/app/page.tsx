@@ -334,42 +334,43 @@ export default function PortalHome() {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "grid_state" && data.cells && !redirected) {
+              // Cari apakah ada sel fisik (A1 s.d. E5) yang dimasuki kartu identitas siswa
+              let detectedStudentCell: string | null = null;
+              let detectedStudentMeta: { id: string; name: string; grade: string; avatar: string } | null = null;
+
+              for (const [cellName, cellData] of Object.entries(data.cells)) {
+                if (cellData && typeof cellData === "object") {
+                  const cd = cellData as { component?: string; id?: number };
+                  const compKey = cd.component || "";
+                  const idKey = String(cd.id ?? "");
+                  if (STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey]) {
+                    detectedStudentCell = cellName;
+                    detectedStudentMeta = STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
+                    break;
+                  }
+                }
+              }
+
               const placed = (Object.values(data.cells).filter(Boolean) as Array<{
                 component: string;
                 rotation: number;
                 id?: number;
               }>);
-              const rawStudentId =
-                Array.isArray(data.detected_students) && data.detected_students.length > 0
-                  ? String(data.detected_students[0])
-                  : null;
 
-              // Cek apakah ada balok kartu identitas siswa yang diletakkan (bebas orientasi & posisi)
-              const studentItem = placed.find((p) => {
-                const compKey = p.component || "";
-                const idKey = String(p.id ?? "");
-                return STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
-              });
-
-              const matchedKey =
-                rawStudentId ||
-                (studentItem ? studentItem.component || String(studentItem.id ?? "") : null);
-
-              if (matchedKey || placed.length > 0) {
+              if (detectedStudentMeta || placed.length > 0) {
                 redirected = true;
                 isRedirectingRef.current = true;
 
                 let speechText = "";
-                if (matchedKey && STUDENT_TOKENS[matchedKey]) {
-                  const tokenMeta = STUDENT_TOKENS[matchedKey];
+                if (detectedStudentMeta && detectedStudentCell) {
                   // Otomatis aktifkan profil siswa yang meletakkan kartu identitas
                   setActiveStudent({
-                    id: tokenMeta.id,
-                    name: tokenMeta.name,
-                    grade: tokenMeta.grade,
-                    avatar: tokenMeta.avatar,
+                    id: detectedStudentMeta.id,
+                    name: detectedStudentMeta.name,
+                    grade: detectedStudentMeta.grade,
+                    avatar: detectedStudentMeta.avatar,
                   });
-                  speechText = `Selamat datang, ${tokenMeta.name}! Kartu identitasmu terdeteksi. Membuka LENTERA Lab.`;
+                  speechText = `Selamat datang, ${detectedStudentMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedStudentCell}. Membuka LENTERA Lab.`;
                 } else {
                   // Fallback jika pengguna meletakkan komponen fisik sirkuit biasa
                   const comp = placed[0]?.component;
