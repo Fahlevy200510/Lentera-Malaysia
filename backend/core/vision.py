@@ -23,7 +23,8 @@ class VisionCore:
         
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         self.clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
-        self.valid_ids = {1, 2, 3, 4, 5, 6, 7}  # 6 Komponen resmi Lentera urut 1-6 (Baterai=1, Lurus=2, L=3, T=4, Lampu=5, Saklar=6, fallback=7)
+        # ID 1-7: Komponen resmi Lentera | ID 35: Via, ID 36: Amira, ID 37: Ajib (Kelas 11 SMA)
+        self.valid_ids = {1, 2, 3, 4, 5, 6, 7, 35, 36, 37}
         
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)

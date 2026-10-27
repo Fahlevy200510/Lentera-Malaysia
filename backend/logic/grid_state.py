@@ -8,7 +8,10 @@ MARKER_ID_MAP = {
     4: "t_cable",
     5: "lamp",
     6: "switch",
-    7: "switch"  # Fallback toleransi untuk stiker saklar lama
+    7: "switch",  # Fallback toleransi untuk stiker saklar lama
+    35: "student_via",
+    36: "student_amira",
+    37: "student_ajib"
 }
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
@@ -21,7 +24,10 @@ COMPONENT_NAME_ID = {
     "t_cable": "kabel T",
     "lamp": "lampu",
     "resistor": "resistor",
-    "switch": "saklar"
+    "switch": "saklar",
+    "student_via": "kartu identitas Via",
+    "student_amira": "kartu identitas Amira",
+    "student_ajib": "kartu identitas Ajib"
 }
 
 class GridState:
@@ -76,7 +82,8 @@ class GridState:
                             
                     parsed_obs = {
                         "component": comp_name,
-                        "rotation": rot
+                        "rotation": rot,
+                        "id": marker_id
                     }
             
             # Update debouncer

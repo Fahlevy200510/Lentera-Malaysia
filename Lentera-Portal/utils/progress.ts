@@ -48,26 +48,26 @@ export const DEFAULT_PROGRESS: StudentProgress = {
 };
 
 export const PRESET_STUDENTS: StudentProfile[] = [
-  { id: "ahmad", name: "Ahmad Fadhil", grade: "Kelas 8B", avatar: "ahmad" },
-  { id: "siti", name: "Siti Rahma", grade: "Kelas 8B", avatar: "siti" },
-  { id: "dimas", name: "Dimas Putra", grade: "Kelas 8B", avatar: "dimas" },
+  { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" },
+  { id: "amira", name: "Amira", grade: "Kelas 11 SMA", avatar: "amira" },
+  { id: "ajib", name: "Ajib", grade: "Kelas 11 SMA", avatar: "ajib" },
   { id: "guest", name: "Tamu / Juri Eksplorasi", grade: "Pengamat", avatar: "guest" },
 ];
 
 const PRESET_INITIAL_PROGRESS: Record<string, StudentProgress> = {
-  ahmad: {
+  via: {
     modules: { component_recognition: true, series_circuit: true, parallel_circuit: false },
     skills: { battery: 5, cable: 5, switch: 4, flow: 4, series: 5, parallel: 1 },
     xp: 750,
     achievements: ["Cahaya Pertama", "Ahli Seri", "Percikan Terang"],
   },
-  siti: {
-    modules: { component_recognition: false, series_circuit: false, parallel_circuit: false },
-    skills: { battery: 2, cable: 1, switch: 1, flow: 1, series: 1, parallel: 0 },
-    xp: 150,
+  amira: {
+    modules: { component_recognition: true, series_circuit: false, parallel_circuit: false },
+    skills: { battery: 3, cable: 2, switch: 2, flow: 2, series: 1, parallel: 0 },
+    xp: 250,
     achievements: ["Percikan Terang"],
   },
-  dimas: {
+  ajib: {
     modules: { component_recognition: true, series_circuit: false, parallel_circuit: false },
     skills: { battery: 5, cable: 4, switch: 4, flow: 2, series: 2, parallel: 0 },
     xp: 450,
@@ -93,7 +93,18 @@ export function getStudentProfiles(): StudentProfile[] {
       return PRESET_STUDENTS;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : PRESET_STUDENTS;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Auto-migrate jika masih ada profil mockup lama
+      const hasOldProfiles = parsed.some(
+        (p: any) => p.id === "ahmad" || p.id === "siti" || p.id === "dimas"
+      );
+      if (hasOldProfiles) {
+        localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(PRESET_STUDENTS));
+        return PRESET_STUDENTS;
+      }
+      return parsed;
+    }
+    return PRESET_STUDENTS;
   } catch {
     return PRESET_STUDENTS;
   }
@@ -108,7 +119,16 @@ export function getActiveStudent(): StudentProfile {
       return PRESET_STUDENTS[0];
     }
     const parsed = JSON.parse(raw);
-    return parsed?.id ? parsed : PRESET_STUDENTS[0];
+    if (
+      !parsed?.id ||
+      parsed.id === "ahmad" ||
+      parsed.id === "siti" ||
+      parsed.id === "dimas"
+    ) {
+      localStorage.setItem(ACTIVE_STUDENT_KEY, JSON.stringify(PRESET_STUDENTS[0]));
+      return PRESET_STUDENTS[0];
+    }
+    return parsed;
   } catch {
     return PRESET_STUDENTS[0];
   }
@@ -137,7 +157,7 @@ export function setActiveStudent(student: StudentProfile): void {
   }
 }
 
-export function addStudentProfile(name: string, grade: string = "Kelas 8B"): StudentProfile {
+export function addStudentProfile(name: string, grade: string = "Kelas 11 SMA"): StudentProfile {
   const cleanName = name.trim();
   const id = `student_${cleanName.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${Date.now().toString().slice(-4)}`;
   const newProfile: StudentProfile = {

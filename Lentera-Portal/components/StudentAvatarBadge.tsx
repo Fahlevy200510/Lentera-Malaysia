@@ -24,9 +24,23 @@ export default function StudentAvatarBadge({
   const normalizedName = (name || "").toLowerCase();
   const normalizedAvatar = (avatar || "").toLowerCase();
 
-  const isAhmad = normalizedId === "ahmad" || avatar === "👦" || normalizedAvatar === "ahmad" || normalizedName.includes("ahmad");
-  const isSiti = normalizedId === "siti" || avatar === "👧" || normalizedAvatar === "siti" || normalizedAvatar === "graduation-cap" || normalizedName.includes("siti");
-  const isDimas = normalizedId === "dimas" || avatar === "🧑" || normalizedAvatar === "dimas" || normalizedAvatar === "sparkles" || normalizedName.includes("dimas");
+  const isVia =
+    normalizedId === "via" ||
+    avatar === "👧" ||
+    normalizedAvatar === "via" ||
+    normalizedName.includes("via");
+  const isAmira =
+    normalizedId === "amira" ||
+    avatar === "👩" ||
+    normalizedAvatar === "amira" ||
+    normalizedAvatar === "graduation-cap" ||
+    normalizedName.includes("amira");
+  const isAjib =
+    normalizedId === "ajib" ||
+    avatar === "🧑" ||
+    normalizedAvatar === "ajib" ||
+    normalizedAvatar === "sparkles" ||
+    normalizedName.includes("ajib");
   const isGuest =
     normalizedId === "guest" ||
     avatar === "👤" ||
@@ -53,19 +67,19 @@ export default function StudentAvatarBadge({
   let colorClasses = "";
   let IconComponent = User;
 
-  if (isAhmad) {
+  if (isVia) {
     IconComponent = User;
     colorClasses =
       theme === "dark"
-        ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/30"
-        : "bg-cyan-100 text-cyan-700 border-cyan-300";
-  } else if (isSiti) {
+        ? "bg-rose-500/20 text-rose-300 border-rose-400/30"
+        : "bg-rose-100 text-rose-700 border-rose-300";
+  } else if (isAmira) {
     IconComponent = GraduationCap;
     colorClasses =
       theme === "dark"
-        ? "bg-pink-500/20 text-pink-300 border-pink-400/30"
-        : "bg-pink-100 text-pink-700 border-pink-300";
-  } else if (isDimas) {
+        ? "bg-violet-500/20 text-violet-300 border-violet-400/30"
+        : "bg-violet-100 text-violet-700 border-violet-300";
+  } else if (isAjib) {
     IconComponent = Sparkles;
     colorClasses =
       theme === "dark"
@@ -75,8 +89,8 @@ export default function StudentAvatarBadge({
     IconComponent = Award;
     colorClasses =
       theme === "dark"
-        ? "bg-violet-500/20 text-violet-300 border-violet-400/30"
-        : "bg-violet-100 text-violet-700 border-violet-300";
+        ? "bg-sky-500/20 text-sky-300 border-sky-400/30"
+        : "bg-sky-100 text-sky-700 border-sky-300";
   } else {
     IconComponent = User;
     colorClasses =

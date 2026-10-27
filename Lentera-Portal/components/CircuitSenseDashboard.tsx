@@ -487,11 +487,11 @@ const skillRadar = [
 
 interface Student { name: string; level: string; mastery: number; status: [string, string]; }
 const students: Student[] = [
-  { name: "Amara S.", level: "Insinyur", mastery: 88, status: ["blue", "Siap naik level"] },
-  { name: "Sinta A.", level: "Insinyur", mastery: 91, status: ["blue", "Siap naik level"] },
+  { name: "Via", level: "Insinyur", mastery: 92, status: ["blue", "Siap naik level"] },
+  { name: "Amira", level: "Teknisi", mastery: 75, status: ["green", "Sesuai target"] },
+  { name: "Ajib", level: "Insinyur", mastery: 85, status: ["blue", "Siap naik level"] },
   { name: "Lina W.", level: "Teknisi", mastery: 72, status: ["green", "Sesuai target"] },
   { name: "Kai R.", level: "Teknisi", mastery: 64, status: ["green", "Sesuai target"] },
-  { name: "Dimas P.", level: "Penjelajah", mastery: 41, status: ["warn", "Perlu bantuan"] },
   { name: "Bagas T.", level: "Penjelajah", mastery: 38, status: ["warn", "Perlu bantuan"] },
 ];
 
@@ -505,7 +505,7 @@ const insights: Insight[] = [
 
 interface Stat { label: string; value: string; icon: LucideIcon; color: string; sub: string; }
 const tStats: Stat[] = [
-  { label: "Siswa", value: "24", icon: GraduationCap, color: C.primary, sub: "di Kelas 8B" },
+  { label: "Siswa", value: "24", icon: GraduationCap, color: C.primary, sub: "di Kelas 11 SMA" },
   { label: "Rata-rata penguasaan", value: "68%", icon: Target, color: C.green, sub: "+6% bulan ini" },
   { label: "Aktif hari ini", value: "19", icon: Zap, color: C.blue, sub: "dari 24 siswa" },
   { label: "Pelajaran selesai", value: "142", icon: CheckCircle2, color: C.pink, sub: "minggu ini" },
@@ -607,7 +607,7 @@ function TeacherOverview() {
         <SectionTitle
           icon={GraduationCap}
           title="Siswa"
-          sub="Kelas 8B · Kelistrikan"
+          sub="Kelas 11 SMA · Kelistrikan"
           right={
             <button
               onClick={() => setShowAllStudents((v) => !v)}
@@ -1748,8 +1748,8 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
     { id: "ai", label: "AI", icon: Sparkles },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
-  const fallbackName = role === "student" ? "Kai Rahman" : role === "parent" ? "Orang Tua / Wali" : "Bu Sari";
-  const tag = role === "student" ? "Teknisi · Lv 2" : role === "parent" ? "Orang tua siswa" : "Kelas 8B · Guru";
+  const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Bu Sari";
+  const tag = role === "student" ? "Teknisi · Lv 2" : role === "parent" ? "Orang tua siswa" : "Kelas 11 SMA · Guru";
   const person = { name: name || fallbackName, tag };
   return (
     <header
@@ -1953,7 +1953,7 @@ export default function CircuitSenseDashboard() {
     ? "Kamu tinggal satu pelajaran lagi untuk meraih lencana berikutnya."
     : role === "parent"
     ? "Berikut progres belajar anak Anda minggu ini."
-    : "Berikut perkembangan Kelas 8B hari ini.";
+    : "Berikut perkembangan Kelas 11 SMA hari ini.";
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", fontFamily: BODY, color: C.text, position: "relative" }}>

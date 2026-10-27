@@ -11,6 +11,7 @@ import { resolveEndpoints, getActiveLenteraEndpoint } from "@/components/aruco/A
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import StudentReportModal from "@/components/StudentReportModal";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
+import { getActiveStudent, setActiveStudent } from "@/utils/progress";
 
 const TYPEWRITER_WORDS = [
   "sentuhan dan suara.",
@@ -215,7 +216,7 @@ export default function PortalHome() {
     synth.cancel();
 
     const text =
-      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat memilih tombol LENTERA Lab di layar, atau cukup letakkan balok komponen apa saja di atas papan fisik di depan Anda. Selamat bereksplorasi!";
+      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat meletakkan kartu identitas siswa di atas papan fisik, atau memilih tombol LENTERA Lab di layar. Selamat bereksplorasi!";
 
     const utterance = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(text));
     utteranceRef.current = utterance; // Mencegah bug Chrome Garbage Collection
@@ -308,6 +309,15 @@ export default function PortalHome() {
         ws.onopen = () => {
           console.log("[LENTERA Auto-Redirect WS] Terhubung ke papan fisik!");
         };
+        const STUDENT_TOKENS: Record<string, { id: string; name: string; grade: string; avatar: string }> = {
+          student_via: { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" },
+          student_amira: { id: "amira", name: "Amira", grade: "Kelas 11 SMA", avatar: "amira" },
+          student_ajib: { id: "ajib", name: "Ajib", grade: "Kelas 11 SMA", avatar: "ajib" },
+          "35": { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" },
+          "36": { id: "amira", name: "Amira", grade: "Kelas 11 SMA", avatar: "amira" },
+          "37": { id: "ajib", name: "Ajib", grade: "Kelas 11 SMA", avatar: "ajib" },
+        };
+
         const COMPONENT_LABEL: Record<string, string> = {
           battery: "Baterai",
           lamp: "Lampu",
@@ -315,18 +325,51 @@ export default function PortalHome() {
           straight_cable: "Kabel lurus",
           l_cable: "Kabel sudut",
           t_cable: "Kabel cabang T",
+          student_via: "Kartu Identitas Via",
+          student_amira: "Kartu Identitas Amira",
+          student_ajib: "Kartu Identitas Ajib",
         };
 
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "grid_state" && data.cells && !redirected) {
-              const placed = (Object.values(data.cells).filter(Boolean) as Array<{ component: string; rotation: number }>);
+              const placed = (Object.values(data.cells).filter(Boolean) as Array<{
+                component: string;
+                rotation: number;
+                id?: number;
+              }>);
               if (placed.length > 0) {
+                // Cek apakah ada balok kartu identitas siswa yang diletakkan
+                const studentItem = placed.find((p) => {
+                  const compKey = p.component || "";
+                  const idKey = String(p.id ?? "");
+                  return STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
+                });
+
                 redirected = true;
                 isRedirectingRef.current = true;
-                const comp = placed[0]?.component;
-                const label = COMPONENT_LABEL[comp] || "komponen";
+
+                let speechText = "";
+                if (studentItem) {
+                  const tokenMeta =
+                    STUDENT_TOKENS[studentItem.component] ||
+                    STUDENT_TOKENS[String(studentItem.id)];
+                  // Otomatis aktifkan profil siswa yang meletakkan kartu identitas
+                  setActiveStudent({
+                    id: tokenMeta.id,
+                    name: tokenMeta.name,
+                    grade: tokenMeta.grade,
+                    avatar: tokenMeta.avatar,
+                  });
+                  speechText = `Selamat datang, ${tokenMeta.name}! Kartu identitasmu terdeteksi. Membuka LENTERA Lab.`;
+                } else {
+                  // Fallback jika pengguna meletakkan komponen fisik sirkuit biasa
+                  const comp = placed[0]?.component;
+                  const label = COMPONENT_LABEL[comp] || "komponen";
+                  const activeStudent = getActiveStudent();
+                  speechText = `Balok ${label} terdeteksi! Melanjutkan sesi untuk ${activeStudent.name}. Membuka LENTERA Lab.`;
+                }
 
                 const navigateToLab = () => {
                   router.push("/aruco");
@@ -334,11 +377,15 @@ export default function PortalHome() {
 
                 if (typeof window !== "undefined" && "speechSynthesis" in window) {
                   window.speechSynthesis.cancel();
-                  const notify = new SpeechSynthesisUtterance(normalizeIndonesianPhonetics(`Balok ${label} terdeteksi! Membuka LENTERA Lab.`));
+                  const notify = new SpeechSynthesisUtterance(
+                    normalizeIndonesianPhonetics(speechText)
+                  );
                   notify.lang = "id-ID";
                   const voices = window.speechSynthesis.getVoices();
                   const idVoice = voices.find(
-                    (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
+                    (v) =>
+                      v.lang.toLowerCase().startsWith("id") ||
+                      v.name.toLowerCase().includes("indonesia")
                   );
                   if (idVoice) notify.voice = idVoice;
                   notify.rate = 0.95;
