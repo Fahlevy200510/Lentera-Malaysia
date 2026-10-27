@@ -78,7 +78,7 @@ export default function ArucoPage() {
     const studentName = activeStudent?.name || "Siswa";
 
     const text = hasLearnedComponents
-      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini terbuka untukmu. Di baris bawah papan yang paling dekat denganmu: letakkan balok di kotak A1 untuk mengulang Pengenalan Komponen, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Untuk Mode Eksplorasi Bebas bersama AI Tutor, letakkan balok di sudut kiri atas kotak A5. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sudut kanan atas kotak E5 untuk keluar mengakhiri sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
+      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini terbuka untukmu. Di baris bawah papan yang paling dekat denganmu: letakkan balok di kotak A1 untuk mengulang Pengenalan Komponen, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Untuk Tanya AI Tutor lewat suara, letakkan balok di sudut kiri atas kotak A5. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sudut kanan atas kotak E5 untuk keluar mengakhiri sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
       : `Selamat datang di LENTERA Lab, ${studentName}! Papan eksperimen fisikmu sudah siap digunakan. Sebelum kita mulai merakit, silakan raba papan mejamu dan angkat balok yang masih terpasang agar papan bersih. Setelah itu, mari kita mulai belajar mengenal komponen listrik dan bentuk rabaan taktilnya satu per satu!`;
 
     speakingRef.current = true;
@@ -99,6 +99,17 @@ export default function ArucoPage() {
         }
       },
     });
+  }, []);
+
+  // Dengarkan event perpindahan tab dari pintasan fisik papan taktil (misal: balok di A5 membuka AI Tutor)
+  useEffect(() => {
+    const handleSwitchTab = (e: any) => {
+      if (e?.detail === "tutor" || e?.detail === "guide") {
+        setActiveTab(e.detail);
+      }
+    };
+    window.addEventListener("lentera-switch-tab", handleSwitchTab);
+    return () => window.removeEventListener("lentera-switch-tab", handleSwitchTab);
   }, []);
 
   // Putar narasi sambutan & arahan saat masuk ke Lentera Lab:

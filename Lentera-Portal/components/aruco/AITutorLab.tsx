@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
+import { isStudentToken, getStudentNameFromToken } from "./VoiceGuide";
 
 interface Msg {
   role: "ai" | "user";
@@ -68,30 +69,43 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const recordStartTimeRef = useRef<number>(0);
   const lastToggleRef = useRef<number>(0);
   const latestCircuitRef = useRef<any>(null);
+  const isListeningRef = useRef(false);
+  const loadingRef = useRef(false);
+  const isTranscribingRef = useRef(false);
+  const lastA1StateRef = useRef<boolean>(false);
+  const isHandlingNavRef = useRef<boolean>(false);
 
   // Auto-scroll ke pesan terbaru
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Dengarkan live telemetry sirkuit dari kamera ArUco di lab
   useEffect(() => {
-    const handleCircuitUpdate = (e: any) => {
-      if (e?.detail) {
-        latestCircuitRef.current = e.detail;
-        const placed = e.detail.cells
-          ? Object.values(e.detail.cells).filter(Boolean).length
-          : 0;
-        setCircuitTelemetry({
-          status: e.detail.status,
-          graph_type: e.detail.graph_type,
-          placedCount: placed,
-        });
-      }
-    };
+    isListeningRef.current = isListening;
+  }, [isListening]);
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+  useEffect(() => {
+    isTranscribingRef.current = isTranscribing;
+  }, [isTranscribing]);
 
-    window.addEventListener("circuit-update", handleCircuitUpdate);
-    return () => window.removeEventListener("circuit-update", handleCircuitUpdate);
+  // Sambutan & panduan suara saat siswa tunanetra masuk ke layar Tanya AI Tutor
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      speakNarration(
+        "Selamat datang di Tanya AI Tutor! Di sini kamu bisa bertanya apa saja tentang sirkuit di mejamu lewat suara. Letakkan satu balok di kotak A1 sudut kiri bawah untuk mulai bicara, dan angkat balok jika sudah selesai bicara. Atau letakkan balok di sudut kanan atas E5 untuk kembali ke panduan modul.",
+        {
+          tag: "ai-tutor-lab-intro",
+          rate: 0.94,
+          pitch: 1.0,
+        }
+      );
+    }, 600);
+    return () => {
+      clearTimeout(timer);
+      cancelSpeech();
+    };
   }, []);
 
   const speak = (text: string) => {
@@ -184,21 +198,17 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       } catch {}
     }
     setIsListening(false);
+    isListeningRef.current = false;
   }, []);
 
-  const toggleListening = async () => {
+  const startListening = useCallback(async () => {
     if (typeof window === "undefined") return;
 
     const now = Date.now();
     if (now - lastToggleRef.current < 450) return;
     lastToggleRef.current = now;
 
-    if (loading) return;
-
-    if (isListening) {
-      stopListening();
-      return;
-    }
+    if (loadingRef.current || isListeningRef.current || isTranscribingRef.current) return;
 
     cancelSpeech();
     playEarcon("click");
@@ -234,6 +244,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     }
 
     setIsListening(true);
+    isListeningRef.current = true;
     playEarcon("step");
 
     // Hitung detik merekam
@@ -356,6 +367,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
         "Browser Anda belum mendukung pengenalan suara mikrofon. Silakan gunakan Google Chrome atau Edge terbaru."
       );
       setIsListening(false);
+      isListeningRef.current = false;
       return;
     }
 
@@ -363,7 +375,92 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     listeningTimeoutRef.current = setTimeout(() => {
       stopListening();
     }, 12000);
-  };
+  }, [send, stopListening]);
+
+  const toggleListening = useCallback(() => {
+    if (isListeningRef.current) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [startListening, stopListening]);
+
+  // Dengarkan live telemetry sirkuit dari kamera ArUco di lab & kelola pintasan fisik (A1 push-to-talk & E5 kembali)
+  useEffect(() => {
+    const handleCircuitUpdate = (e: any) => {
+      if (e?.detail) {
+        latestCircuitRef.current = e.detail;
+        const cells = e.detail.cells || {};
+        const placed = Object.values(cells).filter(Boolean).length;
+        setCircuitTelemetry({
+          status: e.detail.status,
+          graph_type: e.detail.graph_type,
+          placedCount: placed,
+        });
+
+        const cellA1 = cells["A1"];
+        const cellE5 = cells["E5"];
+        const isA1Placed = Boolean(cellA1 && !isStudentToken(cellA1));
+        const isE5Placed = Boolean(cellE5 && !isStudentToken(cellE5));
+        const isE5Student = isStudentToken(cellE5);
+
+        // 1. Kartu Siswa di E5 -> Selesai / Logout
+        if (isE5Student && !isHandlingNavRef.current) {
+          isHandlingNavRef.current = true;
+          cancelSpeech();
+          stopListening();
+          playEarcon("clear");
+          const sName = getStudentNameFromToken(cellE5);
+          localStorage.removeItem("lentera-session");
+          const navTimer = setTimeout(() => {
+            window.location.href = "/";
+          }, 4500);
+          speakNarration(
+            `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar selesai. Sampai jumpa!`,
+            {
+              onEnd: () => {
+                clearTimeout(navTimer);
+                window.location.href = "/";
+              },
+            }
+          );
+          return;
+        }
+
+        // 2. Balok di E5 (sudut kanan atas) -> Kembali ke Panduan Modul (Menu Utama)
+        if (isE5Placed && !isHandlingNavRef.current) {
+          isHandlingNavRef.current = true;
+          cancelSpeech();
+          stopListening();
+          playEarcon("click");
+          speakNarration("Kembali ke panduan modul LENTERA Lab.", {
+            onEnd: () => {
+              onBack?.();
+            },
+          });
+          return;
+        }
+
+        // 3. Tangible Push-To-Talk via balok di A1 (sudut kiri bawah)
+        if (!isHandlingNavRef.current) {
+          if (isA1Placed && !lastA1StateRef.current) {
+            lastA1StateRef.current = true;
+            if (!isListeningRef.current && !loadingRef.current && !isTranscribingRef.current) {
+              startListening();
+            }
+          } else if (!isA1Placed && lastA1StateRef.current) {
+            lastA1StateRef.current = false;
+            if (isListeningRef.current) {
+              stopListening();
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener("circuit-update", handleCircuitUpdate);
+    return () => window.removeEventListener("circuit-update", handleCircuitUpdate);
+  }, [onBack, startListening, stopListening]);
 
   // Shortcut Aksesibilitas: Tekan tombol 'V' untuk mulai/berhenti bicara
   useEffect(() => {
@@ -471,6 +568,14 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
             : circuitTelemetry.status === "short"
             ? "Korsleting!"
             : "Rangkaian Terbuka"}
+        </span>
+      </div>
+
+      {/* Tangible Shortcut Info */}
+      <div className="flex items-center gap-2 py-1 px-3 mb-2 rounded-xl bg-violet-50/70 border border-violet-100 text-[11px] text-violet-900 shrink-0">
+        <strong className="font-extrabold text-violet-950">Pintasan Taktil:</strong>
+        <span>
+          Taruh balok di <span className="font-mono font-bold text-violet-700">A1</span> untuk bicara & angkat jika selesai. Taruh balok di <span className="font-mono font-bold text-slate-700">E5</span> untuk kembali.
         </span>
       </div>
 

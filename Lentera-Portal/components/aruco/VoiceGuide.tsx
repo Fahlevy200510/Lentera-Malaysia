@@ -445,14 +445,14 @@ const COMPONENT_LABEL: Record<string, string> = {
   student_via: "kartu identitas Via", student_amira: "kartu identitas Amira", student_ajib: "kartu identitas Ajib",
 };
 
-const isStudentToken = (cell: any): boolean => {
+export const isStudentToken = (cell: any): boolean => {
   if (!cell || typeof cell !== "object") return false;
   const comp = String(cell.component || "");
   const id = Number(cell.id);
   return comp.startsWith("student_") || [35, 36, 37].includes(id);
 };
 
-const getStudentNameFromToken = (cell: any): string => {
+export const getStudentNameFromToken = (cell: any): string => {
   if (!cell) return "Siswa";
   const comp = String(cell.component || "");
   const id = Number(cell.id);
@@ -692,7 +692,7 @@ export default function VoiceGuide() {
     }
 
     speak(
-      `${intro} Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini sudah terbuka untukmu: Di baris bawah papan yang paling dekat denganmu, letakkan balok di kotak A1 untuk mengulang Pengenalan Komponen, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Untuk Mode Eksplorasi Bebas bersama AI Tutor, letakkan balok di sudut kiri atas kotak A5. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sel E5 sudut kanan atas untuk keluar sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
+      `${intro} Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini sudah terbuka untukmu: Di baris bawah papan yang paling dekat denganmu, letakkan balok di kotak A1 untuk mengulang Pengenalan Komponen, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Untuk Tanya AI Tutor lewat suara, letakkan balok di sudut kiri atas kotak A5. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sel E5 sudut kanan atas untuk keluar sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
     );
   }, [speak]);
 
@@ -976,16 +976,19 @@ export default function VoiceGuide() {
                 });
               }
             } else if (cells["A5"]) {
-              // Mode Eksplorasi Bebas bersama AI Live Tutor (Sudut Kiri Atas)
+              // Tanya AI Tutor (Voice Q&A) (Sudut Kiri Atas)
+              if (isStudentToken(cells["A5"])) return;
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
-              const timer = setTimeout(() => startGuide("free_exploration"), 8000);
+              const timer = setTimeout(() => {
+                window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
+              }, 6000);
               speak(
-                "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat balok dari kotak sudut kiri atas A5 untuk mulai merakit.",
+                "Pilihan diterima: Membuka Tanya AI Tutor. Silakan angkat balok dari kotak sudut kiri atas A5 untuk mulai bertanya lewat suara.",
                 () => {
                   clearTimeout(timer);
-                  startGuide("free_exploration");
+                  window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
                 }
               );
             }
@@ -1963,7 +1966,7 @@ export default function VoiceGuide() {
               <Zap className="h-3 w-3" />
             </span>
             <p className="text-[11.5px] text-slate-700 leading-snug">
-              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Eksplorasi Bebas AI, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Tanya AI Tutor, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
             </p>
           </div>
           <button
