@@ -13,6 +13,7 @@ import {
   Loader2,
   Zap,
   RotateCcw,
+  ArrowLeft,
 } from "lucide-react";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
@@ -31,7 +32,11 @@ const LAB_QUICK_CHIPS = [
   "Apa bedanya rangkaian seri dan paralel?",
 ];
 
-export default function AITutorLab() {
+interface AITutorLabProps {
+  onBack?: () => void;
+}
+
+export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "ai",
@@ -241,6 +246,16 @@ export default function AITutorLab() {
         </div>
 
         <div className="flex items-center gap-1.5">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors mr-1"
+              title="Kembali ke Panduan Modul"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Panduan Modul</span>
+            </button>
+          )}
           <button
             onClick={handleResetChat}
             className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"

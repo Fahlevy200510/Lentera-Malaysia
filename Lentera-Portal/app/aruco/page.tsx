@@ -191,28 +191,42 @@ export default function ArucoPage() {
                 <BookOpen className="h-4 w-4" />
                 Lentera Learn
               </Link>
-              <button
-                onClick={() => setActiveTab("guide")}
-                className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                  activeTab === "guide"
-                    ? "bg-cs-primary/10 text-cs-primaryDeep shadow-sm"
-                    : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
-                }`}
-              >
-                <ScanEye className="h-4 w-4" />
-                Panduan Modul
-              </button>
-              <button
-                onClick={() => setActiveTab("tutor")}
-                className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                  activeTab === "tutor"
-                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/25"
-                    : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                Tanya AI Tutor
-              </button>
+              <div className="pt-3 border-t border-slate-100 my-2">
+                <p className="px-4 pb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  Panel Interaksi Lab
+                </p>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => setActiveTab("guide")}
+                    className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                      activeTab === "guide"
+                        ? "bg-cs-primary/10 text-cs-primaryDeep shadow-sm font-extrabold"
+                        : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
+                    }`}
+                  >
+                    <ScanEye className="h-4 w-4" />
+                    <span>Panduan Modul</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("tutor")}
+                    className={`flex items-center justify-between w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                      activeTab === "tutor"
+                        ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/25 font-extrabold"
+                        : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Sparkles className="h-4 w-4" />
+                      <span>Tanya AI Tutor</span>
+                    </div>
+                    <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-bold ${
+                      activeTab === "tutor" ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"
+                    }`}>
+                      Voice
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -341,33 +355,11 @@ export default function ArucoPage() {
               </div>
             </div>
 
-            {/* Tab Switcher antara Panduan Modul Belajar & Tanya AI Tutor */}
-            <div className="flex items-center gap-2 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 shadow-2xs">
-              <button
-                onClick={() => setActiveTab("guide")}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all active:scale-95 ${
-                  activeTab === "guide"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <BookOpen className="h-4 w-4" />
-                <span>Panduan Modul Belajar</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("tutor")}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all active:scale-95 ${
-                  activeTab === "tutor"
-                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/25"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Tanya AI Tutor (Voice Q&A)</span>
-              </button>
-            </div>
-
-            {activeTab === "guide" ? <VoiceGuide /> : <AITutorLab />}
+            {activeTab === "guide" ? (
+              <VoiceGuide />
+            ) : (
+              <AITutorLab onBack={() => setActiveTab("guide")} />
+            )}
           </div>
         </div>
       </section>
