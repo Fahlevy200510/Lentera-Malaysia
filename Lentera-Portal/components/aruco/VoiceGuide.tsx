@@ -676,6 +676,26 @@ export default function VoiceGuide() {
     setIsSpeaking(false);
   }, []);
 
+  const speakMainMenuOverview = useCallback((prefixText?: string) => {
+    const sProg = getStudentProgress();
+    const recDone = Boolean(sProg?.modules?.component_recognition);
+    const activeStudent = getActiveStudent();
+    const sName = activeStudent?.name || "Siswa";
+
+    const intro = prefixText || "Pilihan istirahat ke Menu Utama diterima! Silakan angkat kembali balok dari E1.";
+
+    if (!recDone) {
+      speak(
+        `${intro} Papan siap digunakan. Silakan mulai Tahap 1 Pengenalan Bentuk Taktil dengan meletakkan satu balok di kotak A1 sudut kiri bawah.`
+      );
+      return;
+    }
+
+    speak(
+      `${intro} Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini sudah terbuka untukmu: Di baris bawah dekat mejamu, letakkan balok di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Untuk Mode Eksplorasi Bebas bersama AI Tutor, letakkan balok di sudut kiri atas kotak A5. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sel E5 sudut kanan atas untuk keluar sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
+    );
+  }, [speak]);
+
   const handleShuffleQuiz = useCallback(() => {
     const newSteps = createDynamicQuizSteps(true);
     setQuizSteps(newSteps);
@@ -1152,14 +1172,8 @@ export default function VoiceGuide() {
             setCheckpointPhase("confirmed");
             playEarcon("click");
             ignoreIdleMenuUntilLiftRef.current = true;
-            const timer = setTimeout(() => resetGuide(), 8000);
-            speak(
-              "Pilihan istirahat diterima. Silakan angkat kembali balok dari papan untuk bereksplorasi bebas.",
-              () => {
-                clearTimeout(timer);
-                resetGuide();
-              }
-            );
+            resetGuide();
+            speakMainMenuOverview("Pilihan istirahat ke Menu Utama diterima! Silakan angkat kembali balok dari E1.");
           } else if (cells["A5"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
@@ -1827,15 +1841,7 @@ export default function VoiceGuide() {
 
     const speakMenuGuidance = () => {
       playEarcon("click");
-      if (!isRecognitionDone) {
-        speak(
-          "Selamat datang di Panduan Suara LENTERA. Kamu berada di tahap awal. Silakan selesaikan Tahap 1 Pengenalan Bentuk Taktil terlebih dahulu dengan meletakkan satu balok di kotak sudut kiri bawah A1 agar materi berikutnya terbuka. Kamu juga bisa meletakkan balok di kotak sudut kiri atas A5 untuk Mode Eksplorasi Bebas bersama AI Live Tutor."
-        );
-      } else {
-        speak(
-          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan modul belajar di baris bawah papan yang paling dekat denganmu, dari kotak A1 hingga E1: Tahap satu di sudut kiri bawah A1, Tahap dua di B1, Tahap tiga di C1, Tahap empat di D1, dan Tahap lima di sudut kanan bawah E1. Selain itu, kamu bisa meletakkan balok di kotak sudut kiri atas A5 untuk Mode Eksplorasi Bebas bersama AI Live Tutor. Silakan letakkan satu balok di papan untuk memulai."
-        );
-      }
+      speakMainMenuOverview("Selamat datang di Panduan Menu LENTERA Lab.");
     };
 
     const MODULES = [
@@ -2288,7 +2294,10 @@ export default function VoiceGuide() {
 
                         {/* Pilihan E1 = TIDAK */}
                         <button
-                          onClick={resetGuide}
+                          onClick={() => {
+                            resetGuide();
+                            speakMainMenuOverview("Pilihan kembali ke Menu Utama diterima! Papan siap digunakan.");
+                          }}
                           className="group relative flex flex-col items-start rounded-xl border-2 border-slate-200 bg-white p-2.5 text-left transition-all hover:border-slate-400 hover:shadow-md hover:bg-slate-50 active:scale-[0.98]"
                         >
                           <div className="flex items-center justify-between w-full mb-1">
