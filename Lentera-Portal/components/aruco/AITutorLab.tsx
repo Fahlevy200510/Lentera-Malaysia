@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Sparkles,
   Mic,
@@ -48,6 +48,8 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const [loading, setLoading] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState<string | null>(null);
   const [circuitTelemetry, setCircuitTelemetry] = useState<{
     status?: string;
     graph_type?: string;
@@ -56,6 +58,11 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
 
   const endRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const listeningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasResultRef = useRef(false);
   const latestCircuitRef = useRef<any>(null);
 
   // Auto-scroll ke pesan terbaru
@@ -90,64 +97,6 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       rate: 0.95,
       pitch: 1.0,
     });
-  };
-
-  const toggleListening = () => {
-    if (typeof window === "undefined") return;
-
-    if (isListening) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsListening(false);
-      return;
-    }
-
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert(
-        "Browser Anda belum mendukung pengenalan suara mikrofon langsung. Silakan gunakan Google Chrome atau Microsoft Edge."
-      );
-      return;
-    }
-
-    try {
-      cancelSpeech();
-      playEarcon("click");
-      const recognition = new SpeechRecognition();
-      recognition.lang = "id-ID";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results?.[0]?.[0]?.transcript;
-        if (transcript) {
-          setInput(transcript);
-          setIsListening(false);
-          send(transcript);
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn("[AITutorLab] Speech recognition error:", event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (err) {
-      console.warn("[AITutorLab] Gagal memulai speech recognition:", err);
-      setIsListening(false);
-    }
   };
 
   const send = async (textToSend?: string) => {
@@ -209,6 +158,210 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       setLoading(false);
     }
   };
+
+  const stopListening = useCallback(() => {
+    if (listeningTimeoutRef.current) {
+      clearTimeout(listeningTimeoutRef.current);
+      listeningTimeoutRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {}
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch {}
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
+    }
+    setIsListening(false);
+  }, []);
+
+  const toggleListening = async () => {
+    if (typeof window === "undefined") return;
+
+    if (isListening) {
+      stopListening();
+      return;
+    }
+
+    cancelSpeech();
+    playEarcon("click");
+    hasResultRef.current = false;
+    setVoiceStatus(null);
+
+    // 1. Minta akses mikrofon pengguna
+    let stream: MediaStream | null = null;
+    if (navigator?.mediaDevices?.getUserMedia) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = stream;
+      } catch (err: any) {
+        console.warn("[AITutorLab] getUserMedia error:", err);
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          setVoiceStatus("Akses mikrofon diblokir browser. Silakan izinkan di bilah alamat.");
+          playEarcon("wrong");
+          speakNarration(
+            "Akses mikrofon belum diizinkan. Silakan klik ikon gembok pada bilah alamat browser dan pilih Izinkan Mikrofon.",
+            { tag: "mic-perm" }
+          );
+          return;
+        } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+          setVoiceStatus("Perangkat mikrofon fisik tidak terdeteksi.");
+          playEarcon("wrong");
+          speakNarration(
+            "Perangkat mikrofon tidak ditemukan di komputermu. Silakan hubungkan mikrofon atau ketik pertanyaan.",
+            { tag: "mic-notfound" }
+          );
+          return;
+        }
+      }
+    }
+
+    setIsListening(true);
+    playEarcon("step");
+
+    // 2. Gunakan MediaRecorder + Groq Whisper Large v3 Turbo untuk transkripsi audio akurat
+    if (stream && typeof MediaRecorder !== "undefined") {
+      audioChunksRef.current = [];
+      try {
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : MediaRecorder.isTypeSupported("audio/mp4")
+          ? "audio/mp4"
+          : "";
+        const recorder = mimeType
+          ? new MediaRecorder(stream, { mimeType })
+          : new MediaRecorder(stream);
+        mediaRecorderRef.current = recorder;
+
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        recorder.onstop = async () => {
+          if (hasResultRef.current) return;
+          const chunks = audioChunksRef.current;
+          if (chunks.length === 0) return;
+
+          const audioBlob = new Blob(chunks, {
+            type: recorder.mimeType || "audio/webm",
+          });
+          if (audioBlob.size < 1200) {
+            return;
+          }
+
+          setIsTranscribing(true);
+          try {
+            const formData = new FormData();
+            formData.append("file", audioBlob, "audio.webm");
+            const res = await fetch("/api/transcribe", {
+              method: "POST",
+              body: formData,
+            });
+            const data = await res.json();
+            if (data?.text && data.text.trim().length > 1) {
+              hasResultRef.current = true;
+              setInput(data.text);
+              send(data.text);
+            } else {
+              setVoiceStatus("Suara tidak terdengar jelas.");
+              playEarcon("clue");
+              speakNarration("Suara tidak terdengar jelas. Silakan coba lagi.", {
+                tag: "mic-empty",
+              });
+            }
+          } catch (tErr) {
+            console.error("[AITutorLab] Transcribe API error:", tErr);
+          } finally {
+            setIsTranscribing(false);
+          }
+        };
+
+        recorder.start(250);
+      } catch (recErr) {
+        console.warn("[AITutorLab] MediaRecorder setup error:", recErr);
+      }
+    }
+
+    // 3. Paralel: Web Speech API lokal jika didukung untuk streaming instan
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = "id-ID";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results?.[0]?.[0]?.transcript;
+          if (transcript && transcript.trim()) {
+            hasResultRef.current = true;
+            stopListening();
+            setInput(transcript);
+            send(transcript);
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.warn("[AITutorLab] Speech recognition error:", event.error);
+          if (event.error === "not-allowed") {
+            setVoiceStatus("Izin mikrofon belum aktif di browser.");
+          }
+        };
+
+        recognition.onend = () => {
+          if (!hasResultRef.current && isListening) {
+            stopListening();
+          }
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      } catch (err) {
+        console.warn("[AITutorLab] Gagal memulai Web Speech:", err);
+      }
+    } else if (!stream) {
+      alert(
+        "Browser Anda belum mendukung pengenalan suara mikrofon. Silakan gunakan Google Chrome atau Edge terbaru."
+      );
+      setIsListening(false);
+      return;
+    }
+
+    // Otomatis batas maksimal 15 detik mendengarkan
+    listeningTimeoutRef.current = setTimeout(() => {
+      stopListening();
+    }, 15000);
+  };
+
+  // Shortcut Aksesibilitas: Tekan tombol 'V' untuk mulai/berhenti bicara
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+      if (!isInput && (e.key === "v" || e.key === "V" || e.key === "Vokal")) {
+        e.preventDefault();
+        toggleListening();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isListening, stopListening]);
+
+  useEffect(() => {
+    return () => {
+      stopListening();
+    };
+  }, [stopListening]);
 
   const handleResetChat = () => {
     cancelSpeech();
@@ -351,6 +504,41 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           </button>
         ))}
       </div>
+
+      {/* Voice Status & Real-time Feedback */}
+      {isListening && (
+        <div className="flex items-center justify-between px-3 py-1.5 my-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold animate-pulse shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+            <span className="truncate">🎙️ Mendengarkan... Bicara sekarang (Tekan mic atau tombol V untuk selesai)</span>
+          </div>
+          <button
+            onClick={stopListening}
+            className="underline text-[11px] text-rose-800 hover:text-rose-950 font-extrabold shrink-0 ml-2"
+          >
+            Selesai
+          </button>
+        </div>
+      )}
+
+      {isTranscribing && (
+        <div className="flex items-center gap-2 px-3 py-1.5 my-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shrink-0">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-600 shrink-0" />
+          <span>⚡ Mentranskripsi suara dengan Groq Whisper...</span>
+        </div>
+      )}
+
+      {voiceStatus && !isListening && !isTranscribing && (
+        <div className="flex items-center justify-between px-3 py-1.5 my-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium shrink-0">
+          <span className="truncate">{voiceStatus}</span>
+          <button
+            onClick={() => setVoiceStatus(null)}
+            className="text-amber-600 hover:text-amber-900 font-bold ml-2 text-sm shrink-0"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Input Bar */}
       <div className="flex items-center gap-2 pt-2 border-t border-slate-100 shrink-0">
