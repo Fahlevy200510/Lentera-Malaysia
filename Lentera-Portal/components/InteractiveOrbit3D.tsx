@@ -704,10 +704,10 @@ export default function InteractiveOrbit3D() {
 
       ctx.clearRect(0, 0, width, height);
 
-      // Lingkaran Luar Pembatas
+      // Lingkaran Luar Pembatas Halus
       ctx.beginPath();
       ctx.arc(cx, cy, baseScale * 0.985, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(167, 139, 250, 0.11)";
+      ctx.strokeStyle = "rgba(167, 139, 250, 0.08)";
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -753,13 +753,12 @@ export default function InteractiveOrbit3D() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[540px] sm:h-[580px] lg:h-[620px] rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-br from-[#231642]/85 via-[#141234]/90 to-[#0c0920]/95 backdrop-blur-2xl shadow-[0_28px_70px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.12)] flex items-center justify-center select-none"
+      className="relative w-full h-[540px] sm:h-[580px] lg:h-[620px] flex items-center justify-center select-none bg-transparent"
     >
-      {/* Background ambient lighting glows */}
-      <div className="absolute -top-12 -left-12 w-72 h-72 rounded-full bg-violet-600/20 blur-[60px] pointer-events-none" />
-      <div className="absolute -bottom-12 -right-12 w-80 h-80 rounded-full bg-cyan-600/18 blur-[65px] pointer-events-none" />
+      {/* Pendaran ambient menyatu lembut dengan background halaman portal */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[460px] h-[460px] sm:w-[540px] sm:h-[540px] rounded-full bg-gradient-to-tr from-violet-600/16 via-indigo-600/10 to-cyan-500/08 blur-[90px] pointer-events-none" />
 
-      {/* 3D Orbit Canvas */}
+      {/* 3D Orbit Canvas (Transparan) */}
       <canvas
         ref={canvasRef}
         className="w-full h-full block cursor-grab active:cursor-grabbing touch-none z-10"
@@ -771,7 +770,7 @@ export default function InteractiveOrbit3D() {
         type="button"
         onClick={handleBadgeClick}
         title="Klik untuk memancarkan gelombang energi inti"
-        className="group absolute bottom-6 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-[#0f0a22]/80 hover:bg-[#160f33]/90 border border-violet-400/25 hover:border-violet-400/50 text-[11px] font-bold tracking-[1.5px] uppercase text-purple-100/90 shadow-[0_6px_24px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_6px_28px_rgba(168,85,247,0.28)] transition-all active:scale-95 cursor-pointer"
+        className="group absolute bottom-4 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-[#150d36]/70 hover:bg-[#201350]/85 border border-violet-400/25 hover:border-violet-400/50 text-[11px] font-bold tracking-[1.5px] uppercase text-purple-100/90 shadow-[0_4px_24px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
       >
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
