@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck, Volume2, VolumeX } from "lucide-react";
+import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck, Volume2, VolumeX, Bot, RefreshCw, Edit3 } from "lucide-react";
 import { getActiveStudent, getStudentProgress, buildStudentLearningNarration, type StudentProfile, type StudentProgress } from "@/utils/progress";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
@@ -19,6 +19,13 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
   const progress: StudentProgress = getStudentProgress();
 
   const [isSpeakingReport, setIsSpeakingReport] = useState(false);
+  const [isSpeakingNotes, setIsSpeakingNotes] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiEngineLabel, setAiEngineLabel] = useState<string | null>(null);
+
+  const [teacherNotes, setTeacherNotes] = useState<string>(() => {
+    return `Ananda ${student.name} menunjukkan perkembangan kemandirian taktil yang sangat positif. Siswa membuktikan kepekaan rabaan yang konsisten dalam mengidentifikasi simbol timbul dan menyusun komponen kelistrikan secara mandiri.\n\nUntuk langkah belajar selanjutnya, disarankan penguatan bertahap pada konsep percabangan sirkuit paralel menggunakan kabel T dan analogi aliran arus. Berikan ruang latihan taktil mandiri sebelum menguji rangkaian secara langsung.\n\nSinergi antara guru dan orang tua dalam memberikan apresiasi verbal terbukti efektif meningkatkan kepercayaan diri ananda dalam bereksperimen.`;
+  });
 
   const handleVoiceReport = () => {
     if (isSpeakingReport) {
@@ -34,6 +41,46 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
       rate: 0.94,
       pitch: 1.02,
       onEnd: () => setIsSpeakingReport(false),
+    });
+  };
+
+  const handleGenerateAI = async () => {
+    setIsGeneratingAI(true);
+    playEarcon("step");
+    try {
+      const res = await fetch("/api/teacher-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student, progress }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.notes) {
+          setTeacherNotes(data.notes);
+          setAiEngineLabel(data.engine || "AI Pedagogis");
+          playEarcon("success");
+        }
+      }
+    } catch (err) {
+      console.error("Gagal generate catatan rapor AI:", err);
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
+  const handleVoiceNotes = () => {
+    if (isSpeakingNotes) {
+      cancelSpeech();
+      setIsSpeakingNotes(false);
+      return;
+    }
+    setIsSpeakingNotes(true);
+    playEarcon("step");
+    speakNarration(`Catatan Evaluasi Guru untuk ${student.name}. ${teacherNotes}`, {
+      tag: "modal-teacher-notes",
+      rate: 0.94,
+      pitch: 1.02,
+      onEnd: () => setIsSpeakingNotes(false),
     });
   };
 
@@ -95,7 +142,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
         @media print {
           @page {
             size: A4 portrait;
-            margin: 8mm 10mm;
+            margin: 6mm 8mm;
           }
           * {
             -webkit-print-color-adjust: exact !important;
@@ -143,7 +190,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             border: none !important;
             box-shadow: none !important;
             overflow: visible !important;
-            padding: 4mm 6mm !important;
+            padding: 2mm 4mm !important;
             margin: 0 !important;
             max-height: none !important;
             background: #ffffff !important;
@@ -159,7 +206,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
           .print-section {
             display: block !important;
             width: 100% !important;
-            margin-bottom: 11px !important;
+            margin-bottom: 7px !important;
             clear: both !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
@@ -333,6 +380,60 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
               <li>Mampu merespon peringatan darurat korsleting arus pendek dengan memutus loop sirkuit secara aman.</li>
               <li>Mampu mengambil keputusan checkpoint (A1 = Lanjut, E1 = Selesai) secara mandiri melalui papan fisik.</li>
             </ul>
+          </div>
+
+          {/* Catatan & Rekomendasi Pedagogis Guru (Didukung AI Asisten Guru) */}
+          <div className="print-section rounded-xl border border-indigo-200/90 bg-indigo-50/40 p-3 text-xs">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600" /> Catatan & Rekomendasi Pedagogis Guru Pendamping
+                {aiEngineLabel && (
+                  <span className="print:hidden text-[9px] font-semibold text-indigo-700 bg-indigo-100/90 px-2 py-0.5 rounded-full">
+                    {aiEngineLabel}
+                  </span>
+                )}
+              </h4>
+              <div className="flex items-center gap-1.5 print:hidden">
+                <button
+                  type="button"
+                  onClick={handleVoiceNotes}
+                  className="inline-flex items-center gap-1 rounded-lg bg-white border border-indigo-200 px-2.5 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 transition-colors shadow-2xs"
+                  title="Dengarkan catatan evaluasi guru"
+                >
+                  {isSpeakingNotes ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                  {isSpeakingNotes ? "Hening" : "Dengarkan"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGenerateAI}
+                  disabled={isGeneratingAI}
+                  className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1 text-[10px] font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-2xs"
+                  title="Susun ulang catatan evaluasi dengan Groq AI"
+                >
+                  {isGeneratingAI ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  {isGeneratingAI ? "Menyusun..." : "Susun AI"}
+                </button>
+              </div>
+            </div>
+
+            {/* Interactive Textarea for Screen Editing */}
+            <div className="print:hidden">
+              <textarea
+                value={teacherNotes}
+                onChange={(e) => setTeacherNotes(e.target.value)}
+                rows={3}
+                placeholder="Tuliskan catatan evaluasi dan bimbingan guru di sini..."
+                className="w-full rounded-lg border border-indigo-200/80 bg-white p-2.5 text-[11px] leading-relaxed text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none resize-none font-sans"
+              />
+              <p className="text-[9.5px] text-slate-400 mt-1 flex items-center gap-1">
+                <Edit3 className="h-2.5 w-2.5" /> Guru dapat menyusun otomatis dengan AI atau menyunting catatan di atas sebelum dicetak.
+              </p>
+            </div>
+
+            {/* Static Paragraph for Print Output */}
+            <div className="hidden print:block text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap">
+              {teacherNotes}
+            </div>
           </div>
 
           {/* Area Tanda Tangan Guru / Pembimbing */}
