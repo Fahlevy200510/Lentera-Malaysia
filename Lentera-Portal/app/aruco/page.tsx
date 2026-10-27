@@ -2,12 +2,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2, FileText } from "lucide-react";
+import { ArrowLeft, ScanEye, MonitorSmartphone, Cpu, Wifi, BookOpen, LogOut, Volume2 } from "lucide-react";
 import CircuitDiagram from "@/components/aruco/CircuitDiagram";
 import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
-import StudentReportModal from "@/components/StudentReportModal";
 import { getStudentProgress, getActiveStudent } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
@@ -39,7 +38,6 @@ export default function ArucoPage() {
   });
 
   const [speaking, setSpeaking] = useState(false);
-  const [showReport, setShowReport] = useState(false);
   const speakingRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -68,7 +66,7 @@ export default function ArucoPage() {
     const studentName = activeStudent?.name || "Siswa";
 
     const text = hasLearnedComponents
-      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di baris bawah kotak A1 hingga E1 yang paling dekat denganmu untuk memilih modul belajar terpandu. Letakkan balok di sudut kiri atas, kotak A5, untuk Mode Eksplorasi Bebas bersama AI Live Tutor. Atau letakkan balok di kotak C5 tengah atas untuk mendengarkan Rapor Belajar Siswa. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn, atau di sel E5 sudut kanan atas untuk keluar mengakhiri sesi.`
+      ? `Selamat datang kembali di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di baris bawah kotak A1 hingga E1 yang paling dekat denganmu untuk memilih modul belajar terpandu. Letakkan balok di sudut kiri atas, kotak A5, untuk Mode Eksplorasi Bebas bersama AI Live Tutor. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn, atau di sel E5 sudut kanan atas untuk keluar mengakhiri sesi.`
       : `Selamat datang di LENTERA Lab, ${studentName}! Papan siap digunakan. Letakkan balok di sudut kiri atas kotak A5 untuk Mode Eksplorasi Bebas bersama AI Tutor, atau letakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan di sel E5 sudut kanan atas untuk keluar. Sebelum kita mulai, silakan angkat balok yang terpasang di papan fisik agar bersih, setelah itu mari kita mulai dengan Pengenalan Komponen dan bentuk rabaan taktil.`;
 
     speakingRef.current = true;
@@ -142,16 +140,7 @@ export default function ArucoPage() {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    const handleOpenReport = () => setShowReport(true);
-    const handleCloseReport = () => setShowReport(false);
-    window.addEventListener("lentera-open-report", handleOpenReport);
-    window.addEventListener("lentera-close-report", handleCloseReport);
-    return () => {
-      window.removeEventListener("lentera-open-report", handleOpenReport);
-      window.removeEventListener("lentera-close-report", handleCloseReport);
-    };
-  }, []);
+
 
   const logout = () => {
     localStorage.removeItem("lentera-session");
@@ -212,13 +201,6 @@ export default function ArucoPage() {
                   <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <button
-                onClick={() => setShowReport(true)}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-sm hover:from-violet-700 hover:to-indigo-700 transition-all active:scale-95"
-              >
-                <FileText className="h-3.5 w-3.5" />
-                Cetak Raport Siswa
-              </button>
             </div>
 
             <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
@@ -335,7 +317,6 @@ export default function ArucoPage() {
         </div>
       </section>
 
-      <StudentReportModal isOpen={showReport} onClose={() => setShowReport(false)} />
     </main>
   );
 }

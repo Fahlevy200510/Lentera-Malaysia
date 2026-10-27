@@ -23,7 +23,6 @@ import {
   Lightbulb,
   Bot,
   RefreshCw,
-  FileText,
 } from "lucide-react";
 import {
   completeModule,
@@ -811,7 +810,6 @@ export default function VoiceGuide() {
         !ignoreIdleMenuUntilLiftRef.current
       ) {
         const cellA1 = cells["A1"];
-        const cellC5 = cells["C5"];
         const cellE5 = cells["E5"];
 
         // 1. Kartu identitas siswa di sel A1 -> Pindah ke LENTERA Learn
@@ -829,24 +827,6 @@ export default function VoiceGuide() {
               onEnd: () => {
                 clearTimeout(navTimer);
                 window.location.href = "/dashboard";
-              },
-            }
-          );
-          return;
-        }
-
-        // 2. Kartu identitas siswa di sel C5 -> Buka & Dengarkan Rapor Siswa
-        if (isStudentToken(cellC5)) {
-          cancelSpeech();
-          playEarcon("click");
-          const sName = getStudentNameFromToken(cellC5);
-          speakNarration(
-            `Kartu identitas ${sName} terdeteksi di sel C5. Membuka Rapor Hasil Belajar untuk ${sName}.`,
-            {
-              onEnd: () => {
-                if (typeof window !== "undefined") {
-                  window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
-                }
               },
             }
           );
@@ -986,19 +966,6 @@ export default function VoiceGuide() {
                 () => {
                   clearTimeout(timer);
                   startGuide("free_exploration");
-                }
-              );
-            } else if (cells["C5"]) {
-              // Rapor Hasil Belajar Siswa (Tengah Atas)
-              idleMenuHandledRef.current = true;
-              lastMenuSelectRef.current = now;
-              playEarcon("click");
-              speak(
-                "Pilihan diterima: Membuka Rapor Hasil Belajar Siswa. AI Pedagogis sedang menyiapkan evaluasi belajarmu dari kotak tengah atas C5.",
-                () => {
-                  if (typeof window !== "undefined") {
-                    window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
-                  }
                 }
               );
             }
@@ -1866,7 +1833,7 @@ export default function VoiceGuide() {
         );
       } else {
         speak(
-          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan modul belajar di baris bawah papan yang paling dekat denganmu, dari kotak A1 hingga E1: Tahap satu di sudut kiri bawah A1, Tahap dua di B1, Tahap tiga di C1, Tahap empat di D1, dan Tahap lima di sudut kanan bawah E1. Selain itu, kamu bisa meletakkan balok di kotak sudut kiri atas A5 untuk Mode Eksplorasi Bebas bersama AI Live Tutor, atau letakkan balok di kotak tengah atas C5 untuk membuka dan mendengarkan Rapor Belajar Siswa. Silakan letakkan satu balok di papan untuk memulai."
+          "Selamat datang di Panduan Suara LENTERA. Ada lima tahapan modul belajar di baris bawah papan yang paling dekat denganmu, dari kotak A1 hingga E1: Tahap satu di sudut kiri bawah A1, Tahap dua di B1, Tahap tiga di C1, Tahap empat di D1, dan Tahap lima di sudut kanan bawah E1. Selain itu, kamu bisa meletakkan balok di kotak sudut kiri atas A5 untuk Mode Eksplorasi Bebas bersama AI Live Tutor. Silakan letakkan satu balok di papan untuk memulai."
         );
       }
     };
@@ -1995,7 +1962,7 @@ export default function VoiceGuide() {
               <Zap className="h-3 w-3" />
             </span>
             <p className="text-[11.5px] text-slate-700 leading-snug">
-              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Eksplorasi Bebas AI, tengah atas (<span className="font-mono font-bold text-violet-700">C5</span>) untuk Rapor Siswa, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Eksplorasi Bebas AI, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
             </p>
           </div>
           <button
@@ -2164,44 +2131,6 @@ export default function VoiceGuide() {
             >
               <Play className="h-3.5 w-3.5 fill-white text-white" />
               <span>Mulai Eksplorasi</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Rapor Hasil Belajar Siswa (AI Pedagogis — Pintasan C5) */}
-        <div className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-violet-50/70 via-indigo-50/40 to-white p-3.5 shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start sm:items-center gap-3 min-w-0">
-              <div className="flex flex-col items-center justify-center h-11 w-11 rounded-xl font-mono shrink-0 bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/20">
-                <span className="text-xs font-black">C5</span>
-                <span className="text-[8px] font-bold opacity-80 leading-none">Rapor</span>
-              </div>
-              <div className="space-y-0.5 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <h4 className="font-heading text-xs sm:text-sm font-extrabold text-slate-900">
-                    Rapor Hasil Belajar Siswa
-                  </h4>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[9.5px] font-extrabold text-violet-800">
-                    <FileText className="h-2.5 w-2.5 text-violet-600" />
-                    <span>Dukungan Suara Guru & Siswa</span>
-                  </span>
-                </div>
-                <p className="text-[11.5px] text-slate-600 leading-snug">
-                  <strong className="text-violet-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di kotak tengah atas (<span className="font-mono font-bold text-violet-700">C5</span>). Sistem otomatis menganalisis dan membacakan ringkasan hasil belajar siswa.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  window.dispatchEvent(new CustomEvent("lentera-open-report", { detail: { autoVoice: true } }));
-                }
-              }}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-all active:scale-95 shrink-0 self-end sm:self-auto"
-            >
-              <FileText className="h-3.5 w-3.5" />
-              <span>Buka & Dengarkan</span>
             </button>
           </div>
         </div>

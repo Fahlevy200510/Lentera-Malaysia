@@ -7,6 +7,7 @@ import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
 import { getActiveLenteraEndpoint, resolveEndpoints } from "@/components/aruco/ArUcoDetector";
+import StudentReportModal from "@/components/StudentReportModal";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
   Battery, Cable, Lightbulb, ToggleRight, Bell, ChevronRight, Play,
@@ -14,7 +15,7 @@ import {
   Lock, ArrowUpRight, Search, Hand, GraduationCap, CheckCircle2, User,
   BookOpen, LogOut, Eye, EyeOff, ArrowLeft, Link2, Unlink2, GitBranch,
   Fingerprint, Layers, Info, ChevronLeft, ChevronDown, PlugZap, Printer,
-  KeyRound, ShieldCheck, VolumeX, SlidersHorizontal, Loader2, RefreshCw,
+  KeyRound, ShieldCheck, VolumeX, SlidersHorizontal, Loader2, RefreshCw, FileText,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -370,6 +371,32 @@ function StudentHome() {
               <Play size={17} fill={C.primaryDeep} /> Buka di LENTERA Lab
             </Link>
             <button
+              id="btn-open-student-report"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("lentera-open-report"));
+                }
+              }}
+              style={{
+                background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                color: "#fff",
+                border: "none",
+                padding: "12px 20px",
+                borderRadius: 99,
+                fontWeight: 800,
+                fontSize: 14,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                boxShadow: "0 4px 15px rgba(16,185,129,0.3)",
+                cursor: "pointer",
+              }}
+              title="Buka & Cetak Rapor Hasil Belajar Siswa (AI Pedagogis)"
+            >
+              <FileText size={17} />
+              <span>Rapor Siswa AI</span>
+            </button>
+            <button
               id="btn-read-full-report"
               onClick={readFullReport}
               style={{
@@ -650,12 +677,38 @@ function TeacherOverview() {
           title="Siswa"
           sub="Kelas 11 SMA · Kelistrikan"
           right={
-            <button
-              onClick={() => setShowAllStudents((v) => !v)}
-              style={{ background: C.primary, color: "#fff", border: "none", padding: "9px 16px", borderRadius: 99, fontWeight: 700, fontSize: 13 }}
-            >
-              {showAllStudents ? "Ciutkan" : "Lihat semua"}
-            </button>
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("lentera-open-report"));
+                  }
+                }}
+                style={{
+                  background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                  color: "#fff",
+                  border: "none",
+                  padding: "9px 16px",
+                  borderRadius: 99,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  boxShadow: "0 4px 12px rgba(16,185,129,0.25)",
+                  cursor: "pointer",
+                }}
+                title="Buka & Cetak Rapor Hasil Belajar Siswa (AI Pedagogis)"
+              >
+                <FileText size={15} /> Cetak Rapor Siswa AI
+              </button>
+              <button
+                onClick={() => setShowAllStudents((v) => !v)}
+                style={{ background: C.primary, color: "#fff", border: "none", padding: "9px 16px", borderRadius: 99, fontWeight: 700, fontSize: 13 }}
+              >
+                {showAllStudents ? "Ciutkan" : "Lihat semua"}
+              </button>
+            </div>
           }
         />
         <div className="flex items-center" style={{ gap: 8, marginBottom: 12, border: "1px solid rgba(139,92,246,0.12)", background: "#fff", borderRadius: 12, padding: "9px 12px" }}>
@@ -1888,6 +1941,18 @@ export default function CircuitSenseDashboard() {
   const [view, setView] = useState("home");
   const [role, setRole] = useState("student");
   const [name, setName] = useState("");
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setShowReportModal(true);
+    const handleClose = () => setShowReportModal(false);
+    window.addEventListener("lentera-open-report", handleOpen);
+    window.addEventListener("lentera-close-report", handleClose);
+    return () => {
+      window.removeEventListener("lentera-open-report", handleOpen);
+      window.removeEventListener("lentera-close-report", handleClose);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -2043,12 +2108,21 @@ export default function CircuitSenseDashboard() {
                 return;
               }
 
-              // C. Balok komponen sirkuit (di luar sel A1) -> Kembali ke LENTERA Lab (/aruco)
+              const cellC5 = cells["C5"] as { component?: string; id?: number } | undefined;
+              // Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis)
+              if (cellC5) {
+                cancelSpeech();
+                playEarcon("click");
+                setShowReportModal(true);
+                return;
+              }
+
+              // C. Balok komponen sirkuit (di luar sel A1 dan C5) -> Kembali ke LENTERA Lab (/aruco)
               const hasCircuitBlockOutsideA1 = placed.some((c) => {
                 const comp = String(c?.component || "");
                 const id = Number(c?.id);
                 const isCircuit = CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
-                return isCircuit && (!cellA1 || c !== cellA1);
+                return isCircuit && (!cellA1 || c !== cellA1) && (!cellC5 || c !== cellC5);
               });
 
               if (hasCircuitBlockOutsideA1) {
@@ -2196,6 +2270,8 @@ export default function CircuitSenseDashboard() {
           </main>
         </div>
       </div>
+
+      <StudentReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
     </div>
   );
 }
