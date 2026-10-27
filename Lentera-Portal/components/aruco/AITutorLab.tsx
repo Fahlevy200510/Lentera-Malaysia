@@ -74,6 +74,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const isTranscribingRef = useRef(false);
   const lastA1StateRef = useRef<boolean>(false);
   const isHandlingNavRef = useRef<boolean>(false);
+  const lastA5HelpTimeRef = useRef<number>(0);
 
   // Auto-scroll ke pesan terbaru
   useEffect(() => {
@@ -90,23 +91,29 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     isTranscribingRef.current = isTranscribing;
   }, [isTranscribing]);
 
+  const speakGuideHelp = useCallback(() => {
+    cancelSpeech();
+    playEarcon("click");
+    speakNarration(
+      "Selamat datang di Tanya AI Tutor! Di sini kamu bisa bertanya apa saja tentang rangkaian listrik dan komponen di mejamu. Cara bertanya: letakkan satu balok di kotak sudut kiri bawah A1, lalu langsung bicaralah mengajukan pertanyaanmu. Jika sudah selesai bicara, segera angkat balok dari A1 agar AI bisa memproses dan menjawab. Jika ingin kembali ke panduan modul, letakkan balok di sudut kanan atas E5. Silakan letakkan balok di A1 dan ajukan pertanyaanmu!",
+      {
+        tag: "ai-tutor-lab-intro",
+        rate: 0.94,
+        pitch: 1.0,
+      }
+    );
+  }, []);
+
   // Sambutan & panduan suara saat siswa tunanetra masuk ke layar Tanya AI Tutor
   useEffect(() => {
     const timer = setTimeout(() => {
-      speakNarration(
-        "Selamat datang di Tanya AI Tutor! Di sini kamu bisa bertanya apa saja tentang sirkuit di mejamu lewat suara. Letakkan satu balok di kotak A1 sudut kiri bawah untuk mulai bicara, dan angkat balok jika sudah selesai bicara. Atau letakkan balok di sudut kanan atas E5 untuk kembali ke panduan modul.",
-        {
-          tag: "ai-tutor-lab-intro",
-          rate: 0.94,
-          pitch: 1.0,
-        }
-      );
+      speakGuideHelp();
     }, 600);
     return () => {
       clearTimeout(timer);
       cancelSpeech();
     };
-  }, []);
+  }, [speakGuideHelp]);
 
   const speak = (text: string) => {
     if (!voiceOn) return;
@@ -288,6 +295,9 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           if (chunks.length === 0 || duration < 800) {
             setVoiceStatus("Waktu bicara terlalu singkat.");
             playEarcon("clue");
+            if (!loadingRef.current) {
+              speak("Waktu bicara terlalu singkat. Letakkan lagi balok di A1 dan bicaralah.");
+            }
             return;
           }
 
@@ -308,6 +318,9 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
             if (data?.silent || !data?.text || data.text.trim().length <= 1) {
               setVoiceStatus("Suara tidak terdengar jelas. Coba bicara lebih dekat ke mikrofon.");
               playEarcon("clue");
+              if (!loadingRef.current) {
+                speak("Suara belum terdengar jelas. Coba letakkan balok di A1 dan bicaralah lebih dekat ke mikrofon.");
+              }
               return;
             }
 
@@ -455,12 +468,23 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
             }
           }
         }
+
+        // 4. Balok di A5 (sudut kiri atas) -> Ulangi panduan fitur Tanya AI Tutor
+        const cellA5 = cells["A5"];
+        const isA5Placed = Boolean(cellA5 && !isStudentToken(cellA5));
+        if (isA5Placed && !isA1Placed && !isE5Placed && !isHandlingNavRef.current) {
+          const now = Date.now();
+          if (now - lastA5HelpTimeRef.current > 7000 && !isListeningRef.current && !loadingRef.current) {
+            lastA5HelpTimeRef.current = now;
+            speakGuideHelp();
+          }
+        }
       }
     };
 
     window.addEventListener("circuit-update", handleCircuitUpdate);
     return () => window.removeEventListener("circuit-update", handleCircuitUpdate);
-  }, [onBack, startListening, stopListening]);
+  }, [onBack, speakGuideHelp, startListening, stopListening]);
 
   // Shortcut Aksesibilitas: Tekan tombol 'V' untuk mulai/berhenti bicara
   useEffect(() => {
@@ -529,6 +553,14 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
               <span className="hidden sm:inline">Panduan Modul</span>
             </button>
           )}
+          <button
+            onClick={speakGuideHelp}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-violet-200 bg-violet-50 text-xs font-bold text-violet-700 hover:bg-violet-100 transition-colors shadow-2xs mr-1"
+            title="Dengarkan panduan suara cara bertanya"
+          >
+            <Volume2 className="h-3.5 w-3.5 text-violet-600" />
+            <span className="hidden sm:inline">Dengarkan Panduan</span>
+          </button>
           <button
             onClick={handleResetChat}
             className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
