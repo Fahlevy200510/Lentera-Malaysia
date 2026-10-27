@@ -66,6 +66,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasResultRef = useRef(false);
   const recordStartTimeRef = useRef<number>(0);
+  const lastToggleRef = useRef<number>(0);
   const latestCircuitRef = useRef<any>(null);
 
   // Auto-scroll ke pesan terbaru
@@ -106,6 +107,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     const query = (textToSend ?? input).trim();
     if (!query || loading) return;
 
+    hasResultRef.current = true;
     setInput("");
     setMessages((prev) => [...prev, { role: "user", text: query }]);
     setLoading(true);
@@ -187,6 +189,12 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const toggleListening = async () => {
     if (typeof window === "undefined") return;
 
+    const now = Date.now();
+    if (now - lastToggleRef.current < 450) return;
+    lastToggleRef.current = now;
+
+    if (loading) return;
+
     if (isListening) {
       stopListening();
       return;
@@ -216,18 +224,10 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
           setVoiceStatus("Akses mikrofon diblokir browser. Silakan izinkan di bilah alamat.");
           playEarcon("wrong");
-          speakNarration(
-            "Akses mikrofon belum diizinkan. Silakan klik ikon gembok pada bilah alamat browser dan pilih Izinkan Mikrofon.",
-            { tag: "mic-perm" }
-          );
           return;
         } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
           setVoiceStatus("Perangkat mikrofon fisik tidak terdeteksi.");
           playEarcon("wrong");
-          speakNarration(
-            "Perangkat mikrofon tidak ditemukan di komputermu. Silakan hubungkan mikrofon atau ketik pertanyaan.",
-            { tag: "mic-notfound" }
-          );
           return;
         }
       }
@@ -275,11 +275,8 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           const chunks = audioChunksRef.current;
 
           if (chunks.length === 0 || duration < 800) {
-            setVoiceStatus("Waktu bicara terlalu singkat. Tekan tombol mic lagi dan bicaralah.");
+            setVoiceStatus("Waktu bicara terlalu singkat.");
             playEarcon("clue");
-            speakNarration("Waktu bicara terlalu singkat. Silakan tekan tombol mic dan bicaralah.", {
-              tag: "mic-short",
-            });
             return;
           }
 
@@ -300,9 +297,6 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
             if (data?.silent || !data?.text || data.text.trim().length <= 1) {
               setVoiceStatus("Suara tidak terdengar jelas. Coba bicara lebih dekat ke mikrofon.");
               playEarcon("clue");
-              speakNarration("Suara belum terdengar jelas. Silakan coba lagi.", {
-                tag: "mic-empty",
-              });
               return;
             }
 
@@ -374,6 +368,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   // Shortcut Aksesibilitas: Tekan tombol 'V' untuk mulai/berhenti bicara
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
       const target = e.target as HTMLElement | null;
       const isInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
       if (!isInput && (e.key === "v" || e.key === "V" || e.key === "Vokal")) {
@@ -383,7 +378,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isListening, stopListening]);
+  }, [isListening, stopListening, loading]);
 
   useEffect(() => {
     return () => {
