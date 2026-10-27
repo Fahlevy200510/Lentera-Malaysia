@@ -339,22 +339,29 @@ export default function PortalHome() {
                 rotation: number;
                 id?: number;
               }>);
-              if (placed.length > 0) {
-                // Cek apakah ada balok kartu identitas siswa yang diletakkan
-                const studentItem = placed.find((p) => {
-                  const compKey = p.component || "";
-                  const idKey = String(p.id ?? "");
-                  return STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
-                });
+              const rawStudentId =
+                Array.isArray(data.detected_students) && data.detected_students.length > 0
+                  ? String(data.detected_students[0])
+                  : null;
 
+              // Cek apakah ada balok kartu identitas siswa yang diletakkan (bebas orientasi & posisi)
+              const studentItem = placed.find((p) => {
+                const compKey = p.component || "";
+                const idKey = String(p.id ?? "");
+                return STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
+              });
+
+              const matchedKey =
+                rawStudentId ||
+                (studentItem ? studentItem.component || String(studentItem.id ?? "") : null);
+
+              if (matchedKey || placed.length > 0) {
                 redirected = true;
                 isRedirectingRef.current = true;
 
                 let speechText = "";
-                if (studentItem) {
-                  const tokenMeta =
-                    STUDENT_TOKENS[studentItem.component] ||
-                    STUDENT_TOKENS[String(studentItem.id)];
+                if (matchedKey && STUDENT_TOKENS[matchedKey]) {
+                  const tokenMeta = STUDENT_TOKENS[matchedKey];
                   // Otomatis aktifkan profil siswa yang meletakkan kartu identitas
                   setActiveStudent({
                     id: tokenMeta.id,

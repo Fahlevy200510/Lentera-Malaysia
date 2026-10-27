@@ -345,11 +345,13 @@ def main():
             # f. Broadcast State (Jika ada event ATAU setiap ~1 detik sebagai heartbeat)
             if events or frame_count % 24 == 0:
                 import datetime as dt
+                active_student_ids = [m["id"] for m in active_markers if m["id"] in (35, 36, 37)]
                 state_msg = {
                     "type": "grid_state",
                     "timestamp": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
                     "cells": grid_state.cells,
-                    "circuit_status": circuit_eval
+                    "circuit_status": circuit_eval,
+                    "detected_students": active_student_ids
                 }
                 ws.broadcast_sync(state_msg)
                 
