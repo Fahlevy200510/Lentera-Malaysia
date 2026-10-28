@@ -8,6 +8,7 @@ Folder ini merangkum seluruh dokumen panduan teknis, spesifikasi produk, konsep 
 
 | No | Dokumen | Kategori | Keterangan Singkat |
 |:---:|:---|:---:|:---|
+| 0 | [MANUAL_BOOK_LENTERA.md](./MANUAL_BOOK_LENTERA.md) | **Manual Utama & Modul Lengkap** | **Buku Panduan Lengkap Resmi LENTERA**: Mencakup seluruh spesifikasi hardware 5×5, 7 balok taktil, kamera under-board, arsitektur software, navigasi mandiri, 5 modul kurikulum, panduan operasional guru, wiring teknis, dan troubleshooting. |
 | 1 | [KONSEP_TUTOR_INTERAKTIF_TAKTIL.md](./KONSEP_TUTOR_INTERAKTIF_TAKTIL.md) | **Inovasi & Penjurian** | Konsep AI Tutor Sokratik: siswa menjawab pertanyaan suara cukup dengan menaruh blok di grid (solusi kemandirian 100% siswa tunanetra tanpa mic/layar). Lengkap dengan naskah dialog dan poin pembelaan di hadapan juri. |
 | 2 | [LENTERA PRD GUIDE.md](./LENTERA%20PRD%20GUIDE.md) | **Spesifikasi Produk** | Product Requirement Document (PRD) inti: spesifikasi hardware Raspberry Pi, kamera CSI under-board, grid 5x5, ID ArUco, debounce, dan evaluasi graf rangkaian listrik. |
 | 3 | [PANDUAN_POWER_BUTTON.md](./PANDUAN_POWER_BUTTON.md) | **Hardware & Wiring** | Skema pengkabelan tombol fisik push button 4-pin stainless (dengan LED indikator), konfigurasi wake-up / shutdown aman via GPIO 3, dan status LED via UART TXD. |
