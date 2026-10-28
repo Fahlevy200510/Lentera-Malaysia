@@ -55,7 +55,39 @@ Lakukan 4 langkah berikut setiap kali akan memulai sesi pembelajaran:
 
 Siswa tunanetra dapat mengoperasikan 100% alur belajar secara mandiri menggunakan tangan mereka.
 
-## 2.1 Orientasi Awal Siswa pada Papan Fisik
+## 2.1 Prosedur Login Taktil Siswa (Zero-Password & Zero-Screen Login dengan Blok Identitas)
+Siswa tunanetra **tidak perlu mengetik username atau password** di layar laptop. Setiap siswa dibekali satu **Blok Identitas Fisik** pribadi berstiker ArUco dengan label nama timbul Braille:
+* **Blok ID 35**: Kartu Identitas **Via** (Siswa Kelas 11 SMA)
+* **Blok ID 36**: Kartu Identitas **Amira** (Siswa Kelas 11 SMA)
+* **Blok ID 37**: Kartu Identitas **Ajib** (Siswa Kelas 11 SMA)
+
+```
+[ Bawa Blok Identitas ] ──> [ Letakkan di Papan Grid ] ──> [ Suara Menyapa Personal ] ──> [ Sesi Aktif ]
+```
+
+### 1. Cara Login Mandiri di Awal Sesi (Dari Halaman Depan / Landing Page):
+1. Saat tiba di meja lab, siswa memegang blok identitas pribadinya.
+2. Siswa **cukup meletakkan blok identitas di mana saja di atas papan grid** (atau di kotak $A1$).
+3. Kamera bawah meja mendeteksi ID siswa dalam waktu kurang dari 0.5 detik.
+4. Narator suara langsung menyapa secara personal:
+   > *"Halo Amira! Kartu identitasmu terdeteksi. Selamat datang kembali di LENTERA Lab. Seluruh modul dan progres belajarmu telah dimuat!"*
+5. Halaman web secara otomatis login ke profil siswa tersebut dan langsung membuka ruang praktikum LENTERA Lab (`/aruco`).
+
+### 2. Cara Melihat Nilai & Rapor Belajar Sendiri (LENTERA Learn):
+1. Saat sedang berada di dalam lab, siswa meletakkan blok identitasnya di kotak **A1 (Sudut Kiri Bawah)**.
+2. Sistem otomatis membuka portal **LENTERA Learn** dan membacakan capaian belajar siswa secara lisan:
+   > *"Kartu identitas Amira terdeteksi di sel A1. Membuka LENTERA Learn... Statusmu saat ini: Kelas 11 SMA, Level Mahir dengan perolehan 450 XP. Pelajaran fokusmu hari ini adalah Rangkaian Seri!"*
+3. Siswa dapat mendengarkan rincian capaian tanpa perlu bantuan orang lain.
+
+### 3. Cara Logout / Mengakhiri Sesi Mandiri (Exit Token):
+1. Setelah selesai belajar, siswa memindahkan blok identitasnya ke kotak **E5 (Sudut Kanan Atas)**.
+2. Narator menyampaikan pesan pamit:
+   > *"Kartu identitas Amira terdeteksi di sel keluar E5. Sesi belajar selesai. Sampai jumpa!"*
+3. Seluruh progres dan nilai siswa tersimpan aman ke memori, sesi ditutup, dan sistem kembali ke halaman awal yang bersih untuk digunakan oleh siswa berikutnya.
+
+---
+
+## 2.2 Orientasi Awal Siswa pada Papan Fisik
 Ajak siswa meraba papan dan kenalkan patokan orientasi tubuh mereka:
 * **Tepi Bawah (Paling Dekat dengan Dada Siswa)**: Merupakan **Baris 1** (kotak $A1, B1, C1, D1, E1$).
 * **Tepi Atas (Paling Jauh dari Siswa)**: Merupakan **Baris 5** (kotak $A5, B5, C5, D5, E5$).
@@ -65,7 +97,7 @@ Ajak siswa meraba papan dan kenalkan patokan orientasi tubuh mereka:
 
 ---
 
-## 2.2 Peta Pintasan Taktil (*Tangible Shortcuts*)
+## 2.3 Peta Pintasan Taktil (*Tangible Shortcuts*)
 Untuk memilih menu atau materi, siswa **cukup meletakkan 1 balok apa saja** di kotak pintasan berikut:
 
 ```
@@ -92,7 +124,7 @@ Untuk memilih menu atau materi, siswa **cukup meletakkan 1 balok apa saja** di k
 
 ---
 
-## 2.3 Operasional Tahap 1: Pengenalan Komponen (Fokus di Sel C3)
+## 2.4 Operasional Tahap 1: Pengenalan Komponen (Fokus di Sel C3)
 1. Dengarkan instruksi narator yang meminta mencari komponen tertentu (contoh: *"Cari balok baterai dengan tanda plus dan minus timbul"*).
 2. Raba balok di meja, temukan bentuk yang diminta, lalu letakkan di **sel C3 tepat di tengah papan**.
 3. **Jika Peletakan Tepat**:
@@ -106,7 +138,7 @@ Untuk memilih menu atau materi, siswa **cukup meletakkan 1 balok apa saja** di k
 
 ---
 
-## 2.4 Operasional Tahap 2: Kuis Taktil Interaktif (B3, D3, C4, C2)
+## 2.5 Operasional Tahap 2: Kuis Taktil Interaktif (B3, D3, C4, C2)
 Kuis terdiri dari 4 pertanyaan rabaan seputar fungsi komponen:
 1. Dengarkan pertanyaan dari narator (contoh: *"Pertanyaan pertama: Komponen manakah yang berfungsi memutus dan menyambung aliran listrik?"*).
 2. Narator menyebutkan kotak target jawaban:
@@ -122,7 +154,7 @@ Kuis terdiri dari 4 pertanyaan rabaan seputar fungsi komponen:
 
 ---
 
-## 2.5 Operasional Tahap 3 & 4: Merakit Rangkaian Seri & Paralel
+## 2.6 Operasional Tahap 3 & 4: Merakit Rangkaian Seri & Paralel
 Siswa merakit sirkuit lengkap langkah demi langkah:
 1. Narator menyebutkan nama balok, posisi kotak, dan orientasi terminal (contoh: *"Langkah 1: Letakkan baterai di posisi B4, tanda plus menghadap ke atas menuju baris 5"*).
 2. Raba simbol timbul pada balok untuk memastikan arah kutub/alurnya tidak terbalik.
@@ -137,7 +169,7 @@ Siswa merakit sirkuit lengkap langkah demi langkah:
 
 ---
 
-## 2.6 Operasional Transisi Checkpoint (Pilihan Taktil A1 / E1)
+## 2.7 Operasional Transisi Checkpoint (Pilihan Taktil A1 / E1)
 Setelah suatu modul berhasil diselesaikan:
 1. Narator menginstruksikan pembersihan papan:
    > *"Hebat sekali! Modul selesai. Silakan angkat semua balok dari papan hingga bersih."*
