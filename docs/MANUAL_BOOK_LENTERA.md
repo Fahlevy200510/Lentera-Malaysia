@@ -401,7 +401,7 @@ Lakukan langkah praktis berikut setiap kali akan memulai sesi pembelajaran di ke
 3. **Konfirmasi Kesiapan Sistem**:
    * Tunggu beberapa saat (±20–30 detik) sampai **buzzer membunyikan melodi siap terakhir** dan speaker menyapa: *"Sistem pengamat siap digunakan."*
 4. **Membuka Dashboard Pengamat & Buka Kunci Audio Browser**:
-   * Buka browser di perangkat yang terhubung ke hotspot yang sama ke alamat web LENTERA (misal: `http://localhost:3000` atau IP lokal alat).
+   * Buka browser di perangkat (laptop/HP/tablet) ke alamat web resmi: **https://lenteraa.netlify.app**
    * **PENTING (Unlock Audio Autoplay)**: Klik satu kali di sembarang area layar laptop atau tekan bilah Spasi agar browser mengizinkan audio narator berbicara menyapa.
 
 ## 6.2 Prosedur Kalibrasi Otomatis Kamera (*Auto-Calibrate*)

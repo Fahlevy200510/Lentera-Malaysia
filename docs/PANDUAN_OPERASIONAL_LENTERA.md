@@ -44,8 +44,8 @@
 * Tunggu beberapa saat (±20–30 detik) sampai **buzzer membunyikan nada melodi terakhir** (tanda sistem pengamat sudah siap).
 
 ### Langkah 4: Buka Web
-* Buka browser (Chrome atau Edge) di HP/laptop yang terhubung ke hotspot `LENTERA`.
-* Masuk ke alamat web LENTERA (misal: `http://localhost:3000` atau alamat IP alat / URL tunnel).
+* Buka browser (Chrome atau Edge) di HP atau laptop.
+* Buka alamat web resmi LENTERA: **https://lenteraa.netlify.app**
 * **Klik sembarang area layar sekali** agar browser mengaktifkan suara narator.
 
 ### Langkah 5: Login dengan Blok Identitas Siswa
