@@ -692,7 +692,7 @@ export default function VoiceGuide() {
     }
 
     speak(
-      `${intro} Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini sudah terbuka untukmu: Di baris bawah papan yang paling dekat denganmu, letakkan balok di kotak A1 untuk mengulang Pengenalan Komponen, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Untuk Tanya AI Tutor lewat suara, letakkan balok di sudut kiri atas kotak A5. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sel E5 sudut kanan atas untuk keluar sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
+      `${intro} Papan siap digunakan. Karena kamu sudah menguasai pengenalan komponen, seluruh fitur mandiri kini sudah terbuka untukmu: Di baris bawah papan yang paling dekat denganmu, letakkan balok di kotak A1 untuk mengulang Pengenalan Komponen, di B1 untuk Kuis Taktil, di C1 untuk Rangkaian Seri, di D1 untuk Rangkaian Paralel, dan di E1 untuk Tantangan Detektif Sirkuit. Di baris atas: letakkan balok di sudut kiri atas A5 untuk Tanya AI Tutor lewat suara, atau di tengah atas C5 untuk Mode Eksplorasi Bebas. Kamu juga bisa meletakkan kartu identitasmu di sel A1 sudut kiri bawah untuk membuka LENTERA Learn dan melihat nilaimu, atau di sel E5 sudut kanan atas untuk keluar sesi. Silakan raba papan dan letakkan balok di fitur yang kamu pilih!`
     );
   }, [speak]);
 
@@ -991,6 +991,20 @@ export default function VoiceGuide() {
                   window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
                 }
               );
+            } else if (cells["C5"]) {
+              // Mode Eksplorasi Bebas (Lab Terbuka) (Tengah Atas)
+              if (isStudentToken(cells["C5"])) return;
+              idleMenuHandledRef.current = true;
+              lastMenuSelectRef.current = now;
+              playEarcon("click");
+              const timer = setTimeout(() => startGuide("free_exploration"), 8000);
+              speak(
+                "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat balok dari kotak tengah atas C5 untuk mulai merakit sirkuit sesukamu.",
+                () => {
+                  clearTimeout(timer);
+                  startGuide("free_exploration");
+                }
+              );
             }
           }
         }
@@ -1177,16 +1191,30 @@ export default function VoiceGuide() {
             ignoreIdleMenuUntilLiftRef.current = true;
             resetGuide();
             speakMainMenuOverview("Pilihan istirahat ke Menu Utama diterima! Silakan angkat kembali balok dari E1.");
-          } else if (cells["A5"]) {
+          } else if (cells["C5"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
             const timer = setTimeout(() => startGuide("free_exploration"), 8000);
             speak(
-              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat kembali balok dari kotak sudut kiri atas A5.",
+              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat kembali balok dari kotak tengah atas C5.",
               () => {
                 clearTimeout(timer);
                 startGuide("free_exploration");
+              }
+            );
+          } else if (cells["A5"]) {
+            checkpointHandledRef.current = true;
+            setCheckpointPhase("confirmed");
+            playEarcon("click");
+            const timer = setTimeout(() => {
+              window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
+            }, 6000);
+            speak(
+              "Pilihan diterima: Membuka Tanya AI Tutor. Silakan angkat kembali balok dari kotak sudut kiri atas A5 untuk mulai bertanya lewat suara.",
+              () => {
+                clearTimeout(timer);
+                window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
               }
             );
           }
@@ -1966,7 +1994,7 @@ export default function VoiceGuide() {
               <Zap className="h-3 w-3" />
             </span>
             <p className="text-[11.5px] text-slate-700 leading-snug">
-              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Tanya AI Tutor, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Tanya AI Tutor, tengah atas (<span className="font-mono font-bold text-teal-700">C5</span>) untuk Eksplorasi Bebas, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
             </p>
           </div>
           <button
@@ -2081,12 +2109,12 @@ export default function VoiceGuide() {
           })}
         </div>
 
-        {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor (Pintasan A5) */}
+        {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor (Pintasan C5) */}
         <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-indigo-500/15 p-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start sm:items-center gap-3 min-w-0">
               <div className="flex flex-col items-center justify-center h-11 w-11 rounded-xl font-mono shrink-0 bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-                <span className="text-xs font-black">A5</span>
+                <span className="text-xs font-black">C5</span>
                 <span className="text-[8px] font-bold opacity-80 leading-none">Bebas</span>
               </div>
               <div className="space-y-0.5 min-w-0">
@@ -2100,7 +2128,7 @@ export default function VoiceGuide() {
                   </span>
                 </div>
                 <p className="text-[11.5px] text-slate-600 leading-snug">
-                  <strong className="text-emerald-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>). Rakit sirkuit sesukamu tanpa batasan langkah. AI Live Tutor otomatis membimbing saat sirkuit belum menyala.
+                  <strong className="text-emerald-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di tengah atas (<span className="font-mono font-bold text-emerald-700">C5</span>). Rakit sirkuit sesukamu tanpa batasan langkah. AI Live Tutor otomatis membimbing saat sirkuit belum menyala.
                 </p>
               </div>
             </div>
