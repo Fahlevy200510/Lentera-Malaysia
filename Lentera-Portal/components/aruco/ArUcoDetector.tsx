@@ -457,21 +457,38 @@ export default function ArUcoDetector() {
         <div className="card flex flex-col items-center justify-center rounded-2xl border border-cs-text/10 bg-white/80 p-4 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md overflow-hidden min-h-[300px]">
           {detections.status === "connected" ? (
             <div className="relative w-full">
-              <img
-                src={liveFrame || resolved.streamUrl}
-                alt="Tayangan Kamera Lentera Edge"
-                className="w-full h-auto rounded-xl object-contain bg-black max-h-[380px]"
-                onError={(e) => {
-                  if (!liveFrame) {
-                    (e.target as HTMLImageElement).src =
-                      "https://placehold.co/640x480/1e293b/ffffff?text=Video+Stream+Offline";
-                  }
-                }}
-              />
-              <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                LIVE
-              </div>
+              {liveFrame || (!resolved.isTunnel && resolved.streamUrl) ? (
+                <>
+                  <img
+                    src={liveFrame || resolved.streamUrl}
+                    alt="Tayangan Kamera Lentera Edge"
+                    className="w-full h-auto rounded-xl object-contain bg-black max-h-[380px]"
+                    onError={(e) => {
+                      if (!liveFrame) {
+                        (e.target as HTMLImageElement).src =
+                          "https://placehold.co/640x480/1e293b/ffffff?text=Video+Stream+Offline";
+                      }
+                    }}
+                  />
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    LIVE
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-xl bg-slate-900 text-white min-h-[260px] max-h-[380px] py-10 px-4 text-center">
+                  <div className="relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
+                    <span className="absolute h-full w-full animate-ping rounded-2xl bg-emerald-400/20" />
+                    <Camera className="h-7 w-7 text-emerald-400 animate-pulse stroke-[1.5]" />
+                  </div>
+                  <p className="text-sm font-bold text-slate-200">
+                    Menunggu Tayangan Kamera...
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400 max-w-sm leading-relaxed">
+                    WebSocket terhubung. Pastikan Raspberry Pi sudah menjalankan <span className="text-amber-300 font-mono">git pull</span> dan restart service agar kamera memancarkan frame langsung.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-12">
