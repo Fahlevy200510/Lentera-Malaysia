@@ -386,24 +386,22 @@ Setelah siswa berhasil menyelesaikan suatu modul (misalnya Rangkaian Seri):
 # BAB 6: PANDUAN OPERASIONAL UNTUK GURU & PENDAMPING
 
 ## 6.1 Prosedur Menyalakan Alat (Power ON, Startup Melody, & Unlock Audio)
-Lakukan 4 langkah berikut setiap kali akan memulai sesi pembelajaran di kelas:
+Lakukan langkah praktis berikut setiap kali akan memulai sesi pembelajaran di kelas:
 
 ```
-[ Colok Adaptor 5V/3A ] ──> [ Tekan Tombol Stainless ] ──> [ Tunggu Melodi Siap ] ──> [ Buka Web & Klik Layar ]
+[1. Nyalakan Hotspot HP: LENTERA / qwerty123] ──> [2. Colok Adaptor & Tekan Power] ──> [3. Tunggu Buzzer] ──> [4. Buka Web]
 ```
 
-1. **Pemasangan Daya**:
-   * Pastikan permukaan meja LENTERA bersih dari balok sisa sesi sebelumnya.
-   * Pasang adaptor daya USB-C resmi (5V / 3A) ke port daya pada panel samping, lalu tancapkan ke stopkontak listrik.
-2. **Menyalakan Alat**:
-   * Tekan **Tombol Stainless Steel** pada panel depan sekali hingga terdengar bunyi klik mekanis (*mengunci/latching*).
-   * Cincin lampu LED pada tombol akan langsung menyala berwarna hijau/biru dan lampu strip internal di bawah akrilik menyala menerangi area deteksi.
+1. **Nyalakan Hotspot HP/Laptop**:
+   * Aktifkan Hotspot Pribadi di HP atau laptop dengan SSID: `LENTERA` dan Password: `qwerty123`.
+   * *Raspberry Pi akan otomatis tersambung ke hotspot ini saat booting selesai.*
+2. **Pemasangan Daya & Menyalakan Tombol**:
+   * Tancapkan adaptor daya USB-C resmi (5V / 3A) ke stopkontak.
+   * Tekan **Tombol Stainless Steel** pada panel depan sekali hingga terdengar bunyi klik (*latching*). Cincin LED tombol dan lampu internal di bawah papan akan menyala.
 3. **Konfirmasi Kesiapan Sistem**:
-   * Tunggu proses booting selama ±20–30 detik.
-   * Indikator kesiapan: Buzzer berbunyi melodi siap (nada pendek naik) dan speaker mengeluarkan suara ramah: *"Sistem pengamat siap digunakan."*
+   * Tunggu beberapa saat (±20–30 detik) sampai **buzzer membunyikan melodi siap terakhir** dan speaker menyapa: *"Sistem pengamat siap digunakan."*
 4. **Membuka Dashboard Pengamat & Buka Kunci Audio Browser**:
-   * Sambungkan laptop atau tablet guru ke Wi-Fi alat: SSID `LENTERA-AP` (Password: `lentera123`).
-   * Buka browser (Chrome / Edge) ke alamat `http://localhost:3000` atau `http://192.168.4.1:3000`.
+   * Buka browser di perangkat yang terhubung ke hotspot yang sama ke alamat web LENTERA (misal: `http://localhost:3000` atau IP lokal alat).
    * **PENTING (Unlock Audio Autoplay)**: Klik satu kali di sembarang area layar laptop atau tekan bilah Spasi agar browser mengizinkan audio narator berbicara menyapa.
 
 ## 6.2 Prosedur Kalibrasi Otomatis Kamera (*Auto-Calibrate*)
