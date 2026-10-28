@@ -529,12 +529,14 @@ export default function VoiceGuide() {
   const [completedCells, setCompletedCells] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(true);
   const [stepCompleted, setStepCompleted] = useState(false);
-  const [checkpointPhase, setCheckpointPhase] = useState<"idle" | "waiting_clear" | "waiting_choice" | "confirmed">("idle");
+  const [checkpointPhase, setCheckpointPhase] = useState<"idle" | "waiting_clear" | "waiting_choice" | "waiting_lift" | "confirmed">("idle");
   const [boardBlockCount, setBoardBlockCount] = useState<number>(0);
   const [quizSteps, setQuizSteps] = useState<StepDef[]>(() => QUIZ_STEPS);
   const [aiAdvisorText, setAiAdvisorText] = useState<string | null>(null);
   const [aiAdvisorEngine, setAiAdvisorEngine] = useState<string | null>(null);
   const [isAILoading, setIsAILoading] = useState<boolean>(false);
+  const pendingNextGuideRef = useRef<GuideMode | null>(null);
+  const lastLiftRemindRef = useRef<number>(0);
   const lastAITimeRef = useRef<number>(0);
   const lastEvaluatedCellsRef = useRef<string>("");
   const freeExplorationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1163,51 +1165,39 @@ export default function VoiceGuide() {
 
           if (cells["A1"] && targetNext && !isStudentToken(cells["A1"])) {
             checkpointHandledRef.current = true;
-            setCheckpointPhase("confirmed");
+            pendingNextGuideRef.current = targetNext.mode;
+            lastLiftRemindRef.current = Date.now();
+            setCheckpointPhase("waiting_lift");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide(targetNext.mode), 8000);
             speak(
-              `Pilihan IYA diterima! Silakan angkat kembali balok dari A1, kita mulai panduan ${targetNext?.title}.`,
-              () => {
-                clearTimeout(timer);
-                startGuide(targetNext.mode);
-              }
+              `Pilihan IYA diterima! Silakan angkat terlebih dahulu balok dari kotak A1 agar papan bersih dan siap untuk panduan ${targetNext?.title}.`
             );
           } else if (cells["C1"]) {
             checkpointHandledRef.current = true;
-            setCheckpointPhase("confirmed");
+            pendingNextGuideRef.current = "series";
+            lastLiftRemindRef.current = Date.now();
+            setCheckpointPhase("waiting_lift");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("series"), 8000);
             speak(
-              "Pilihan diterima: Tahap 3, Rangkaian Seri! Silakan angkat kembali balok dari C1 untuk mulai merakit.",
-              () => {
-                clearTimeout(timer);
-                startGuide("series");
-              }
+              "Pilihan diterima: Tahap 3, Rangkaian Seri! Silakan angkat terlebih dahulu balok dari papan agar bersih."
             );
           } else if (cells["B1"]) {
             checkpointHandledRef.current = true;
-            setCheckpointPhase("confirmed");
+            pendingNextGuideRef.current = "quiz";
+            lastLiftRemindRef.current = Date.now();
+            setCheckpointPhase("waiting_lift");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("quiz"), 8000);
             speak(
-              "Pilihan diterima: Tahap 2, Kuis Taktil! Silakan angkat kembali balok dari B1 untuk mulai kuis.",
-              () => {
-                clearTimeout(timer);
-                startGuide("quiz");
-              }
+              "Pilihan diterima: Tahap 2, Kuis Taktil! Silakan angkat terlebih dahulu balok dari papan agar bersih."
             );
           } else if (cells["D1"]) {
             checkpointHandledRef.current = true;
-            setCheckpointPhase("confirmed");
+            pendingNextGuideRef.current = "parallel";
+            lastLiftRemindRef.current = Date.now();
+            setCheckpointPhase("waiting_lift");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("parallel"), 8000);
             speak(
-              "Pilihan diterima: Tahap 4, Rangkaian Paralel! Silakan angkat kembali balok dari D1 untuk mulai.",
-              () => {
-                clearTimeout(timer);
-                startGuide("parallel");
-              }
+              "Pilihan diterima: Tahap 4, Rangkaian Paralel! Silakan angkat terlebih dahulu balok dari papan agar bersih."
             );
           } else if (cells["E1"]) {
             checkpointHandledRef.current = true;
@@ -1218,15 +1208,12 @@ export default function VoiceGuide() {
             speakMainMenuOverview("Pilihan istirahat ke Menu Utama diterima! Silakan angkat kembali balok dari E1.");
           } else if (cells["C5"]) {
             checkpointHandledRef.current = true;
-            setCheckpointPhase("confirmed");
+            pendingNextGuideRef.current = "free_exploration";
+            lastLiftRemindRef.current = Date.now();
+            setCheckpointPhase("waiting_lift");
             playEarcon("click");
-            const timer = setTimeout(() => startGuide("free_exploration"), 8000);
             speak(
-              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat kembali balok dari kotak tengah atas C5.",
-              () => {
-                clearTimeout(timer);
-                startGuide("free_exploration");
-              }
+              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat terlebih dahulu balok dari kotak tengah atas C5 agar bersih."
             );
           } else if (cells["A5"]) {
             checkpointHandledRef.current = true;
@@ -1242,6 +1229,28 @@ export default function VoiceGuide() {
                 window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
               }
             );
+          }
+          return;
+        }
+
+        // TAHAP 3: WAJIB TUNGGU PAPAN BERSIH SEBELUM MEMULAI MODUL BERIKUTNYA
+        if (checkpointPhase === "waiting_lift") {
+          const nextMode = pendingNextGuideRef.current;
+          if (placedCount === 0) {
+            setCheckpointPhase("confirmed");
+            pendingNextGuideRef.current = null;
+            playEarcon("clear");
+            if (nextMode) {
+              startGuide(nextMode);
+            }
+          } else {
+            const now = Date.now();
+            if (now - lastLiftRemindRef.current > 7500 && !isSpeakingRef.current) {
+              lastLiftRemindRef.current = now;
+              playEarcon("clue");
+              const nextTitle = nextMode ? (NEXT_GUIDE_MAP[mode]?.title || "modul berikutnya") : "panduan berikutnya";
+              speak(`Silakan angkat semua balok dari papan fisik agar papan bersih sebelum ${nextTitle} dimulai.`);
+            }
           }
           return;
         }
@@ -2383,7 +2392,17 @@ export default function VoiceGuide() {
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         {/* Pilihan A1 = IYA */}
                         <button
-                          onClick={() => startGuide(nextGuide.mode)}
+                          onClick={() => {
+                            if (boardBlockCount > 0) {
+                              pendingNextGuideRef.current = nextGuide.mode;
+                              lastLiftRemindRef.current = Date.now();
+                              setCheckpointPhase("waiting_lift");
+                              playEarcon("click");
+                              speak(`Pilihan diterima! Silakan angkat semua balok dari papan fisik agar papan bersih sebelum ${nextGuide.title} dimulai.`);
+                            } else {
+                              startGuide(nextGuide.mode);
+                            }
+                          }}
                           className="group relative flex flex-col items-start rounded-xl border-2 border-emerald-300 bg-emerald-50/80 p-2.5 text-left transition-all hover:border-emerald-500 hover:shadow-md hover:bg-emerald-100/70 active:scale-[0.98]"
                         >
                           <div className="flex items-center justify-between w-full mb-1">
@@ -2427,6 +2446,22 @@ export default function VoiceGuide() {
                         <Lightbulb className="h-3 w-3 text-amber-500 shrink-0 inline" />
                         <span>Letakkan balok di sudut kiri bawah (A1) atau sudut kanan bawah (E1).</span>
                       </p>
+                    </div>
+                  ) : checkpointPhase === "waiting_lift" ? (
+                    <div className="space-y-2 py-1">
+                      <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+                        </span>
+                        <span>Tahap 3: Angkat Balok untuk Memulai</span>
+                      </div>
+                      <p className="text-[11px] text-cs-text/80 leading-relaxed">
+                        Pilihan diterima! Silakan angkat semua balok dari papan fisik agar papan bersih dan siap untuk {nextGuide.title}.
+                      </p>
+                      <div className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-100/80 px-2.5 py-1 text-[11px] font-semibold text-indigo-950">
+                        <span>{boardBlockCount > 0 ? `Menunggu balok diangkat (${boardBlockCount} balok di papan)` : "Papan bersih! Memulai..."}</span>
+                      </div>
                     </div>
                   ) : (
                     <div className="py-2 text-center text-xs font-bold text-emerald-700 flex items-center justify-center gap-2">
