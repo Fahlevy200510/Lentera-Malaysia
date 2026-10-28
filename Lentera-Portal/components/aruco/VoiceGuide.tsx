@@ -182,10 +182,10 @@ const ALL_REGISTERED_QUIZ_BANK: {
 // Generator Kuis Dinamis: Memilih 4 pertanyaan acak dari 7 komponen fisik terdaftar
 function createDynamicQuizSteps(shuffle = false): StepDef[] {
   const targetSlots = [
-    { cell: "B3", desc: "kotak B3 di sisi kiri papan" },
-    { cell: "D3", desc: "kotak D3 di sisi kanan papan" },
-    { cell: "C4", desc: "kotak C4 di tengah bawah papan" },
-    { cell: "C2", desc: "kotak C2 di tengah atas papan" },
+    { cell: "B3", desc: "kotak B3 di sebelah kiri tengah papan, tepat di sebelah kiri C3" },
+    { cell: "D3", desc: "kotak D3 di sebelah kanan tengah papan, tepat di sebelah kanan C3" },
+    { cell: "C4", desc: "kotak C4 di bagian tengah atas papan, tepat satu kotak di atas C3" },
+    { cell: "C2", desc: "kotak C2 di bagian tengah bawah papan, tepat satu kotak di bawah C3" },
   ];
 
   let pool = [...ALL_REGISTERED_QUIZ_BANK];
