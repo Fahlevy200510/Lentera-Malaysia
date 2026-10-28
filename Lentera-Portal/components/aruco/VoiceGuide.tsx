@@ -2129,7 +2129,7 @@ export default function VoiceGuide() {
               <Zap className="h-3 w-3" />
             </span>
             <p className="text-[11.5px] text-slate-700 leading-snug">
-              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Tanya AI Tutor, tengah atas (<span className="font-mono font-bold text-teal-700">C5</span>) untuk Eksplorasi Bebas, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
+              <strong className="font-extrabold text-indigo-950">Pintasan Fisik Taktil:</strong> Baris bawah dekat siswa (<span className="font-mono font-bold text-indigo-700">A1–E1</span>) untuk 5 modul kurikulum, sudut kiri bawah (<span className="font-mono font-bold text-purple-700">A1</span> balok/kartu identitas) untuk LENTERA Learn, sudut kiri atas (<span className="font-mono font-bold text-emerald-700">A5</span>) untuk Tanya AI Tutor, tengah atas (<span className="font-mono font-bold text-teal-700">C5</span>) untuk Eksplorasi Bebas, sudut kanan atas (<span className="font-mono font-bold text-slate-700">E5</span>) untuk Keluar Sesi.
             </p>
           </div>
           <button
