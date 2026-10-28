@@ -23,8 +23,10 @@
    - 3.5 AI Live Tutor (Whisper STT & Socratic LLM)
 4. [BAB 4: SISTEM KOORDINAT & NAVIGASI TAKTIL MANDIRI](#bab-4-sistem-koordinat--navigasi-taktil-mandiri)
    - 4.1 Orientasi Grid 5×5 Standar Fisik Siswa
-   - 4.2 Peta Pintasan Taktil (*Tangible Shortcuts*)
-   - 4.3 Navigasi Kartu Identitas Siswa & Transisi Checkpoint
+   - 4.2 Prosedur Login Taktil Siswa (Zero-Password & Zero-Screen Login dengan Blok Identitas ID 35, 36, 37)
+   - 4.3 Peta Pintasan Taktil (*Tangible Shortcuts*)
+   - 4.4 Operasional Tanya AI Live Tutor (*Tangible Push-To-Talk* via Sel A1)
+   - 4.5 Transisi Checkpoint Papan (Pembersihan Papan & Pilihan Taktil A1 / E1)
 5. [BAB 5: MODUL KURIKULUM & PANDUAN BELAJAR SISWA](#bab-5-modul-kurikulum--panduan-belajar-siswa)
    - 5.1 Tahap 1: Pengenalan Bentuk Taktil (Sel C3)
    - 5.2 Tahap 2: Kuis Taktil Interaktif (B3, D3, C4, C2)
@@ -33,10 +35,12 @@
    - 5.5 Tahap 5: Tantangan Detektif Sirkuit
    - 5.6 Mode Eksplorasi Bebas & Tanya AI Tutor
 6. [BAB 6: PANDUAN OPERASIONAL UNTUK GURU & PENDAMPING](#bab-6-panduan-operasional-untuk-guru--pendamping)
-   - 6.1 Prosedur Menyalakan Alat (Power ON & Startup Melody)
-   - 6.2 Prosedur Kalibrasi Otomatis Kamera (*Auto-Calibrate*)
-   - 6.3 Pengelolaan Profil Multi-Siswa & Rapor Belajar
-   - 6.4 Mematikan Perangkat dengan Aman (*Safe Shutdown*)
+   - 6.1 Prosedur Menyalakan Alat (Power ON, Startup Melody, & Unlock Audio)
+   - 6.2 Prosedur Kalibrasi Otomatis Kamera (*Auto-Calibrate* 4 Sudut)
+   - 6.3 Pengelolaan Profil Multi-Siswa & Pemantauan Visual Real-time
+   - 6.4 Mengunduh & Mencetak Rapor Evaluasi Siswa
+   - 6.5 Mematikan Perangkat dengan Aman (*Safe Shutdown* Fisik & Web)
+   - 6.6 Tabel Tindakan Cepat Kendala Operasional (*Quick Action Troubleshooting*)
 7. [BAB 7: PANDUAN PERAKITAN TEKNIS & WIRING (HARDWARE BUILDER)](#bab-7-panduan-perakitan-teknis--wiring-hardware-builder)
    - 7.1 Daftar Komponen Elektronika & Pinout Raspberry Pi 4B
    - 7.2 Skema Rangkaian Tombol Stainless 4-Pin Latching
@@ -219,7 +223,39 @@ Siswa dapat bertanya secara bebas menggunakan bahasa percakapan sehari-hari.
   * Baris 4 = Baris Tengah Atas
   * Baris 5 = Baris Paling Atas (Paling jauh dari tubuh siswa)
 
-## 4.2 Peta Pintasan Taktil (*Tangible Shortcuts*)
+## 4.2 Prosedur Login Taktil Siswa (Zero-Password & Zero-Screen Login dengan Blok Identitas)
+Siswa tunanetra **tidak perlu mengetik username atau password** di layar laptop. Setiap siswa dibekali satu **Blok Identitas Fisik** pribadi berstiker ArUco dengan label nama timbul Braille:
+* **Blok ID 35**: Kartu Identitas **Via** (Siswa Kelas 11 SMA)
+* **Blok ID 36**: Kartu Identitas **Amira** (Siswa Kelas 11 SMA)
+* **Blok ID 37**: Kartu Identitas **Ajib** (Siswa Kelas 11 SMA)
+
+```
+[ Bawa Blok Identitas ] ──> [ Letakkan di Papan Grid ] ──> [ Suara Menyapa Personal ] ──> [ Sesi Aktif ]
+```
+
+### 1. Cara Login Mandiri di Awal Sesi (Dari Halaman Depan / Landing Page):
+1. Saat tiba di meja lab, siswa memegang blok identitas pribadinya.
+2. Siswa **cukup meletakkan blok identitas di mana saja di atas papan grid** (atau di kotak $A1$).
+3. Kamera bawah meja mendeteksi ID siswa dalam waktu kurang dari 0.5 detik.
+4. Narator suara langsung menyapa secara personal:
+   > *"Halo Amira! Kartu identitasmu terdeteksi. Selamat datang kembali di LENTERA Lab. Seluruh modul dan progres belajarmu telah dimuat!"*
+5. Halaman web secara otomatis login ke profil siswa tersebut dan langsung membuka ruang praktikum LENTERA Lab (`/aruco`).
+
+### 2. Cara Melihat Nilai & Rapor Belajar Sendiri (LENTERA Learn):
+1. Saat sedang berada di dalam lab, siswa meletakkan blok identitasnya di kotak **A1 (Sudut Kiri Bawah)**.
+2. Sistem otomatis membuka portal **LENTERA Learn** dan membacakan capaian belajar siswa secara lisan:
+   > *"Kartu identitas Amira terdeteksi di sel A1. Membuka LENTERA Learn... Statusmu saat ini: Kelas 11 SMA, Level Mahir dengan perolehan 450 XP. Pelajaran fokusmu hari ini adalah Rangkaian Seri!"*
+3. Siswa dapat mendengarkan rincian capaian tanpa perlu bantuan orang lain.
+
+### 3. Cara Logout / Mengakhiri Sesi Mandiri (Exit Token):
+1. Setelah selesai belajar, siswa memindahkan blok identitasnya ke kotak **E5 (Sudut Kanan Atas)**.
+2. Narator menyampaikan pesan pamit:
+   > *"Kartu identitas Amira terdeteksi di sel keluar E5. Sesi belajar selesai. Sampai jumpa!"*
+3. Seluruh progres dan nilai siswa tersimpan aman ke memori, sesi ditutup, dan sistem kembali ke halaman awal yang bersih untuk digunakan oleh siswa berikutnya.
+
+---
+
+## 4.3 Peta Pintasan Taktil (*Tangible Shortcuts*)
 Siswa tunanetra dapat berpindah mode belajar secara mandiri hanya dengan meletakkan satu balok fisik di kotak pintasan tanpa bantuan mouse:
 
 ```
@@ -230,6 +266,7 @@ Siswa tunanetra dapat berpindah mode belajar secara mandiri hanya dengan meletak
 │                                                                        │
 │ [A1] Pengenalan     [B1] Kuis      [C1] Seri     [D1] Paralel    [E1] Detektif │
 └────────────────────────────────────────────────────────────────────────┘
+                          (DEKAT KE DADA SISWA)
 ```
 
 1. **Baris Bawah ($A1–E1$) — 5 Modul Kurikulum Utama**:
@@ -247,14 +284,34 @@ Siswa tunanetra dapat berpindah mode belajar secara mandiri hanya dengan meletak
    * **Di Tanya AI Tutor**: Meletakkan balok di $A1$ berfungsi sebagai tombol *Push-to-Talk* (bicara saat balok di $A1$, angkat balok untuk mengirim pertanyaan).
    * **Kartu Identitas Siswa**: Meletakkan kartu identitas siswa di $A1$ langsung membuka portal rapor **LENTERA Learn**.
 
-## 4.3 Navigasi Kartu Identitas Siswa & Transisi Checkpoint
-* **Identifikasi Siswa Mandiri**: Saat siswa meletakkan kartu identitasnya (ID 35, 36, atau 37) di sel $A1$, narator langsung menyapa: *"Kartu identitas Amira terdeteksi! Membuka LENTERA Learn..."*
-* **Checkpoint Bersihkan Papan (Transisi Antar Modul)**:
-  Setelah siswa berhasil menyelesaikan suatu modul (misalnya Rangkaian Seri), narator tidak langsung melompat ke materi berikutnya. Sistem meminta siswa membersihkan papan terlebih dahulu:
-  1. *"Hebat! Modul selesai. Silakan angkat semua balok dari papan hingga bersih."*
-  2. Saat papan telah bersih, sistem menyajikan pilihan taktil di baris bawah:
-     * *"Letakkan balok di A1 untuk LANJUT ke materi berikutnya, atau di E1 untuk ISTIRAHAT ke menu utama."*
-  3. Siswa bebas menentukan ritme belajarnya sendiri tanpa terburu-buru.
+---
+
+## 4.4 Operasional Tanya AI Live Tutor (*Tangible Push-To-Talk*)
+Fitur ini memungkinkan siswa tunanetra berdialog langsung dengan AI Sokratik menggunakan balok fisik di tangannya tanpa keyboard atau mouse:
+1. **Membuka Mode Tutor**: Letakkan balok di **A5 (Sudut Kiri Atas)**, lalu angkat kembali balok tersebut.
+2. **Push-To-Talk via Sel A1**:
+   * **Mulai Bicara**: Letakkan satu balok di kotak **A1 (Sudut Kiri Bawah)**. Lampu indikator mikrofon di web akan menyala merah menandakan suara sedang direkam.
+   * **Ucapkan Pertanyaan**: Bicaralah secara wajar menghadap ke arah meja/laptop (contoh: *"Mengapa saklar harus dipasang sebelum lampu?"*).
+   * **Kirim Pertanyaan**: Segera **angkat balok dari kotak A1**.
+   * **Mendengarkan Jawaban**: Sistem mentranskripsi suara via Groq Whisper secara instan dan AI Tutor menjawab dengan suara narasi ramah menggunakan analogi kontekstual.
+3. **Alternatif Tombol**: Pendamping dapat menekan tombol **'V'** pada keyboard laptop untuk mulai/selesai merekam.
+4. **Kembali ke Menu**: Letakkan balok di **E5 (Sudut Kanan Atas)**.
+
+---
+
+## 4.5 Transisi Checkpoint Papan (Pembersihan Papan & Pilihan Taktil A1 / E1)
+Setelah siswa berhasil menyelesaikan suatu modul (misalnya Rangkaian Seri):
+1. **Instruksi Pembersihan Papan**:
+   Narator bersuara: *"Hebat! Modul selesai. Silakan angkat semua balok dari papan hingga bersih."*
+2. **Validasi Papan Kosong**:
+   Sistem menunggu hingga seluruh 25 sel kosong dari balok.
+3. **Penyajian Pilihan Taktil di Baris Bawah**:
+   Narator menyajikan pilihan mandiri:
+   > *"Papan sudah bersih. Apakah kamu ingin lanjut ke panduan modul berikutnya? Letakkan balok di A1 untuk LANJUT, atau di E1 untuk ISTIRAHAT ke menu utama."*
+4. **Keputusan Siswa**:
+   * Letakkan balok di **A1 (Sudut Kiri Bawah)** $\to$ Modul berikutnya langsung dimulai.
+   * Letakkan balok di **E1 (Sudut Kanan Bawah)** $\to$ Kembali ke menu utama.
+5. Siswa mengangkat kembali balok konfirmasi untuk mulai merakit materi baru.
 
 ---
 
@@ -328,14 +385,26 @@ Siswa tunanetra dapat berpindah mode belajar secara mandiri hanya dengan meletak
 
 # BAB 6: PANDUAN OPERASIONAL UNTUK GURU & PENDAMPING
 
-## 6.1 Prosedur Menyalakan Alat (Power ON & Startup Melody)
-1. Sambungkan adaptor daya resmi Raspberry Pi (USB-C 5V / 3A) ke stopkontak.
-2. Tekan **Tombol Stainless Steel** pada panel depan sekali hingga terdengar bunyi klik (*latching*).
-3. Cincin LED pada tombol akan menyala terang.
-4. Tunggu sekitar 20–30 detik hingga sistem operasi selesai booting.
-5. Buzzer akan melantunkan nada **Startup Melody** dan suara speaker menyapa:
-   > *"Sistem pengamat siap digunakan."*
-6. Buka laptop guru dan hubungkan ke Wi-Fi LENTERA, lalu buka browser di alamat: `http://localhost:3000` atau alamat tunnel yang tersedia.
+## 6.1 Prosedur Menyalakan Alat (Power ON, Startup Melody, & Unlock Audio)
+Lakukan 4 langkah berikut setiap kali akan memulai sesi pembelajaran di kelas:
+
+```
+[ Colok Adaptor 5V/3A ] ──> [ Tekan Tombol Stainless ] ──> [ Tunggu Melodi Siap ] ──> [ Buka Web & Klik Layar ]
+```
+
+1. **Pemasangan Daya**:
+   * Pastikan permukaan meja LENTERA bersih dari balok sisa sesi sebelumnya.
+   * Pasang adaptor daya USB-C resmi (5V / 3A) ke port daya pada panel samping, lalu tancapkan ke stopkontak listrik.
+2. **Menyalakan Alat**:
+   * Tekan **Tombol Stainless Steel** pada panel depan sekali hingga terdengar bunyi klik mekanis (*mengunci/latching*).
+   * Cincin lampu LED pada tombol akan langsung menyala berwarna hijau/biru dan lampu strip internal di bawah akrilik menyala menerangi area deteksi.
+3. **Konfirmasi Kesiapan Sistem**:
+   * Tunggu proses booting selama ±20–30 detik.
+   * Indikator kesiapan: Buzzer berbunyi melodi siap (nada pendek naik) dan speaker mengeluarkan suara ramah: *"Sistem pengamat siap digunakan."*
+4. **Membuka Dashboard Pengamat & Buka Kunci Audio Browser**:
+   * Sambungkan laptop atau tablet guru ke Wi-Fi alat: SSID `LENTERA-AP` (Password: `lentera123`).
+   * Buka browser (Chrome / Edge) ke alamat `http://localhost:3000` atau `http://192.168.4.1:3000`.
+   * **PENTING (Unlock Audio Autoplay)**: Klik satu kali di sembarang area layar laptop atau tekan bilah Spasi agar browser mengizinkan audio narator berbicara menyapa.
 
 ## 6.2 Prosedur Kalibrasi Otomatis Kamera (*Auto-Calibrate*)
 Kalibrasi hanya perlu dilakukan satu kali saat alat pertama kali dirakit atau jika posisi kamera bergeser:
@@ -349,23 +418,43 @@ Kalibrasi hanya perlu dilakukan satu kali saat alat pertama kali dirakit atau ji
 4. Sistem akan otomatis mendeteksi keempat sudut, menghitung matriks perspektif homografi, dan menyimpan koordinat 25 sel ke file `grid_roi.json`.
 5. Speaker berbunyi: *"Kalibrasi berhasil. Papan sudah terpetakan."* Angkat kembali keempat balok tersebut.
 
-## 6.3 Pengelolaan Profil Multi-Siswa & Rapor Belajar
+## 6.3 Pengelolaan Profil Multi-Siswa & Pemantauan Visual Real-time
 LENTERA mendukung penggunaan 1 laptop untuk bergantian banyak siswa di kelas inklusi:
 1. **Memilih Profil Siswa**:
-   * Guru dapat memilih nama siswa aktif melalui dropdown `StudentProfileSwitcher` di pojok kanan atas layar.
+   * Guru dapat memilih nama siswa aktif melalui dropdown `StudentProfileSwitcher` di pojok kanan atas layar (Ahmad Fadhil, Siti Rahma, Dimas Putra, atau Tamu/Juri Lomba).
    * Setiap siswa memiliki penyimpanan nilai, capaian XP, lencana, dan riwayat modul yang terisolasi aman di `localStorage`.
-2. **Menambah Siswa Baru**:
-   * Klik tombol **"+ Tambah Siswa"**, masukkan Nama Siswa dan Kelas/Kebutuhan Khusus, lalu klik Simpan.
-3. **Membuka Rapor Pembelajaran**:
-   * Klik tombol **"Rapor Siswa"** di dashboard untuk melihat grafik pemahaman konsep, modul yang telah dikuasai, dan rekomendasi pembelajaran.
+2. **Login Taktil via Kartu Siswa**:
+   * Siswa cukup meletakkan kartu identitas fisiknya (ID 35: Via, ID 36: Amira, ID 37: Ajib) di papan fisik. Sistem otomatis menyapa dan mengaktifkan profil siswa tersebut tanpa perlu disentuh oleh guru.
+3. **Pemantauan Sirkuit Real-time**:
+   * Visualisasi Grid 5×5 menampilkan posisi balok nyata di meja siswa secara 1:1, status arus (garis bercahaya hijau), dan polaritas kutub.
+   * Badge Status Sirkuit: 🟢 Rangkaian Tertutup (Closed Loop), 🟡 Rangkaian Terbuka (Open Loop), 🔴 Korsleting (Short Circuit).
 
-## 6.4 Mematikan Perangkat dengan Aman (*Safe Shutdown*)
+## 6.4 Mengunduh & Mencetak Rapor Evaluasi Siswa
+1. Klik tombol **"Rapor Siswa"** di dashboard web.
+2. Rapor menampilkan:
+   * Total skor XP dan lencana kompetensi yang diraih.
+   * Persentase pemahaman konsep (Rangkaian Seri, Paralel, Polaritas LED, Logika Saklar).
+   * Catatan kemandirian navigasi papan fisik siswa.
+3. Klik **"Cetak / Simpan PDF"** untuk dokumentasi guru dan laporan wali murid.
+
+## 6.5 Mematikan Perangkat dengan Aman (*Safe Shutdown*)
 > [!CAUTION]
 > Jangan langsung mencabut kabel adaptor daya dari stopkontak karena dapat merusak file sistem pada kartu MicroSD Raspberry Pi.
 
-**Cara Mematikan Perangkat:**
-* **Metode 1 (Tombol Fisik)**: Tekan kembali tombol stainless pada panel depan. Skrip `switch_daemon.py` akan membunyikan melodi pamit pada buzzer, mematikan sistem secara aman, dan lampu indikator akan padam.
+Lakukan salah satu dari 2 metode aman berikut:
+* **Metode 1 (Tombol Fisik - Rekomendasi)**: Tekan kembali tombol stainless pada panel depan hingga pengunci terlepas (*pop out*). Skrip `switch_daemon.py` akan membunyikan melodi pamit pada buzzer, mematikan sistem secara aman, dan lampu indikator akan padam (sekitar 10 detik). Setelah lampu padam, cabut kabel adaptor.
 * **Metode 2 (Tombol Web)**: Klik tombol merah **"Matikan Sistem"** di dashboard guru. Narator akan berbicara: *"Alat LENTERA sedang dimatikan secara aman..."*, lalu sistem mengeksekusi perintah shutdown.
+
+## 6.6 Tabel Tindakan Cepat Kendala Operasional (*Quick Action Troubleshooting*)
+
+| Gejala Kendala | Kemungkinan Penyebab | Tindakan Cepat (Solusi 1 Menit) |
+| :--- | :--- | :--- |
+| **Suara narasi di laptop guru tidak terdengar sama sekali.** | Kebijakan browser menahan audio otomatis (*autoplay blocked*). | **Klik satu kali di sembarang area layar laptop** atau tekan bilah Spasi untuk membuka kunci audio. |
+| **Balok diletakkan di kotak tapi sistem tidak merespons suara.** | 1. Stiker marker di bawah balok kotor/berdebu.<br>2. Lampu LED dalam alat belum menyala. | 1. Usap bagian bawah balok dengan kain bersih.<br>2. Intip melalui celah akrilik: pastikan lampu internal menyala terang. |
+| **Buzzer berbunyi nada 'tit-tit-tit' cepat 3 kali berturut-turut.** | Terjadi **Korsleting** (baterai terhubung langsung kabel ke kabel tanpa melewati lampu). | Minta siswa mengangkat satu kabel penghubung, lalu pasang balok Lampu atau Saklar di antara jalur kabel tersebut. |
+| **Lampu sirkuit tidak menyala padahal semua balok sudah tersambung rapat.** | 1. Tuas saklar masih dalam posisi OFF.<br>2. Kutub lampu LED terbalik. | 1. Raba tuas saklar di C5/C4/E4 dan geser ke posisi ON.<br>2. Angkat balok lampu, putar posisinya 180 derajat, lalu pasang kembali. |
+| **Siswa bingung arah koreksi saat salah meletakkan balok.** | Siswa meletakkan balok di luar kotak target panduan. | Dengarkan petunjuk suara narator secara tenang (sistem otomatis menyebutkan: *"geser N kotak ke atas/bawah/kiri/kanan"*). |
+| **Web di laptop guru terputus / status WebSocket Offline.** | Koneksi Wi-Fi laptop berpindah ke jaringan lain. | Buka pengaturan Wi-Fi laptop, pastikan tersambung kembali ke SSID: `LENTERA-AP`. |
 
 ---
 
