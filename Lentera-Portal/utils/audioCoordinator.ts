@@ -1,6 +1,7 @@
 import { normalizeIndonesianPhonetics } from "./phonetics";
 
 let activeTimer: ReturnType<typeof setTimeout> | null = null;
+let keepAliveTimer: ReturnType<typeof setInterval> | null = null;
 
 export interface SpeakOptions {
   rate?: number;
@@ -15,6 +16,10 @@ export function cancelSpeech(): void {
     clearTimeout(activeTimer);
     activeTimer = null;
   }
+  if (keepAliveTimer) {
+    clearInterval(keepAliveTimer);
+    keepAliveTimer = null;
+  }
   try {
     window.speechSynthesis.cancel();
   } catch {}
@@ -24,7 +29,7 @@ export function cancelSpeech(): void {
 
 export function isSpeaking(): boolean {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
-  return Boolean((window as any).__lenteraSpeaking || window.speechSynthesis.speaking);
+  return Boolean(activeTimer || (window as any).__lenteraSpeaking || window.speechSynthesis.speaking);
 }
 
 export function speakNarration(text: string, options: SpeakOptions = {}): void {
@@ -44,6 +49,10 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
   if (activeTimer) {
     clearTimeout(activeTimer);
     activeTimer = null;
+  }
+  if (keepAliveTimer) {
+    clearInterval(keepAliveTimer);
+    keepAliveTimer = null;
   }
 
   try {
@@ -74,6 +83,10 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
       const finish = () => {
         if (hasEnded) return;
         hasEnded = true;
+        if (keepAliveTimer) {
+          clearInterval(keepAliveTimer);
+          keepAliveTimer = null;
+        }
         (window as any).__lenteraSpeaking = false;
         (window as any).__lenteraActiveUtterance = null;
         options.onEnd?.();
@@ -91,10 +104,25 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
 
       (window as any).__lenteraActiveUtterance = utterance;
 
+      // Keepalive Chrome di Windows agar narasi panjang tidak mendadak terhenti
+      keepAliveTimer = setInterval(() => {
+        if (!hasEnded && synth.speaking) {
+          synth.pause();
+          synth.resume();
+        } else if (keepAliveTimer) {
+          clearInterval(keepAliveTimer);
+          keepAliveTimer = null;
+        }
+      }, 7000);
+
       if (synth.paused) synth.resume();
       synth.speak(utterance);
     } catch (e) {
       console.error("[audioCoordinator] speak failed:", e);
+      if (keepAliveTimer) {
+        clearInterval(keepAliveTimer);
+        keepAliveTimer = null;
+      }
       (window as any).__lenteraSpeaking = false;
       options.onEnd?.();
     }

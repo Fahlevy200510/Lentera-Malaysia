@@ -35,7 +35,7 @@ import {
 } from "@/utils/progress";
 import { playEarcon } from "@/utils/soundEffects";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
-import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { speakNarration, cancelSpeech, isSpeaking as isSpeakingAudio } from "@/utils/audioCoordinator";
 
 /* ---------------------------------------------------------------- Types */
 type CellData = { component: string; rotation: number };
@@ -572,6 +572,7 @@ export default function VoiceGuide() {
   const lastQuizWrongCompRef = useRef<string | null>(null);
   const quizWrongWaitingLiftRef = useRef<boolean>(false);
   const quizWrongLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isShufflingQuizRef = useRef<boolean>(false);
   const quizWaitingForClearRef = useRef<boolean>(false);
   const quizClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quizLiftGraceStartRef = useRef<number>(0);
@@ -692,7 +693,7 @@ export default function VoiceGuide() {
     const cleanText = text.trim();
     const now = Date.now();
     // Anti-looping: Cegah memutar ulang kalimat persis sama saat sedang berbicara atau dalam jeda 5 detik
-    if (cleanText === lastSpokenTextRef.current && (isSpeakingRef.current || now - lastSpokenTimeRef.current < 5000)) {
+    if (cleanText === lastSpokenTextRef.current && (isSpeakingRef.current || isSpeakingAudio() || now - lastSpokenTimeRef.current < 5000)) {
       if (onEnd && !isSpeakingRef.current) onEnd();
       return;
     }
@@ -702,11 +703,19 @@ export default function VoiceGuide() {
     isSpeakingRef.current = true;
     setIsSpeaking(true);
 
+    const safetyTimeout = setTimeout(() => {
+      if (isSpeakingRef.current && !isSpeakingAudio()) {
+        isSpeakingRef.current = false;
+        setIsSpeaking(false);
+      }
+    }, 14000);
+
     speakNarration(cleanText, {
       rate: 0.92,
       pitch: 1.05,
       tag: "voice-guide",
       onEnd: () => {
+        clearTimeout(safetyTimeout);
         isSpeakingRef.current = false;
         setIsSpeaking(false);
         if (onEnd) onEnd();
@@ -741,6 +750,7 @@ export default function VoiceGuide() {
   }, [speak]);
 
   const handleShuffleQuiz = useCallback(() => {
+    isShufflingQuizRef.current = true;
     const newSteps = createDynamicQuizSteps(true);
     const currentCells = latestCellsRef.current || {};
     const placed = Object.values(currentCells).filter((c) => Boolean(c) && !isStudentToken(c)).length;
@@ -1417,7 +1427,7 @@ export default function VoiceGuide() {
           return;
         }
 
-        // 1. Setelah menjawab benar, tunggu siswa mengangkat balok hingga papan bersih
+        // 1. Setelah menjawab benar, tunggu siswa mengangkat balok DAN tunggu narasi penjelasan selesai
         if (quizWaitingForClearRef.current) {
           if (placedEntries.length > 0) {
             // Balok masih berada di papan atau sedang diraba/diangkat
@@ -1426,12 +1436,14 @@ export default function VoiceGuide() {
               quizClearTimerRef.current = null;
             }
 
-            // Pengingat ramah jika siswa belum mengangkat balok setelah 12 detik
+            // Pengingat ramah jika siswa belum mengangkat balok setelah 12 detik DAN tidak sedang berbicara
             const now = Date.now();
             if (
               now - quizLiftGraceStartRef.current > 12000 &&
               now - lastQuizRemindRef.current > 10000 &&
-              !isSpeakingRef.current
+              !isSpeakingRef.current &&
+              !isSpeakingAudio() &&
+              !(window as any).__lenteraSpeaking
             ) {
               lastQuizRemindRef.current = now;
               playEarcon("clue");
@@ -1441,9 +1453,14 @@ export default function VoiceGuide() {
               speak(`Silakan angkat balok ${compLabel} dari kotak ${targetCell} agar kita bisa lanjut ke pertanyaan berikutnya.`);
             }
           } else {
-            // Papan terdeteksi bersih: pastikan sudah ada jeda minimal setelah pengumuman jawaban benar
-            const elapsed = Date.now() - quizLiftGraceStartRef.current;
-            if (elapsed >= 1000 && !quizClearTimerRef.current) {
+            // Papan terdeteksi bersih (balok sudah diangkat)
+            // SANGAT PENTING: Jangan majukan soal jika penjelasan jawaban masih sedang berbicara!
+            if (isSpeakingRef.current || isSpeakingAudio() || (window as any).__lenteraSpeaking) {
+              return;
+            }
+
+            // Papan bersih DAN penjelasan sudah selesai tuntas:
+            if (!quizClearTimerRef.current) {
               quizClearTimerRef.current = setTimeout(() => {
                 quizClearTimerRef.current = null;
                 quizWaitingForClearRef.current = false;
@@ -1464,7 +1481,7 @@ export default function VoiceGuide() {
                   playEarcon("victory");
                   setCurrentStep(totalSteps);
                 }
-              }, 500);
+              }, 400);
             }
           }
           return;
@@ -1478,6 +1495,11 @@ export default function VoiceGuide() {
           }
 
           if (isQuizCorrect) {
+            // SANGAT PENTING: Jangan potong audio jika soal kuis masih sedang dibacakan!
+            if (isSpeakingRef.current || isSpeakingAudio() || (window as any).__lenteraSpeaking) {
+              return;
+            }
+
             setStepCompleted(true);
             setCompletedCells(new Set([targetCell]));
             lastQuizWrongCompRef.current = null;
@@ -1487,7 +1509,10 @@ export default function VoiceGuide() {
               quizWrongLiftTimerRef.current = null;
             }
             playEarcon("step");
-            if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+            if (advanceTimerRef.current) {
+              clearTimeout(advanceTimerRef.current);
+              advanceTimerRef.current = null;
+            }
 
             const quizPraises = [
               "Luar biasa!",
@@ -1499,30 +1524,18 @@ export default function VoiceGuide() {
             const praisePrefix = quizPraises[currentStep % quizPraises.length];
             const explanationText = step.explanation ? `${praisePrefix} ${step.explanation}` : `${praisePrefix} Jawabanmu tepat sekali!`;
 
+            quizWaitingForClearRef.current = true;
+            quizLiftGraceStartRef.current = Date.now();
+            lastQuizRemindRef.current = Date.now();
+            const compLabel = step.expectedComponent
+              ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
+              : "balok";
+
             if (currentStep < totalSteps - 1) {
-              quizWaitingForClearRef.current = true;
-              quizLiftGraceStartRef.current = Date.now();
-              lastQuizRemindRef.current = Date.now();
-              const compLabel = step.expectedComponent
-                ? COMPONENT_LABEL[step.expectedComponent] || step.expectedComponent
-                : "balok";
               speak(`${explanationText} Sekarang, silakan angkat balok ${compLabel} dari kotak ${targetCell} untuk lanjut ke pertanyaan berikutnya.`);
             } else {
-              // Soal terakhir: langsung majukan ke totalSteps setelah penjelasan selesai
-              let finishedQuiz = false;
-              const doFinishQuiz = () => {
-                if (finishedQuiz) return;
-                finishedQuiz = true;
-                if (advanceTimerRef.current) {
-                  clearTimeout(advanceTimerRef.current);
-                  advanceTimerRef.current = null;
-                }
-                setCurrentStep(totalSteps);
-              };
-              advanceTimerRef.current = setTimeout(doFinishQuiz, 7000);
-              speak(explanationText, () => {
-                setTimeout(doFinishQuiz, 300);
-              });
+              // Pertanyaan terakhir: suruh angkat balok juga TANPA timeout 7000ms yang memotong narasi
+              speak(`${explanationText} Sekarang, silakan angkat balok ${compLabel} dari kotak ${targetCell} untuk menyelesaikan kuis taktil.`);
             }
             return;
           }
@@ -1538,7 +1551,12 @@ export default function VoiceGuide() {
               }
               return;
             } else {
-              // Papan kosong (balok diangkat): debounce 350ms agar tidak terganggu drop frame sesaat kamera
+              // Papan kosong (balok diangkat):
+              // SANGAT PENTING: Tunggu hingga suara bimbingan salah selesai tuntas sebelum siap menerima balok baru
+              if (isSpeakingRef.current || isSpeakingAudio() || (window as any).__lenteraSpeaking) {
+                return;
+              }
+
               if (!quizWrongLiftTimerRef.current) {
                 quizWrongLiftTimerRef.current = setTimeout(() => {
                   quizWrongLiftTimerRef.current = null;
@@ -1551,7 +1569,7 @@ export default function VoiceGuide() {
           }
 
           // Jika sistem sedang berbicara (instruksi soal atau audio lain), JANGAN potong audio
-          if (isSpeakingRef.current || (window as any).__lenteraSpeaking) {
+          if (isSpeakingRef.current || isSpeakingAudio() || (window as any).__lenteraSpeaking) {
             return;
           }
 
@@ -1779,6 +1797,10 @@ export default function VoiceGuide() {
 
   // Speak current step instruction when step changes
   useEffect(() => {
+    if (isShufflingQuizRef.current) {
+      isShufflingQuizRef.current = false;
+      return;
+    }
     if (mode !== "idle" && step && !isMuted) {
       speak(step.voice);
     }
