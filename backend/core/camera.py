@@ -40,8 +40,11 @@ class PiCamera(BaseCamera):
         
         import time
         self.picam2 = Picamera2()
-        config = self.picam2.create_video_configuration(main={"size": resolution, "format": "BGR888"})
+        config = self.picam2.create_video_configuration(main={"size": resolution, "format": "RGB888"})  # Picamera2 RGB888 = urutan byte BGR di memori (cocok OpenCV)
         self.picam2.configure(config)
+        from libcamera import controls
+        # ponytail: preset lampu pijar; ganti ke AwbModeEnum.Auto jika pindah ke LED putih
+        self.picam2.set_controls({"AwbEnable": True, "AwbMode": controls.AwbModeEnum.Tungsten})
         self.picam2.start()
         time.sleep(1.2)  # Beri waktu bagi sensor AEC/AWB untuk konvergensi pencahayaan alami
 
