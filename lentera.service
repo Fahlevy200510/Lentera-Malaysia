@@ -8,9 +8,10 @@ Type=simple
 User=pilentera
 WorkingDirectory=/home/pilentera/Lentera-Malaysia
 Environment="XDG_RUNTIME_DIR=/run/user/1000"
+ExecStartPre=-/usr/bin/git pull origin main
 ExecStart=/home/pilentera/Lentera-Malaysia/lentera_env/bin/python3 main.py
-Restart=on-failure
-RestartSec=5
+Restart=always
+RestartSec=3
 StandardOutput=journal
 StandardError=journal
 

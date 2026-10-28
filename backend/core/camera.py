@@ -53,13 +53,20 @@ class PiCamera(BaseCamera):
 
     def get_frame(self):
         # Mengembalikan frame numpy BGR 3-channel murni untuk OpenCV
-        frame = self.picam2.capture_array()
-        if frame is not None and len(frame.shape) == 3 and frame.shape[2] == 4:
-            return frame[:, :, :3]  # Pangkas alpha/padding jika ada XBGR
-        return frame
+        try:
+            frame = self.picam2.capture_array()
+            if frame is not None and len(frame.shape) == 3 and frame.shape[2] == 4:
+                return frame[:, :, :3]  # Pangkas alpha/padding jika ada XBGR
+            return frame
+        except Exception as e:
+            print(f"[CAMERA CAPTURE ERROR] {e}")
+            return None
 
     def close(self):
-        self.picam2.stop()
+        try:
+            self.picam2.stop()
+        except Exception:
+            pass
 
 def get_camera(resolution=(640, 480)):
     """
@@ -72,6 +79,6 @@ def get_camera(resolution=(640, 480)):
     else:
         try:
             return PiCamera(resolution)
-        except RuntimeError as e:
+        except Exception as e:
             print(f"Gagal inisialisasi PiCamera: {e}. Fallback ke DummyCamera.")
             return DummyCamera(resolution)

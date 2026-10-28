@@ -21,12 +21,10 @@ WorkingDirectory=/home/pilentera/Lentera-Malaysia
 Environment="XDG_RUNTIME_DIR=/run/user/1000"
 ExecStartPre=-/usr/bin/pulseaudio -D
 ExecStartPre=-/usr/bin/bluetoothctl connect DF:7F:21:02:F8:59
+ExecStartPre=-/usr/bin/git pull origin main
 ExecStart=/home/pilentera/Lentera-Malaysia/lentera_env/bin/python3 main.py
-# Proteksi Bootloop: Hanya restart jika error, maksimal 3 kali dalam 30 detik
-Restart=on-failure
-RestartSec=5
-StartLimitIntervalSec=30
-StartLimitBurst=3
+Restart=always
+RestartSec=3
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=lentera

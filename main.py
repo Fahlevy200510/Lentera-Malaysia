@@ -205,12 +205,16 @@ def main():
     
     try:
         while True:
-            frame_count += 1
-            # a. Ambil frame
-            frame = camera.get_frame()
-            
-            # b. Deteksi Marker
-            raw_detections = vision.detect_markers(frame)
+            try:
+                frame_count += 1
+                # a. Ambil frame
+                frame = camera.get_frame()
+                if frame is None or getattr(frame, "size", 0) == 0:
+                    time.sleep(0.08)
+                    continue
+                
+                # b. Deteksi Marker
+                raw_detections = vision.detect_markers(frame)
             now = time.time()
             
             # Update spatial tracker (mengeliminasi kedip & mendukung ID duplikat)
@@ -359,8 +363,11 @@ def main():
                     if "narration" in event:
                         audio.enqueue_narration(event["narration"])
                         
-            # Delay sedikit untuk simulasi FPS target ~24
-            time.sleep(1/24)
+                # Delay sedikit untuk simulasi FPS target ~24
+                time.sleep(1/24)
+            except Exception as loop_err:
+                print(f"[LOOP ERROR] Error pada pemrosesan frame: {loop_err}")
+                time.sleep(0.08)
             
     except KeyboardInterrupt:
         print("Menghentikan sistem...")
