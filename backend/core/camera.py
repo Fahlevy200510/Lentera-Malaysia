@@ -44,12 +44,6 @@ class PiCamera(BaseCamera):
         self.picam2.configure(config)
         self.picam2.start()
         time.sleep(1.2)  # Beri waktu bagi sensor AEC/AWB untuk konvergensi pencahayaan alami
-        
-        # Upayakan kontrol white balance stabil untuk lampu boks hangat
-        try:
-            self.picam2.set_controls({"AwbMode": "tungsten"})
-        except Exception:
-            pass
 
     def get_frame(self):
         # Mengembalikan frame numpy BGR 3-channel murni untuk OpenCV
