@@ -509,6 +509,17 @@ const NEXT_GUIDE_MAP: Record<string, { mode: "recognition" | "quiz" | "series" |
   free_exploration: { mode: "recognition", title: "Pengenalan Komponen" },
 };
 
+export const MODULE_TITLES: Record<string, string> = {
+  recognition: "Pengenalan Bentuk Taktil",
+  quiz: "Kuis Tebak Komponen",
+  series: "Rangkaian Listrik Seri",
+  parallel: "Rangkaian Listrik Paralel",
+  adaptive_series: "Rangkaian Seri Bebas",
+  adaptive_parallel: "Rangkaian Paralel Bebas",
+  troubleshoot: "Tantangan Detektif Sirkuit",
+  free_exploration: "Mode Eksplorasi Bebas",
+};
+
 type GuideMode =
   | "idle"
   | "recognition"
@@ -523,6 +534,7 @@ type GuideMode =
 /* ---------------------------------------------------------------- Component */
 export default function VoiceGuide() {
   const [mode, setMode] = useState<GuideMode>("idle");
+  const [pendingGuideMode, setPendingGuideMode] = useState<GuideMode | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -535,6 +547,8 @@ export default function VoiceGuide() {
   const [aiAdvisorText, setAiAdvisorText] = useState<string | null>(null);
   const [aiAdvisorEngine, setAiAdvisorEngine] = useState<string | null>(null);
   const [isAILoading, setIsAILoading] = useState<boolean>(false);
+  const pendingStartModeRef = useRef<GuideMode | null>(null);
+  const pendingTabSwitchRef = useRef<string | null>(null);
   const pendingNextGuideRef = useRef<GuideMode | null>(null);
   const lastLiftRemindRef = useRef<number>(0);
   const lastAITimeRef = useRef<number>(0);
@@ -725,14 +739,30 @@ export default function VoiceGuide() {
 
   const handleShuffleQuiz = useCallback(() => {
     const newSteps = createDynamicQuizSteps(true);
+    const currentCells = latestCellsRef.current || {};
+    const placed = Object.values(currentCells).filter((c) => Boolean(c) && !isStudentToken(c)).length;
+
     setQuizSteps(newSteps);
     setCurrentStep(0);
     setStepCompleted(false);
     setCompletedCells(new Set());
+    lastQuizWrongRef.current = 0;
+    lastQuizWrongCompRef.current = null;
     playEarcon("step");
-    speak(
-      `Soal kuis baru telah diacak dari 7 komponen terdaftar! Mari mulai dengan pertanyaan pertama: ${newSteps[0].voice}`
-    );
+
+    if (placed > 0) {
+      quizWaitingForClearRef.current = true;
+      quizLiftGraceStartRef.current = Date.now();
+      lastQuizRemindRef.current = Date.now();
+      speak(
+        `Soal kuis baru telah diacak! Silakan angkat semua balok dari papan terlebih dahulu agar papan bersih untuk pertanyaan pertama.`
+      );
+    } else {
+      quizWaitingForClearRef.current = false;
+      speak(
+        `Soal kuis baru telah diacak dari 7 komponen terdaftar! Mari mulai dengan pertanyaan pertama: ${newSteps[0].voice}`
+      );
+    }
   }, [speak]);
 
   const triggerAITutor = useCallback(
@@ -848,6 +878,48 @@ export default function VoiceGuide() {
       setBoardBlockCount(placedCount);
 
       // =========================================================================
+      // 1. PRIORITAS TRANSISI MODE: Wajib Papan Bersih untuk Semua Modul
+      // =========================================================================
+      if (pendingStartModeRef.current) {
+        const targetMode = pendingStartModeRef.current;
+        const targetTitle = MODULE_TITLES[targetMode] || "modul pembelajaran";
+        if (placedCount === 0) {
+          pendingStartModeRef.current = null;
+          setPendingGuideMode(null);
+          playEarcon("clear");
+          actuallyLaunchGuide(targetMode);
+        } else {
+          const now = Date.now();
+          if (now - lastLiftRemindRef.current > 7500 && !isSpeakingRef.current) {
+            lastLiftRemindRef.current = now;
+            playEarcon("clue");
+            speak(`Silakan angkat semua balok dari papan fisik agar papan bersih sebelum ${targetTitle} dimulai.`);
+          }
+        }
+        return;
+      }
+
+      // =========================================================================
+      // 2. PRIORITAS TRANSISI TAB (misal: A5 membuka Tanya AI Tutor)
+      // =========================================================================
+      if (pendingTabSwitchRef.current) {
+        const targetTab = pendingTabSwitchRef.current;
+        if (placedCount === 0) {
+          pendingTabSwitchRef.current = null;
+          playEarcon("clear");
+          window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: targetTab }));
+        } else {
+          const now = Date.now();
+          if (now - lastLiftRemindRef.current > 7500 && !isSpeakingRef.current) {
+            lastLiftRemindRef.current = now;
+            playEarcon("clue");
+            speak("Silakan angkat balok dari kotak sudut kiri atas A5 untuk membuka Tanya AI Tutor.");
+          }
+        }
+        return;
+      }
+
+      // =========================================================================
       // TANGIBLE NAVIGATION KARTU IDENTITAS SISWA (A1 -> Learn, E5 -> Selesai / Logout)
       // Berlaku kapan saja saat kartu siswa diletakkan (setelah papan terangkat dari sesi sebelumnya)
       // =========================================================================
@@ -936,12 +1008,7 @@ export default function VoiceGuide() {
               if (isStudentToken(cells["A1"])) return;
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
-              playEarcon("click");
-              const timer = setTimeout(() => startGuide("recognition"), 8000);
-              speak("Pilihan diterima: Tahap 1, Pengenalan Komponen! Angkat balok dari A1 untuk mulai meraba balok di sel C3.", () => {
-                clearTimeout(timer);
-                startGuide("recognition");
-              });
+              startGuide("recognition");
             } else if (cells["B1"]) {
               if (!isRecognitionDone) {
                 lastMenuSelectRef.current = now;
@@ -950,12 +1017,7 @@ export default function VoiceGuide() {
               } else {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
-                playEarcon("click");
-                const timer = setTimeout(() => startGuide("quiz"), 8000);
-                speak("Pilihan diterima: Tahap 2, Kuis Taktil! Angkat balok dari B1 untuk mulai menjawab kuis.", () => {
-                  clearTimeout(timer);
-                  startGuide("quiz");
-                });
+                startGuide("quiz");
               }
             } else if (cells["C1"]) {
               if (!isRecognitionDone) {
@@ -965,12 +1027,7 @@ export default function VoiceGuide() {
               } else {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
-                playEarcon("click");
-                const timer = setTimeout(() => startGuide("series"), 8000);
-                speak("Pilihan diterima: Tahap 3, Rangkaian Seri! Angkat balok dari C1 untuk mulai merakit sirkuit satu loop.", () => {
-                  clearTimeout(timer);
-                  startGuide("series");
-                });
+                startGuide("series");
               }
             } else if (cells["D1"]) {
               if (!isRecognitionDone) {
@@ -980,12 +1037,7 @@ export default function VoiceGuide() {
               } else {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
-                playEarcon("click");
-                const timer = setTimeout(() => startGuide("parallel"), 8000);
-                speak("Pilihan diterima: Tahap 4, Rangkaian Paralel! Angkat balok dari D1 untuk mulai merakit sirkuit percabangan kabel T.", () => {
-                  clearTimeout(timer);
-                  startGuide("parallel");
-                });
+                startGuide("parallel");
               }
             } else if (cells["E1"]) {
               if (!isRecognitionDone) {
@@ -995,12 +1047,7 @@ export default function VoiceGuide() {
               } else {
                 idleMenuHandledRef.current = true;
                 lastMenuSelectRef.current = now;
-                playEarcon("click");
-                const timer = setTimeout(() => startGuide("troubleshoot"), 8000);
-                speak("Pilihan diterima: Tahap 5, Tantangan Detektif Sirkuit Mahir! Angkat balok dari E1 untuk memulai misi analisis.", () => {
-                  clearTimeout(timer);
-                  startGuide("troubleshoot");
-                });
+                startGuide("troubleshoot");
               }
             } else if (cells["A5"]) {
               // Tanya AI Tutor (Voice Q&A) (Sudut Kiri Atas)
@@ -1008,30 +1055,17 @@ export default function VoiceGuide() {
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
               playEarcon("click");
-              const timer = setTimeout(() => {
-                window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
-              }, 6000);
+              pendingTabSwitchRef.current = "tutor";
+              lastLiftRemindRef.current = now;
               speak(
-                "Pilihan diterima: Membuka Tanya AI Tutor. Silakan angkat balok dari kotak sudut kiri atas A5 untuk mulai bertanya lewat suara.",
-                () => {
-                  clearTimeout(timer);
-                  window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
-                }
+                "Pilihan diterima: Membuka Tanya AI Tutor. Silakan angkat balok dari kotak sudut kiri atas A5 untuk mulai bertanya lewat suara."
               );
             } else if (cells["C5"]) {
               // Mode Eksplorasi Bebas (Lab Terbuka) (Tengah Atas)
               if (isStudentToken(cells["C5"])) return;
               idleMenuHandledRef.current = true;
               lastMenuSelectRef.current = now;
-              playEarcon("click");
-              const timer = setTimeout(() => startGuide("free_exploration"), 8000);
-              speak(
-                "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat balok dari kotak tengah atas C5 untuk mulai merakit sirkuit sesukamu.",
-                () => {
-                  clearTimeout(timer);
-                  startGuide("free_exploration");
-                }
-              );
+              startGuide("free_exploration");
             }
           }
         }
@@ -1165,69 +1199,38 @@ export default function VoiceGuide() {
 
           if (cells["A1"] && targetNext && !isStudentToken(cells["A1"])) {
             checkpointHandledRef.current = true;
-            pendingNextGuideRef.current = targetNext.mode;
-            lastLiftRemindRef.current = Date.now();
             setCheckpointPhase("waiting_lift");
-            playEarcon("click");
-            speak(
-              `Pilihan IYA diterima! Silakan angkat terlebih dahulu balok dari kotak A1 agar papan bersih dan siap untuk panduan ${targetNext?.title}.`
-            );
+            startGuide(targetNext.mode);
           } else if (cells["C1"]) {
             checkpointHandledRef.current = true;
-            pendingNextGuideRef.current = "series";
-            lastLiftRemindRef.current = Date.now();
             setCheckpointPhase("waiting_lift");
-            playEarcon("click");
-            speak(
-              "Pilihan diterima: Tahap 3, Rangkaian Seri! Silakan angkat terlebih dahulu balok dari papan agar bersih."
-            );
+            startGuide("series");
           } else if (cells["B1"]) {
             checkpointHandledRef.current = true;
-            pendingNextGuideRef.current = "quiz";
-            lastLiftRemindRef.current = Date.now();
             setCheckpointPhase("waiting_lift");
-            playEarcon("click");
-            speak(
-              "Pilihan diterima: Tahap 2, Kuis Taktil! Silakan angkat terlebih dahulu balok dari papan agar bersih."
-            );
+            startGuide("quiz");
           } else if (cells["D1"]) {
             checkpointHandledRef.current = true;
-            pendingNextGuideRef.current = "parallel";
-            lastLiftRemindRef.current = Date.now();
             setCheckpointPhase("waiting_lift");
-            playEarcon("click");
-            speak(
-              "Pilihan diterima: Tahap 4, Rangkaian Paralel! Silakan angkat terlebih dahulu balok dari papan agar bersih."
-            );
+            startGuide("parallel");
           } else if (cells["E1"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
-            ignoreIdleMenuUntilLiftRef.current = true;
             resetGuide();
             speakMainMenuOverview("Pilihan istirahat ke Menu Utama diterima! Silakan angkat kembali balok dari E1.");
           } else if (cells["C5"]) {
             checkpointHandledRef.current = true;
-            pendingNextGuideRef.current = "free_exploration";
-            lastLiftRemindRef.current = Date.now();
             setCheckpointPhase("waiting_lift");
-            playEarcon("click");
-            speak(
-              "Pilihan diterima: Mode Eksplorasi Bebas bersama AI Live Tutor! Silakan angkat terlebih dahulu balok dari kotak tengah atas C5 agar bersih."
-            );
+            startGuide("free_exploration");
           } else if (cells["A5"]) {
             checkpointHandledRef.current = true;
             setCheckpointPhase("confirmed");
             playEarcon("click");
-            const timer = setTimeout(() => {
-              window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
-            }, 6000);
+            pendingTabSwitchRef.current = "tutor";
+            lastLiftRemindRef.current = Date.now();
             speak(
-              "Pilihan diterima: Membuka Tanya AI Tutor. Silakan angkat kembali balok dari kotak sudut kiri atas A5 untuk mulai bertanya lewat suara.",
-              () => {
-                clearTimeout(timer);
-                window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: "tutor" }));
-              }
+              "Pilihan diterima: Membuka Tanya AI Tutor. Silakan angkat balok dari kotak sudut kiri atas A5 untuk mulai bertanya lewat suara."
             );
           }
           return;
@@ -1235,20 +1238,22 @@ export default function VoiceGuide() {
 
         // TAHAP 3: WAJIB TUNGGU PAPAN BERSIH SEBELUM MEMULAI MODUL BERIKUTNYA
         if (checkpointPhase === "waiting_lift") {
-          const nextMode = pendingNextGuideRef.current;
+          const nextMode = pendingStartModeRef.current || pendingNextGuideRef.current;
           if (placedCount === 0) {
             setCheckpointPhase("confirmed");
             pendingNextGuideRef.current = null;
+            pendingStartModeRef.current = null;
+            setPendingGuideMode(null);
             playEarcon("clear");
             if (nextMode) {
-              startGuide(nextMode);
+              actuallyLaunchGuide(nextMode);
             }
           } else {
             const now = Date.now();
             if (now - lastLiftRemindRef.current > 7500 && !isSpeakingRef.current) {
               lastLiftRemindRef.current = now;
               playEarcon("clue");
-              const nextTitle = nextMode ? (NEXT_GUIDE_MAP[mode]?.title || "modul berikutnya") : "panduan berikutnya";
+              const nextTitle = nextMode ? (MODULE_TITLES[nextMode] || NEXT_GUIDE_MAP[mode]?.title || "modul berikutnya") : "panduan berikutnya";
               speak(`Silakan angkat semua balok dari papan fisik agar papan bersih sebelum ${nextTitle} dimulai.`);
             }
           }
@@ -1751,16 +1756,40 @@ export default function VoiceGuide() {
     }
   }, [currentStep, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startGuide = (guideMode: GuideMode) => {
-    if (guideMode === "idle") return;
+  const actuallyLaunchGuide = (guideMode: GuideMode) => {
+    stopSpeaking();
+    playEarcon("click");
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (quizClearTimerRef.current) {
+      clearTimeout(quizClearTimerRef.current);
+      quizClearTimerRef.current = null;
+    }
+    quizWaitingForClearRef.current = false;
+    quizLiftGraceStartRef.current = 0;
+    if (recognitionLiftTimerRef.current) {
+      clearTimeout(recognitionLiftTimerRef.current);
+      recognitionLiftTimerRef.current = null;
+    }
+    if (freeExplorationTimerRef.current) {
+      clearTimeout(freeExplorationTimerRef.current);
+      freeExplorationTimerRef.current = null;
+    }
+    recognitionExplainedRef.current = false;
+    recognitionExplainedStepRef.current = -1;
+    recognitionPromptReadyRef.current = false;
+    recognitionRotationRef.current = null;
+    lastRecognitionReplayRef.current = 0;
+    lastQuizWrongRef.current = 0;
+    lastQuizWrongCompRef.current = null;
+    checkpointClearSpokenRef.current = false;
+    checkpointHandledRef.current = false;
+    idleMenuHandledRef.current = false;
+    ignoreIdleMenuUntilLiftRef.current = false;
+    pendingStartModeRef.current = null;
+    pendingTabSwitchRef.current = null;
+    setPendingGuideMode(null);
 
     if (guideMode === "free_exploration") {
-      stopSpeaking();
-      playEarcon("click");
-      if (freeExplorationTimerRef.current) {
-        clearTimeout(freeExplorationTimerRef.current);
-        freeExplorationTimerRef.current = null;
-      }
       setAiAdvisorText(null);
       setAiAdvisorEngine(null);
       setIsAILoading(false);
@@ -1779,36 +1808,6 @@ export default function VoiceGuide() {
       return;
     }
 
-    const currentProgress = getStudentProgress();
-    if (!currentProgress.modules.component_recognition && guideMode !== "recognition") {
-      playEarcon("warning");
-      speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil agar materi berikutnya terbuka.");
-      return;
-    }
-    stopSpeaking();
-    playEarcon("click");
-    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-    if (quizClearTimerRef.current) {
-      clearTimeout(quizClearTimerRef.current);
-      quizClearTimerRef.current = null;
-    }
-    quizWaitingForClearRef.current = false;
-    quizLiftGraceStartRef.current = 0;
-    if (recognitionLiftTimerRef.current) {
-      clearTimeout(recognitionLiftTimerRef.current);
-      recognitionLiftTimerRef.current = null;
-    }
-    recognitionExplainedRef.current = false;
-    recognitionExplainedStepRef.current = -1;
-    recognitionPromptReadyRef.current = false;
-    recognitionRotationRef.current = null;
-    lastRecognitionReplayRef.current = 0;
-    lastQuizWrongRef.current = 0;
-    lastQuizWrongCompRef.current = null;
-    checkpointClearSpokenRef.current = false;
-    checkpointHandledRef.current = false;
-    idleMenuHandledRef.current = false;
-    ignoreIdleMenuUntilLiftRef.current = false;
     setMode(guideMode);
     setCurrentStep(0);
     setStepCompleted(false);
@@ -1816,6 +1815,52 @@ export default function VoiceGuide() {
     setCheckpointPhase("idle");
     setBoardBlockCount(0);
     setIsExpanded(true);
+  };
+
+  const startGuide = (guideMode: GuideMode) => {
+    if (guideMode === "idle") {
+      resetGuide();
+      return;
+    }
+
+    const currentProgress = getStudentProgress();
+    if (!currentProgress.modules.component_recognition && guideMode !== "recognition") {
+      playEarcon("warning");
+      speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil di kotak A1 agar materi berikutnya terbuka.");
+      return;
+    }
+
+    const currentCells = latestCellsRef.current || {};
+    const placedCount = Object.values(currentCells).filter(Boolean).length;
+
+    // Jika papan sudah bersih, langsung jalankan modul
+    if (placedCount === 0) {
+      actuallyLaunchGuide(guideMode);
+      return;
+    }
+
+    // Jika masih ada balok di papan: WAJIB bersihkan papan terlebih dahulu
+    stopSpeaking();
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    if (quizClearTimerRef.current) {
+      clearTimeout(quizClearTimerRef.current);
+      quizClearTimerRef.current = null;
+    }
+    if (recognitionLiftTimerRef.current) {
+      clearTimeout(recognitionLiftTimerRef.current);
+      recognitionLiftTimerRef.current = null;
+    }
+    if (freeExplorationTimerRef.current) {
+      clearTimeout(freeExplorationTimerRef.current);
+      freeExplorationTimerRef.current = null;
+    }
+
+    pendingStartModeRef.current = guideMode;
+    setPendingGuideMode(guideMode);
+    lastLiftRemindRef.current = Date.now();
+    playEarcon("click");
+    const moduleName = MODULE_TITLES[guideMode] || "modul pembelajaran";
+    speak(`Pilihan diterima: ${moduleName}! Silakan angkat semua balok dari papan fisik agar papan bersih untuk memulai.`);
   };
 
   useEffect(() => {
@@ -1863,6 +1908,10 @@ export default function VoiceGuide() {
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
     idleMenuHandledRef.current = false;
+    ignoreIdleMenuUntilLiftRef.current = true;
+    pendingStartModeRef.current = null;
+    pendingTabSwitchRef.current = null;
+    setPendingGuideMode(null);
     setMode("idle");
     setCurrentStep(0);
     setStepCompleted(false);
@@ -2092,6 +2141,28 @@ export default function VoiceGuide() {
             <span>Dengarkan Menu</span>
           </button>
         </div>
+
+        {/* Banner Status Menunggu Papan Bersih saat Transisi Mode */}
+        {pendingGuideMode && (
+          <div className="flex items-center justify-between gap-3 rounded-2xl border-2 border-indigo-400 bg-indigo-50/95 p-3.5 shadow-sm animate-pulse">
+            <div className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs shrink-0">
+                <Hand className="h-4 w-4 animate-bounce" />
+              </span>
+              <div>
+                <p className="text-xs font-extrabold text-indigo-950">
+                  Menyiapkan {MODULE_TITLES[pendingGuideMode] || "Modul"}...
+                </p>
+                <p className="text-[11px] text-indigo-800 leading-snug">
+                  Silakan angkat semua balok dari papan fisik agar papan bersih untuk memulai.
+                </p>
+              </div>
+            </div>
+            <span className="rounded-xl bg-indigo-200/90 px-2.5 py-1 text-xs font-black text-indigo-900 shrink-0">
+              {boardBlockCount > 0 ? `${boardBlockCount} balok di papan` : "Papan bersih! Memulai..."}
+            </span>
+          </div>
+        )}
 
         {/* Daftar 5 Modul Pembelajaran */}
         <div className="space-y-2">
@@ -2393,15 +2464,7 @@ export default function VoiceGuide() {
                         {/* Pilihan A1 = IYA */}
                         <button
                           onClick={() => {
-                            if (boardBlockCount > 0) {
-                              pendingNextGuideRef.current = nextGuide.mode;
-                              lastLiftRemindRef.current = Date.now();
-                              setCheckpointPhase("waiting_lift");
-                              playEarcon("click");
-                              speak(`Pilihan diterima! Silakan angkat semua balok dari papan fisik agar papan bersih sebelum ${nextGuide.title} dimulai.`);
-                            } else {
-                              startGuide(nextGuide.mode);
-                            }
+                            startGuide(nextGuide.mode);
                           }}
                           className="group relative flex flex-col items-start rounded-xl border-2 border-emerald-300 bg-emerald-50/80 p-2.5 text-left transition-all hover:border-emerald-500 hover:shadow-md hover:bg-emerald-100/70 active:scale-[0.98]"
                         >

@@ -48,8 +48,9 @@ export default function InteractiveOrbit3D() {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const rawCtx = canvas.getContext("2d");
+    if (!rawCtx) return;
+    const ctx: CanvasRenderingContext2D = rawCtx;
 
     let width = 0;
     let height = 0;
@@ -222,7 +223,7 @@ export default function InteractiveOrbit3D() {
     }
 
     function resize() {
-      if (!canvas || !container) return;
+      if (!canvas || !container || !ctx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = container.clientWidth;
       height = container.clientHeight || 580;
