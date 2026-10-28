@@ -263,7 +263,7 @@ const SERIES_STEPS: StepDef[] = [
   },
   {
     instruction: "Langkah 8: Pasang Kabel Sudut L di posisi E2",
-    voice: "Langkah 8: Ambil kabel sudut L ketiga. Letakkan di sudut kanan bawah pada posisi E2 untuk membelokkan jalur ke arah kiri.",
+    voice: "Langkah 8: Ambil kabel sudut L ketiga. Letakkan di posisi E2, pada sudut kanan bawah lintasan seri kita, untuk membelokkan jalur ke arah kiri.",
     targetCells: { "E2": "l_cable" },
     hint: "Raba kabel sudut L. Pasang di E2 menghadap ke atas dan ke kiri.",
   },
@@ -281,7 +281,7 @@ const SERIES_STEPS: StepDef[] = [
   },
   {
     instruction: "Langkah 11: Pasang Kabel Sudut L di posisi B2",
-    voice: "Langkah 11: Ambil kabel sudut L terakhir. Letakkan di sudut kiri bawah pada posisi B2 untuk membelokkan jalur ke atas menuju baterai.",
+    voice: "Langkah 11: Ambil kabel sudut L terakhir. Letakkan di posisi B2, pada sudut kiri bawah lintasan seri kita, untuk membelokkan jalur ke atas menuju baterai.",
     targetCells: { "B2": "l_cable" },
     hint: "Raba kabel sudut L. Pasang di B2 menghadap ke kanan dan ke atas.",
   },
