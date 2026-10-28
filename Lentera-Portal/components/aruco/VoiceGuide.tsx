@@ -2747,11 +2747,10 @@ export default function VoiceGuide() {
                     <button
                       onClick={handleShuffleQuiz}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-100/90 hover:bg-indigo-200 border border-indigo-300 px-2.5 py-1 text-[11px] font-bold text-indigo-800 transition-colors shrink-0 shadow-2xs"
-                      title="Acak pertanyaan kuis baru atau letakkan balok di sel sudut kiri bawah A1"
+                      title="Acak pertanyaan kuis baru dari 7 komponen terdaftar"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       <span>Acak Kuis</span>
-                      <span className="font-mono bg-indigo-200/90 text-indigo-950 px-1 rounded text-[9px] font-black border border-indigo-300/80">A1</span>
                     </button>
                   )}
                 </div>
