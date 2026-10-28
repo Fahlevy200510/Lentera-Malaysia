@@ -49,6 +49,31 @@ type StepDef = {
   explanation?: string;
 };
 
+/* ---------------------------------------------------------------- Directional Helper */
+function getRelativeDirection(fromCell: string, toCell: string): string {
+  if (!fromCell || !toCell || fromCell === toCell) return "";
+  const colMap: Record<string, number> = { A: 1, B: 2, C: 3, D: 4, E: 5 };
+  const fromCol = colMap[fromCell[0]?.toUpperCase()] || 0;
+  const fromRow = parseInt(fromCell.slice(1), 10);
+  const toCol = colMap[toCell[0]?.toUpperCase()] || 0;
+  const toRow = parseInt(toCell.slice(1), 10);
+
+  if (!fromCol || isNaN(fromRow) || !toCol || isNaN(toRow)) return `ke kotak ${toCell}`;
+
+  const dx = toCol - fromCol; // > 0 ke kanan, < 0 ke kiri
+  const dy = toRow - fromRow; // > 0 ke atas/depan, < 0 ke bawah/belakang
+
+  const parts: string[] = [];
+  if (dy > 0) parts.push(`${dy} kotak ke atas`);
+  else if (dy < 0) parts.push(`${Math.abs(dy)} kotak ke bawah`);
+
+  if (dx > 0) parts.push(`${dx} kotak ke kanan`);
+  else if (dx < 0) parts.push(`${Math.abs(dx)} kotak ke kiri`);
+
+  if (parts.length === 0) return `ke kotak ${toCell}`;
+  return `geser ${parts.join(" dan ")} ke kotak ${toCell}`;
+}
+
 /* ---------------------------------------------------------------- Guide Data */
 const RECOGNITION_STEPS: StepDef[] = [
   {
@@ -56,42 +81,42 @@ const RECOGNITION_STEPS: StepDef[] = [
     voice: "Mari berkenalan dengan komponen listrik! Komponen pertama adalah Baterai, sumber energi utama rangkaian. Raba balok di mejamu: cari balok yang memiliki simbol timbul tanda tambah plus untuk kutub positif, dan tanda minus mendatar untuk kutub negatif. Letakkan balok Baterai ini di sel C3 tepat di tengah papan.",
     targetCells: { "C3": "battery" },
     hint: "Raba kedua sisi balok: temukan tanda tambah (+) timbul untuk kutub positif dan tanda minus (-) garis mendatar untuk kutub negatif.",
-    explanation: "Bagus sekali! Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik dari kutub positif menuju kutub negatif melalui rangkaian tertutup.",
+    explanation: "Ini adalah balok Baterai, sumber energi utama rangkaian. Baterai menghasilkan tegangan untuk mendorong arus listrik dari kutub positif menuju kutub negatif melalui rangkaian tertutup.",
   },
   {
     instruction: "Raba dan cari balok Saklar (tuas geser timbul), letakkan di sel C3.",
     voice: "Komponen kedua adalah Saklar, pengendali aliran listrik. Raba balok yang memiliki tuas geser timbul di bagian atasnya yang bisa kamu geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
     targetCells: { "C3": "switch" },
     hint: "Raba bagian atas balok: temukan tuas geser timbul yang dapat digeser untuk menyambung dan memutus aliran listrik.",
-    explanation: "Tepat sekali! Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Saat tuas saklar digeser ke posisi ON, arus listrik mengalir. Saat tuas digeser ke posisi OFF, aliran listrik terputus dan lampu akan padam.",
+    explanation: "Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Saat tuas saklar digeser ke posisi ON, arus listrik mengalir. Saat tuas digeser ke posisi OFF, aliran listrik terputus dan lampu akan padam.",
   },
   {
     instruction: "Raba dan cari balok Lampu LED (kubah bundar timbul & polaritas + / -), letakkan di sel C3.",
     voice: "Komponen ketiga adalah Lampu. Lampu pada Lentera menggunakan LED yang memiliki polaritas kutub positif dan negatif. Raba baloknya: di bagian atas terdapat kubah bundar timbul seperti bohlam kecil, dan di kedua sisinya terdapat simbol timbul plus untuk anoda dan minus untuk katoda. Letakkan balok Lampu ini di sel C3.",
     targetCells: { "C3": "lamp" },
     hint: "Raba kubah bundar dan simbol timbul di sisinya: tanda tambah (+) adalah anoda (kutub positif), dan tanda minus (-) adalah katoda (kutub negatif).",
-    explanation: "Luar biasa! Ini adalah balok Lampu LED. Lampu memiliki sifat polaritas satu arah: arus dari kutub positif baterai harus masuk ke kutub positif lampu bertanda plus. Jika terbalik, lampu tidak akan menyala. Jika lampu belum menyala, cukup angkat balok lampu dan putar posisinya 180 derajat!",
+    explanation: "Ini adalah balok Lampu LED. Lampu memiliki sifat polaritas satu arah: arus dari kutub positif baterai harus masuk ke kutub positif lampu bertanda plus. Jika terbalik, lampu tidak akan menyala. Jika lampu belum menyala, cukup angkat balok lampu dan putar posisinya 180 derajat!",
   },
   {
     instruction: "Raba dan cari balok Kabel Lurus (alur garis timbul lurus), letakkan di sel C3.",
     voice: "Komponen keempat adalah Kabel Lurus, penghantar arus listrik. Raba permukaan balok: rasakan alur garis timbul lurus yang membentang dari satu sisi tembus ke sisi seberangnya. Letakkan balok Kabel Lurus ini di sel C3.",
     targetCells: { "C3": "straight_cable" },
     hint: "Raba alur timbul: garis lurus melintang berfungsi mengalirkan arus listrik lurus tanpa belokan.",
-    explanation: "Bagus sekali! Ini adalah balok Kabel Lurus. Di dalamnya terdapat jalur konduktor tembaga untuk mengalirkan arus listrik secara mendatar atau tegak dalam satu garis lurus tanpa belokan.",
+    explanation: "Ini adalah balok Kabel Lurus. Di dalamnya terdapat jalur konduktor tembaga untuk mengalirkan arus listrik secara mendatar atau tegak dalam satu garis lurus tanpa belokan.",
   },
   {
     instruction: "Raba dan cari balok Kabel Sudut L (garis timbul siku 90 derajat), letakkan di sel C3.",
     voice: "Komponen kelima adalah Kabel Sudut L, pemutar arah aliran listrik. Raba permukaannya: rasakan alur garis timbul yang berbelok siku membentuk huruf L. Balok ini dipasang di setiap sudut papan agar lintasan sirkuit bisa berputar kembali ke baterai. Letakkan di sel C3.",
     targetCells: { "C3": "l_cable" },
     hint: "Raba alur siku 90 derajat menyerupai huruf L: kabel ini menghubungkan sisi horizontal dan vertikal di setiap sudut papan.",
-    explanation: "Hebat! Ini adalah balok Kabel Sudut L. Kabel ini membelokkan aliran listrik sebesar 90 derajat agar rangkaian dapat berputar kembali ke baterai dan membentuk lintasan tertutup.",
+    explanation: "Ini adalah balok Kabel Sudut L. Kabel ini membelokkan aliran listrik sebesar 90 derajat agar rangkaian dapat berputar kembali ke baterai dan membentuk lintasan tertutup.",
   },
   {
     instruction: "Raba dan cari balok Kabel Cabang T (garis timbul cabang tiga), letakkan di sel C3.",
     voice: "Terakhir, komponen keenam adalah Kabel Cabang T, pembagi arus pada rangkaian paralel. Raba permukaannya: rasakan alur garis timbul bercabang tiga menyerupai huruf T. Balok ini membagi arus listrik menjadi cabang-cabang terpisah untuk setiap lampu. Letakkan di sel C3.",
     targetCells: { "C3": "t_cable" },
     hint: "Raba alur timbul bercabang tiga menyerupai huruf T: kabel utama untuk merakit rangkaian bercabang paralel.",
-    explanation: "Luar biasa! Ini adalah balok Kabel Cabang T. Kabel ini memiliki tiga percabangan koneksi untuk membagi aliran listrik menjadi beberapa cabang terpisah untuk masing-masing lampu pada rangkaian paralel.",
+    explanation: "Ini adalah balok Kabel Cabang T. Kabel ini memiliki tiga percabangan koneksi untuk membagi aliran listrik menjadi beberapa cabang terpisah untuk masing-masing lampu pada rangkaian paralel.",
   },
 ];
 
@@ -180,12 +205,12 @@ function createDynamicQuizSteps(shuffle = false): StepDef[] {
     const ord = ordinals[idx];
     return {
       instruction: `Tebak di ${slot.cell}: ${item.title}`,
-      voice: `Kuis Taktil! Pertanyaan ${ord}: ${item.question} Raba dan letakkan balok jawabanmu di ${slot.desc}. Kamu juga bisa meletakkan balok di kotak A1 kapan saja untuk mengacak paket soal baru.`,
+      voice: `Kuis Taktil! Pertanyaan ${ord}: ${item.question} Raba dan letakkan balok jawabanmu di ${slot.desc}.`,
       targetCells: { [slot.cell]: item.component },
       expectedComponent: item.component,
       validator: (cells: Record<string, any>) =>
         Boolean(cells[slot.cell] && cells[slot.cell].component === item.component),
-      hint: `${item.hint} Lalu letakkan di ${slot.desc}. (Pintasan: kotak A1 untuk acak soal baru)`,
+      hint: `${item.hint} Lalu letakkan di ${slot.desc}.`,
       explanation: item.explanation,
     };
   });
@@ -1278,7 +1303,7 @@ export default function VoiceGuide() {
                 recognitionRotationRef.current = curRot;
                 playEarcon("clue");
                 speak(
-                  `Memutar balok terdeteksi. Mengulang penjelasan: ${step.explanation} Jika kamu sudah jelas dan ingin lanjut, silakan angkat baloknya dari sel C3.`
+                  `Memutar balok terdeteksi. ${step.explanation} Jika kamu sudah jelas dan ingin lanjut, silakan angkat baloknya dari sel C3.`
                 );
                 return;
               }
@@ -1335,6 +1360,21 @@ export default function VoiceGuide() {
             const clue = COMPONENT_TACTILE_HINT[targetExpected] || "ciri taktilnya";
             speak(`Kamu meletakkan balok ${placedName} di C3. Untuk langkah ini kita mencari ${expectedName}. Coba raba balok yang ${clue}.`);
           }
+          return;
+        }
+
+        // D. Siswa meletakkan balok di kotak selain C3 saat pengenalan komponen
+        const placedNonC3 = Object.entries(cells).filter(([c, d]) => c !== "C3" && Boolean(d) && !isStudentToken(d));
+        if (!placedC3 && placedNonC3.length > 0 && recognitionExplainedStepRef.current !== currentStep) {
+          const now = Date.now();
+          if (now - lastClueRef.current > 4500) {
+            lastClueRef.current = now;
+            playEarcon("wrong");
+            const [wrongCell, placedData] = placedNonC3[0];
+            const placedName = COMPONENT_LABEL[(placedData as any)?.component] || "balok";
+            const dirHint = getRelativeDirection(wrongCell, "C3");
+            speak(`Kamu meletakkan ${placedName} di kotak ${wrongCell}. Posisi pengenalan ada di sel C3 tepat di tengah papan. Silakan ${dirHint}.`);
+          }
         }
         return;
       }
@@ -1345,17 +1385,6 @@ export default function VoiceGuide() {
       if (mode === "quiz") {
         const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
         const targetCell = step.targetCells ? Object.keys(step.targetCells)[0] : "C3";
-
-        // Pintasan Taktil A1: Acak Soal Kuis Baru dari 7 komponen kapan saja
-        if (cells["A1"] && targetCell !== "A1" && !isStudentToken(cells["A1"])) {
-          const now = Date.now();
-          if (now - lastMenuSelectRef.current > 4000) {
-            lastMenuSelectRef.current = now;
-            playEarcon("step");
-            handleShuffleQuiz();
-            return;
-          }
-        }
 
         // Pintasan Taktil E5: Kembali ke Menu Utama jika hanya 1 balok di E5
         if (cells["E5"] && targetCell !== "E5" && placedEntries.length === 1 && !isStudentToken(cells["E5"])) {
@@ -1483,7 +1512,8 @@ export default function VoiceGuide() {
                 lastQuizWrongCompRef.current = `${expectedComp}_${cell}`;
                 playEarcon("clue");
                 const compName = COMPONENT_LABEL[expectedComp] || expectedComp;
-                speak(`Pilihan balok ${compName} sudah benar! Tapi kamu meletakkannya di kotak ${cell}. Geser balok tersebut ke kotak ${targetCell}.`);
+                const dirHint = getRelativeDirection(cell, targetCell);
+                speak(`Pilihan balok ${compName} sudah benar! Tapi kamu meletakkannya di kotak ${cell}. Silakan ${dirHint}.`);
               }
               return;
             }
@@ -1520,8 +1550,8 @@ export default function VoiceGuide() {
                 lastQuizWrongCompRef.current = `${placedComp}_${cell}`;
                 playEarcon("wrong");
                 const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
-                const hintText = step.hint || "raba ciri fisiknya";
-                speak(`Kamu meletakkan balok ${wrongName} di kotak ${cell}. Untuk kuis ini, cari balok yang tepat dan letakkan di kotak ${targetCell}.`);
+                const dirHint = getRelativeDirection(cell, targetCell);
+                speak(`Kamu meletakkan balok ${wrongName} di kotak ${cell}. Untuk kuis ini, cari balok yang tepat lalu ${dirHint}.`);
               }
               return;
             }
@@ -1554,21 +1584,68 @@ export default function VoiceGuide() {
         allFound = step.validator(cells, detail?.status, detail?.graph_type);
       }
 
-      // Socratic Clue Feedback saat komponen yang diletakkan salah di sel target
+      // Socratic Clue Feedback saat komponen yang diletakkan salah di sel target atau di kotak lain
       if (step.targetCells && !allFound && !stepCompleted && !isFinished) {
-        for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
-          const placed = cells[cell];
-          if (placed && placed.component !== expectedComponent) {
-            const now = Date.now();
-            if (now - lastClueRef.current > 4500) {
-              lastClueRef.current = now;
-              const placedName = COMPONENT_LABEL[placed.component] || placed.component;
-              const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
-              const clue = COMPONENT_TACTILE_HINT[expectedComponent] || "bentuk yang sesuai";
-              playEarcon("wrong");
-              speak(`Kamu meletakkan balok ${placedName} di ${cell}. Untuk langkah ini kita membutuhkan ${expectedName}. Coba raba balok yang ${clue}.`);
+        const now = Date.now();
+        let handledClue = false;
+
+        // 1. Cek apakah komponen target ada di kotak yang salah di papan
+        for (const [targetCell, expectedComponent] of Object.entries(step.targetCells)) {
+          const placedAtTarget = cells[targetCell];
+          if (!placedAtTarget || placedAtTarget.component !== expectedComponent) {
+            const wrongCellEntry = Object.entries(cells).find(
+              ([c, d]) => c !== targetCell && (d as any)?.component === expectedComponent && !step.targetCells?.[c]
+            );
+            if (wrongCellEntry) {
+              const [wrongCell] = wrongCellEntry;
+              if (now - lastClueRef.current > 4500) {
+                lastClueRef.current = now;
+                playEarcon("clue");
+                const compName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
+                const dirHint = getRelativeDirection(wrongCell, targetCell);
+                speak(`Balok ${compName} sudah tepat, tetapi berada di kotak ${wrongCell}. Silakan ${dirHint}.`);
+              }
+              handledClue = true;
+              break;
             }
-            break;
+          }
+        }
+
+        // 2. Balok salah diletakkan tepat di sel target
+        if (!handledClue) {
+          for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
+            const placed = cells[cell];
+            if (placed && placed.component !== expectedComponent) {
+              if (now - lastClueRef.current > 4500) {
+                lastClueRef.current = now;
+                const placedName = COMPONENT_LABEL[placed.component] || placed.component;
+                const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
+                const clue = COMPONENT_TACTILE_HINT[expectedComponent] || "bentuk yang sesuai";
+                playEarcon("wrong");
+                speak(`Kamu meletakkan balok ${placedName} di ${cell}. Untuk langkah ini kita membutuhkan ${expectedName}. Coba raba balok yang ${clue}.`);
+              }
+              handledClue = true;
+              break;
+            }
+          }
+        }
+
+        // 3. Siswa meletakkan balok di kotak luar target padahal target masih kosong
+        if (!handledClue) {
+          const missingTarget = Object.entries(step.targetCells).find(([tc, ec]) => !cells[tc] || cells[tc].component !== ec);
+          if (missingTarget) {
+            const [targetCell] = missingTarget;
+            const extraPlacedEntry = Object.entries(cells).find(
+              ([c, d]) => !step.targetCells?.[c] && Boolean(d) && !isStudentToken(d)
+            );
+            if (extraPlacedEntry && now - lastClueRef.current > 5000) {
+              lastClueRef.current = now;
+              const [wrongCell, placedData] = extraPlacedEntry;
+              const placedName = COMPONENT_LABEL[(placedData as any)?.component] || "balok";
+              const dirHint = getRelativeDirection(wrongCell, targetCell);
+              playEarcon("wrong");
+              speak(`Kamu meletakkan balok ${placedName} di kotak ${wrongCell}. Kotak langkah ini ada di ${targetCell}. Silakan ${dirHint}.`);
+            }
           }
         }
       }
