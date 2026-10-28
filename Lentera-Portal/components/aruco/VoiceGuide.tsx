@@ -180,7 +180,7 @@ const ALL_REGISTERED_QUIZ_BANK: {
 ];
 
 // Generator Kuis Dinamis: Memilih 4 pertanyaan acak dari 7 komponen fisik terdaftar
-function createDynamicQuizSteps(shuffle = false): StepDef[] {
+function createDynamicQuizSteps(shuffle = true, previousFirstComp?: string): StepDef[] {
   const targetSlots = [
     { cell: "B3", desc: "kotak B3 di sebelah kiri tengah papan, tepat di sebelah kiri C3" },
     { cell: "D3", desc: "kotak D3 di sebelah kanan tengah papan, tepat di sebelah kanan C3" },
@@ -190,7 +190,16 @@ function createDynamicQuizSteps(shuffle = false): StepDef[] {
 
   let pool = [...ALL_REGISTERED_QUIZ_BANK];
   if (shuffle) {
-    pool = pool.sort(() => Math.random() - 0.5);
+    // Fisher-Yates shuffle untuk pengacakan merata tanpa bias
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    // Jika soal pertama sama persis dengan kuis sebelumnya, putar urutan agar siswa langsung mendengar variasi soal baru
+    if (previousFirstComp && pool.length > 1 && pool[0].component === previousFirstComp) {
+      const first = pool.shift()!;
+      pool.push(first);
+    }
   } else {
     // Susunan default standar (Baterai, Lampu, Saklar, Kabel T)
     const defaults = ["battery", "lamp", "switch", "t_cable"];
@@ -216,7 +225,7 @@ function createDynamicQuizSteps(shuffle = false): StepDef[] {
   });
 }
 
-const QUIZ_STEPS: StepDef[] = createDynamicQuizSteps(false);
+const QUIZ_STEPS: StepDef[] = createDynamicQuizSteps(true);
 
 const SERIES_STEPS: StepDef[] = [
   {
@@ -573,6 +582,7 @@ export default function VoiceGuide() {
   const quizWrongWaitingLiftRef = useRef<boolean>(false);
   const quizWrongLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isShufflingQuizRef = useRef<boolean>(false);
+  const lastQuizFirstCompRef = useRef<string | null>(null);
   const quizWaitingForClearRef = useRef<boolean>(false);
   const quizClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quizLiftGraceStartRef = useRef<number>(0);
@@ -751,7 +761,10 @@ export default function VoiceGuide() {
 
   const handleShuffleQuiz = useCallback(() => {
     isShufflingQuizRef.current = true;
-    const newSteps = createDynamicQuizSteps(true);
+    const newSteps = createDynamicQuizSteps(true, lastQuizFirstCompRef.current || undefined);
+    if (newSteps.length > 0) {
+      lastQuizFirstCompRef.current = newSteps[0].expectedComponent || null;
+    }
     const currentCells = latestCellsRef.current || {};
     const placed = Object.values(currentCells).filter((c) => Boolean(c) && !isStudentToken(c)).length;
 
@@ -1804,7 +1817,7 @@ export default function VoiceGuide() {
     if (mode !== "idle" && step && !isMuted) {
       speak(step.voice);
     }
-  }, [currentStep, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentStep, mode, quizSteps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const actuallyLaunchGuide = (guideMode: GuideMode) => {
     stopSpeaking();
@@ -1861,6 +1874,14 @@ export default function VoiceGuide() {
         "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu secara bebas. AI Live Tutor akan otomatis mengamati dan membimbingmu saat sirkuit belum menyala. Kamu juga bisa meletakkan balok di kotak sudut kiri bawah A1 kapan saja untuk memanggil AI Tutor, atau di kotak sudut kanan atas E5 untuk kembali ke menu utama."
       );
       return;
+    }
+
+    if (guideMode === "quiz") {
+      const newSteps = createDynamicQuizSteps(true, lastQuizFirstCompRef.current || undefined);
+      if (newSteps.length > 0) {
+        lastQuizFirstCompRef.current = newSteps[0].expectedComponent || null;
+      }
+      setQuizSteps(newSteps);
     }
 
     setMode(guideMode);
