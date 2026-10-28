@@ -570,6 +570,8 @@ export default function VoiceGuide() {
   const lastRecognitionReplayRef = useRef<number>(0);
   const lastQuizWrongRef = useRef<number>(0);
   const lastQuizWrongCompRef = useRef<string | null>(null);
+  const quizWrongWaitingLiftRef = useRef<boolean>(false);
+  const quizWrongLiftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quizWaitingForClearRef = useRef<boolean>(false);
   const quizClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const quizLiftGraceStartRef = useRef<number>(0);
@@ -666,6 +668,7 @@ export default function VoiceGuide() {
     return () => {
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
       if (quizClearTimerRef.current) clearTimeout(quizClearTimerRef.current);
+      if (quizWrongLiftTimerRef.current) clearTimeout(quizWrongLiftTimerRef.current);
       if (recognitionLiftTimerRef.current) clearTimeout(recognitionLiftTimerRef.current);
       if (clearBoardTimerRef.current) clearTimeout(clearBoardTimerRef.current);
       if (typeof window !== "undefined") {
@@ -748,6 +751,11 @@ export default function VoiceGuide() {
     setCompletedCells(new Set());
     lastQuizWrongRef.current = 0;
     lastQuizWrongCompRef.current = null;
+    quizWrongWaitingLiftRef.current = false;
+    if (quizWrongLiftTimerRef.current) {
+      clearTimeout(quizWrongLiftTimerRef.current);
+      quizWrongLiftTimerRef.current = null;
+    }
     playEarcon("step");
 
     if (placed > 0) {
@@ -1366,7 +1374,7 @@ export default function VoiceGuide() {
             recognitionLiftTimerRef.current = null;
           }
           const now = Date.now();
-          if (now - lastClueRef.current > 5000) {
+          if (now - lastClueRef.current > 5000 && !isSpeakingRef.current && !(window as any).__lenteraSpeaking) {
             lastClueRef.current = now;
             playEarcon("wrong");
             const placedName = COMPONENT_LABEL[placedC3.component] || placedC3.component;
@@ -1381,7 +1389,7 @@ export default function VoiceGuide() {
         const placedNonC3 = Object.entries(cells).filter(([c, d]) => c !== "C3" && Boolean(d) && !isStudentToken(d));
         if (!placedC3 && placedNonC3.length > 0 && recognitionExplainedStepRef.current !== currentStep) {
           const now = Date.now();
-          if (now - lastClueRef.current > 4500) {
+          if (now - lastClueRef.current > 4500 && !isSpeakingRef.current && !(window as any).__lenteraSpeaking) {
             lastClueRef.current = now;
             playEarcon("wrong");
             const [wrongCell, placedData] = placedNonC3[0];
@@ -1397,7 +1405,7 @@ export default function VoiceGuide() {
       // KHUSUS MODE 2: KUIS TAKTIL (TERPANDU KOORDINAT GRID BERVARIASI)
       // =========================================================================
       if (mode === "quiz") {
-        const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c));
+        const placedEntries = Object.entries(cells).filter(([_, c]) => Boolean(c) && !isStudentToken(c));
         const targetCell = step.targetCells ? Object.keys(step.targetCells)[0] : "C3";
 
         // Pintasan Taktil E5: Kembali ke Menu Utama jika hanya 1 balok di E5
@@ -1439,6 +1447,11 @@ export default function VoiceGuide() {
               quizClearTimerRef.current = setTimeout(() => {
                 quizClearTimerRef.current = null;
                 quizWaitingForClearRef.current = false;
+                quizWrongWaitingLiftRef.current = false;
+                if (quizWrongLiftTimerRef.current) {
+                  clearTimeout(quizWrongLiftTimerRef.current);
+                  quizWrongLiftTimerRef.current = null;
+                }
                 setStepCompleted(false);
                 setCompletedCells(new Set());
                 lastQuizWrongRef.current = 0;
@@ -1468,6 +1481,11 @@ export default function VoiceGuide() {
             setStepCompleted(true);
             setCompletedCells(new Set([targetCell]));
             lastQuizWrongCompRef.current = null;
+            quizWrongWaitingLiftRef.current = false;
+            if (quizWrongLiftTimerRef.current) {
+              clearTimeout(quizWrongLiftTimerRef.current);
+              quizWrongLiftTimerRef.current = null;
+            }
             playEarcon("step");
             if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
 
@@ -1509,6 +1527,34 @@ export default function VoiceGuide() {
             return;
           }
 
+          // Siswa telah diberi tahu salah: WAJIB tunggu siswa mengangkat balok hingga papan bersih
+          // sebelum evaluasi salah berikutnya. Jangan ulang suara dan jangan potong suara!
+          if (quizWrongWaitingLiftRef.current) {
+            if (placedEntries.length > 0) {
+              // Balok masih berada di papan: batalkan timer reset jika ada, jangan bicara lagi
+              if (quizWrongLiftTimerRef.current) {
+                clearTimeout(quizWrongLiftTimerRef.current);
+                quizWrongLiftTimerRef.current = null;
+              }
+              return;
+            } else {
+              // Papan kosong (balok diangkat): debounce 350ms agar tidak terganggu drop frame sesaat kamera
+              if (!quizWrongLiftTimerRef.current) {
+                quizWrongLiftTimerRef.current = setTimeout(() => {
+                  quizWrongLiftTimerRef.current = null;
+                  quizWrongWaitingLiftRef.current = false;
+                  lastQuizWrongCompRef.current = null;
+                }, 350);
+              }
+              return;
+            }
+          }
+
+          // Jika sistem sedang berbicara (instruksi soal atau audio lain), JANGAN potong audio
+          if (isSpeakingRef.current || (window as any).__lenteraSpeaking) {
+            return;
+          }
+
           // Respons cerdas jika meletakkan komponen di luar kotak target atau balok yang salah
           const expectedComp = step.expectedComponent;
           if (placedEntries.length > 0 && expectedComp) {
@@ -1517,18 +1563,13 @@ export default function VoiceGuide() {
             const correctCompEntry = placedEntries.find(([_, d]) => (d as any)?.component === expectedComp);
             if (correctCompEntry) {
               const [cell] = correctCompEntry;
-              const now = Date.now();
-              const isNewWrong = lastQuizWrongCompRef.current !== `${expectedComp}_${cell}`;
-              const cooldownOver = now - lastQuizWrongRef.current > 4000;
-
-              if (isNewWrong || cooldownOver) {
-                lastQuizWrongRef.current = now;
-                lastQuizWrongCompRef.current = `${expectedComp}_${cell}`;
-                playEarcon("clue");
-                const compName = COMPONENT_LABEL[expectedComp] || expectedComp;
-                const dirHint = getRelativeDirection(cell, targetCell);
-                speak(`Pilihan balok ${compName} sudah benar! Tapi kamu meletakkannya di kotak ${cell}. Silakan ${dirHint}.`);
-              }
+              quizWrongWaitingLiftRef.current = true;
+              lastQuizWrongRef.current = Date.now();
+              lastQuizWrongCompRef.current = `${expectedComp}_${cell}`;
+              playEarcon("clue");
+              const compName = COMPONENT_LABEL[expectedComp] || expectedComp;
+              const dirHint = getRelativeDirection(cell, targetCell);
+              speak(`Pilihan balok ${compName} sudah benar! Tapi kamu meletakkannya di kotak ${cell}. Silakan ${dirHint}.`);
               return;
             }
 
@@ -1536,18 +1577,13 @@ export default function VoiceGuide() {
             const placedTarget = cells[targetCell];
             if (placedTarget && placedTarget.component !== expectedComp) {
               const wrongComp = placedTarget.component;
-              const now = Date.now();
-              const isNewWrong = lastQuizWrongCompRef.current !== wrongComp;
-              const cooldownOver = now - lastQuizWrongRef.current > 4000;
-
-              if (isNewWrong || cooldownOver) {
-                lastQuizWrongRef.current = now;
-                lastQuizWrongCompRef.current = wrongComp;
-                playEarcon("wrong");
-                const wrongName = COMPONENT_LABEL[wrongComp] || wrongComp;
-                const hintText = step.hint || "raba ciri fisiknya";
-                speak(`Kurang tepat. Kamu meletakkan balok ${wrongName} di kotak ${targetCell}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
-              }
+              quizWrongWaitingLiftRef.current = true;
+              lastQuizWrongRef.current = Date.now();
+              lastQuizWrongCompRef.current = wrongComp;
+              playEarcon("wrong");
+              const wrongName = COMPONENT_LABEL[wrongComp] || wrongComp;
+              const hintText = step.hint || "raba ciri fisiknya";
+              speak(`Kurang tepat. Kamu meletakkan balok ${wrongName} di kotak ${targetCell}. Ingat petunjuknya: ${hintText}. Angkat balok tersebut dan coba cari balok yang benar.`);
               return;
             }
 
@@ -1555,23 +1591,15 @@ export default function VoiceGuide() {
             const [cell, placedData] = placedEntries[0];
             const placedComp = (placedData as any)?.component;
             if (placedComp && placedComp !== expectedComp) {
-              const now = Date.now();
-              const isNewWrong = lastQuizWrongCompRef.current !== `${placedComp}_${cell}`;
-              const cooldownOver = now - lastQuizWrongRef.current > 4000;
-
-              if (isNewWrong || cooldownOver) {
-                lastQuizWrongRef.current = now;
-                lastQuizWrongCompRef.current = `${placedComp}_${cell}`;
-                playEarcon("wrong");
-                const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
-                const dirHint = getRelativeDirection(cell, targetCell);
-                speak(`Kamu meletakkan balok ${wrongName} di kotak ${cell}. Untuk kuis ini, cari balok yang tepat lalu ${dirHint}.`);
-              }
+              quizWrongWaitingLiftRef.current = true;
+              lastQuizWrongRef.current = Date.now();
+              lastQuizWrongCompRef.current = `${placedComp}_${cell}`;
+              playEarcon("wrong");
+              const wrongName = COMPONENT_LABEL[placedComp] || placedComp;
+              const dirHint = getRelativeDirection(cell, targetCell);
+              speak(`Kamu meletakkan balok ${wrongName} di kotak ${cell}. Untuk kuis ini, cari balok yang tepat lalu ${dirHint}.`);
               return;
             }
-          } else {
-            // Reset saat papan diangkat/dikosongkan agar balok berikutnya dapat dideteksi instan
-            lastQuizWrongCompRef.current = null;
           }
           return;
         }
@@ -1781,6 +1809,11 @@ export default function VoiceGuide() {
     lastRecognitionReplayRef.current = 0;
     lastQuizWrongRef.current = 0;
     lastQuizWrongCompRef.current = null;
+    quizWrongWaitingLiftRef.current = false;
+    if (quizWrongLiftTimerRef.current) {
+      clearTimeout(quizWrongLiftTimerRef.current);
+      quizWrongLiftTimerRef.current = null;
+    }
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
     idleMenuHandledRef.current = false;
@@ -1905,6 +1938,11 @@ export default function VoiceGuide() {
     lastRecognitionReplayRef.current = 0;
     lastQuizWrongRef.current = 0;
     lastQuizWrongCompRef.current = null;
+    quizWrongWaitingLiftRef.current = false;
+    if (quizWrongLiftTimerRef.current) {
+      clearTimeout(quizWrongLiftTimerRef.current);
+      quizWrongLiftTimerRef.current = null;
+    }
     checkpointClearSpokenRef.current = false;
     checkpointHandledRef.current = false;
     idleMenuHandledRef.current = false;
