@@ -12,6 +12,7 @@ class VisionCore:
         self.aruco_params.adaptiveThreshWinSizeMin = 3
         self.aruco_params.adaptiveThreshWinSizeMax = 43  # Diperluas dari 23 ke 43 agar tahan gradasi terang-gelap
         self.aruco_params.adaptiveThreshWinSizeStep = 8  # Langkah lebih rapat (3, 11, 19, 27, 35, 43)
+        self.aruco_params.adaptiveThreshConstant = 5  # Lebih sensitif pada area tengah papan yang redup
         self.aruco_params.minDistanceToBorder = 1
         self.aruco_params.errorCorrectionRate = 0.6  # Lebih toleran terhadap noise
         self.aruco_params.maxErroneousBitsInBorderRate = 0.35  # Toleransi 35% jika ada pantulan/silau kecil di border
@@ -38,45 +39,35 @@ class VisionCore:
     def detect_markers(self, frame):
         """
         Deteksi marker ArUco yang cepat, adaptif, dan tahan terhadap distorsi inframerah/ungu.
-        Menggabungkan pembacaan Green Channel (kebal banjir IR) dan CLAHE untuk kontras maksimal.
+        Menggabungkan pembacaan Green Channel (kebal banjir IR), CLAHE, dan Grayscale
+        dengan deduplikasi spasial agar beberapa blok dengan ID yang sama tetap terdeteksi semua.
         """
         has_channels = len(frame.shape) == 3 and frame.shape[2] >= 3
-        # Saluran hijau (channel 1) paling tahan terhadap radiasi inframerah pada sensor NoIR / bohlam filamen
         green = frame[:, :, 1] if has_channels else frame
 
-        corners, ids, _ = self.detector.detectMarkers(green)
-        
-        detected_map = {}
-        if ids is not None:
+        detections = []  # [(m_id, corners, (cx, cy))]
+
+        def collect(img_channel):
+            corners, ids, _ = self.detector.detectMarkers(img_channel)
+            if ids is None:
+                return
             flat_ids = np.ravel(ids)
             for i in range(len(flat_ids)):
                 m_id = int(flat_ids[i])
-                if m_id in self.valid_ids:
-                    detected_map[m_id] = corners[i][0]
+                if m_id not in self.valid_ids:
+                    continue
+                c = corners[i][0]
+                cx, cy = calculate_centroid(c)
+                if not any(math.hypot(cx - ex, cy - ey) < 25 for _, _, (ex, ey) in detections):
+                    detections.append((m_id, c, (cx, cy)))
 
-        # Jika belum semua komponen terdeteksi, coba bantu dengan CLAHE kontras tinggi
-        if len(detected_map) < len(self.valid_ids):
-            enhanced = self.clahe.apply(green)
-            e_corners, e_ids, _ = self.detector.detectMarkers(enhanced)
-            if e_ids is not None:
-                e_flat_ids = np.ravel(e_ids)
-                for i in range(len(e_flat_ids)):
-                    m_id = int(e_flat_ids[i])
-                    if m_id in self.valid_ids and m_id not in detected_map:
-                        detected_map[m_id] = e_corners[i][0]
-
-        # Fallback terakhir ke grayscale standar jika green channel melewatkan marker
-        if len(detected_map) == 0 and has_channels:
+        collect(green)
+        collect(self.clahe.apply(green))
+        if has_channels:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            g_corners, g_ids, _ = self.detector.detectMarkers(gray)
-            if g_ids is not None:
-                g_flat_ids = np.ravel(g_ids)
-                for i in range(len(g_flat_ids)):
-                    m_id = int(g_flat_ids[i])
-                    if m_id in self.valid_ids and m_id not in detected_map:
-                        detected_map[m_id] = g_corners[i][0]
+            collect(gray)
 
-        return list(detected_map.items())
+        return [(m_id, c) for m_id, c, _ in detections]
 
     def undistort_corners(self, corners):
         """
