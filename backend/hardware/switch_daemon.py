@@ -14,6 +14,7 @@ import threading
 
 SWITCH_PIN = 3  # BCM 3 (Pin Fisik 5 - SCL) - terhubung ke Kontak NO saklar
 LED_PIN = 16     # BCM 16 (Pin Fisik 36) - terhubung ke LED (+) saklar
+BOARD_LED_PIN = 18  # BCM 18 (Pin Fisik 12) - 4 LED putih penerangan board
 BUZZER_PIN = 17  # BCM 17 (Pin Fisik 11) - Buzzer
 
 def run_cmd(cmd):
@@ -59,9 +60,11 @@ def main():
     # Switch menggunakan internal pull-up (Tertutup / ON = LOW, Terbuka / OFF = HIGH)
     GPIO.setup(SWITCH_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     
-    # LED tombol
+    # LED tombol & LED board
     GPIO.setup(LED_PIN, GPIO.OUT)
     GPIO.output(LED_PIN, GPIO.LOW)
+    GPIO.setup(BOARD_LED_PIN, GPIO.OUT)
+    GPIO.output(BOARD_LED_PIN, GPIO.LOW)
 
     print(f"[SWITCH DAEMON] Aktif. Memantau Switch di GPIO {SWITCH_PIN} (Pin 5) dan LED di GPIO {LED_PIN}...")
 
@@ -72,12 +75,14 @@ def main():
         # Saklar sudah dalam posisi ON saat Pi menyala
         print("[SWITCH DAEMON] Saklar terdeteksi ON saat boot. Menyalakan LED dan memulai lentera & tunnel service...")
         GPIO.output(LED_PIN, GPIO.HIGH)
+        GPIO.output(BOARD_LED_PIN, GPIO.HIGH)
         play_buzzer_async([(0.06, 0.04), (0.14, 0.00)])
         run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
     else:
         # Saklar posisi OFF saat Pi baru dicolok adaptor (OS siap standby)
         print("[SWITCH DAEMON] OS Raspberry Pi selesai boot (Standby Siap). Menunggu tombol ON ditekan...")
         GPIO.output(LED_PIN, GPIO.LOW)
+        GPIO.output(BOARD_LED_PIN, GPIO.LOW)
         play_buzzer_async([(0.08, 0.06), (0.08, 0.00)])
         run_cmd("sudo systemctl stop --no-block lentera.service lentera-tunnel.service")
 
@@ -96,12 +101,14 @@ def main():
                         # Saklar ditekan masuk (ON): LANGSUNG NYALAKAN LED SEKETIKA!
                         print("[SWITCH DAEMON] Tombol DETENT ON ditekan! Menyalakan LED & sistem Lentera...")
                         GPIO.output(LED_PIN, GPIO.HIGH)
+                        GPIO.output(BOARD_LED_PIN, GPIO.HIGH)
                         play_buzzer_async([(0.06, 0.04), (0.14, 0.00)])
                         run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
                     else:
                         # Saklar ditekan lepas (OFF): LANGSUNG PADAMKAN LED SEKETIKA!
                         print("[SWITCH DAEMON] Tombol DETENT OFF dilepas! Menutup layanan Lentera...")
                         GPIO.output(LED_PIN, GPIO.LOW)
+                        GPIO.output(BOARD_LED_PIN, GPIO.LOW)
                         # 1x bip pendek konfirmasi bahwa tombol OFF telah ditekan
                         play_buzzer_pulses([(0.08, 0.00)])
                         
