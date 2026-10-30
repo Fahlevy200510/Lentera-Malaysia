@@ -72,31 +72,31 @@ export default function StudentAvatarBadge({
     colorClasses =
       theme === "dark"
         ? "bg-rose-500/20 text-rose-300 border-rose-400/30"
-        : "bg-rose-100 text-rose-700 border-rose-300";
+        : "bg-[#EAE4FF] text-[#5840BA] border-[#735CDD]/25";
   } else if (isAmira) {
     IconComponent = GraduationCap;
     colorClasses =
       theme === "dark"
         ? "bg-violet-500/20 text-violet-300 border-violet-400/30"
-        : "bg-violet-100 text-violet-700 border-violet-300";
+        : "bg-[#EAE4FF] text-[#5840BA] border-[#735CDD]/25";
   } else if (isAjib) {
     IconComponent = Sparkles;
     colorClasses =
       theme === "dark"
         ? "bg-amber-500/20 text-amber-300 border-amber-400/30"
-        : "bg-amber-100 text-amber-700 border-amber-300";
+        : "bg-[#FFF3D6] text-[#9A5B00] border-[#F5B841]/45";
   } else if (isGuest) {
     IconComponent = Award;
     colorClasses =
       theme === "dark"
         ? "bg-sky-500/20 text-sky-300 border-sky-400/30"
-        : "bg-sky-100 text-sky-700 border-sky-300";
+        : "bg-[#EAE4FF] text-[#5840BA] border-[#735CDD]/25";
   } else {
     IconComponent = User;
     colorClasses =
       theme === "dark"
         ? "bg-slate-800 text-slate-300 border-slate-700"
-        : "bg-slate-100 text-slate-600 border-slate-300";
+        : "bg-[#EAE4FF] text-[#5840BA] border-[#735CDD]/25";
   }
 
   return (

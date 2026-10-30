@@ -2148,8 +2148,8 @@ export default function VoiceGuide() {
     ];
 
     return (
-      <div className="rounded-[1.75rem] border border-[#735CDD]/18 bg-white/92 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl space-y-3">
-        {/* Header Komponen & Progres Siswa (1 Baris Rapi) */}
+      <div className="rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-3">
+        {/* Header Komponen & Progres Siswa (1 Baris Rapi & Senada) */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#735CDD]/12 pb-2.5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/25">
@@ -2182,7 +2182,7 @@ export default function VoiceGuide() {
                   <span
                     key={idx}
                     className={`h-1.5 w-2.5 rounded-full transition-all ${
-                      done ? "bg-emerald-500" : "bg-[#735CDD]/20"
+                      done ? "bg-[#735CDD]" : "bg-[#735CDD]/20"
                     }`}
                   />
                 ))}
@@ -2192,7 +2192,7 @@ export default function VoiceGuide() {
             {/* Badge Profil Siswa */}
             <div
               suppressHydrationWarning
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#F3EFFE] border border-[#735CDD]/20 px-2.5 py-1 text-xs font-bold text-[#1D1836]"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#F4F1FF] border border-[#735CDD]/18 px-2.5 py-1 text-xs font-bold text-[#1D1836]"
             >
               <StudentAvatarBadge
                 id={activeStudent.id}
@@ -2211,8 +2211,8 @@ export default function VoiceGuide() {
           </div>
         </div>
 
-        {/* Tip Pintasan Taktil Mandiri (Zero-Screen TUI) Ringkas 1 Baris Chip */}
-        <div className="rounded-xl border border-[#735CDD]/16 bg-gradient-to-r from-[#F3EFFE]/90 via-[#FAF8FF] to-[#FFF9EB] px-3 py-2 text-xs space-y-1.5">
+        {/* Tip Pintasan Taktil Mandiri (Palet Seragam & Tidak Tabrakan Warna) */}
+        <div className="rounded-xl border border-[#735CDD]/15 bg-[#F8F6FF] px-3 py-2 text-xs space-y-1.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
               <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#735CDD] text-white shrink-0">
@@ -2224,7 +2224,7 @@ export default function VoiceGuide() {
             </div>
             <button
               onClick={speakMenuGuidance}
-              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#735CDD]/25 bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[#5840BA] hover:bg-[#F3EFFE] active:scale-95 transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#735CDD]/20 bg-white px-2.5 py-0.5 text-[10.5px] font-extrabold text-[#5840BA] hover:bg-[#F3EFFE] active:scale-95 transition-all shadow-2xs shrink-0"
               title="Dengarkan panduan suara cara memilih materi"
             >
               <Volume2 className="h-3 w-3 text-[#735CDD]" />
@@ -2232,27 +2232,24 @@ export default function VoiceGuide() {
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-1">
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
-              <strong className="font-mono font-black text-[#5840BA]">A1–E1</strong>
-              <span>5 Modul</span>
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
-              <strong className="font-mono font-black text-purple-700">Kartu A1</strong>
-              <span>Learn</span>
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
-              <strong className="font-mono font-black text-[#B45309]">A5</strong>
-              <span>AI Tutor</span>
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
-              <strong className="font-mono font-black text-emerald-700">C5</strong>
-              <span>Eksplorasi</span>
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
-              <strong className="font-mono font-black text-rose-600">E5</strong>
-              <span>Keluar</span>
-            </span>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { code: "A1–E1", label: "5 Modul Belajar" },
+              { code: "Kartu A1", label: "LENTERA Learn" },
+              { code: "A5", label: "Tanya AI Tutor" },
+              { code: "C5", label: "Eksplorasi Bebas" },
+              { code: "E5", label: "Keluar Sesi" },
+            ].map((shortcut) => (
+              <span
+                key={shortcut.code}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]"
+              >
+                <strong className="rounded bg-[#F3EFFE] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#5840BA]">
+                  {shortcut.code}
+                </strong>
+                <span className="font-semibold">{shortcut.label}</span>
+              </span>
+            ))}
           </div>
         </div>
 
@@ -2278,7 +2275,7 @@ export default function VoiceGuide() {
           </div>
         )}
 
-        {/* Daftar 5 Modul Pembelajaran */}
+        {/* Daftar 5 Modul Pembelajaran (Hirarki Warna Bersih: Rekomendasi Menonjol, Lainnya Tenang) */}
         <div className="space-y-1.5">
           {MODULES.map((item) => {
             const isRecommended = item.mode === recommendedMode && !item.isCompleted && !item.isLocked;
@@ -2288,12 +2285,12 @@ export default function VoiceGuide() {
                 key={item.id}
                 className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all ${
                   item.isLocked
-                    ? "bg-slate-50/70 border border-slate-200/70 opacity-75"
+                    ? "bg-slate-50/70 border border-slate-200/70 opacity-70"
                     : isRecommended
-                    ? "bg-gradient-to-r from-[#F3EFFE]/90 via-white to-[#FFF9EB] border-2 border-[#735CDD] shadow-2xs"
+                    ? "bg-gradient-to-r from-[#F4F0FF] via-white to-[#FFFBF2] border-2 border-[#735CDD] shadow-[0_6px_18px_-8px_rgba(115,92,221,0.35)]"
                     : item.isCompleted
-                    ? "bg-emerald-50/25 border border-emerald-200/80 hover:border-emerald-300"
-                    : "bg-[#FAF9FF] border border-[#735CDD]/14 hover:border-[#735CDD]/35 hover:bg-white"
+                    ? "bg-[#FAF9FF] border border-[#735CDD]/18 hover:border-[#735CDD]/35"
+                    : "bg-white border border-[#735CDD]/12 hover:border-[#735CDD]/30"
                 }`}
               >
                 {/* Info Kiri: Badge Sel + Judul + Deskripsi */}
@@ -2302,11 +2299,11 @@ export default function VoiceGuide() {
                     className={`flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 transition-all ${
                       item.isLocked
                         ? "bg-slate-100 text-slate-400 border border-slate-200/60"
-                        : item.isCompleted
-                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         : isRecommended
                         ? "bg-[#735CDD] text-white shadow-xs"
-                        : "bg-[#F3EFFE] text-[#5840BA] border border-[#735CDD]/20"
+                        : item.isCompleted
+                        ? "bg-[#EAE4FF] text-[#4C35A8] border border-[#735CDD]/25"
+                        : "bg-[#F4F1FF] text-[#5840BA] border border-[#735CDD]/15"
                     }`}
                   >
                     <span className="text-[11px] font-black leading-none">{item.cell}</span>
@@ -2315,7 +2312,7 @@ export default function VoiceGuide() {
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <h4 className={`font-heading text-xs font-extrabold ${item.isLocked ? "text-slate-600" : "text-[#1D1836]"}`}>
+                      <h4 className={`font-heading text-xs font-extrabold ${item.isLocked ? "text-slate-500" : "text-[#1D1836]"}`}>
                         {item.title}
                       </h4>
                       {item.isLocked ? (
@@ -2324,17 +2321,17 @@ export default function VoiceGuide() {
                           <span>Terkunci</span>
                         </span>
                       ) : item.isCompleted ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-800">
-                          <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
-                          <span>Dikuasai</span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#EFEAFF] border border-[#735CDD]/20 px-1.5 py-0.5 text-[9.5px] font-extrabold text-[#5840BA]">
+                          <CheckCircle2 className="h-2.5 w-2.5 text-[#735CDD]" />
+                          <span>Selesai</span>
                         </span>
                       ) : isRecommended ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3D6] border border-[#F5B841]/50 px-1.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-[#9A5B00]">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3D6] border border-[#F5B841]/55 px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-[#9A5B00]">
                           <Sparkles className="h-2.5 w-2.5 text-[#D97706]" />
                           <span>Rekomendasi</span>
                         </span>
                       ) : (
-                        <span className="text-[9.5px] font-extrabold text-[#5840BA] bg-[#F3EFFE] px-1.5 py-0.5 rounded-md">
+                        <span className="text-[9.5px] font-extrabold text-[#6E659F] bg-[#F8F6FF] border border-[#735CDD]/12 px-1.5 py-0.5 rounded-md">
                           +{item.xp} XP
                         </span>
                       )}
@@ -2345,7 +2342,7 @@ export default function VoiceGuide() {
                   </div>
                 </div>
 
-                {/* Tombol Aksi Kanan */}
+                {/* Tombol Aksi Kanan (Hanya Rekomendasi yang Solid Ungu, Lainnya Tonal Halus) */}
                 <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
                   {item.isLocked ? (
                     <button
@@ -2362,15 +2359,15 @@ export default function VoiceGuide() {
                   ) : (
                     <button
                       onClick={() => startGuide(item.mode)}
-                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[11px] font-extrabold transition-all active:scale-95 shadow-2xs ${
+                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[11px] font-extrabold transition-all active:scale-95 ${
                         isRecommended
-                          ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white"
+                          ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white shadow-xs"
                           : item.isCompleted
-                          ? "bg-white hover:bg-[#F3EFFE] text-[#4A4458] border border-[#735CDD]/20"
-                          : "bg-[#1D1836] hover:bg-[#735CDD] text-white"
+                          ? "bg-white hover:bg-[#F3EFFE] text-[#5840BA] border border-[#735CDD]/20"
+                          : "bg-[#F3EFFE] hover:bg-[#735CDD] text-[#5840BA] hover:text-white border border-[#735CDD]/18"
                       }`}
                     >
-                      <Play className={`h-2.5 w-2.5 ${item.isCompleted ? "text-[#735CDD] fill-[#735CDD]" : "fill-white text-white"}`} />
+                      <Play className={`h-2.5 w-2.5 ${isRecommended ? "fill-white text-white" : "fill-current"}`} />
                       <span>{item.isCompleted ? "Ulangi" : "Mulai"}</span>
                     </button>
                   )}
@@ -2380,11 +2377,11 @@ export default function VoiceGuide() {
           })}
         </div>
 
-        {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor (Pintasan C5) */}
-        <div className="relative overflow-hidden rounded-xl border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-500/12 via-teal-500/8 to-[#735CDD]/12 px-3 py-2.5 shadow-2xs">
+        {/* Mode Eksplorasi Bebas — Selaras dengan Aksen Warm Lantern Gold & Periwinkle */}
+        <div className="relative overflow-hidden rounded-xl border border-[#F5B841]/55 bg-gradient-to-r from-[#FFFDF7] via-[#FFF8E6] to-[#F6F3FF] px-3 py-2.5 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 bg-emerald-600 text-white shadow-sm">
+              <div className="flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 bg-[#FFF3D6] text-[#9A5B00] border border-[#F5B841]/60 shadow-2xs">
                 <span className="text-[11px] font-black leading-none">C5</span>
                 <span className="text-[7.5px] font-bold opacity-85 leading-none mt-0.5">Bebas</span>
               </div>
@@ -2393,20 +2390,20 @@ export default function VoiceGuide() {
                   <h4 className="font-heading text-xs font-extrabold text-[#1D1836]">
                     Mode Eksplorasi Bebas (Lab Terbuka)
                   </h4>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-800">
-                    <Sparkles className="h-2.5 w-2.5 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 border border-[#F5B841]/50 px-1.5 py-0.5 text-[9px] font-extrabold text-[#9A5B00]">
+                    <Sparkles className="h-2.5 w-2.5 text-[#D97706]" />
                     <span>Didukung Groq AI Tutor</span>
                   </span>
                 </div>
                 <p className="text-[10.5px] text-[#4A4458] leading-snug">
-                  <strong className="text-emerald-950 font-bold">Pintasan C5:</strong> Rakit sirkuit sesukamu tanpa batasan langkah dengan pendampingan AI Live Tutor otomatis.
+                  <strong className="text-[#1D1836] font-bold">Pintasan C5:</strong> Rakit sirkuit sesukamu tanpa batasan langkah dengan pendampingan AI Live Tutor otomatis.
                 </p>
               </div>
             </div>
 
             <button
               onClick={() => startGuide("free_exploration")}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs hover:from-emerald-700 hover:to-teal-700 active:scale-95 transition-all shrink-0 self-end sm:self-auto"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#735CDD] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs hover:bg-[#5E47C9] active:scale-95 transition-all shrink-0 self-end sm:self-auto"
             >
               <Play className="h-3 w-3 fill-white text-white" />
               <span>Mulai Eksplorasi</span>
@@ -2419,31 +2416,8 @@ export default function VoiceGuide() {
 
   /* ---------------------------------------------------------------- Active Guide */
   const progressPercent = isFinished ? 100 : (currentStep / totalSteps) * 100;
-  const headerBg =
-    mode === "free_exploration"
-      ? "bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600"
-      : mode === "recognition"
-      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600"
-      : mode === "quiz"
-      ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600"
-      : mode === "troubleshoot"
-      ? "bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600"
-      : mode === "series" || mode === "adaptive_series"
-      ? "bg-gradient-to-r from-violet-500 to-purple-600"
-      : "bg-gradient-to-r from-sky-500 to-cyan-600";
-
-  const progressBg =
-    mode === "free_exploration"
-      ? "bg-emerald-500"
-      : mode === "recognition"
-      ? "bg-amber-500"
-      : mode === "quiz"
-      ? "bg-indigo-500"
-      : mode === "troubleshoot"
-      ? "bg-rose-500"
-      : mode === "series" || mode === "adaptive_series"
-      ? "bg-violet-500"
-      : "bg-sky-500";
+  const headerBg = "bg-gradient-to-r from-[#5E47C9] via-[#735CDD] to-[#8670E8]";
+  const progressBg = "bg-[#735CDD]";
 
   const guideTitle =
     mode === "free_exploration"

@@ -24,7 +24,7 @@ const wiringPoints = [
     text: "Mata dari sistem. Kamera mengamati papan dan memindai penanda khusus pada setiap komponen secara real-time.",
   },
   {
-    icon: <Wifi className="h-4 w-4 text-emerald-600" />,
+    icon: <Wifi className="h-4 w-4 text-[#735CDD]" />,
     title: "Relai Data Langsung",
     text: "Mengirim susunan rangkaian secara langsung ke dashboard ini agar AI Tutor dapat membantu siswa belajar.",
   },
@@ -325,15 +325,15 @@ export default function ArucoPage() {
             </div>
           </div>
 
-          {/* Bagian Bawah Sidebar: Siswa Aktif */}
-          <div className="rounded-2xl border border-[#735CDD]/20 bg-gradient-to-br from-[#231B42] to-[#352961] p-3 text-white shadow-sm">
+          {/* Bagian Bawah Sidebar: Siswa Aktif (Senada dengan Palet Periwinkle) */}
+          <div className="rounded-2xl border border-[#735CDD]/18 bg-[#F4F1FF] p-3 shadow-2xs">
             <div className="flex items-center justify-between gap-2 mb-2">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFF3D6]/90 whitespace-nowrap">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#5840BA] whitespace-nowrap">
                 Siswa Aktif
               </p>
               <button
                 onClick={logout}
-                className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-bold text-rose-200 hover:bg-rose-500/25 hover:text-white transition-colors shrink-0"
+                className="inline-flex items-center gap-1 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-0.5 text-[10px] font-bold text-[#5E548E] hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 transition-colors shrink-0"
                 title="Keluar Sesi"
               >
                 <LogOut className="h-3 w-3" />
@@ -349,10 +349,10 @@ export default function ArucoPage() {
           {/* Kolom Kiri (5/12): Kamera Fisik & Skema Rangkaian Digital */}
           <div className="space-y-4 lg:col-span-5">
             {/* 1. Kamera & Sensor Papan Fisik */}
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.16)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".05s" }}>
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".05s" }}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#5840BA] block">
+                  <span className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#6E659F] block">
                     Pemindaian Papan Taktil
                   </span>
                   <h1 className="font-heading text-base sm:text-lg font-extrabold leading-tight text-[#1D1836]">
@@ -372,8 +372,8 @@ export default function ArucoPage() {
                   }}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-extrabold transition-all shadow-2xs ${
                     speaking
-                      ? "border-amber-300 bg-[#FFF3D6] text-[#9A5B00]"
-                      : "border-[#735CDD]/25 bg-white text-[#5840BA] hover:bg-[#F3EFFE]"
+                      ? "border-[#F5B841]/60 bg-[#FFF3D6] text-[#9A5B00]"
+                      : "border-[#735CDD]/20 bg-[#F8F6FF] text-[#5840BA] hover:bg-[#F3EFFE]"
                   }`}
                   title="Dengarkan kembali penjelasan ruang kerja"
                 >
@@ -387,17 +387,17 @@ export default function ArucoPage() {
             </div>
 
             {/* 2. Skema Rangkaian Listrik (Proporsional tepat di bawah Kamera) */}
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".08s" }}>
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".08s" }}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#5840BA]">
+                  <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#6E659F]">
                     Visualisasi Aliran Arus
                   </p>
                   <h2 className="font-heading text-base font-extrabold text-[#1D1836]">
                     Skema Rangkaian Listrik
                   </h2>
                 </div>
-                <div className="flex gap-1 rounded-xl border border-[#735CDD]/15 bg-[#F3EFFE]/80 p-0.5">
+                <div className="flex gap-1 rounded-xl border border-[#735CDD]/15 bg-[#F4F1FF] p-0.5">
                   <button
                     onClick={() => setDiagramMode("live")}
                     className={`px-2 py-1 text-[10px] font-extrabold rounded-lg transition-all ${
@@ -431,7 +431,7 @@ export default function ArucoPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#2E2559] bg-[#0B1021] p-2.5 flex items-center justify-center shadow-inner">
+              <div className="rounded-xl border border-[#735CDD]/25 bg-[#1E1938] p-2.5 flex items-center justify-center shadow-inner">
                 <div className="w-full max-w-[235px] mx-auto">
                   <CircuitDiagram variant={diagramMode} />
                 </div>
