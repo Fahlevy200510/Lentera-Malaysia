@@ -458,7 +458,7 @@ export default function ArUcoDetector() {
 
       {/* Video Stream Card */}
       <div className="grid grid-cols-1 gap-3">
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3.5 shadow-inner overflow-hidden min-h-[260px]">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3 shadow-inner overflow-hidden min-h-[200px]">
           {detections.status === "connected" ? (
             <div className="relative w-full">
               {liveFrame || (!resolved.isTunnel && resolved.streamUrl) ? (
@@ -466,7 +466,7 @@ export default function ArUcoDetector() {
                   <img
                     src={liveFrame || resolved.streamUrl}
                     alt="Tayangan Kamera Lentera Edge"
-                    className="w-full h-auto rounded-xl object-contain bg-black max-h-[360px]"
+                    className="w-full h-auto rounded-xl object-contain bg-black max-h-[320px]"
                     onError={(e) => {
                       if (!liveFrame) {
                         (e.target as HTMLImageElement).src =
@@ -480,23 +480,23 @@ export default function ArUcoDetector() {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-xl bg-[#0F172A] text-white min-h-[240px] max-h-[360px] py-8 px-4 text-center">
-                  <div className="relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
+                <div className="flex flex-col items-center justify-center rounded-xl bg-[#0F172A] text-white min-h-[195px] max-h-[320px] py-6 px-4 text-center">
+                  <div className="relative mb-2.5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
                     <span className="absolute h-full w-full animate-ping rounded-2xl bg-emerald-400/20" />
-                    <Camera className="h-7 w-7 text-emerald-400 animate-pulse stroke-[1.5]" />
+                    <Camera className="h-6 w-6 text-emerald-400 animate-pulse stroke-[1.5]" />
                   </div>
-                  <p className="text-sm font-extrabold text-slate-100">
+                  <p className="text-xs sm:text-sm font-extrabold text-slate-100">
                     Menunggu Tayangan Kamera...
                   </p>
-                  <p className="mt-1 text-xs text-slate-400 max-w-sm leading-relaxed">
+                  <p className="mt-1 text-[11px] text-slate-400 max-w-sm leading-relaxed">
                     WebSocket terhubung. Pastikan kamera Raspberry Pi aktif untuk menampilkan pemindaian papan secara langsung.
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-slate-300 gap-2.5 py-10 px-4 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/8 border border-white/12 text-[#C4B5FD] shadow-inner">
+            <div className="flex flex-col items-center justify-center text-slate-300 gap-2 py-7 px-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/8 border border-white/12 text-[#C4B5FD] shadow-inner">
                 <Camera className="h-6 w-6 stroke-[1.75]" />
               </div>
               <p className="text-xs font-extrabold text-white">

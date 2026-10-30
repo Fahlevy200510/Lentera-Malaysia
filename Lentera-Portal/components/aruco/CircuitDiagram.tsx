@@ -99,15 +99,15 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
       </defs>
       
       {/* Subtle Board Grid Frame */}
-      <rect x="25" y="25" width="370" height="370" rx="16" fill="rgba(241, 245, 249, 0.45)" stroke="#e2e8f0" strokeWidth="1.5" strokeDasharray="3 3" />
+      <rect x="25" y="25" width="370" height="370" rx="16" fill="rgba(30, 27, 75, 0.55)" stroke="rgba(167, 139, 250, 0.32)" strokeWidth="1.5" strokeDasharray="4 4" />
 
       {/* Axis Labels: Columns A-E (Top & Bottom) */}
       {cols.map((col, idx) => {
         const x = 50 + idx * 80;
         return (
           <g key={`col-label-${col}`}>
-            <text x={x} y="18" textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
-            <text x={x} y="412" textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
+            <text x={x} y="18" textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
+            <text x={x} y="412" textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
           </g>
         );
       })}
@@ -117,8 +117,8 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         const y = 50 + idx * 80 + 4;
         return (
           <g key={`row-label-${row}`}>
-            <text x="14" y={y} textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
-            <text x="406" y={y} textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
+            <text x="14" y={y} textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
+            <text x="406" y={y} textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
           </g>
         );
       })}
@@ -128,8 +128,8 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
          const {x, y} = getXY(`${c}${r}`);
          return (
            <g key={`${c}${r}`}>
-             <circle cx={x} cy={y} r="5" fill="#e2e8f0" />
-             <circle cx={x} cy={y} r="2" fill="#64748b" />
+             <circle cx={x} cy={y} r="5" fill="rgba(148, 163, 184, 0.25)" />
+             <circle cx={x} cy={y} r="2" fill="#94a3b8" />
            </g>
          );
       }))}

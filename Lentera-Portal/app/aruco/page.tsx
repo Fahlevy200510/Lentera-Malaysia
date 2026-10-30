@@ -186,9 +186,9 @@ export default function ArucoPage() {
         <div className="portal-tactile-dots absolute inset-0 opacity-60" />
       </div>
 
-      <section className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-6 px-4 py-5 md:flex-row lg:gap-7 lg:px-8 lg:py-7 print:hidden">
-        {/* Sidebar Navigasi LENTERA Lab */}
-        <aside className="rise relative z-40 flex flex-col justify-between gap-6 rounded-[1.75rem] border border-[#735CDD]/18 bg-white/88 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:w-64 md:flex-shrink-0 lg:w-[272px]">
+      <section className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 py-5 md:flex-row md:items-start lg:gap-6 lg:px-7 print:hidden">
+        {/* Sidebar Navigasi LENTERA Lab (Sticky di layar laptop/desktop) */}
+        <aside className="rise relative z-40 flex flex-col justify-between gap-5 rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:sticky md:top-5 md:h-[calc(100vh-2.5rem)] md:w-60 md:flex-shrink-0 lg:w-64">
           <div>
             {/* Brand Header */}
             <Link
@@ -237,7 +237,7 @@ export default function ArucoPage() {
                 <span>Buka LENTERA Learn</span>
               </Link>
 
-              <div className="pt-3 mt-3 border-t border-[#735CDD]/12">
+              <div className="pt-3.5 mt-3.5 border-t border-[#735CDD]/12">
                 <p className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#6E659F]">
                   Mode Pendamping Lab
                 </p>
@@ -292,60 +292,33 @@ export default function ArucoPage() {
             </div>
           </div>
 
-          {/* Bagian Bawah Sidebar: Pintasan Papan & Siswa Aktif */}
-          <div className="space-y-3">
-            {/* Ringkasan Pintasan Koordinat Papan */}
-            <div className="rounded-2xl border border-[#735CDD]/15 bg-[#F8F6FF] p-3.5">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#5840BA] mb-2">
-                Pintasan Papan Fisik
+          {/* Bagian Bawah Sidebar: Siswa Aktif */}
+          <div className="rounded-2xl border border-[#735CDD]/20 bg-gradient-to-br from-[#231B42] to-[#352961] p-3.5 text-white shadow-sm">
+            <div className="flex items-center justify-between gap-2 mb-2.5">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFF3D6]/90 whitespace-nowrap">
+                Siswa Aktif
               </p>
-              <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
-                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
-                  <span className="font-mono font-black text-[#5840BA]">A1–E1</span>
-                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">5 Modul</p>
-                </div>
-                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
-                  <span className="font-mono font-black text-[#B45309]">A5</span>
-                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">AI Tutor</p>
-                </div>
-                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
-                  <span className="font-mono font-black text-emerald-700">C5</span>
-                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">Eksplorasi</p>
-                </div>
-                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
-                  <span className="font-mono font-black text-rose-600">E5</span>
-                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">Keluar Sesi</p>
-                </div>
-              </div>
+              <button
+                onClick={logout}
+                className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-bold text-rose-200 hover:bg-rose-500/25 hover:text-white transition-colors shrink-0"
+                title="Keluar Sesi"
+              >
+                <LogOut className="h-3 w-3" />
+                <span>Keluar</span>
+              </button>
             </div>
-
-            {/* Siswa Aktif */}
-            <div className="rounded-2xl border border-[#735CDD]/20 bg-gradient-to-br from-[#231B42] to-[#352961] p-3.5 text-white shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFF3D6]/85">
-                  Siswa Sedang Belajar
-                </p>
-                <button
-                  onClick={logout}
-                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-bold text-rose-200 hover:bg-rose-500/25 hover:text-white transition-colors"
-                  title="Keluar Sesi"
-                >
-                  <LogOut className="h-3 w-3" />
-                  <span>Keluar</span>
-                </button>
-              </div>
-              <StudentProfileSwitcher compact />
-            </div>
+            <StudentProfileSwitcher compact />
           </div>
         </aside>
 
-        {/* Area Utama: Kiri (Kamera & Perangkat) | Kanan (Skema & Panduan) */}
-        <div className="relative z-10 flex-1 grid gap-6 lg:grid-cols-12 items-start">
-          {/* Kolom Kiri (5/12): Kamera & Status Perangkat */}
+        {/* Area Utama: Kiri (Kamera & Skema Rangkaian) | Kanan (Panduan Modul/AI Tutor & Info Perangkat) */}
+        <div className="relative z-10 flex-1 grid gap-5 lg:grid-cols-12 items-start">
+          {/* Kolom Kiri (5/12): Kamera Fisik & Skema Rangkaian Digital */}
           <div className="space-y-5 lg:col-span-5">
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/88 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.16)] backdrop-blur-xl space-y-4" style={{ animationDelay: ".05s" }}>
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#735CDD]/20 bg-[#F3EFFE] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#5840BA]">
+            {/* 1. Kamera & Sensor Papan Fisik */}
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 sm:p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.16)] backdrop-blur-xl space-y-3.5" style={{ animationDelay: ".05s" }}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#735CDD]/20 bg-[#F3EFFE] px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-[#5840BA]">
                   <span className="h-2 w-2 rounded-full bg-[#735CDD]" />
                   Pemindaian Papan Taktil
                 </span>
@@ -360,7 +333,7 @@ export default function ArucoPage() {
                       speakLabIntro();
                     }
                   }}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-extrabold transition-all shadow-2xs ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs ${
                     speaking
                       ? "border-amber-300 bg-[#FFF3D6] text-[#9A5B00]"
                       : "border-[#735CDD]/25 bg-white text-[#5840BA] hover:bg-[#F3EFFE]"
@@ -373,10 +346,10 @@ export default function ArucoPage() {
               </div>
 
               <div>
-                <h1 className="font-heading text-2xl font-extrabold leading-tight text-[#1D1836] sm:text-[1.65rem]">
+                <h1 className="font-heading text-xl font-extrabold leading-tight text-[#1D1836] sm:text-2xl">
                   Kamera & Sensor Papan Fisik
                 </h1>
-                <p className="mt-1 text-xs sm:text-[13px] leading-relaxed text-[#4A4458]">
+                <p className="mt-1 text-xs leading-relaxed text-[#4A4458]">
                   Menampilkan pemindaian balok komponen secara langsung dari kamera bawah papan LENTERA.
                 </p>
               </div>
@@ -385,53 +358,21 @@ export default function ArucoPage() {
               <ArUcoDetector />
             </div>
 
-            {/* Ringkasan Arsitektur Perangkat (Kompak & Rapi) */}
-            <div className="rounded-[1.5rem] border border-[#735CDD]/15 bg-white/82 p-4 shadow-[0_10px_28px_-14px_rgba(67,56,202,0.14)] backdrop-blur-md space-y-2.5">
-              <div className="flex items-center justify-between px-1">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#5840BA]">
-                  Sistem Perangkat LENTERA Edge
-                </p>
-                <span className="text-[10px] font-bold text-[#6E659F]">Grid 5×5 Aktif</span>
-              </div>
-              <div className="space-y-2">
-                {wiringPoints.map((item) => (
-                  <article
-                    key={item.title}
-                    className="flex items-start gap-3 rounded-xl border border-[#735CDD]/10 bg-[#FAF9FF] p-3 transition-colors hover:border-[#735CDD]/25"
-                  >
-                    <div className="mt-0.5 flex-shrink-0 rounded-lg bg-[#F3EFFE] p-2 border border-[#735CDD]/15">
-                      {item.icon}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-heading text-xs font-extrabold text-[#1D1836]">
-                        {item.title}
-                      </h3>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-[#4A4458]">
-                        {item.text}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Kolom Kanan (7/12): Skema Rangkaian & Panduan Modul / AI Tutor */}
-          <div className="rise space-y-5 lg:col-span-7" style={{ animationDelay: ".1s" }}>
-            <div className="rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            {/* 2. Skema Rangkaian Listrik (Proporsional tepat di bawah Kamera) */}
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 sm:p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl" style={{ animationDelay: ".08s" }}>
+              <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5">
                 <div>
-                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[#5840BA]">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#5840BA]">
                     Visualisasi Aliran Arus
                   </p>
-                  <h2 className="font-heading text-lg sm:text-xl font-extrabold text-[#1D1836]">
+                  <h2 className="font-heading text-base sm:text-lg font-extrabold text-[#1D1836]">
                     Skema Rangkaian Listrik
                   </h2>
                 </div>
                 <div className="flex gap-1 rounded-xl border border-[#735CDD]/15 bg-[#F3EFFE]/80 p-1">
                   <button
                     onClick={() => setDiagramMode("live")}
-                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all ${
+                    className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-lg transition-all ${
                       diagramMode === "live"
                         ? "bg-[#735CDD] text-white shadow-xs"
                         : "text-[#5E548E] hover:text-[#1D1836]"
@@ -441,37 +382,77 @@ export default function ArucoPage() {
                   </button>
                   <button
                     onClick={() => setDiagramMode("series")}
-                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all ${
+                    className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-lg transition-all ${
                       diagramMode === "series"
                         ? "bg-[#735CDD] text-white shadow-xs"
                         : "text-[#5E548E] hover:text-[#1D1836]"
                     }`}
                   >
-                    CONTOH SERI
+                    SERI
                   </button>
                   <button
                     onClick={() => setDiagramMode("parallel")}
-                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all ${
+                    className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-lg transition-all ${
                       diagramMode === "parallel"
                         ? "bg-[#735CDD] text-white shadow-xs"
                         : "text-[#5E548E] hover:text-[#1D1836]"
                     }`}
                   >
-                    CONTOH PARALEL
+                    PARALEL
                   </button>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3.5 flex items-center justify-center min-h-[190px] shadow-inner">
-                <CircuitDiagram variant={diagramMode} />
+              <div className="rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3 flex items-center justify-center shadow-inner">
+                <div className="w-full max-w-[290px] mx-auto">
+                  <CircuitDiagram variant={diagramMode} />
+                </div>
               </div>
             </div>
+          </div>
 
+          {/* Kolom Kanan (7/12): Panduan Modul / AI Tutor (Langsung di Atas) & Arsitektur Perangkat */}
+          <div className="rise space-y-5 lg:col-span-7" style={{ animationDelay: ".1s" }}>
+            {/* 1. Panel Utama: Panduan Modul Belajar atau Tanya AI Tutor */}
             {activeTab === "guide" ? (
               <VoiceGuide />
             ) : (
               <AITutorLab onBack={() => setActiveTab("guide")} />
             )}
+
+            {/* 2. Ringkasan Sistem Perangkat LENTERA Edge (Grid 3 Kolom Sejajar di Bawah Panduan) */}
+            <div className="rounded-[1.75rem] border border-[#735CDD]/16 bg-white/88 p-4 sm:p-5 shadow-[0_14px_34px_-16px_rgba(67,56,202,0.14)] backdrop-blur-md space-y-3">
+              <div className="flex items-center justify-between px-0.5">
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#5840BA]">
+                  Arsitektur Sistem LENTERA Edge
+                </p>
+                <span className="rounded-full bg-[#F3EFFE] border border-[#735CDD]/15 px-2.5 py-0.5 text-[10px] font-extrabold text-[#5840BA]">
+                  Grid 5×5 Aktif
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {wiringPoints.map((item) => (
+                  <article
+                    key={item.title}
+                    className="flex flex-col justify-between rounded-2xl border border-[#735CDD]/12 bg-[#FAF9FF] p-3.5 transition-all hover:border-[#735CDD]/30 hover:bg-white hover:shadow-xs"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="flex-shrink-0 rounded-lg bg-[#F3EFFE] p-2 border border-[#735CDD]/15">
+                          {item.icon}
+                        </div>
+                        <h3 className="font-heading text-xs font-extrabold text-[#1D1836] leading-snug">
+                          {item.title}
+                        </h3>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[#4A4458]">
+                        {item.text}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
