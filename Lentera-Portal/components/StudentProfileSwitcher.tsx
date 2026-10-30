@@ -113,8 +113,8 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
         onClick={() => setIsOpen(!isOpen)}
         className={
           compact
-            ? "flex w-full max-w-full items-center justify-between gap-2 rounded-xl border border-[#735CDD]/20 bg-white px-2.5 py-2 text-xs font-semibold text-[#1D1836] shadow-2xs transition-all hover:border-[#735CDD]/40 hover:bg-[#FAF8FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
-            : "flex w-full max-w-full items-center justify-between gap-2 rounded-full border border-[#735CDD]/22 bg-[#F4F1FF] px-3 py-1.5 text-xs font-semibold text-[#1D1836] shadow-2xs transition-all hover:border-[#735CDD]/40 hover:bg-[#EAE4FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
+            ? "flex w-full max-w-full items-center justify-between gap-2 rounded-xl border border-[#735CDD]/25 bg-white px-2.5 py-2 text-xs font-semibold text-[#1D1836] shadow-sm transition-all hover:border-[#735CDD]/50 hover:bg-[#FAF8FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
+            : "flex w-full max-w-full items-center justify-between gap-2 rounded-full border border-[#735CDD]/25 bg-[#F4F1FF] px-3 py-1.5 text-xs font-semibold text-[#1D1836] shadow-sm transition-all hover:border-[#735CDD]/50 hover:bg-[#EAE4FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
         }
         title={`Ganti Siswa Aktif (${active.name} - ${active.grade})`}
       >
@@ -146,33 +146,34 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
       {/* Floating Dropdown Dialog */}
       {isOpen && (
         <div
-          className={`absolute z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-[#735CDD]/22 bg-white/98 p-4 shadow-[0_20px_50px_-15px_rgba(67,56,202,0.28)] backdrop-blur-xl max-h-[calc(100vh-4rem)] flex flex-col ${
-            openUpward
-              ? "bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2"
-              : "top-full mt-2 animate-in fade-in slide-in-from-top-2"
+          style={{ backgroundColor: "#FFFFFF" }}
+          className={`absolute z-50 rounded-2xl border-2 border-[#735CDD]/25 bg-white p-3.5 shadow-[0_20px_50px_-12px_rgba(29,24,54,0.28)] max-h-[calc(100vh-3rem)] flex flex-col ${
+            compact ? "w-full min-w-[230px] left-0" : `w-72 max-w-[calc(100vw-2rem)] ${alignLeft ? "left-0" : "right-0"}`
           } ${
-            alignLeft ? "left-0" : "right-0"
+            openUpward
+              ? "bottom-full mb-2.5 animate-in fade-in slide-in-from-bottom-2"
+              : "top-full mt-2 animate-in fade-in slide-in-from-top-2"
           }`}
         >
-          <div className="mb-3 flex items-center justify-between border-b border-[#735CDD]/12 pb-2.5 shrink-0">
+          <div className="mb-2.5 flex items-start justify-between border-b border-[#735CDD]/15 pb-2 shrink-0">
             <div>
-              <div className="text-xs font-extrabold uppercase tracking-wider text-[#5840BA]">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#5840BA]">
                 Profil Siswa Aktif
               </div>
-              <div className="text-[11px] text-[#5E548E]">
-                Pilih siapa yang sedang merangkai di papan:
+              <div className="text-[10.5px] text-[#5E548E] leading-snug mt-0.5">
+                Pilih siswa yang sedang belajar:
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded-lg p-1 text-[#6E659F] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors"
+              className="rounded-lg p-1 text-[#6E659F] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors shrink-0"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
 
           {/* Daftar Siswa */}
-          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 cs-scroll overscroll-contain shrink">
+          <div className="space-y-1 max-h-64 overflow-y-auto overscroll-contain shrink">
             {profiles.map((p) => {
               const prog = getStudentProgress(p.id);
               const isSelected = p.id === active.id;
@@ -181,13 +182,13 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                 <div
                   key={p.id}
                   onClick={() => handleSelectStudent(p)}
-                  className={`group flex items-center justify-between rounded-xl p-2.5 transition-all cursor-pointer ${
+                  className={`group flex items-center justify-between rounded-xl px-2.5 py-2 transition-all cursor-pointer ${
                     isSelected
-                      ? "border border-[#735CDD] bg-[#F4F1FF] shadow-2xs"
-                      : "hover:bg-[#FAF8FF] border border-transparent"
+                      ? "border border-[#735CDD] bg-[#F4F1FF]"
+                      : "hover:bg-[#F8F6FF] border border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <StudentAvatarBadge
                       id={p.id}
                       name={p.name}
@@ -196,7 +197,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                       theme="light"
                     />
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1">
                         <span className="text-xs font-extrabold text-[#1D1836] truncate">
                           {p.name}
                         </span>
@@ -204,10 +205,10 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                           <Check className="h-3.5 w-3.5 text-[#735CDD] shrink-0" />
                         )}
                       </div>
-                      <div className="text-[10.5px] text-[#5E548E] flex items-center gap-1.5">
-                        <span>{p.grade}</span>
+                      <div className="text-[10px] text-[#5E548E] flex items-center gap-1">
+                        <span className="truncate">{p.grade}</span>
                         <span>•</span>
-                        <span className="text-[#5840BA] font-extrabold">
+                        <span className="text-[#5840BA] font-extrabold shrink-0">
                           {prog.xp} XP
                         </span>
                       </div>
@@ -228,11 +229,11 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
           </div>
 
           {/* Form Tambah Siswa Baru */}
-          <div className="mt-3 pt-3 border-t border-[#735CDD]/12 shrink-0">
+          <div className="mt-2.5 pt-2.5 border-t border-[#735CDD]/15 shrink-0">
             {!showAddInput ? (
               <button
                 onClick={() => setShowAddInput(true)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#735CDD]/35 bg-[#FAF8FF] py-2 text-xs font-extrabold text-[#5840BA] hover:border-[#735CDD] hover:bg-[#F3EFFE] transition-colors"
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#735CDD]/35 bg-[#FAF8FF] py-1.5 text-[11px] font-extrabold text-[#5840BA] hover:border-[#735CDD] hover:bg-[#F3EFFE] transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" /> Tambah Siswa Baru
               </button>
@@ -240,13 +241,13 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
               <form onSubmit={handleAddStudent} className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Nama Siswa (misal: Budi Santoso)"
+                  placeholder="Nama Siswa (misal: Budi)"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full rounded-lg border border-[#735CDD]/30 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D1836] placeholder-[#6E659F]/60 focus:outline-none focus:border-[#735CDD]"
+                  className="w-full rounded-lg border border-[#735CDD]/30 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#1D1836] placeholder-[#6E659F]/60 focus:outline-none focus:border-[#735CDD]"
                   autoFocus
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <button
                     type="submit"
                     className="flex-1 rounded-lg bg-[#735CDD] py-1.5 text-xs font-extrabold text-white hover:bg-[#5E47C9] transition-colors"
@@ -256,7 +257,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   <button
                     type="button"
                     onClick={() => setShowAddInput(false)}
-                    className="rounded-lg bg-[#F4F1FF] px-3 py-1.5 text-xs font-bold text-[#5E548E] hover:bg-[#EAE4FF]"
+                    className="rounded-lg bg-[#F4F1FF] px-2.5 py-1.5 text-xs font-bold text-[#5E548E] hover:bg-[#EAE4FF]"
                   >
                     Batal
                   </button>

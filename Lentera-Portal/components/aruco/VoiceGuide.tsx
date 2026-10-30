@@ -2148,9 +2148,9 @@ export default function VoiceGuide() {
     ];
 
     return (
-      <div className="rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-3">
+      <div className="rounded-[1.75rem] border border-[#735CDD]/15 bg-white p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-3">
         {/* Header Komponen & Progres Siswa (1 Baris Rapi & Senada) */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#735CDD]/12 pb-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#735CDD]/15 pb-2.5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/25">
               <Sparkles className="h-4 w-4 text-[#FFF3D6]" />
@@ -2192,7 +2192,7 @@ export default function VoiceGuide() {
             {/* Badge Profil Siswa */}
             <div
               suppressHydrationWarning
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#F4F1FF] border border-[#735CDD]/18 px-2.5 py-1 text-xs font-bold text-[#1D1836]"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#F4F1FF] border border-[#735CDD]/20 px-2.5 py-1 text-xs font-bold text-[#1D1836]"
             >
               <StudentAvatarBadge
                 id={activeStudent.id}
@@ -2242,7 +2242,7 @@ export default function VoiceGuide() {
             ].map((shortcut) => (
               <span
                 key={shortcut.code}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]"
               >
                 <strong className="rounded bg-[#F3EFFE] px-1.5 py-0.5 font-mono text-[10px] font-black text-[#5840BA]">
                   {shortcut.code}
@@ -2289,8 +2289,8 @@ export default function VoiceGuide() {
                     : isRecommended
                     ? "bg-gradient-to-r from-[#F4F0FF] via-white to-[#FFFBF2] border-2 border-[#735CDD] shadow-[0_6px_18px_-8px_rgba(115,92,221,0.35)]"
                     : item.isCompleted
-                    ? "bg-[#FAF9FF] border border-[#735CDD]/18 hover:border-[#735CDD]/35"
-                    : "bg-white border border-[#735CDD]/12 hover:border-[#735CDD]/30"
+                    ? "bg-[#FAF9FF] border border-[#735CDD]/20 hover:border-[#735CDD]/35"
+                    : "bg-white border border-[#735CDD]/15 hover:border-[#735CDD]/30"
                 }`}
               >
                 {/* Info Kiri: Badge Sel + Judul + Deskripsi */}
@@ -2331,7 +2331,7 @@ export default function VoiceGuide() {
                           <span>Rekomendasi</span>
                         </span>
                       ) : (
-                        <span className="text-[9.5px] font-extrabold text-[#6E659F] bg-[#F8F6FF] border border-[#735CDD]/12 px-1.5 py-0.5 rounded-md">
+                        <span className="text-[9.5px] font-extrabold text-[#6E659F] bg-[#F8F6FF] border border-[#735CDD]/15 px-1.5 py-0.5 rounded-md">
                           +{item.xp} XP
                         </span>
                       )}
@@ -2364,7 +2364,7 @@ export default function VoiceGuide() {
                           ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white shadow-xs"
                           : item.isCompleted
                           ? "bg-white hover:bg-[#F3EFFE] text-[#5840BA] border border-[#735CDD]/20"
-                          : "bg-[#F3EFFE] hover:bg-[#735CDD] text-[#5840BA] hover:text-white border border-[#735CDD]/18"
+                          : "bg-[#F3EFFE] hover:bg-[#735CDD] text-[#5840BA] hover:text-white border border-[#735CDD]/20"
                       }`}
                     >
                       <Play className={`h-2.5 w-2.5 ${isRecommended ? "fill-white text-white" : "fill-current"}`} />

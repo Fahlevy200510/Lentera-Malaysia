@@ -519,9 +519,9 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   };
 
   return (
-    <div className="rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 sm:p-5 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl flex flex-col h-[560px]">
+    <div className="rounded-[1.75rem] border border-[#735CDD]/15 bg-white p-4 sm:p-5 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl flex flex-col h-[560px]">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#735CDD]/12 shrink-0">
+      <div className="flex items-center justify-between pb-3 border-b border-[#735CDD]/15 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/25">
             <Sparkles className="h-4 w-4 text-[#FFF3D6]" />
@@ -546,7 +546,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#735CDD]/18 bg-white text-xs font-bold text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors mr-1"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#735CDD]/20 bg-white text-xs font-bold text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors mr-1"
               title="Kembali ke Panduan Modul"
             >
               <ArrowLeft className="h-3.5 w-3.5 text-[#735CDD]" />
@@ -701,7 +701,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       )}
 
       {/* Input Bar */}
-      <div className="flex items-center gap-2 pt-2 border-t border-[#735CDD]/12 shrink-0">
+      <div className="flex items-center gap-2 pt-2 border-t border-[#735CDD]/15 shrink-0">
         <button
           onClick={toggleListening}
           aria-label={isListening ? "Sedang mendengarkan... klik untuk berhenti" : "Tanya dengan suara mikrofon"}

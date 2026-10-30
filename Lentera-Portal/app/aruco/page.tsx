@@ -188,12 +188,12 @@ export default function ArucoPage() {
 
       <section className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-4 md:flex-row md:items-stretch lg:gap-5 lg:px-6 print:hidden">
         {/* Sidebar Navigasi LENTERA Lab */}
-        <aside className="rise relative z-40 flex flex-col justify-between gap-4 rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:w-60 md:flex-shrink-0 lg:w-64">
+        <aside className="rise relative z-40 flex flex-col justify-between gap-4 rounded-[1.75rem] border border-[#735CDD]/20 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:w-60 md:flex-shrink-0 lg:w-64">
           <div className="space-y-4">
             {/* Brand Header */}
             <Link
               href="/"
-              className="group flex items-center gap-3 rounded-2xl pb-3.5 border-b border-[#735CDD]/12 focus-visible:outline-none"
+              className="group flex items-center gap-3 rounded-2xl pb-3.5 border-b border-[#735CDD]/15 focus-visible:outline-none"
             >
               <div
                 className="relative flex items-center justify-center overflow-hidden rounded-xl bg-[#765EE0] shadow-[0_8px_20px_-4px_rgba(115,92,221,0.45)] ring-2 ring-[#FFF3D6] transition-transform duration-200 group-hover:scale-[1.03]"
@@ -210,7 +210,7 @@ export default function ArucoPage() {
                   <span className="font-heading text-base font-extrabold tracking-tight text-[#1D1836]">
                     LENTERA
                   </span>
-                  <span className="rounded-md bg-[#735CDD]/12 px-1.5 py-0.5 font-heading text-[9.5px] font-extrabold uppercase tracking-wider text-[#5840BA]">
+                  <span className="rounded-md bg-[#735CDD]/15 px-1.5 py-0.5 font-heading text-[9.5px] font-extrabold uppercase tracking-wider text-[#5840BA]">
                     Lab
                   </span>
                 </div>
@@ -237,7 +237,7 @@ export default function ArucoPage() {
                 <span>Buka LENTERA Learn</span>
               </Link>
 
-              <div className="pt-2.5 mt-2.5 border-t border-[#735CDD]/12">
+              <div className="pt-2.5 mt-2.5 border-t border-[#735CDD]/15">
                 <p className="px-3 pb-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-[#6E659F]">
                   Mode Pendamping Lab
                 </p>
@@ -292,7 +292,7 @@ export default function ArucoPage() {
             </div>
 
             {/* Ringkasan Sistem Perangkat di Tengah Sidebar (Mengisi Ruang Kosong Secara Rapi) */}
-            <div className="pt-2.5 border-t border-[#735CDD]/12 space-y-1.5">
+            <div className="pt-2.5 border-t border-[#735CDD]/15 space-y-1.5">
               <div className="flex items-center justify-between px-1">
                 <p className="text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-[#6E659F]">
                   Perangkat LENTERA Edge
@@ -306,7 +306,7 @@ export default function ArucoPage() {
                   <div
                     key={item.title}
                     title={item.text}
-                    className="flex items-start gap-2.5 rounded-xl border border-[#735CDD]/12 bg-[#FAF9FF] p-2.5"
+                    className="flex items-start gap-2.5 rounded-xl border border-[#735CDD]/15 bg-[#FAF9FF] p-2.5"
                   >
                     <div className="mt-0.5 flex-shrink-0 rounded-lg bg-[#F3EFFE] p-1.5 border border-[#735CDD]/15">
                       {item.icon}
@@ -326,7 +326,7 @@ export default function ArucoPage() {
           </div>
 
           {/* Bagian Bawah Sidebar: Siswa Aktif (Senada dengan Palet Periwinkle) */}
-          <div className="rounded-2xl border border-[#735CDD]/18 bg-[#F4F1FF] p-3 shadow-2xs">
+          <div className="rounded-2xl border border-[#735CDD]/20 bg-[#F4F1FF] p-3 shadow-2xs">
             <div className="flex items-center justify-between gap-2 mb-2">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#5840BA] whitespace-nowrap">
                 Siswa Aktif
@@ -346,10 +346,10 @@ export default function ArucoPage() {
 
         {/* Area Utama: Kiri (Kamera & Skema Rangkaian) | Kanan (Panduan Modul / AI Tutor) */}
         <div className="relative z-10 flex-1 grid gap-4 lg:grid-cols-12 items-start">
-          {/* Kolom Kiri (5/12): Kamera Fisik & Skema Rangkaian Digital */}
+          {/* Kolom Kiri (5/15): Kamera Fisik & Skema Rangkaian Digital */}
           <div className="space-y-4 lg:col-span-5">
             {/* 1. Kamera & Sensor Papan Fisik */}
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".05s" }}>
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/15 bg-white p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".05s" }}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#6E659F] block">
@@ -387,7 +387,7 @@ export default function ArucoPage() {
             </div>
 
             {/* 2. Skema Rangkaian Listrik (Proporsional tepat di bawah Kamera) */}
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".08s" }}>
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/15 bg-white p-4 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".08s" }}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#6E659F]">
@@ -439,7 +439,7 @@ export default function ArucoPage() {
             </div>
           </div>
 
-          {/* Kolom Kanan (7/12): Panduan Modul / AI Tutor */}
+          {/* Kolom Kanan (7/15): Panduan Modul / AI Tutor */}
           <div className="rise lg:col-span-7" style={{ animationDelay: ".1s" }}>
             {activeTab === "guide" ? (
               <VoiceGuide />

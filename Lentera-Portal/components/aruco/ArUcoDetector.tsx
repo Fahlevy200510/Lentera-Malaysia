@@ -107,7 +107,7 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
         return latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
       }
     }
-  } catch {}
+  } catch { }
 
   // 2. Fallback jika offline: Cek penyimpanan lokal (hanya jika valid dan bukan domain ngrok lama)
   try {
@@ -117,7 +117,7 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
         return saved;
       }
     }
-  } catch {}
+  } catch { }
 
   return "localhost";
 }
@@ -267,7 +267,7 @@ export default function ArUcoDetector() {
     setEndpoint(clean);
     try {
       localStorage.setItem("lentera_edge_endpoint", clean);
-    } catch {}
+    } catch { }
     connectWebSocket(clean);
   };
 
@@ -275,7 +275,7 @@ export default function ArUcoDetector() {
     try {
       localStorage.removeItem("lentera_edge_endpoint");
       localStorage.removeItem("lentera_endpoint");
-    } catch {}
+    } catch { }
     showToast("Mendeteksi Cloudflare Tunnel otomatis...");
     setDetections((prev) => ({ ...prev, status: "connecting" }));
     const target = await getActiveLenteraEndpoint();
@@ -313,7 +313,7 @@ export default function ArUcoDetector() {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         try {
           wsRef.current.send(JSON.stringify({ type: "command", action: "buzzer", pattern }));
-        } catch {}
+        } catch { }
       }
     };
     window.addEventListener("lentera-trigger-buzzer", handleBuzzerEvent);
@@ -325,17 +325,16 @@ export default function ArUcoDetector() {
   return (
     <div className="space-y-2.5">
       {/* Status Bar */}
-      <div className="flex flex-col gap-2.5 rounded-xl border border-[#735CDD]/16 bg-[#FAF9FF] px-3 py-2 shadow-2xs">
+      <div className="flex flex-col gap-2.5 rounded-xl border border-[#735CDD]/15 bg-[#FAF9FF] px-3 py-2 shadow-2xs">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                detections.status === "connected"
+              className={`h-2 w-2 shrink-0 rounded-full ${detections.status === "connected"
                   ? "bg-emerald-500 animate-pulse"
                   : detections.status === "connecting"
-                  ? "bg-amber-400 animate-ping"
-                  : "bg-rose-500"
-              }`}
+                    ? "bg-amber-400 animate-ping"
+                    : "bg-rose-500"
+                }`}
             />
             <div className="min-w-0 truncate">
               <span className="text-[11.5px] font-extrabold text-[#1D1836]">
@@ -351,7 +350,7 @@ export default function ArUcoDetector() {
             {detections.status === "connected" ? (
               <button
                 onClick={handleDisconnect}
-                className="flex items-center gap-1 rounded-lg border border-[#735CDD]/18 bg-white px-2.5 py-1 text-[10.5px] font-bold text-[#5E548E] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-[#735CDD]/20 bg-white px-2.5 py-1 text-[10.5px] font-bold text-[#5E548E] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors"
               >
                 Putuskan
               </button>
@@ -385,11 +384,10 @@ export default function ArUcoDetector() {
 
             <button
               onClick={() => setShowConfig(!showConfig)}
-              className={`p-1 rounded-lg border transition-colors ${
-                showConfig
+              className={`p-1 rounded-lg border transition-colors ${showConfig
                   ? "border-[#735CDD]/30 bg-[#F3EFFE] text-[#5840BA]"
                   : "border-transparent text-[#6E659F] hover:text-[#1D1836] hover:bg-white"
-              }`}
+                }`}
               title="Pengaturan Sambungan"
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -399,7 +397,7 @@ export default function ArUcoDetector() {
 
         {/* Collapsible Advanced Config Panel */}
         {showConfig && (
-          <div className="pt-2.5 border-t border-[#735CDD]/12 space-y-2 text-xs">
+          <div className="pt-2.5 border-t border-[#735CDD]/15 space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-[#1D1836]">Pengaturan Endpoint Edge:</span>
               <span className="rounded-md bg-[#FFF3D6] px-2 py-0.5 text-[10px] font-extrabold text-[#9A5B00]">
@@ -513,15 +511,14 @@ export default function ArUcoDetector() {
           {/* Circuit Status Narration */}
           {detections.circuit_status && (
             <div
-              className={`mt-3 p-3 rounded-xl border text-xs font-semibold w-full text-center transition-all ${
-                detections.circuit_status.status === "success"
+              className={`mt-3 p-3 rounded-xl border text-xs font-semibold w-full text-center transition-all ${detections.circuit_status.status === "success"
                   ? "bg-emerald-50 border-emerald-200 text-emerald-800 font-bold"
                   : detections.circuit_status.status === "short_circuit"
-                  ? "bg-rose-50 border-rose-300 text-rose-800 font-bold animate-pulse shadow-sm"
-                  : detections.circuit_status.status === "polarity_reversed"
-                  ? "bg-purple-50 border-purple-200 text-purple-800 font-semibold"
-                  : "bg-[#FFF3D6] border-[#F5B841]/50 text-[#9A5B00] font-bold"
-              }`}
+                    ? "bg-rose-50 border-rose-300 text-rose-800 font-bold animate-pulse shadow-sm"
+                    : detections.circuit_status.status === "polarity_reversed"
+                      ? "bg-purple-50 border-purple-200 text-purple-800 font-semibold"
+                      : "bg-[#FFF3D6] border-[#F5B841]/50 text-[#9A5B00] font-bold"
+                }`}
             >
               {detections.circuit_status.narration}
             </div>
@@ -533,9 +530,8 @@ export default function ArUcoDetector() {
       <div
         role="status"
         aria-live="polite"
-        className={`pointer-events-none fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 transition-all duration-300 ${
-          toast ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
-        }`}
+        className={`pointer-events-none fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 transition-all duration-300 ${toast ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+          }`}
       >
         {toast && (
           <div className="flex items-center gap-2 rounded-full bg-[#1D1836] px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(46,42,94,0.35)] border border-[#735CDD]/30">
