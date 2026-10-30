@@ -630,41 +630,110 @@ export default function PortalHome() {
 
   return (
     <main className="portal-page relative min-h-screen overflow-hidden font-body text-[#1E1938] print:bg-white print:min-h-0 print:p-0">
-      {/* Layered Periwinkle & Warm Lantern Ambient Canvas */}
+      {/* Artistic Periwinkle & Warm Lantern Lightscape Canvas */}
       <div
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden print:hidden"
         aria-hidden="true"
       >
-        {/* Top-left soft periwinkle-lavender bloom */}
+        {/* Top-left rich logo-periwinkle sculptural bloom */}
         <div
-          className="blob1 absolute -left-28 -top-24 h-[440px] w-[440px] rounded-full blur-3xl"
+          className="blob1 absolute -left-24 -top-24 h-[520px] w-[520px] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, rgba(115, 92, 221, 0.22) 0%, rgba(167, 139, 250, 0.08) 55%, transparent 75%)",
+              "radial-gradient(circle, rgba(115, 92, 221, 0.42) 0%, rgba(139, 92, 246, 0.18) 52%, transparent 74%)",
           }}
         />
-        {/* Right-center warm lantern buttercream-gold bloom */}
+        {/* Right-side warm golden lantern radiance */}
         <div
-          className="blob2 absolute right-[-4%] top-[14%] h-[520px] w-[520px] rounded-full blur-3xl"
+          className="blob2 absolute right-[-6%] top-[8%] h-[620px] w-[620px] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, rgba(245, 184, 65, 0.24) 0%, rgba(255, 243, 214, 0.55) 45%, transparent 75%)",
+              "radial-gradient(circle, rgba(245, 184, 65, 0.48) 0%, rgba(252, 230, 180, 0.75) 42%, transparent 74%)",
           }}
         />
-        {/* Bottom-center soft violet-iris grounding wash */}
+        {/* Bottom-left violet-iris anchor wave */}
         <div
-          className="blob3 absolute left-[24%] -bottom-36 h-[420px] w-[520px] rounded-full blur-3xl"
+          className="blob3 absolute left-[12%] -bottom-40 h-[480px] w-[600px] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, rgba(115, 92, 221, 0.16) 0%, rgba(234, 228, 252, 0.35) 50%, transparent 75%)",
+              "radial-gradient(circle, rgba(91, 67, 198, 0.32) 0%, rgba(196, 181, 253, 0.25) 52%, transparent 76%)",
           }}
         />
+
+        {/* Architectural Lantern Light-Rays & Acoustic Contours SVG */}
+        <svg
+          viewBox="0 0 1440 900"
+          fill="none"
+          preserveAspectRatio="xMidYMid slice"
+          className="absolute inset-0 h-full w-full opacity-90"
+        >
+          <defs>
+            <linearGradient id="lanternBeam" x1="100%" y1="15%" x2="10%" y2="85%">
+              <stop offset="0%" stopColor="#FFF3D6" stopOpacity="0.65" />
+              <stop offset="45%" stopColor="#EAE4FC" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#735CDD" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="irisArc" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#735CDD" stopOpacity="0.26" />
+              <stop offset="50%" stopColor="#F5B841" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#735CDD" stopOpacity="0.08" />
+            </linearGradient>
+          </defs>
+
+          {/* Diagonal Warm Lantern Light Beam sweeping from top-right to bottom-left */}
+          <polygon
+            points="1440,0 920,0 180,900 880,900"
+            fill="url(#lanternBeam)"
+          />
+
+          {/* Large Concentric Acoustic & Lantern Rings behind the right showcase */}
+          <g className="bg-lantern-orbit" style={{ transformOrigin: "1020px 450px" }}>
+            <circle
+              cx="1020"
+              cy="450"
+              r="340"
+              stroke="url(#irisArc)"
+              strokeWidth="1.75"
+              strokeDasharray="10 14"
+            />
+            <circle
+              cx="1020"
+              cy="450"
+              r="440"
+              stroke="rgba(115, 92, 221, 0.16)"
+              strokeWidth="1.5"
+            />
+            <circle
+              cx="1020"
+              cy="450"
+              r="550"
+              stroke="rgba(217, 119, 6, 0.16)"
+              strokeWidth="1.5"
+              strokeDasharray="6 18"
+            />
+          </g>
+
+          {/* Flowing Topographic Tactile Waves at Bottom Left */}
+          <path
+            d="M-60 720 C 260 630, 520 820, 900 710 C 1180 630, 1340 740, 1500 690"
+            stroke="rgba(115, 92, 221, 0.18)"
+            strokeWidth="2"
+            fill="none"
+          />
+          <path
+            d="M-60 780 C 280 690, 560 870, 940 760 C 1200 685, 1360 790, 1500 740"
+            stroke="rgba(245, 184, 65, 0.28)"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+
         {/* Tactile Coordinate Grid & Braille Dots Watermark */}
         <div className="portal-tactile-dots absolute inset-0" />
       </div>
 
       {/* Top Header */}
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-10 print:hidden border-b border-[#735CDD]/12 bg-white/65 backdrop-blur-md">
+      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-10 print:hidden border-b border-[#735CDD]/18 bg-white/75 backdrop-blur-md">
         <Link
           href="/"
           className="flex items-center gap-3.5 group"
@@ -741,44 +810,46 @@ export default function PortalHome() {
           </div>
 
           <h1
-            className="mt-5 font-heading text-4xl sm:text-5xl lg:text-[3.55rem] font-extrabold leading-[1.12] tracking-tight text-[#1E1938]"
+            className="mt-5 font-heading text-3xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.15] tracking-tight text-[#1E1938]"
             aria-label="Belajar sains melalui sentuhan dan suara."
           >
             <span className="block">Belajar sains melalui</span>
-            <span className="mt-2 inline-flex items-center rounded-2xl bg-[#EAE4FC]/85 border-2 border-[#735CDD]/25 px-4 py-1 text-[#735CDD] min-h-[1.3em] shadow-xs">
-              <span>{typedWord}</span>
-              <span
-                className="inline-block w-[4px] h-[0.78em] ml-2 bg-[#F5B841] rounded-sm animate-pulse align-middle"
-                aria-hidden="true"
-              />
+            <span className="mt-2.5 block min-h-[1.42em]">
+              <span className="inline-flex items-center whitespace-nowrap rounded-2xl bg-white/95 border-2 border-[#735CDD]/30 px-4 py-1 text-[#735CDD] shadow-[0_12px_30px_-8px_rgba(91,67,198,0.25)]">
+                <span>{"\u200B"}{typedWord}</span>
+                <span
+                  className="typewriter-cursor inline-block w-[3.5px] h-[0.82em] ml-1.5 bg-[#F5B841] rounded-full shrink-0"
+                  aria-hidden="true"
+                />
+              </span>
             </span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-[#5A5376]">
+          <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-[#463E66] font-medium">
             LENTERA memadukan papan eksperimen taktil, pemindaian kamera cerdas,
             dan panduan suara interaktif agar siswa tunanetra maupun low vision
             dapat mempelajari rangkaian listrik secara mandiri dan aman.
           </p>
 
           <div className="mt-7 space-y-3.5">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               <Link
                 href="/aruco"
-                className="portal-primary-btn text-base py-3.5 px-6 flex items-center justify-center gap-2.5"
+                className="portal-primary-btn flex items-center justify-center gap-2"
               >
-                <ScanEye className="h-5 w-5" /> Buka LENTERA Lab
+                <ScanEye className="h-4 w-4 sm:h-5 sm:w-5" /> Buka LENTERA Lab
               </Link>
               <Link
                 href="/dashboard"
-                className="portal-secondary-btn text-base py-3.5 px-6 flex items-center justify-center gap-2.5"
+                className="portal-secondary-btn flex items-center justify-center gap-2"
               >
-                <LayoutDashboard className="h-5 w-5 text-[#735CDD]" /> Buka
-                LENTERA Learn
+                <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5 text-[#735CDD]" />{" "}
+                Buka LENTERA Learn
               </Link>
               <button
                 id="btn-voice-guide"
                 onClick={readIntro}
-                className={`portal-secondary-btn text-base py-3.5 px-5 flex items-center justify-center gap-2 ${
+                className={`portal-secondary-btn flex items-center justify-center gap-2 ${
                   speaking
                     ? "!border-[#F5B841] !bg-[#FFF3D6] !text-[#1E1938]"
                     : ""

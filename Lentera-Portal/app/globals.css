@@ -5,17 +5,17 @@
 @tailwind utilities;
 
 :root {
-  --cs-bg: #F4F1FC;
+  --cs-bg: #E5DEFA;
   --cs-text: #1E1938;
-  --lentera-paper: #F4F1FC;
-  --lentera-paper-warm: #EDE7FB;
+  --lentera-paper: #E5DEFA;
+  --lentera-paper-warm: #EFEAFC;
   --lentera-iris: #735CDD;
   --lentera-iris-deep: #5B43C6;
-  --lentera-iris-soft: #E6DDFB;
+  --lentera-iris-soft: #DFD5FA;
   --lentera-cream: #FFF3D6;
   --lentera-amber: #F5B841;
   --lentera-ink: #1E1938;
-  --lentera-muted: #534B6E;
+  --lentera-muted: #463E66;
 }
 
 * {
@@ -41,7 +41,7 @@ body {
   height: 9px;
 }
 .cs-scroll::-webkit-scrollbar-thumb {
-  background: rgba(115, 92, 221, 0.28);
+  background: rgba(115, 92, 221, 0.35);
   border-radius: 99px;
 }
 .cs-scroll::-webkit-scrollbar-track {
@@ -69,6 +69,10 @@ body {
   0%, 100% { opacity: .3; }
   50% { opacity: 1; }
 }
+@keyframes cursorBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
 
 .blob1 { animation: floaty 15s ease-in-out infinite; }
 .blob2 { animation: floaty2 19s ease-in-out infinite; }
@@ -81,6 +85,10 @@ body {
 .chip:hover { transform: translateY(-2px); }
 .lamp { filter: drop-shadow(0 0 7px rgba(253, 203, 110, 0.95)); animation: glow 2.6s ease-in-out infinite; }
 .dot { filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.9)); }
+
+.typewriter-cursor {
+  animation: cursorBlink 0.95s ease-in-out infinite;
+}
 
 .typing span {
   display: inline-block;
@@ -137,24 +145,24 @@ button,
   }
 }
 
-/* ---------------------------------------------------------------- portal landing (Logo Periwinkle #735CDD & Lantern Cream #FFF3D6) */
+/* ---------------------------------------------------------------- portal landing (Rich Logo Periwinkle #735CDD & Lantern Gold #FCE6B4) */
 .portal-page {
-  background-color: #F3EFFC;
+  background-color: #E2DAFA;
   background-image:
-    radial-gradient(circle at 78% 42%, rgba(255, 236, 189, 0.68) 0%, rgba(255, 243, 214, 0.28) 28%, transparent 56%),
-    radial-gradient(circle at 14% 18%, rgba(115, 92, 221, 0.16) 0%, rgba(167, 139, 250, 0.07) 34%, transparent 60%),
-    radial-gradient(circle at 38% 92%, rgba(115, 92, 221, 0.12) 0%, transparent 50%),
-    linear-gradient(135deg, #EEE8FB 0%, #F7F4FD 48%, #FCF8EE 100%);
+    radial-gradient(circle at 76% 42%, rgba(252, 222, 148, 0.85) 0%, rgba(255, 240, 200, 0.52) 26%, transparent 58%),
+    radial-gradient(circle at 12% 16%, rgba(115, 92, 221, 0.34) 0%, rgba(145, 118, 240, 0.16) 36%, transparent 64%),
+    radial-gradient(circle at 18% 88%, rgba(115, 92, 221, 0.28) 0%, rgba(167, 139, 250, 0.12) 42%, transparent 68%),
+    linear-gradient(130deg, #D8CEFA 0%, #EAE4FC 44%, #FBF0D5 100%);
   color: var(--lentera-ink);
 }
 
 .portal-tactile-dots {
   background-image:
-    linear-gradient(to right, rgba(115, 92, 221, 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(115, 92, 221, 0.055) 1px, transparent 1px),
-    radial-gradient(rgba(115, 92, 221, 0.16) 1.25px, transparent 1.25px);
+    linear-gradient(to right, rgba(91, 67, 198, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(91, 67, 198, 0.08) 1px, transparent 1px),
+    radial-gradient(rgba(91, 67, 198, 0.22) 1.5px, transparent 1.5px);
   background-size: 56px 56px, 56px 56px, 28px 28px;
-  mask-image: radial-gradient(ellipse 88% 80% at 50% 48%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 92% 85% at 50% 48%, black 45%, transparent 100%);
 }
 
 .portal-ghost-btn,
@@ -171,8 +179,8 @@ button,
 }
 
 .portal-ghost-btn {
-  border: 1.5px solid rgba(115, 92, 221, 0.18);
-  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(115, 92, 221, 0.24);
+  background: rgba(255, 255, 255, 0.88);
   color: var(--lentera-ink);
   padding: 10px 16px;
   font-size: 13px;
@@ -185,12 +193,12 @@ button,
 }
 
 .portal-menu-btn {
-  border: 1.5px solid rgba(115, 92, 221, 0.28);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(115, 92, 221, 0.34);
+  background: #FFFFFF;
   color: var(--lentera-iris-deep);
   padding: 10px 16px;
   font-size: 13px;
-  box-shadow: 0 4px 12px rgba(115, 92, 221, 0.08);
+  box-shadow: 0 4px 14px rgba(91, 67, 198, 0.12);
 }
 .portal-menu-btn:hover {
   background: var(--lentera-iris);
@@ -200,33 +208,32 @@ button,
 }
 
 .portal-primary-btn {
-  background: var(--lentera-iris);
-  border: 2px solid #5B43C6;
+  background: linear-gradient(135deg, #7862E2 0%, #5B43C6 100%);
+  border: 2px solid #4E36B5;
   color: #FFFFFF;
-  padding: 14px 24px;
-  font-size: 15px;
-  box-shadow: 0 12px 28px -8px rgba(91, 67, 198, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  padding: 13px 20px;
+  font-size: 14px;
+  box-shadow: 0 12px 28px -6px rgba(91, 67, 198, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .portal-primary-btn:hover {
-  background: var(--lentera-iris-deep);
-  border-color: #4933A8;
-  box-shadow: 0 16px 34px -8px rgba(91, 67, 198, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #6850D6 0%, #4E36B5 100%);
+  box-shadow: 0 16px 34px -6px rgba(91, 67, 198, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transform: translateY(-2px);
 }
 
 .portal-secondary-btn {
-  background: rgba(255, 255, 255, 0.92);
-  border: 2px solid rgba(115, 92, 221, 0.18);
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid rgba(115, 92, 221, 0.24);
   color: var(--lentera-ink);
-  padding: 14px 22px;
-  font-size: 15px;
-  box-shadow: 0 6px 18px rgba(46, 36, 94, 0.06);
+  padding: 13px 18px;
+  font-size: 14px;
+  box-shadow: 0 8px 20px -6px rgba(46, 36, 94, 0.10);
   backdrop-filter: blur(8px);
 }
 .portal-secondary-btn:hover {
   border-color: var(--lentera-iris);
   background: #FFFFFF;
-  box-shadow: 0 10px 22px rgba(115, 92, 221, 0.14);
+  box-shadow: 0 12px 26px -6px rgba(115, 92, 221, 0.22);
   transform: translateY(-2px);
 }
 
@@ -249,7 +256,7 @@ button,
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  border: 1.5px solid rgba(115, 92, 221, 0.14);
+  border: 1.5px solid rgba(115, 92, 221, 0.18);
   border-radius: 20px;
   background: #FFFFFF;
   padding: 16px;
@@ -258,9 +265,9 @@ button,
 }
 .portal-destination:hover {
   transform: translateY(-2px);
-  background: var(--lentera-paper);
+  background: #FAF8F4;
   border-color: var(--lentera-iris);
-  box-shadow: 0 10px 24px -10px rgba(115, 92, 221, 0.22);
+  box-shadow: 0 10px 24px -10px rgba(115, 92, 221, 0.25);
 }
 
 @keyframes lanternHalo {
@@ -275,6 +282,10 @@ button,
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-4px); }
 }
+@keyframes slowRotateRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 .lantern-halo-ring {
   animation: lanternHalo 4s ease-in-out infinite;
@@ -282,6 +293,10 @@ button,
 .circuit-trace-anim {
   stroke-dasharray: 10 14;
   animation: circuitDash 14s linear infinite;
+}
+.bg-lantern-orbit {
+  transform-origin: center;
+  animation: slowRotateRing 60s linear infinite;
 }
 .float-badge-1 {
   animation: cardFloatSubtle 5s ease-in-out infinite;
