@@ -342,10 +342,21 @@ export default function PortalHome() {
     let ws: WebSocket | null = null;
     let redirected = false;
     let cancelled = false;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleReconnect = () => {
+      if (cancelled || redirected) return;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(() => {
+        if (!cancelled && !redirected) {
+          initBackgroundWS();
+        }
+      }, 3000);
+    };
 
     async function initBackgroundWS() {
       const endpoint = await getActiveLenteraEndpoint();
-      if (cancelled) return;
+      if (cancelled || redirected) return;
 
       const { wsUrl } = resolveEndpoints(endpoint);
       console.log("[LENTERA Auto-Redirect WS] Menghubungkan ke:", wsUrl);
@@ -354,6 +365,14 @@ export default function PortalHome() {
         ws = new WebSocket(wsUrl);
         ws.onopen = () => {
           console.log("[LENTERA Auto-Redirect WS] Terhubung ke papan fisik!");
+        };
+        ws.onclose = () => {
+          scheduleReconnect();
+        };
+        ws.onerror = () => {
+          try {
+            ws?.close();
+          } catch {}
         };
         const STUDENT_TOKENS: Record<
           string,
@@ -491,6 +510,7 @@ export default function PortalHome() {
         };
       } catch (err) {
         console.warn("[LENTERA Auto-Redirect WS] Gagal terhubung:", err);
+        scheduleReconnect();
       }
     }
 
@@ -498,7 +518,11 @@ export default function PortalHome() {
 
     return () => {
       cancelled = true;
-      if (ws) ws.close();
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (ws) {
+        ws.onclose = null;
+        ws.close();
+      }
     };
   }, [router]);
 
