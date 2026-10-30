@@ -139,28 +139,70 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 h-full w-full"
             >
+              <defs>
+                <path
+                  id="traceTL"
+                  d="M 164 128 C 142 108, 118 82, 96 54"
+                />
+                <path
+                  id="traceTR"
+                  d="M 276 128 C 298 108, 322 82, 344 54"
+                />
+                <path
+                  id="traceBL"
+                  d="M 164 212 C 142 232, 118 258, 96 286"
+                />
+                <path
+                  id="traceBR"
+                  d="M 276 212 C 298 232, 322 258, 344 286"
+                />
+              </defs>
+
+              {/* Expanding Acoustic Ripple Wave from Center Lantern */}
+              <circle
+                cx="220"
+                cy="170"
+                r="62"
+                stroke="#FFF3D6"
+                strokeWidth="2"
+                opacity="0"
+              >
+                <animate
+                  attributeName="r"
+                  values="58;116"
+                  dur="3s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  values="0.65;0"
+                  dur="3s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+
               {/* Curved Circuit Base Tracks from Center Ring to the 4 Corner Cards */}
-              <path
-                d="M 164 128 C 142 108, 118 82, 96 54"
-                stroke="rgba(255, 243, 214, 0.28)"
+              <use
+                href="#traceTL"
+                stroke="rgba(255, 243, 214, 0.30)"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
-              <path
-                d="M 276 128 C 298 108, 322 82, 344 54"
-                stroke="rgba(255, 243, 214, 0.28)"
+              <use
+                href="#traceTR"
+                stroke="rgba(255, 243, 214, 0.30)"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
-              <path
-                d="M 164 212 C 142 232, 118 258, 96 286"
-                stroke="rgba(255, 243, 214, 0.28)"
+              <use
+                href="#traceBL"
+                stroke="rgba(255, 243, 214, 0.30)"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
-              <path
-                d="M 276 212 C 298 232, 322 258, 344 286"
-                stroke="rgba(255, 243, 214, 0.28)"
+              <use
+                href="#traceBR"
+                stroke="rgba(255, 243, 214, 0.30)"
                 strokeWidth="2"
                 strokeLinecap="round"
               />
@@ -174,33 +216,72 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
                 className="circuit-trace-anim"
               />
 
+              {/* Traveling Golden Energy Orbs along each of the 4 Circuit Paths */}
+              <circle r="4" fill="#FFF3D6">
+                <animateMotion dur="2.2s" repeatCount="indefinite">
+                  <mpath href="#traceTL" />
+                </animateMotion>
+              </circle>
+              <circle r="4" fill="#FFF3D6">
+                <animateMotion dur="2.2s" begin="0.55s" repeatCount="indefinite">
+                  <mpath href="#traceTR" />
+                </animateMotion>
+              </circle>
+              <circle r="4" fill="#F5B841">
+                <animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite">
+                  <mpath href="#traceBL" />
+                </animateMotion>
+              </circle>
+              <circle r="4" fill="#F5B841">
+                <animateMotion dur="2.2s" begin="1.65s" repeatCount="indefinite">
+                  <mpath href="#traceBR" />
+                </animateMotion>
+              </circle>
+
               {/* Outer Counter-Rotating Dashed Acoustic Ring */}
-              <g className="orbit-spin-ccw">
+              <g>
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  from="360 220 170"
+                  to="0 220 170"
+                  dur="18s"
+                  repeatCount="indefinite"
+                />
                 <circle
                   cx="220"
                   cy="170"
                   r="98"
-                  stroke="rgba(255, 255, 255, 0.22)"
-                  strokeWidth="1.4"
+                  stroke="rgba(255, 255, 255, 0.26)"
+                  strokeWidth="1.5"
                   strokeDasharray="6 10"
                 />
-                <circle cx="220" cy="72" r="3.5" fill="#FFF3D6" />
-                <circle cx="220" cy="268" r="3.5" fill="#FFF3D6" />
+                <circle cx="220" cy="72" r="4" fill="#FFF3D6" />
+                <circle cx="220" cy="268" r="4" fill="#FFF3D6" />
               </g>
 
               {/* Middle Clockwise-Rotating Golden Orbital Ring with 4 Satellite Beads */}
-              <g className="orbit-spin-cw">
+              <g>
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  from="0 220 170"
+                  to="360 220 170"
+                  dur="12s"
+                  repeatCount="indefinite"
+                />
                 <circle
                   cx="220"
                   cy="170"
                   r="76"
-                  stroke="rgba(255, 243, 214, 0.48)"
-                  strokeWidth="1.6"
+                  stroke="rgba(255, 243, 214, 0.52)"
+                  strokeWidth="1.75"
+                  strokeDasharray="24 12"
                 />
-                <circle cx="144" cy="170" r="4.5" fill="#F5B841" />
-                <circle cx="296" cy="170" r="4.5" fill="#F5B841" />
-                <circle cx="220" cy="94" r="3.5" fill="#FFFFFF" />
-                <circle cx="220" cy="246" r="3.5" fill="#FFFFFF" />
+                <circle cx="144" cy="170" r="5" fill="#F5B841" />
+                <circle cx="296" cy="170" r="5" fill="#F5B841" />
+                <circle cx="220" cy="94" r="4" fill="#FFFFFF" />
+                <circle cx="220" cy="246" r="4" fill="#FFFFFF" />
               </g>
             </svg>
 
