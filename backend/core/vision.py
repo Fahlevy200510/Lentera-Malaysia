@@ -14,8 +14,10 @@ class VisionCore:
         self.aruco_params.adaptiveThreshWinSizeStep = 8  # Langkah lebih rapat (3, 11, 19, 27, 35, 43)
         self.aruco_params.adaptiveThreshConstant = 5  # Lebih sensitif pada area tengah papan yang redup
         self.aruco_params.minDistanceToBorder = 1
-        self.aruco_params.errorCorrectionRate = 0.6  # Lebih toleran terhadap noise
-        self.aruco_params.maxErroneousBitsInBorderRate = 0.35  # Toleransi 35% jika ada pantulan/silau kecil di border
+        self.aruco_params.minOtsuStdDev = 2.0  # Tetap baca bit di area tengah papan yang kontrasnya tipis
+        self.aruco_params.errorCorrectionRate = 0.75  # Lebih toleran terhadap bayangan dinding slot
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.5  # Toleransi pantulan tipis di tepi border hitam
+        self.aruco_params.perspectiveRemoveIgnoredMarginPerCell = 0.22  # Fokus ke tengah tiap bit agar tidak terpengaruh tepi
         self.aruco_params.minMarkerPerimeterRate = 0.03  # Mampu mendeteksi marker sedikit lebih jauh/kecil
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
         self.aruco_params.cornerRefinementWinSize = 5
@@ -66,6 +68,8 @@ class VisionCore:
         if has_channels:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             collect(gray)
+            collect(self.clahe.apply(gray))
+            collect(frame[:, :, 0])  # Blue channel memiliki kontras tertinggi di bawah lampu LED putih
 
         return [(m_id, c) for m_id, c, _ in detections]
 

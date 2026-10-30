@@ -29,25 +29,19 @@ class GridMapper:
             self._create_mock_roi()
 
     def _create_mock_roi(self):
-        # Asumsikan resolusi 640x480, grid 5x5 tersebar di tengah
-        cell_w = 80
-        cell_h = 80
-        start_x = 120
-        start_y = 40
+        # Koordinat default terkalibrasi sesuai geometri fisik papan 5x5 LENTERA pada resolusi 640x480
+        col_xs = [127, 216, 313, 409, 497]
+        row_ys = [54, 144, 241, 331, 409]
         cols = ['A', 'B', 'C', 'D', 'E']
         
         for r in range(5):
             for c in range(5):
                 cell_name = f"{cols[c]}{r+1}"
-                # Jika A1 di bawah, maka r=0 posisinya di bawah (y besar)
-                cx = start_x + (c * cell_w) + (cell_w // 2)
-                cy = start_y + (r * cell_h) + (cell_h // 2)
                 self.grid_rois[cell_name] = {
-                    "centroid": [cx, cy],
-                    "radius": min(cell_w, cell_h) * 0.4
+                    "centroid": [float(col_xs[c]), float(row_ys[r])],
+                    "radius": 46.0
                 }
         
-        # Simpan mock untuk tes
         with open(self.roi_file, 'w') as f:
             json.dump(self.grid_rois, f, indent=2)
 
@@ -123,7 +117,7 @@ class GridMapper:
                 
                 self.grid_rois[cell_name] = {
                     "centroid": [float(cx), float(cy)],
-                    "radius": float(dist_x * 0.4)
+                    "radius": float(dist_x * 0.52)
                 }
                 
         self.grid_rois["_camera_corners"] = {

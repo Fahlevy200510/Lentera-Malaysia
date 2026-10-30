@@ -170,13 +170,6 @@ const ALL_REGISTERED_QUIZ_BANK: {
     hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
     explanation: "Sempurna! Itu adalah Kabel Cabang T untuk membagi arus listrik menjadi cabang-cabang mandiri.",
   },
-  {
-    title: "Pembatas Kuat Arus (Resistor)",
-    question: "Komponen manakah yang berfungsi memberi hambatan listrik untuk membatasi besar arus yang mengalir?",
-    component: "resistor",
-    hint: "Cari balok yang memiliki permukaan alur garis gelombang timbul penahan arus.",
-    explanation: "Luar biasa! Itu adalah Resistor yang menahan laju arus listrik agar komponen lain tetap aman.",
-  },
 ];
 
 // Generator Kuis Dinamis: Memilih 4 pertanyaan acak dari 7 komponen fisik terdaftar
@@ -791,7 +784,7 @@ export default function VoiceGuide() {
     } else {
       quizWaitingForClearRef.current = false;
       speak(
-        `Soal kuis baru telah diacak dari 7 komponen terdaftar! Mari mulai dengan pertanyaan pertama: ${newSteps[0].voice}`
+        `Soal kuis baru telah diacak dari 6 komponen terdaftar! Mari mulai dengan pertanyaan pertama: ${newSteps[0].voice}`
       );
     }
   }, [speak]);
@@ -2768,7 +2761,7 @@ export default function VoiceGuide() {
                     <button
                       onClick={handleShuffleQuiz}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-100/90 hover:bg-indigo-200 border border-indigo-300 px-2.5 py-1 text-[11px] font-bold text-indigo-800 transition-colors shrink-0 shadow-2xs"
-                      title="Acak pertanyaan kuis baru dari 7 komponen terdaftar"
+                      title="Acak pertanyaan kuis baru dari 6 komponen terdaftar"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       <span>Acak Kuis</span>
