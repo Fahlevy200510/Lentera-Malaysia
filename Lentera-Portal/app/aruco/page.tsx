@@ -14,17 +14,17 @@ import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 
 const wiringPoints = [
   {
-    icon: <Cpu className="h-5 w-5 text-cs-primary" />,
+    icon: <Cpu className="h-4 w-4 text-[#735CDD]" />,
     title: "Lentera Edge (Raspberry Pi)",
     text: "Pusat pemrosesan lokal. Menggunakan Computer Vision untuk melacak komponen rangkaian tanpa perlu internet.",
   },
   {
-    icon: <MonitorSmartphone className="h-5 w-5 text-cs-blue" />,
+    icon: <MonitorSmartphone className="h-4 w-4 text-[#735CDD]" />,
     title: "Modul Kamera CSI",
     text: "Mata dari sistem. Kamera mengamati papan dan memindai penanda khusus pada setiap komponen secara real-time.",
   },
   {
-    icon: <Wifi className="h-5 w-5 text-cs-green" />,
+    icon: <Wifi className="h-4 w-4 text-emerald-600" />,
     title: "Relai Data Langsung",
     text: "Mengirim susunan rangkaian secara langsung ke dashboard ini agar AI Tutor dapat membantu siswa belajar.",
   },
@@ -42,16 +42,6 @@ export default function ArucoPage() {
   const [speaking, setSpeaking] = useState(false);
   const speakingRef = useRef(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  useEffect(() => {
-    const handleSwitch = (e: any) => {
-      if (e?.detail === "tutor" || e?.detail === "guide") {
-        setActiveTab(e.detail);
-      }
-    };
-    window.addEventListener("lentera-switch-tab", handleSwitch);
-    return () => window.removeEventListener("lentera-switch-tab", handleSwitch);
-  }, []);
 
   // Pre-load daftar voice browser agar suara bahasa Indonesia langsung siap saat halaman terbuka
   useEffect(() => {
@@ -163,119 +153,202 @@ export default function ArucoPage() {
     } catch {}
   }, []);
 
-
-
   const logout = () => {
     localStorage.removeItem("lentera-session");
     router.replace("/login");
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-cs-bg font-body text-cs-text print:bg-white print:min-h-0 print:p-0">
-      <div className="pointer-events-none absolute inset-0 -z-10 print:hidden">
+    <main className="portal-page relative min-h-screen overflow-x-hidden font-body text-[#1D1836] print:bg-white print:min-h-0 print:p-0">
+      {/* Ambient Background selaras dengan Beranda LENTERA */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden print:hidden">
         <div
-          className="blob1 absolute -left-32 top-[-3rem] h-72 w-72 rounded-full blur-3xl md:h-96 md:w-96"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.16), transparent 70%)" }}
+          className="absolute -left-24 -top-24 h-[30rem] w-[30rem] rounded-full opacity-80 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(115, 92, 221, 0.28) 0%, rgba(155, 135, 245, 0.12) 48%, transparent 72%)",
+          }}
         />
         <div
-          className="blob2 absolute -right-32 bottom-[-4rem] h-72 w-72 rounded-full blur-3xl md:h-96 md:w-96"
-          style={{ background: "radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%)" }}
+          className="absolute -right-24 top-8 h-[32rem] w-[32rem] rounded-full opacity-85 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(251, 191, 36, 0.24) 0%, rgba(255, 243, 214, 0.45) 48%, transparent 72%)",
+          }}
         />
+        <div
+          className="absolute bottom-[-8rem] left-1/3 h-[26rem] w-[36rem] rounded-full opacity-70 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, rgba(253, 230, 138, 0.16) 52%, transparent 74%)",
+          }}
+        />
+        <div className="portal-tactile-dots absolute inset-0 opacity-60" />
       </div>
 
-      <section className="mx-auto flex min-h-screen max-w-screen-2xl flex-col md:flex-row gap-8 px-5 py-8 lg:px-10 lg:py-10 print:hidden">
-        <div className="rise relative z-40 flex flex-col justify-between gap-8 rounded-[2rem] border border-cs-text/10 bg-white/80 p-6 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:w-72 md:flex-shrink-0">
+      <section className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-6 px-4 py-5 md:flex-row lg:gap-7 lg:px-8 lg:py-7 print:hidden">
+        {/* Sidebar Navigasi LENTERA Lab */}
+        <aside className="rise relative z-40 flex flex-col justify-between gap-6 rounded-[1.75rem] border border-[#735CDD]/18 bg-white/88 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:w-64 md:flex-shrink-0 lg:w-[272px]">
           <div>
-            <div className="flex items-center gap-3 font-heading text-xl font-extrabold tracking-tight text-cs-text">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-primary text-white shadow-lg shadow-cs-primary/30">
-                <ScanEye className="h-5 w-5" />
+            {/* Brand Header */}
+            <Link
+              href="/"
+              className="group flex items-center gap-3 rounded-2xl pb-4 border-b border-[#735CDD]/12 focus-visible:outline-none"
+            >
+              <div
+                className="relative flex items-center justify-center overflow-hidden rounded-xl bg-[#765EE0] shadow-[0_8px_20px_-4px_rgba(115,92,221,0.45)] ring-2 ring-[#FFF3D6] transition-transform duration-200 group-hover:scale-[1.03]"
+                style={{ width: 42, height: 42 }}
+              >
+                <img
+                  src="/logo-lentera.png"
+                  alt="Logo LENTERA"
+                  className="h-full w-full scale-[1.56] object-cover"
+                />
               </div>
-              Edge Lab
-            </div>
-            
-            <div className="mt-8 space-y-2">
-              <Link href="/" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-cs-text/60 transition-colors hover:bg-cs-text/5 hover:text-cs-text">
-                <ArrowLeft className="h-4 w-4" />
-                Kembali ke Beranda
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-heading text-lg font-extrabold tracking-tight text-[#1D1836]">
+                    LENTERA
+                  </span>
+                  <span className="rounded-md bg-[#735CDD]/12 px-1.5 py-0.5 font-heading text-[10px] font-extrabold uppercase tracking-wider text-[#5840BA]">
+                    Lab
+                  </span>
+                </div>
+                <p className="text-[10.5px] font-bold tracking-wide text-[#5E548E]">
+                  Ruang Praktik Taktil
+                </p>
+              </div>
+            </Link>
+
+            {/* Menu Navigasi */}
+            <div className="mt-5 space-y-1.5">
+              <Link
+                href="/"
+                className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#4A4458] transition-all hover:bg-[#F3EFFE] hover:text-[#1D1836]"
+              >
+                <ArrowLeft className="h-4 w-4 text-[#735CDD]" />
+                <span>Kembali ke Beranda</span>
               </Link>
-              <Link href="/dashboard" className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-cs-text/60 transition-colors hover:bg-cs-text/5 hover:text-cs-text">
-                <BookOpen className="h-4 w-4" />
-                Lentera Learn
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#4A4458] transition-all hover:bg-[#F3EFFE] hover:text-[#1D1836]"
+              >
+                <BookOpen className="h-4 w-4 text-[#735CDD]" />
+                <span>Buka LENTERA Learn</span>
               </Link>
-              <div className="pt-3 border-t border-slate-100 my-2">
-                <p className="px-4 pb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                  Panel Interaksi Lab
+
+              <div className="pt-3 mt-3 border-t border-[#735CDD]/12">
+                <p className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#6E659F]">
+                  Mode Pendamping Lab
                 </p>
                 <div className="space-y-1.5">
                   <button
                     onClick={() => setActiveTab("guide")}
-                    className={`flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                    className={`flex items-center justify-between w-full text-left rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
                       activeTab === "guide"
-                        ? "bg-cs-primary/10 text-cs-primaryDeep shadow-sm font-extrabold"
-                        : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
+                        ? "bg-[#735CDD] text-white shadow-[0_10px_22px_-6px_rgba(115,92,221,0.5)] font-extrabold"
+                        : "text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836]"
                     }`}
                   >
-                    <ScanEye className="h-4 w-4" />
-                    <span>Panduan Modul</span>
+                    <div className="flex items-center gap-2.5">
+                      <ScanEye className="h-4 w-4" />
+                      <span>Panduan Modul</span>
+                    </div>
+                    <span
+                      className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-extrabold ${
+                        activeTab === "guide"
+                          ? "bg-[#FFF3D6] text-[#53389E]"
+                          : "bg-[#F3EFFE] text-[#5840BA]"
+                      }`}
+                    >
+                      5 Tahap
+                    </span>
                   </button>
+
                   <button
                     onClick={() => setActiveTab("tutor")}
-                    className={`flex items-center justify-between w-full text-left rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                    className={`flex items-center justify-between w-full text-left rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
                       activeTab === "tutor"
-                        ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm shadow-indigo-500/25 font-extrabold"
-                        : "text-cs-text/60 hover:bg-cs-text/5 hover:text-cs-text"
+                        ? "bg-[#735CDD] text-white shadow-[0_10px_22px_-6px_rgba(115,92,221,0.5)] font-extrabold"
+                        : "text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836]"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       <Sparkles className="h-4 w-4" />
                       <span>Tanya AI Tutor</span>
                     </div>
-                    <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-bold ${
-                      activeTab === "tutor" ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"
-                    }`}>
-                      Voice
+                    <span
+                      className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-extrabold ${
+                        activeTab === "tutor"
+                          ? "bg-[#FFF3D6] text-[#53389E]"
+                          : "bg-[#FFF3D6] text-[#9A5B00] border border-[#F5B841]/40"
+                      }`}
+                    >
+                      Suara
                     </span>
                   </button>
                 </div>
               </div>
             </div>
           </div>
-          
+
+          {/* Bagian Bawah Sidebar: Pintasan Papan & Siswa Aktif */}
           <div className="space-y-3">
-            <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-cs-text/50 mb-2">Siswa Sedang Belajar</p>
-              <div className="flex items-center justify-between gap-2 min-w-0">
-                <div className="min-w-0 flex-1">
-                  <StudentProfileSwitcher compact />
+            {/* Ringkasan Pintasan Koordinat Papan */}
+            <div className="rounded-2xl border border-[#735CDD]/15 bg-[#F8F6FF] p-3.5">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#5840BA] mb-2">
+                Pintasan Papan Fisik
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
+                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
+                  <span className="font-mono font-black text-[#5840BA]">A1–E1</span>
+                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">5 Modul</p>
                 </div>
+                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
+                  <span className="font-mono font-black text-[#B45309]">A5</span>
+                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">AI Tutor</p>
+                </div>
+                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
+                  <span className="font-mono font-black text-emerald-700">C5</span>
+                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">Eksplorasi</p>
+                </div>
+                <div className="rounded-lg bg-white px-2 py-1.5 border border-[#735CDD]/10">
+                  <span className="font-mono font-black text-rose-600">E5</span>
+                  <p className="text-[#4A4458] font-semibold leading-tight mt-0.5">Keluar Sesi</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Siswa Aktif */}
+            <div className="rounded-2xl border border-[#735CDD]/20 bg-gradient-to-br from-[#231B42] to-[#352961] p-3.5 text-white shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFF3D6]/85">
+                  Siswa Sedang Belajar
+                </p>
                 <button
                   onClick={logout}
-                  className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
-                  title="Keluar"
+                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-bold text-rose-200 hover:bg-rose-500/25 hover:text-white transition-colors"
+                  title="Keluar Sesi"
                 >
-                  <LogOut className="h-3.5 w-3.5" />
+                  <LogOut className="h-3 w-3" />
+                  <span>Keluar</span>
                 </button>
               </div>
-            </div>
-
-            <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-cs-text/50">Koneksi</p>
-              <div className="mt-2 flex items-center gap-2">
-                <Wifi className="h-4 w-4 text-cs-green" />
-                <span className="text-sm font-bold text-cs-text">Jaringan Lokal</span>
-              </div>
+              <StudentProfileSwitcher compact />
             </div>
           </div>
-        </div>
+        </aside>
 
-        <div className="relative z-10 flex-1 grid gap-8 lg:grid-cols-2">
-          {/* Left: Edge Info + Detector */}
-          <div className="space-y-6">
-            <div className="rise space-y-4" style={{ animationDelay: ".05s" }}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="inline-flex rounded-full border border-cs-blue/30 bg-cs-blue/10 px-4 py-1 text-xs font-bold uppercase tracking-wider text-sky-600">
-                  Sinkronisasi Edge Langsung
-                </p>
+        {/* Area Utama: Kiri (Kamera & Perangkat) | Kanan (Skema & Panduan) */}
+        <div className="relative z-10 flex-1 grid gap-6 lg:grid-cols-12 items-start">
+          {/* Kolom Kiri (5/12): Kamera & Status Perangkat */}
+          <div className="space-y-5 lg:col-span-5">
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/88 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.16)] backdrop-blur-xl space-y-4" style={{ animationDelay: ".05s" }}>
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#735CDD]/20 bg-[#F3EFFE] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#5840BA]">
+                  <span className="h-2 w-2 rounded-full bg-[#735CDD]" />
+                  Pemindaian Papan Taktil
+                </span>
                 <button
                   id="btn-lab-voice"
                   onClick={() => {
@@ -287,81 +360,109 @@ export default function ArucoPage() {
                       speakLabIntro();
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-1 text-xs font-bold text-violet-700 hover:bg-violet-100 transition-colors shadow-sm"
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-extrabold transition-all shadow-2xs ${
+                    speaking
+                      ? "border-amber-300 bg-[#FFF3D6] text-[#9A5B00]"
+                      : "border-[#735CDD]/25 bg-white text-[#5840BA] hover:bg-[#F3EFFE]"
+                  }`}
                   title="Dengarkan kembali penjelasan ruang kerja"
                 >
-                  <Volume2 className="h-3.5 w-3.5 text-violet-600" />
+                  <Volume2 className={`h-3.5 w-3.5 ${speaking ? "text-[#D97706] animate-pulse" : "text-[#735CDD]"}`} />
                   {speaking ? "Hentikan Suara" : "Dengarkan Arahan Lab"}
                 </button>
               </div>
-              <h1 className="font-heading text-3xl font-extrabold leading-tight text-cs-text md:text-4xl">
-                Status Perangkat Real-time
-              </h1>
-              <p className="max-w-xl text-base leading-7 text-cs-text/65">
-                Dashboard ini menerima data pelacakan dan video langsung dari unit Lentera Edge melalui jaringan lokal kamu.
-              </p>
+
+              <div>
+                <h1 className="font-heading text-2xl font-extrabold leading-tight text-[#1D1836] sm:text-[1.65rem]">
+                  Kamera & Sensor Papan Fisik
+                </h1>
+                <p className="mt-1 text-xs sm:text-[13px] leading-relaxed text-[#4A4458]">
+                  Menampilkan pemindaian balok komponen secara langsung dari kamera bawah papan LENTERA.
+                </p>
+              </div>
+
+              {/* ArUcoDetector (yang sudah support Grid 5x5 + Input IP) */}
+              <ArUcoDetector />
             </div>
 
-            {/* ArUcoDetector (yang sudah support Grid 5x5 + Input IP) */}
-            <ArUcoDetector />
-
-            {/* Hardware & Relay Architecture Info */}
-            <div className="space-y-3 pt-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-cs-text/50">
-                Arsitektur Edge Computing
-              </p>
-              {wiringPoints.map((item) => (
-                <article
-                  key={item.title}
-                  className="flex gap-4 card rounded-2xl border border-cs-text/10 bg-white/80 p-4 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md"
-                >
-                  <div className="mt-0.5 flex-shrink-0 bg-slate-50 p-2 rounded-xl border border-slate-100 h-fit">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h3 className="font-heading text-sm font-extrabold text-cs-text">{item.title}</h3>
-                    <p className="mt-1 text-xs leading-5 text-cs-text/65">{item.text}</p>
-                  </div>
-                </article>
-              ))}
+            {/* Ringkasan Arsitektur Perangkat (Kompak & Rapi) */}
+            <div className="rounded-[1.5rem] border border-[#735CDD]/15 bg-white/82 p-4 shadow-[0_10px_28px_-14px_rgba(67,56,202,0.14)] backdrop-blur-md space-y-2.5">
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#5840BA]">
+                  Sistem Perangkat LENTERA Edge
+                </p>
+                <span className="text-[10px] font-bold text-[#6E659F]">Grid 5×5 Aktif</span>
+              </div>
+              <div className="space-y-2">
+                {wiringPoints.map((item) => (
+                  <article
+                    key={item.title}
+                    className="flex items-start gap-3 rounded-xl border border-[#735CDD]/10 bg-[#FAF9FF] p-3 transition-colors hover:border-[#735CDD]/25"
+                  >
+                    <div className="mt-0.5 flex-shrink-0 rounded-lg bg-[#F3EFFE] p-2 border border-[#735CDD]/15">
+                      {item.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-heading text-xs font-extrabold text-[#1D1836]">
+                        {item.title}
+                      </h3>
+                      <p className="mt-0.5 text-[11px] leading-relaxed text-[#4A4458]">
+                        {item.text}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Right: Circuit Diagram & Voice Guide */}
-          <div className="rise space-y-6" style={{ animationDelay: ".1s" }}>
-            <div className="card rounded-[2rem] border border-cs-text/10 bg-white/80 p-5 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl md:p-7">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          {/* Kolom Kanan (7/12): Skema Rangkaian & Panduan Modul / AI Tutor */}
+          <div className="rise space-y-5 lg:col-span-7" style={{ animationDelay: ".1s" }}>
+            <div className="rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-cs-primaryDeep/70">
-                    Diagram Langsung
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[#5840BA]">
+                    Visualisasi Aliran Arus
                   </p>
-                  <h2 className="font-heading text-xl font-extrabold text-cs-text">
-                    Skema Rangkaian
+                  <h2 className="font-heading text-lg sm:text-xl font-extrabold text-[#1D1836]">
+                    Skema Rangkaian Listrik
                   </h2>
                 </div>
-                <div className="flex gap-1 bg-slate-100 p-1 rounded-xl border">
-                  <button 
+                <div className="flex gap-1 rounded-xl border border-[#735CDD]/15 bg-[#F3EFFE]/80 p-1">
+                  <button
                     onClick={() => setDiagramMode("live")}
-                    className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${diagramMode === 'live' ? 'bg-white shadow text-cs-primaryDeep' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all ${
+                      diagramMode === "live"
+                        ? "bg-[#735CDD] text-white shadow-xs"
+                        : "text-[#5E548E] hover:text-[#1D1836]"
+                    }`}
                   >
                     LANGSUNG
                   </button>
-                  <button 
+                  <button
                     onClick={() => setDiagramMode("series")}
-                    className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${diagramMode === 'series' ? 'bg-white shadow text-cs-primaryDeep' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all ${
+                      diagramMode === "series"
+                        ? "bg-[#735CDD] text-white shadow-xs"
+                        : "text-[#5E548E] hover:text-[#1D1836]"
+                    }`}
                   >
-                    SERI
+                    CONTOH SERI
                   </button>
-                  <button 
+                  <button
                     onClick={() => setDiagramMode("parallel")}
-                    className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${diagramMode === 'parallel' ? 'bg-white shadow text-cs-primaryDeep' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`px-3 py-1.5 text-[11px] font-extrabold rounded-lg transition-all ${
+                      diagramMode === "parallel"
+                        ? "bg-[#735CDD] text-white shadow-xs"
+                        : "text-[#5E548E] hover:text-[#1D1836]"
+                    }`}
                   >
-                    PARALEL
+                    CONTOH PARALEL
                   </button>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-[#0b1220] p-4 flex items-center justify-center min-h-[200px]">
+              <div className="rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3.5 flex items-center justify-center min-h-[190px] shadow-inner">
                 <CircuitDiagram variant={diagramMode} />
               </div>
             </div>
@@ -374,7 +475,6 @@ export default function ArucoPage() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }

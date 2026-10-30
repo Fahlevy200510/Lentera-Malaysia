@@ -323,13 +323,13 @@ export default function ArUcoDetector() {
   const resolved = resolveEndpoints(endpoint);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       {/* Status Bar */}
-      <div className="card flex flex-col gap-3 rounded-2xl border border-cs-text/10 bg-white/80 px-4 py-3 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+      <div className="flex flex-col gap-3 rounded-2xl border border-[#735CDD]/18 bg-[#FAF9FF] px-3.5 py-3 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span
-              className={`h-2.5 w-2.5 rounded-full ${
+              className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                 detections.status === "connected"
                   ? "bg-emerald-500 animate-pulse"
                   : detections.status === "connecting"
@@ -337,21 +337,21 @@ export default function ArUcoDetector() {
                   : "bg-rose-500"
               }`}
             />
-            <div>
-              <span className="text-xs font-bold text-cs-text">
+            <div className="min-w-0 truncate">
+              <span className="text-xs font-extrabold text-[#1D1836]">
                 Status: {STATUS_LABEL[detections.status]}
               </span>
-              <span className="ml-2 text-[10px] text-slate-400 font-semibold">
+              <span className="ml-1.5 text-[10px] text-[#6E659F] font-semibold">
                 ({resolved.displayHost})
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             {detections.status === "connected" ? (
               <button
                 onClick={handleDisconnect}
-                className="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition-colors"
               >
                 Putuskan
               </button>
@@ -368,7 +368,7 @@ export default function ArUcoDetector() {
                     connectWebSocket(endpoint);
                   }
                 }}
-                className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 hover:bg-emerald-500/20 transition-colors"
+                className="flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-extrabold text-emerald-700 hover:bg-emerald-500/20 transition-colors"
               >
                 <RefreshCw className="h-3.5 w-3.5" /> Sambungkan Ulang
               </button>
@@ -377,17 +377,19 @@ export default function ArUcoDetector() {
             <button
               onClick={handleCalibrate}
               disabled={isCalibrating || detections.status !== "connected"}
-              className="flex items-center gap-1.5 rounded-lg bg-cs-primary/10 px-3 py-1.5 text-xs font-bold text-cs-primaryDeep hover:bg-cs-primary/20 disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-[#735CDD]/20 bg-[#F3EFFE] px-3 py-1.5 text-[11px] font-extrabold text-[#5840BA] hover:bg-[#735CDD]/18 disabled:opacity-40 transition-colors"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5 text-[#735CDD]" />
               {isCalibrating ? "Mengkalibrasi…" : "Kalibrasi"}
             </button>
 
-
-
             <button
               onClick={() => setShowConfig(!showConfig)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-cs-text hover:bg-slate-100 transition-colors"
+              className={`p-1.5 rounded-xl border transition-colors ${
+                showConfig
+                  ? "border-[#735CDD]/30 bg-[#F3EFFE] text-[#5840BA]"
+                  : "border-transparent text-[#6E659F] hover:text-[#1D1836] hover:bg-white"
+              }`}
               title="Pengaturan Sambungan"
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -397,10 +399,12 @@ export default function ArUcoDetector() {
 
         {/* Collapsible Advanced Config Panel */}
         {showConfig && (
-          <div className="mt-2 pt-3 border-t border-slate-100 space-y-2 text-xs">
+          <div className="pt-2.5 border-t border-[#735CDD]/12 space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-700">Pengaturan Endpoint Edge:</span>
-              <span className="text-[10px] text-slate-400">Zero-Config Mode</span>
+              <span className="font-extrabold text-[#1D1836]">Pengaturan Endpoint Edge:</span>
+              <span className="rounded-md bg-[#FFF3D6] px-2 py-0.5 text-[10px] font-extrabold text-[#9A5B00]">
+                Mode Otomatis
+              </span>
             </div>
 
             <div className="flex gap-2">
@@ -415,23 +419,23 @@ export default function ArUcoDetector() {
                   }
                 }}
                 placeholder="Auto: Cloudflare Tunnel (*.trycloudflare.com)"
-                className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-800 outline-none focus:border-cs-primary"
+                className="flex-1 rounded-xl border border-[#735CDD]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D1836] outline-none focus:border-[#735CDD]"
               />
               <button
                 type="button"
                 onClick={() => handleManualConnect(customInput)}
-                className="bg-cs-primary text-white px-3 py-1.5 rounded-lg font-bold hover:bg-cs-primaryDeep transition-colors whitespace-nowrap"
+                className="bg-[#735CDD] text-white px-3.5 py-1.5 rounded-xl font-extrabold hover:bg-[#5E47C9] transition-colors whitespace-nowrap shadow-xs"
               >
                 Simpan & Sambungkan
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[11px] text-[#5E548E]">
               <span>Preset Cepat:</span>
               <button
                 type="button"
                 onClick={handleResetToAuto}
-                className="underline hover:text-sky-700 font-bold text-sky-600"
+                className="underline hover:text-[#4527B8] font-extrabold text-[#5840BA]"
                 title="Deteksi otomatis Cloudflare Tunnel tanpa perlu ketik IP"
               >
                 Cloudflare Tunnel (Otomatis)
@@ -443,7 +447,7 @@ export default function ArUcoDetector() {
                   setCustomInput("localhost");
                   handleManualConnect("localhost");
                 }}
-                className="underline hover:text-cs-primary font-semibold"
+                className="underline hover:text-[#5840BA] font-semibold"
               >
                 Localhost (127.0.0.1)
               </button>
@@ -453,8 +457,8 @@ export default function ArUcoDetector() {
       </div>
 
       {/* Video Stream Card */}
-      <div className="grid grid-cols-1 gap-4">
-        <div className="card flex flex-col items-center justify-center rounded-2xl border border-cs-text/10 bg-white/80 p-4 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md overflow-hidden min-h-[300px]">
+      <div className="grid grid-cols-1 gap-3">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3.5 shadow-inner overflow-hidden min-h-[260px]">
           {detections.status === "connected" ? (
             <div className="relative w-full">
               {liveFrame || (!resolved.isTunnel && resolved.streamUrl) ? (
@@ -462,7 +466,7 @@ export default function ArUcoDetector() {
                   <img
                     src={liveFrame || resolved.streamUrl}
                     alt="Tayangan Kamera Lentera Edge"
-                    className="w-full h-auto rounded-xl object-contain bg-black max-h-[380px]"
+                    className="w-full h-auto rounded-xl object-contain bg-black max-h-[360px]"
                     onError={(e) => {
                       if (!liveFrame) {
                         (e.target as HTMLImageElement).src =
@@ -470,38 +474,38 @@ export default function ArUcoDetector() {
                       }
                     }}
                   />
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-md border border-white/10">
                     <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                     LIVE
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-xl bg-slate-900 text-white min-h-[260px] max-h-[380px] py-10 px-4 text-center">
+                <div className="flex flex-col items-center justify-center rounded-xl bg-[#0F172A] text-white min-h-[240px] max-h-[360px] py-8 px-4 text-center">
                   <div className="relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
                     <span className="absolute h-full w-full animate-ping rounded-2xl bg-emerald-400/20" />
                     <Camera className="h-7 w-7 text-emerald-400 animate-pulse stroke-[1.5]" />
                   </div>
-                  <p className="text-sm font-bold text-slate-200">
+                  <p className="text-sm font-extrabold text-slate-100">
                     Menunggu Tayangan Kamera...
                   </p>
                   <p className="mt-1 text-xs text-slate-400 max-w-sm leading-relaxed">
-                    WebSocket terhubung. Pastikan Raspberry Pi sudah menjalankan <span className="text-amber-300 font-mono">git pull</span> dan restart service agar kamera memancarkan frame langsung.
+                    WebSocket terhubung. Pastikan kamera Raspberry Pi aktif untuk menampilkan pemindaian papan secara langsung.
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-slate-400 gap-2 py-12">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100/90 border border-slate-200/80 text-slate-400 shadow-inner">
-                <Camera className="h-7 w-7 text-slate-400 stroke-[1.5]" />
+            <div className="flex flex-col items-center justify-center text-slate-300 gap-2.5 py-10 px-4 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/8 border border-white/12 text-[#C4B5FD] shadow-inner">
+                <Camera className="h-6 w-6 stroke-[1.75]" />
               </div>
-              <p className="text-xs font-bold text-slate-600">
+              <p className="text-xs font-extrabold text-white">
                 {detections.status === "connecting"
                   ? "Menghubungkan ke Kamera Lentera Edge..."
                   : "Kamera Belum Terhubung"}
               </p>
-              <p className="text-[11px] text-slate-400 max-w-xs text-center leading-relaxed">
-                Pastikan Raspberry Pi sudah menyala dan terhubung ke internet untuk memulai sesi.
+              <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed">
+                Pastikan unit Raspberry Pi sudah menyala dan terhubung agar pemindaian balok berjalan otomatis.
               </p>
             </div>
           )}
@@ -509,14 +513,14 @@ export default function ArUcoDetector() {
           {/* Circuit Status Narration */}
           {detections.circuit_status && (
             <div
-              className={`mt-4 p-3 rounded-xl border text-xs font-semibold w-full text-center transition-all ${
+              className={`mt-3 p-3 rounded-xl border text-xs font-semibold w-full text-center transition-all ${
                 detections.circuit_status.status === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800 font-bold"
                   : detections.circuit_status.status === "short_circuit"
-                  ? "bg-rose-50 border-rose-300 text-rose-700 font-bold animate-pulse shadow-sm"
+                  ? "bg-rose-50 border-rose-300 text-rose-800 font-bold animate-pulse shadow-sm"
                   : detections.circuit_status.status === "polarity_reversed"
-                  ? "bg-purple-50 border-purple-200 text-purple-700 font-semibold"
-                  : "bg-amber-50 border-amber-200 text-amber-700"
+                  ? "bg-purple-50 border-purple-200 text-purple-800 font-semibold"
+                  : "bg-[#FFF3D6] border-[#F5B841]/50 text-[#9A5B00] font-bold"
               }`}
             >
               {detections.circuit_status.narration}
@@ -524,8 +528,6 @@ export default function ArUcoDetector() {
           )}
         </div>
       </div>
-
-
 
       {/* Toast Notification */}
       <div
@@ -536,7 +538,7 @@ export default function ArUcoDetector() {
         }`}
       >
         {toast && (
-          <div className="flex items-center gap-2 rounded-full bg-cs-text px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(46,42,94,0.35)]">
+          <div className="flex items-center gap-2 rounded-full bg-[#1D1836] px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(46,42,94,0.35)] border border-[#735CDD]/30">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
             {toast}
           </div>
