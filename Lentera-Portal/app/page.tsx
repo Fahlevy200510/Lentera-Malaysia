@@ -856,23 +856,14 @@ export default function PortalHome() {
           </div>
 
           <h1
-            className="mt-4 font-heading text-3xl sm:text-5xl lg:text-[3.35rem] font-extrabold leading-[1.15] tracking-tight text-[#1E1938]"
+            className="mt-4 font-heading text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold leading-[1.15] tracking-tight text-[#1E1938]"
             aria-label="Belajar sains melalui sentuhan dan suara."
           >
             <span className="block">Belajar sains melalui</span>
-            <span className="mt-1.5 block min-h-[1.3em] whitespace-nowrap">
+            <span className="mt-1 sm:mt-1.5 block min-h-[1.25em] whitespace-nowrap text-[#6247D4]">
+              <span>{typedWord}</span>
               <span
-                className="inline px-1.5 rounded-lg text-[#5B43C6]"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(180deg, transparent 58%, rgba(255, 232, 158, 0.9) 58%)",
-                }}
-              >
-                {"\u200B"}
-                {typedWord}
-              </span>
-              <span
-                className="typewriter-cursor inline-block w-[3.5px] h-[0.82em] ml-1.5 bg-[#F5B841] rounded-full align-middle"
+                className="typewriter-cursor inline-block w-[3.5px] h-[0.78em] ml-2 bg-[#D97706] rounded-sm align-middle"
                 aria-hidden="true"
               />
             </span>
