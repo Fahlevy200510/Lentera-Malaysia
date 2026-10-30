@@ -5,8 +5,17 @@
 @tailwind utilities;
 
 :root {
-  --cs-bg: #FCFBFF;
-  --cs-text: #2E2A5E;
+  --cs-bg: #FAF8F4;
+  --cs-text: #1E1938;
+  --lentera-paper: #FAF8F4;
+  --lentera-paper-warm: #F3EFFB;
+  --lentera-iris: #735CDD;
+  --lentera-iris-deep: #5B43C6;
+  --lentera-iris-soft: #EAE4FC;
+  --lentera-cream: #FFF3D6;
+  --lentera-amber: #F5B841;
+  --lentera-ink: #1E1938;
+  --lentera-muted: #5A5376;
 }
 
 * {
@@ -32,7 +41,7 @@ body {
   height: 9px;
 }
 .cs-scroll::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.28);
+  background: rgba(115, 92, 221, 0.28);
   border-radius: 99px;
 }
 .cs-scroll::-webkit-scrollbar-track {
@@ -78,7 +87,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #8B5CF6;
+  background: #735CDD;
   margin: 0 2px;
   animation: blink 1.2s infinite;
 }
@@ -92,7 +101,7 @@ button,
 }
 
 :focus-visible {
-  outline: 3px solid rgba(139, 92, 246, 0.6);
+  outline: 3px solid rgba(115, 92, 221, 0.65);
   outline-offset: 2px;
   border-radius: 10px;
 }
@@ -128,25 +137,11 @@ button,
   }
 }
 
-
-/* ---------------------------------------------------------------- portal landing */
-.portal-page { background: #0f0928; }
-.portal-bg { position: absolute; inset: 0; overflow: hidden; background:
-  radial-gradient(circle at 12% 12%, rgba(124,58,237,.30), transparent 30%),
-  radial-gradient(circle at 86% 22%, rgba(34,211,238,.14), transparent 28%),
-  radial-gradient(circle at 65% 88%, rgba(236,72,153,.14), transparent 30%),
-  linear-gradient(135deg, #100a2e 0%, #1a0d42 46%, #0b1832 100%);
+/* ---------------------------------------------------------------- portal landing (Logo Periwinkle #735CDD & Lantern Cream #FFF3D6) */
+.portal-page {
+  background: var(--lentera-paper);
+  color: var(--lentera-ink);
 }
-.portal-grid { position:absolute; inset:0; opacity:.16; background-image:
-  linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-  linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, black, transparent 80%);
-}
-.portal-orb { position:absolute; border-radius:999px; filter:blur(8px); animation: portalFloat 12s ease-in-out infinite; }
-.portal-orb-a { width:360px;height:360px;left:-100px;top:15%;background:radial-gradient(circle,rgba(139,92,246,.38),transparent 68%); }
-.portal-orb-b { width:420px;height:420px;right:-120px;top:8%;background:radial-gradient(circle,rgba(34,211,238,.16),transparent 68%);animation-delay:-4s; }
-.portal-orb-c { width:360px;height:360px;right:22%;bottom:-180px;background:radial-gradient(circle,rgba(236,72,153,.16),transparent 68%);animation-delay:-8s; }
 
 .portal-ghost-btn,
 .portal-menu-btn,
@@ -158,55 +153,59 @@ button,
   gap: 8px;
   border-radius: 14px;
   font-weight: 700;
-  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  transition: transform .18s cubic-bezier(.2, .7, .2, 1), background .18s ease, border-color .18s ease, color .18s ease;
 }
+
 .portal-ghost-btn {
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: #ede9fe;
-  padding: 10px 15px;
+  border: 1.5px solid rgba(30, 25, 56, 0.12);
+  background: #FFFFFF;
+  color: var(--lentera-ink);
+  padding: 10px 16px;
   font-size: 13px;
-  backdrop-filter: blur(14px);
 }
 .portal-ghost-btn:hover {
-  background: rgba(255,255,255,.12);
-  color: #fff;
-  transform: translateY(-2px);
+  border-color: var(--lentera-iris);
+  background: var(--lentera-paper-warm);
+  transform: translateY(-1px);
 }
+
 .portal-menu-btn {
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.10);
-  color: #fff;
-  padding: 10px 15px;
+  border: 1.5px solid rgba(115, 92, 221, 0.25);
+  background: var(--lentera-iris-soft);
+  color: var(--lentera-iris-deep);
+  padding: 10px 16px;
   font-size: 13px;
-  backdrop-filter: blur(14px);
 }
 .portal-menu-btn:hover {
-  background: rgba(255,255,255,.16);
-  transform: translateY(-2px);
+  background: var(--lentera-iris);
+  color: #FFFFFF;
+  border-color: var(--lentera-iris);
+  transform: translateY(-1px);
 }
+
 .portal-primary-btn {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-  color: #fff;
-  padding: 13px 20px;
-  font-size: 14px;
-  box-shadow: 0 12px 30px rgba(109,40,217,.35);
+  background: var(--lentera-iris);
+  border: 2px solid var(--lentera-iris);
+  color: #FFFFFF;
+  padding: 14px 24px;
+  font-size: 15px;
 }
 .portal-primary-btn:hover {
-  background: linear-gradient(135deg, #7c3aed, #5b21b6);
-  box-shadow: 0 16px 36px rgba(109,40,217,.48);
+  background: var(--lentera-iris-deep);
+  border-color: var(--lentera-iris-deep);
   transform: translateY(-2px);
 }
+
 .portal-secondary-btn {
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.16);
-  color: #fff;
-  padding: 13px 20px;
-  font-size: 14px;
-  backdrop-filter: blur(14px);
+  background: #FFFFFF;
+  border: 2px solid rgba(30, 25, 56, 0.14);
+  color: var(--lentera-ink);
+  padding: 14px 22px;
+  font-size: 15px;
 }
 .portal-secondary-btn:hover {
-  background: rgba(255,255,255,.14);
+  border-color: var(--lentera-iris);
+  background: var(--lentera-paper-warm);
   transform: translateY(-2px);
 }
 
@@ -216,220 +215,45 @@ button,
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: #fff;
+  border: 1.5px solid rgba(30, 25, 56, 0.12);
+  background: var(--lentera-paper);
+  color: var(--lentera-ink);
 }
 .portal-close-btn:hover {
-  background: rgba(255,255,255,.12);
+  border-color: var(--lentera-iris);
+  background: var(--lentera-iris-soft);
 }
 
 .portal-destination {
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1.5px solid rgba(30, 25, 56, 0.10);
   border-radius: 20px;
-  background: rgba(255,255,255,.055);
+  background: var(--lentera-paper);
   padding: 16px;
-  color: #fff;
-  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+  color: var(--lentera-ink);
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
 }
 .portal-destination:hover {
   transform: translateY(-2px);
-  background: rgba(255,255,255,.09);
-  border-color: rgba(196,181,253,.28);
+  background: var(--lentera-paper-warm);
+  border-color: var(--lentera-iris);
 }
 
-/* interactive LENTERA hero visual */
-.portal-visual {
-  position: relative;
-  min-height: 560px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 34px;
-  background:
-    radial-gradient(circle at 50% 48%, rgba(167,139,250,.11), transparent 25%),
-    radial-gradient(circle at 72% 30%, rgba(59,130,246,.08), transparent 28%),
-    linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
-  isolation: isolate;
+@keyframes lanternPulse {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(1.06); opacity: 1; }
 }
-.portal-visual::before {
-  content: "";
-  position: absolute;
-  width: 78%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px solid rgba(196,181,253,.09);
-  box-shadow:
-    0 0 90px rgba(124,58,237,.10),
-    inset 0 0 80px rgba(124,58,237,.06);
+.lantern-flame-pulse {
+  transform-origin: center bottom;
+  animation: lanternPulse 2.8s ease-in-out infinite;
 }
-.portal-visual::after {
-  content: "";
-  position: absolute;
-  left: 7%;
-  right: 7%;
-  bottom: 9%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(196,181,253,.22), rgba(103,232,249,.16), transparent);
-  transform: rotate(-5deg);
-  filter: blur(.2px);
-}
-.portal-visual-glow {
-  position: absolute;
-  border-radius: 999px;
-  pointer-events: none;
-  filter: blur(45px);
-}
-.portal-visual-glow-a {
-  width: 280px;
-  height: 280px;
-  background: rgba(124,58,237,.18);
-  left: 12%;
-  top: 25%;
-  animation: portalVisualFloat 9s ease-in-out infinite;
-}
-.portal-visual-glow-b {
-  width: 220px;
-  height: 220px;
-  background: rgba(34,211,238,.10);
-  right: 8%;
-  top: 17%;
-  animation: portalVisualFloat 11s ease-in-out infinite reverse;
-}
-.portal-orbit-scene {
-  position: relative;
-  z-index: 2;
-  width: min(100%, 600px);
-  height: auto;
-  overflow: visible;
-  transform: translateY(-4px);
-}
-.portal-orbit-track {
-  transform-origin: 310px 310px;
-}
-.portal-orbit-stream-1 {
-  animation: orbitStreamFlow 14s linear infinite;
-}
-.portal-orbit-stream-2 {
-  animation: orbitStreamFlowReverse 11s linear infinite;
-}
-.portal-gyro-ring-a {
-  transform: rotate(-24deg);
-  transform-origin: 310px 310px;
-  animation: gyroWobbleA 20s ease-in-out infinite;
-}
-.portal-gyro-ring-b {
-  transform: rotate(24deg);
-  transform-origin: 310px 310px;
-  animation: gyroWobbleB 26s ease-in-out infinite;
-}
-.portal-star-core {
-  transform-origin: 310px 310px;
-  animation: starCorePulse 3.6s ease-in-out infinite;
-}
-.star-twinkle-a {
-  transform-origin: center;
-  animation: starBlink 3.2s ease-in-out infinite;
-}
-.star-twinkle-b {
-  transform-origin: center;
-  animation: starBlink 4.6s ease-in-out 1.2s infinite;
-}
-.star-twinkle-c {
-  transform-origin: center;
-  animation: starBlink 2.9s ease-in-out 0.7s infinite;
-}
-.portal-particle-field {
-  animation: particleFloat 7s ease-in-out infinite alternate;
-}
-.portal-visual-caption {
-  position: absolute;
-  z-index: 3;
-  bottom: 24px;
-  left: 50%;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 13px;
-  transform: translateX(-50%);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 999px;
-  background: rgba(10,7,31,.32);
-  color: rgba(237,233,254,.62);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  backdrop-filter: blur(14px);
-  white-space: nowrap;
-}
-.portal-caption-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #c4b5fd;
-  box-shadow: 0 0 12px rgba(196,181,253,.95);
-  animation: captionPulse 2s ease-in-out infinite;
-}
-@keyframes orbitStreamFlow {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -335; }
-}
-@keyframes orbitStreamFlowReverse {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: 285; }
-}
-@keyframes gyroWobbleA {
-  0%, 100% { transform: rotate(-24deg) scale(1); opacity: .75; }
-  50% { transform: rotate(-16deg) scale(1.02); opacity: 1; }
-}
-@keyframes gyroWobbleB {
-  0%, 100% { transform: rotate(24deg) scale(1); opacity: .65; }
-  50% { transform: rotate(32deg) scale(0.98); opacity: .95; }
-}
-@keyframes starCorePulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(255, 247, 237, 0.9)) drop-shadow(0 0 24px rgba(167, 139, 250, 0.75));
-  }
-  50% {
-    transform: scale(1.14);
-    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 1)) drop-shadow(0 0 40px rgba(196, 181, 253, 0.95));
-  }
-}
-@keyframes starBlink {
-  0%, 100% { opacity: .2; transform: scale(.8); }
-  50% { opacity: 1; transform: scale(1.25); }
-}
-@keyframes particleFloat {
-  from { opacity: .35; transform: translateY(0); }
-  to { opacity: .9; transform: translateY(-7px); }
-}
-@keyframes portalVisualFloat {
-  0%, 100% { transform: translate3d(0,0,0) scale(1); }
-  50% { transform: translate3d(12px,-16px,0) scale(1.08); }
-}
-@keyframes captionPulse {
-  0%, 100% { opacity: .45; transform: scale(.9); }
-  50% { opacity: 1; transform: scale(1.15); }
-}
-@media (max-width: 1023px) {
-  .portal-visual { min-height: 500px; }
-}
-@media (max-width: 640px) {
-  .portal-visual { min-height: 380px; border-radius: 28px; }
-  .portal-visual-caption { bottom: 16px; }
-}
-
-@keyframes portalFloat { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(20px,-18px,0) scale(1.05)} }
 
 .notif-popover {
   position:absolute;right:0;top:50px;width:300px;z-index:50;
   padding:14px;border-radius:16px;background:rgba(255,255,255,.96);
-  border:1px solid rgba(139,92,246,.12);box-shadow:0 20px 50px rgba(46,42,94,.18);
+  border:1px solid rgba(115,92,221,.12);box-shadow:0 20px 50px rgba(46,42,94,.18);
   backdrop-filter:blur(18px);
 }
-.notif-item { display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-top:1px solid rgba(139,92,246,.08);margin-top:8px;font-size:12px;line-height:1.45;color:#2E2A5E; }
+.notif-item { display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-top:1px solid rgba(115,92,221,.08);margin-top:8px;font-size:12px;line-height:1.45;color:#1E1938; }
