@@ -147,12 +147,12 @@ button,
 
 /* ---------------------------------------------------------------- portal landing (Rich Logo Periwinkle #735CDD & Lantern Gold #FCE6B4) */
 .portal-page {
-  background-color: #E2DAFA;
+  background-color: #EFEBFB;
   background-image:
-    radial-gradient(circle at 76% 42%, rgba(252, 222, 148, 0.85) 0%, rgba(255, 240, 200, 0.52) 26%, transparent 58%),
-    radial-gradient(circle at 12% 16%, rgba(115, 92, 221, 0.34) 0%, rgba(145, 118, 240, 0.16) 36%, transparent 64%),
-    radial-gradient(circle at 18% 88%, rgba(115, 92, 221, 0.28) 0%, rgba(167, 139, 250, 0.12) 42%, transparent 68%),
-    linear-gradient(130deg, #D8CEFA 0%, #EAE4FC 44%, #FBF0D5 100%);
+    radial-gradient(circle at 26% 38%, rgba(255, 252, 246, 0.92) 0%, rgba(255, 250, 240, 0.55) 28%, transparent 56%),
+    radial-gradient(circle at 78% 42%, rgba(252, 218, 134, 0.85) 0%, rgba(255, 240, 200, 0.48) 28%, transparent 58%),
+    radial-gradient(circle at 8% 92%, rgba(115, 92, 221, 0.30) 0%, rgba(167, 139, 250, 0.14) 40%, transparent 66%),
+    linear-gradient(135deg, #E5DDFB 0%, #F4F0FD 42%, #FBF0D5 100%);
   color: var(--lentera-ink);
 }
 

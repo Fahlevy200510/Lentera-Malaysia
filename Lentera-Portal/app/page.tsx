@@ -692,12 +692,20 @@ export default function PortalHome() {
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden print:hidden"
         aria-hidden="true"
       >
-        {/* Top-left rich logo-periwinkle sculptural bloom */}
+        {/* Soft luminous cream-white reading halo behind the left headline */}
         <div
-          className="blob1 absolute -left-24 -top-24 h-[520px] w-[520px] rounded-full blur-3xl"
+          className="absolute left-[4%] top-[16%] h-[420px] w-[560px] rounded-full blur-3xl"
           style={{
             background:
-              "radial-gradient(circle, rgba(115, 92, 221, 0.42) 0%, rgba(139, 92, 246, 0.18) 52%, transparent 74%)",
+              "radial-gradient(circle, rgba(255, 253, 248, 0.92) 0%, rgba(255, 249, 235, 0.55) 52%, transparent 78%)",
+          }}
+        />
+        {/* Top-center/right rich logo-periwinkle sculptural bloom */}
+        <div
+          className="blob1 absolute left-[42%] -top-28 h-[480px] w-[480px] rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(115, 92, 221, 0.34) 0%, rgba(139, 92, 246, 0.14) 54%, transparent 76%)",
           }}
         />
         {/* Right-side warm golden lantern radiance */}
@@ -860,8 +868,10 @@ export default function PortalHome() {
             aria-label="Belajar sains melalui sentuhan dan suara."
           >
             <span className="block">Belajar sains melalui</span>
-            <span className="mt-1 sm:mt-1.5 block min-h-[1.25em] whitespace-nowrap text-[#6247D4]">
-              <span>{typedWord}</span>
+            <span className="mt-1 sm:mt-1.5 block min-h-[1.25em] whitespace-nowrap">
+              <span className="bg-gradient-to-r from-[#4527B8] via-[#6842E3] to-[#C25E00] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(255,255,255,0.95)]">
+                {typedWord}
+              </span>
               <span
                 className="typewriter-cursor inline-block w-[3.5px] h-[0.78em] ml-2 bg-[#D97706] rounded-sm align-middle"
                 aria-hidden="true"
