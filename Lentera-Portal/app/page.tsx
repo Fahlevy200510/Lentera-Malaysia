@@ -660,31 +660,20 @@ export default function PortalHome() {
           }}
         />
 
-        {/* Architectural Lantern Light-Rays & Acoustic Contours SVG */}
+        {/* Architectural Acoustic Contours SVG (Soft, Seamless, Zero Hard Edges) */}
         <svg
           viewBox="0 0 1440 900"
           fill="none"
           preserveAspectRatio="xMidYMid slice"
-          className="absolute inset-0 h-full w-full opacity-90"
+          className="absolute inset-0 h-full w-full opacity-85"
         >
           <defs>
-            <linearGradient id="lanternBeam" x1="100%" y1="15%" x2="10%" y2="85%">
-              <stop offset="0%" stopColor="#FFF3D6" stopOpacity="0.65" />
-              <stop offset="45%" stopColor="#EAE4FC" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#735CDD" stopOpacity="0" />
-            </linearGradient>
             <linearGradient id="irisArc" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#735CDD" stopOpacity="0.26" />
-              <stop offset="50%" stopColor="#F5B841" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#735CDD" stopOpacity="0.08" />
+              <stop offset="0%" stopColor="#735CDD" stopOpacity="0.22" />
+              <stop offset="50%" stopColor="#F5B841" stopOpacity="0.24" />
+              <stop offset="100%" stopColor="#735CDD" stopOpacity="0.06" />
             </linearGradient>
           </defs>
-
-          {/* Diagonal Warm Lantern Light Beam sweeping from top-right to bottom-left */}
-          <polygon
-            points="1440,0 920,0 180,900 880,900"
-            fill="url(#lanternBeam)"
-          />
 
           {/* Large Concentric Acoustic & Lantern Rings behind the right showcase */}
           <g className="bg-lantern-orbit" style={{ transformOrigin: "1020px 450px" }}>
@@ -700,14 +689,14 @@ export default function PortalHome() {
               cx="1020"
               cy="450"
               r="440"
-              stroke="rgba(115, 92, 221, 0.16)"
+              stroke="rgba(115, 92, 221, 0.14)"
               strokeWidth="1.5"
             />
             <circle
               cx="1020"
               cy="450"
               r="550"
-              stroke="rgba(217, 119, 6, 0.16)"
+              stroke="rgba(217, 119, 6, 0.14)"
               strokeWidth="1.5"
               strokeDasharray="6 18"
             />
@@ -716,13 +705,13 @@ export default function PortalHome() {
           {/* Flowing Topographic Tactile Waves at Bottom Left */}
           <path
             d="M-60 720 C 260 630, 520 820, 900 710 C 1180 630, 1340 740, 1500 690"
-            stroke="rgba(115, 92, 221, 0.18)"
+            stroke="rgba(115, 92, 221, 0.15)"
             strokeWidth="2"
             fill="none"
           />
           <path
             d="M-60 780 C 280 690, 560 870, 940 760 C 1200 685, 1360 790, 1500 740"
-            stroke="rgba(245, 184, 65, 0.28)"
+            stroke="rgba(245, 184, 65, 0.24)"
             strokeWidth="2"
             fill="none"
           />
@@ -732,8 +721,8 @@ export default function PortalHome() {
         <div className="portal-tactile-dots absolute inset-0" />
       </div>
 
-      {/* Top Header */}
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-10 print:hidden border-b border-[#735CDD]/18 bg-white/75 backdrop-blur-md">
+      {/* Top Header — Seamless Transparent Flow (No Hard Box Cutoff) */}
+      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 pt-6 pb-3 lg:px-10 print:hidden">
         <Link
           href="/"
           className="flex items-center gap-3.5 group"
