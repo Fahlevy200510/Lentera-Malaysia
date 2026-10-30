@@ -67,19 +67,19 @@ const destinations: Destination[] = [
 
 function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
   return (
-    <div className="relative w-full max-w-[490px] mx-auto">
+    <div className="relative w-full max-w-[500px] mx-auto">
       {/* Soft warm lantern back-glow behind the main card */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-4 rounded-[48px] opacity-85 blur-2xl"
         style={{
           background:
-            "radial-gradient(circle at 50% 38%, rgba(245, 184, 65, 0.38), rgba(115, 92, 221, 0.32) 62%, transparent 82%)",
+            "radial-gradient(circle at 50% 45%, rgba(245, 184, 65, 0.38), rgba(115, 92, 221, 0.32) 62%, transparent 82%)",
         }}
       />
 
       {/* Main Architectural Stage in Logo Periwinkle (#7B65E6 -> #553CBE) */}
-      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-[#7C66E6] via-[#6F57D9] to-[#543BBE] p-6 sm:p-7 text-white border-2 border-white/45 shadow-[0_30px_70px_-18px_rgba(73,51,168,0.52),inset_0_1px_1px_rgba(255,255,255,0.45)]">
+      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-[#7C66E6] via-[#6E56DA] to-[#543BBE] p-6 sm:p-7 text-white border-2 border-white/45 shadow-[0_30px_70px_-18px_rgba(73,51,168,0.52),inset_0_1px_1px_rgba(255,255,255,0.45)]">
         {/* Subtle 5x5 Acrylic Board Blueprint Grid Watermark */}
         <div
           aria-hidden="true"
@@ -89,17 +89,17 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               "linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px)",
             backgroundSize: "46px 46px",
             maskImage:
-              "radial-gradient(circle at 50% 36%, black 30%, transparent 82%)",
+              "radial-gradient(circle at 50% 48%, black 32%, transparent 84%)",
           }}
         />
 
         {/* Warm Lantern Radial Core Glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[34%] -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full"
+          className="pointer-events-none absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(255, 243, 214, 0.50) 0%, rgba(245, 184, 65, 0.20) 46%, transparent 72%)",
+              "radial-gradient(circle, rgba(255, 243, 214, 0.52) 0%, rgba(245, 184, 65, 0.22) 45%, transparent 72%)",
           }}
         />
 
@@ -131,142 +131,152 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
             </span>
           </div>
 
-          {/* Centerpiece: Spacious Orbital Winged Lantern Stage (Zero Overlap) */}
-          <div className="my-4 relative w-full flex items-center justify-center h-[210px] sm:h-[220px]">
+          {/* Centerpiece: Animated 4-Corner Orbital Stage (330px tall so nothing ever overlaps!) */}
+          <div className="my-3 relative w-full flex items-center justify-center h-[320px] sm:h-[340px]">
             <svg
-              viewBox="0 0 420 220"
+              viewBox="0 0 440 340"
               fill="none"
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 h-full w-full"
             >
-              {/* Outer Dashed Acoustic Orbit */}
-              <circle
-                cx="210"
-                cy="110"
-                r="98"
-                stroke="rgba(255,255,255,0.22)"
-                strokeWidth="1.25"
-                strokeDasharray="6 8"
-              />
-              {/* Middle Golden Glow Ring */}
-              <circle
-                cx="210"
-                cy="110"
-                r="76"
-                stroke="rgba(255,243,214,0.42)"
-                strokeWidth="1.5"
-              />
-              {/* Horizontal & Vertical Precision Axis Ticks */}
-              <line
-                x1="78"
-                y1="110"
-                x2="104"
-                y2="110"
-                stroke="rgba(255,243,214,0.5)"
-                strokeWidth="1.75"
+              {/* Curved Circuit Base Tracks from Center Ring to the 4 Corner Cards */}
+              <path
+                d="M 164 128 C 142 108, 118 82, 96 54"
+                stroke="rgba(255, 243, 214, 0.28)"
+                strokeWidth="2"
                 strokeLinecap="round"
               />
-              <line
-                x1="316"
-                y1="110"
-                x2="342"
-                y2="110"
-                stroke="rgba(255,243,214,0.5)"
-                strokeWidth="1.75"
+              <path
+                d="M 276 128 C 298 108, 322 82, 344 54"
+                stroke="rgba(255, 243, 214, 0.28)"
+                strokeWidth="2"
                 strokeLinecap="round"
               />
-              {/* Glowing Orbital Nodes */}
-              <circle cx="134" cy="110" r="4" fill="#FFF3D6" />
-              <circle cx="286" cy="110" r="4" fill="#FFF3D6" />
-              <circle cx="210" cy="34" r="3.5" fill="#F5B841" />
-              <circle cx="210" cy="186" r="3.5" fill="#F5B841" />
+              <path
+                d="M 164 212 C 142 232, 118 258, 96 286"
+                stroke="rgba(255, 243, 214, 0.28)"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 276 212 C 298 232, 322 258, 344 286"
+                stroke="rgba(255, 243, 214, 0.28)"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+
+              {/* Animated Flowing Golden Energy Streams along the 4 Curves */}
+              <path
+                d="M 164 128 C 142 108, 118 82, 96 54 M 276 128 C 298 108, 322 82, 344 54 M 164 212 C 142 232, 118 258, 96 286 M 276 212 C 298 232, 322 258, 344 286"
+                stroke="#FFF3D6"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="circuit-trace-anim"
+              />
+
+              {/* Outer Counter-Rotating Dashed Acoustic Ring */}
+              <g className="orbit-spin-ccw">
+                <circle
+                  cx="220"
+                  cy="170"
+                  r="98"
+                  stroke="rgba(255, 255, 255, 0.22)"
+                  strokeWidth="1.4"
+                  strokeDasharray="6 10"
+                />
+                <circle cx="220" cy="72" r="3.5" fill="#FFF3D6" />
+                <circle cx="220" cy="268" r="3.5" fill="#FFF3D6" />
+              </g>
+
+              {/* Middle Clockwise-Rotating Golden Orbital Ring with 4 Satellite Beads */}
+              <g className="orbit-spin-cw">
+                <circle
+                  cx="220"
+                  cy="170"
+                  r="76"
+                  stroke="rgba(255, 243, 214, 0.48)"
+                  strokeWidth="1.6"
+                />
+                <circle cx="144" cy="170" r="4.5" fill="#F5B841" />
+                <circle cx="296" cy="170" r="4.5" fill="#F5B841" />
+                <circle cx="220" cy="94" r="3.5" fill="#FFFFFF" />
+                <circle cx="220" cy="246" r="3.5" fill="#FFFFFF" />
+              </g>
             </svg>
 
-            {/* Left & Right Subtle Floating Spec Pills (Far outside the center emblem) */}
-            <div className="float-badge-1 hidden sm:flex items-center gap-1.5 absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white/15 border border-white/25 px-3 py-1 text-[11px] font-bold text-[#FFF3D6] backdrop-blur-md">
-              <span>⠿🄱</span>
-              <span>Braille 3D</span>
-            </div>
-
-            <div className="float-badge-2 hidden sm:flex items-center gap-1.5 absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-white/15 border border-white/25 px-3 py-1 text-[11px] font-bold text-[#FFF3D6] backdrop-blur-md">
-              <span>Grid 5×5</span>
-            </div>
-
-            {/* Pulsing Warm Lantern Halo + Crisp Cropped Logo Squircle */}
-            <div className="relative flex items-center justify-center">
+            {/* Centerpiece: Pulsing Warm Lantern Halo + Floating Crisp Logo Squircle */}
+            <div className="relative z-10 flex items-center justify-center">
               <div
                 aria-hidden="true"
-                className="lantern-halo-ring h-40 w-40 rounded-full border border-[#FFF3D6]/45 bg-[#FFF3D6]/12 flex items-center justify-center shadow-[0_0_60px_rgba(255,243,214,0.38)]"
+                className="lantern-halo-ring h-32 w-32 sm:h-36 sm:w-36 rounded-full border border-[#FFF3D6]/50 bg-[#FFF3D6]/15 flex items-center justify-center shadow-[0_0_55px_rgba(255,243,214,0.45)]"
               >
                 <div
-                  style={{ width: 112, height: 112 }}
-                  className="overflow-hidden rounded-[28px] bg-[#765EE0] border-[3px] border-[#FFF3D6] shadow-[0_14px_32px_rgba(30,25,56,0.35)] flex items-center justify-center"
+                  style={{ width: 98, height: 98 }}
+                  className="lantern-core-float overflow-hidden rounded-[24px] bg-[#765EE0] border-[3px] border-[#FFF3D6] shadow-[0_14px_32px_rgba(30,25,56,0.38)] flex items-center justify-center"
                 >
                   <img
                     src="/logo-lentera.png"
                     alt="Logo LENTERA"
-                    width={112}
-                    height={112}
+                    width={98}
+                    height={98}
                     className="h-full w-full object-cover scale-[1.56]"
                   />
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Structured 2x2 Bento Grid for the 4 Core Pillars (Zero Overlap, Clean Symmetry) */}
-          <div className="w-full grid grid-cols-2 gap-3 mt-1">
-            <div className="flex items-center gap-3 rounded-2xl bg-[#FAF8F4] p-3 text-[#1E1938] shadow-md border border-white transition-transform hover:-translate-y-0.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
+            {/* 4 Corner Floating Cards (Spaciously Positioned at the 4 Corners, Zero Overlap) */}
+            <div className="float-badge-1 absolute top-1 left-0 sm:left-1 z-20 flex items-center gap-2.5 rounded-2xl bg-[#FAF8F4] px-3.5 py-2.5 text-[#1E1938] shadow-[0_12px_28px_rgba(30,25,56,0.22)] border-2 border-white">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
                 <Hand className="h-4 w-4" />
               </span>
-              <div className="min-w-0">
+              <div>
                 <div className="text-[10px] font-bold text-[#735CDD] leading-tight">
                   Media Raba
                 </div>
-                <div className="text-xs font-extrabold text-[#1E1938] truncate">
+                <div className="text-xs font-extrabold text-[#1E1938] whitespace-nowrap">
                   Balok & Braille
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl bg-[#FAF8F4] p-3 text-[#1E1938] shadow-md border border-white transition-transform hover:-translate-y-0.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
+            <div className="float-badge-2 absolute top-1 right-0 sm:right-1 z-20 flex items-center gap-2.5 rounded-2xl bg-[#FAF8F4] px-3.5 py-2.5 text-[#1E1938] shadow-[0_12px_28px_rgba(30,25,56,0.22)] border-2 border-white">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
                 <ScanEye className="h-4 w-4" />
               </span>
-              <div className="min-w-0">
+              <div>
                 <div className="text-[10px] font-bold text-[#735CDD] leading-tight">
                   Deteksi Otomatis
                 </div>
-                <div className="text-xs font-extrabold text-[#1E1938] truncate">
+                <div className="text-xs font-extrabold text-[#1E1938] whitespace-nowrap">
                   Kamera Bawah
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl bg-[#FFF3D6] p-3 text-[#1E1938] shadow-md border border-[#F5B841] transition-transform hover:-translate-y-0.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#F5B841]/25 text-[#92400E]">
+            <div className="float-badge-3 absolute bottom-1 left-0 sm:left-1 z-20 flex items-center gap-2.5 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-[0_12px_28px_rgba(30,25,56,0.22)] border-2 border-[#F5B841]">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5B841]/25 text-[#92400E]">
                 <Volume2 className="h-4 w-4" />
               </span>
-              <div className="min-w-0">
+              <div>
                 <div className="text-[10px] font-bold text-[#92400E] leading-tight">
                   Respon Langsung
                 </div>
-                <div className="text-xs font-extrabold text-[#1E1938] truncate">
+                <div className="text-xs font-extrabold text-[#1E1938] whitespace-nowrap">
                   Panduan Suara
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl bg-[#FFF3D6] p-3 text-[#1E1938] shadow-md border border-[#F5B841] transition-transform hover:-translate-y-0.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#F5B841]/25 text-[#92400E]">
+            <div className="float-badge-4 absolute bottom-1 right-0 sm:right-1 z-20 flex items-center gap-2.5 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-[0_12px_28px_rgba(30,25,56,0.22)] border-2 border-[#F5B841]">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5B841]/25 text-[#92400E]">
                 <Sparkles className="h-4 w-4" />
               </span>
-              <div className="min-w-0">
+              <div>
                 <div className="text-[10px] font-bold text-[#92400E] leading-tight">
                   Teman Belajar
                 </div>
-                <div className="text-xs font-extrabold text-[#1E1938] truncate">
+                <div className="text-xs font-extrabold text-[#1E1938] whitespace-nowrap">
                   Asisten AI Tutor
                 </div>
               </div>
@@ -274,7 +284,7 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
           </div>
 
           {/* Luminous Frosted Bottom Tagline */}
-          <div className="mt-3.5 w-full rounded-2xl bg-white/14 border border-white/25 px-4 py-2.5 text-center backdrop-blur-md">
+          <div className="mt-1 w-full rounded-2xl bg-white/14 border border-white/25 px-4 py-2.5 text-center backdrop-blur-md">
             <div className="text-xs sm:text-[13px] font-semibold text-[#FFF3D6]">
               Merangkai listrik secara mandiri melalui sentuhan dan suara
             </div>
