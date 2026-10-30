@@ -519,24 +519,24 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   };
 
   return (
-    <div className="card rounded-[2rem] border border-cs-text/10 bg-white/95 p-5 shadow-[0_18px_50px_-20px_rgba(124,58,237,0.25)] backdrop-blur-xl flex flex-col h-[520px]">
+    <div className="rounded-[1.75rem] border border-[#735CDD]/16 bg-white/92 p-4 sm:p-5 shadow-[0_14px_36px_-18px_rgba(67,56,202,0.14)] backdrop-blur-xl flex flex-col h-[560px]">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25">
-            <Sparkles className="h-5 w-5" />
+      <div className="flex items-center justify-between pb-3 border-b border-[#735CDD]/12 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/25">
+            <Sparkles className="h-4 w-4 text-[#FFF3D6]" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-heading text-base font-extrabold text-slate-900">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-heading text-sm sm:text-base font-extrabold text-[#1D1836]">
                 Lentera AI Tutor (Live Lab)
               </h3>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3D6] px-2 py-0.5 text-[10px] font-extrabold text-[#9A5B00] border border-[#F5B841]/50">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#D97706] animate-pulse" />
                 Explain-Before-Answer
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-[#5E548E]">
               Tanya lewat mikrofon atau ketik • Analisis sirkuit kamera real-time
             </p>
           </div>
@@ -546,24 +546,24 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors mr-1"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#735CDD]/18 bg-white text-xs font-bold text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors mr-1"
               title="Kembali ke Panduan Modul"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <ArrowLeft className="h-3.5 w-3.5 text-[#735CDD]" />
               <span className="hidden sm:inline">Panduan Modul</span>
             </button>
           )}
           <button
             onClick={speakGuideHelp}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-violet-200 bg-violet-50 text-xs font-bold text-violet-700 hover:bg-violet-100 transition-colors shadow-2xs mr-1"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[#735CDD]/20 bg-[#F4F1FF] text-xs font-extrabold text-[#5840BA] hover:bg-[#EAE4FF] transition-colors shadow-2xs mr-1"
             title="Dengarkan panduan suara cara bertanya"
           >
-            <Volume2 className="h-3.5 w-3.5 text-violet-600" />
+            <Volume2 className="h-3.5 w-3.5 text-[#735CDD]" />
             <span className="hidden sm:inline">Dengarkan Panduan</span>
           </button>
           <button
             onClick={handleResetChat}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-2 text-[#6E659F] hover:text-[#1D1836] hover:bg-[#F4F1FF] rounded-xl transition-colors"
             title="Reset percakapan chat"
           >
             <RotateCcw className="h-4 w-4" />
@@ -575,7 +575,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
             }}
             className={`p-2 rounded-xl transition-all ${
               voiceOn
-                ? "bg-violet-50 text-violet-700 hover:bg-violet-100"
+                ? "bg-[#F4F1FF] text-[#5840BA] hover:bg-[#EAE4FF]"
                 : "bg-slate-100 text-slate-400 hover:bg-slate-200"
             }`}
             title={voiceOn ? "Suara AI aktif (Klik untuk matikan)" : "Suara AI mati (Klik untuk aktifkan)"}
@@ -586,15 +586,15 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       </div>
 
       {/* Telemetry Sensor Bar */}
-      <div className="flex items-center justify-between gap-2 py-1.5 px-3 my-2 rounded-xl bg-indigo-50/50 border border-indigo-100 text-[11px] text-indigo-900 shrink-0">
+      <div className="flex items-center justify-between gap-2 py-1.5 px-3 my-2 rounded-xl bg-[#F8F6FF] border border-[#735CDD]/15 text-[11px] text-[#1D1836] shrink-0">
         <div className="flex items-center gap-1.5">
-          <Zap className="h-3 w-3 text-indigo-600 shrink-0" />
+          <Zap className="h-3 w-3 text-[#735CDD] shrink-0" />
           <span className="font-bold">Status Papan Kamera:</span>
-          <span>
+          <span className="text-[#4A4458]">
             {circuitTelemetry.placedCount ? `${circuitTelemetry.placedCount} balok terpasang` : "Papan kosong"}
           </span>
         </div>
-        <span className="font-mono font-bold text-indigo-700 uppercase">
+        <span className="font-mono font-extrabold text-[#5840BA] uppercase">
           {circuitTelemetry.status === "closed"
             ? "Rangkaian Tertutup (Menyala)"
             : circuitTelemetry.status === "short"
@@ -604,10 +604,10 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       </div>
 
       {/* Tangible Shortcut Info */}
-      <div className="flex items-center gap-2 py-1 px-3 mb-2 rounded-xl bg-violet-50/70 border border-violet-100 text-[11px] text-violet-900 shrink-0">
-        <strong className="font-extrabold text-violet-950">Pintasan Taktil:</strong>
+      <div className="flex items-center gap-2 py-1.5 px-3 mb-2 rounded-xl bg-[#FFFDF7] border border-[#F5B841]/45 text-[11px] text-[#4A4458] shrink-0">
+        <strong className="font-extrabold text-[#9A5B00]">Pintasan Taktil:</strong>
         <span>
-          Taruh balok di <span className="font-mono font-bold text-violet-700">A1</span> untuk bicara & angkat jika selesai. Taruh balok di <span className="font-mono font-bold text-slate-700">E5</span> untuk kembali.
+          Taruh balok di <span className="font-mono font-black text-[#5840BA]">A1</span> untuk bicara & angkat jika selesai. Taruh balok di <span className="font-mono font-black text-[#5840BA]">E5</span> untuk kembali.
         </span>
       </div>
 
@@ -622,17 +622,17 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
               <div
                 className={`p-3.5 rounded-2xl text-xs sm:text-[13px] leading-relaxed ${
                   m.role === "user"
-                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-br-xs shadow-sm"
+                    ? "bg-[#735CDD] text-white rounded-br-xs shadow-sm"
                     : m.error
                     ? "bg-rose-50 border border-rose-200 text-rose-700 rounded-bl-xs"
-                    : "bg-slate-50 border border-slate-200/80 text-slate-800 rounded-bl-xs shadow-2xs"
+                    : "bg-[#FAF9FF] border border-[#735CDD]/15 text-[#1D1836] rounded-bl-xs shadow-2xs"
                 }`}
               >
                 {m.text}
               </div>
               {m.note && (
-                <div className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-100">
-                  <Brain className="h-2.5 w-2.5" />
+                <div className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-[#5840BA] bg-[#F4F1FF] px-2 py-0.5 rounded-full border border-[#735CDD]/15">
+                  <Brain className="h-2.5 w-2.5 text-[#735CDD]" />
                   <span>{m.note}</span>
                 </div>
               )}
@@ -642,8 +642,8 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-2xl text-xs font-bold text-slate-600 shadow-2xs">
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-600" />
+            <div className="inline-flex items-center gap-2 bg-[#FAF9FF] border border-[#735CDD]/15 px-3 py-2 rounded-2xl text-xs font-bold text-[#4A4458] shadow-2xs">
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-[#735CDD]" />
               <span>AI sedang meraba data sirkuit dan menyusun jawaban...</span>
             </div>
           </div>
@@ -658,7 +658,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
             key={chip}
             onClick={() => send(chip)}
             disabled={loading}
-            className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 hover:bg-violet-100 hover:text-violet-700 text-slate-600 border border-slate-200/70 transition-all active:scale-95 disabled:opacity-50"
+            className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#F8F6FF] hover:bg-[#EAE4FF] hover:text-[#5840BA] text-[#4A4458] border border-[#735CDD]/15 transition-all active:scale-95 disabled:opacity-50"
           >
             {chip}
           </button>
@@ -667,14 +667,14 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
 
       {/* Voice Status & Real-time Feedback */}
       {isListening && (
-        <div className="flex items-center justify-between px-3 py-1.5 my-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold animate-pulse shrink-0">
+        <div className="flex items-center justify-between px-3 py-1.5 my-1 rounded-xl bg-[#FFF3D6] border border-[#F5B841]/60 text-[#9A5B00] text-xs font-bold animate-pulse shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#D97706] animate-ping shrink-0" />
             <span className="truncate">🎙️ Mendengarkan ({recordSeconds}s)... Bicara sekarang (Tekan mic atau tombol V untuk selesai)</span>
           </div>
           <button
             onClick={stopListening}
-            className="underline text-[11px] text-rose-800 hover:text-rose-950 font-extrabold shrink-0 ml-2"
+            className="underline text-[11px] text-[#78350F] hover:text-[#1D1836] font-extrabold shrink-0 ml-2"
           >
             Selesai
           </button>
@@ -682,18 +682,18 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       )}
 
       {isTranscribing && (
-        <div className="flex items-center gap-2 px-3 py-1.5 my-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold shrink-0">
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-600 shrink-0" />
+        <div className="flex items-center gap-2 px-3 py-1.5 my-1 rounded-xl bg-[#F4F1FF] border border-[#735CDD]/20 text-[#5840BA] text-xs font-bold shrink-0">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-[#735CDD] shrink-0" />
           <span>⚡ Mentranskripsi suara dengan Groq Whisper...</span>
         </div>
       )}
 
       {voiceStatus && !isListening && !isTranscribing && (
-        <div className="flex items-center justify-between px-3 py-1.5 my-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium shrink-0">
+        <div className="flex items-center justify-between px-3 py-1.5 my-1 rounded-xl bg-[#FFF3D6] border border-[#F5B841]/50 text-[#9A5B00] text-xs font-medium shrink-0">
           <span className="truncate">{voiceStatus}</span>
           <button
             onClick={() => setVoiceStatus(null)}
-            className="text-amber-600 hover:text-amber-900 font-bold ml-2 text-sm shrink-0"
+            className="text-[#9A5B00] hover:text-[#1D1836] font-bold ml-2 text-sm shrink-0"
           >
             ×
           </button>
@@ -701,15 +701,15 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       )}
 
       {/* Input Bar */}
-      <div className="flex items-center gap-2 pt-2 border-t border-slate-100 shrink-0">
+      <div className="flex items-center gap-2 pt-2 border-t border-[#735CDD]/12 shrink-0">
         <button
           onClick={toggleListening}
           aria-label={isListening ? "Sedang mendengarkan... klik untuk berhenti" : "Tanya dengan suara mikrofon"}
           title={isListening ? "Sedang mendengarkan... Bicara sekarang!" : "Tanya AI lewat mikrofon"}
           className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-all ${
             isListening
-              ? "bg-rose-500 text-white shadow-lg shadow-rose-500/40 animate-pulse border-2 border-rose-300"
-              : "bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
+              ? "bg-[#D97706] text-white shadow-lg shadow-amber-500/35 animate-pulse border-2 border-[#FFF3D6]"
+              : "bg-[#F4F1FF] text-[#5840BA] hover:bg-[#EAE4FF] border border-[#735CDD]/20"
           }`}
         >
           <Mic className="h-5 w-5" />
@@ -727,13 +727,13 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
               : "Tanyakan apa saja seputar sirkuit di lab..."
           }
           disabled={loading}
-          className="flex-1 rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-violet-500 focus:outline-none transition-all disabled:opacity-50"
+          className="flex-1 rounded-xl border border-[#735CDD]/20 bg-[#FAF9FF] px-3.5 py-2.5 text-xs sm:text-sm text-[#1D1836] placeholder:text-[#6E659F]/65 focus:bg-white focus:border-[#735CDD] focus:outline-none transition-all disabled:opacity-50"
         />
 
         <button
           onClick={() => send()}
           disabled={loading || !input.trim()}
-          className="h-11 w-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/30 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-40 transition-all active:scale-95"
+          className="h-11 w-11 rounded-xl bg-[#735CDD] text-white flex items-center justify-center shrink-0 shadow-sm shadow-[#735CDD]/25 hover:bg-[#5E47C9] disabled:opacity-40 transition-all active:scale-95"
           title="Kirim pertanyaan"
         >
           <Send className="h-4 w-4" />

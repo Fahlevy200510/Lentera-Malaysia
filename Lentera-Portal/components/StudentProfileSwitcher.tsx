@@ -114,7 +114,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
         className={
           compact
             ? "flex w-full max-w-full items-center justify-between gap-2 rounded-xl border border-[#735CDD]/20 bg-white px-2.5 py-2 text-xs font-semibold text-[#1D1836] shadow-2xs transition-all hover:border-[#735CDD]/40 hover:bg-[#FAF8FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
-            : "flex w-full max-w-full items-center justify-between gap-2 rounded-full border border-violet-400/30 bg-slate-900/80 px-2.5 py-1.5 text-xs font-semibold text-violet-100 shadow-md backdrop-blur-md transition-all hover:border-violet-400 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+            : "flex w-full max-w-full items-center justify-between gap-2 rounded-full border border-[#735CDD]/22 bg-[#F4F1FF] px-3 py-1.5 text-xs font-semibold text-[#1D1836] shadow-2xs transition-all hover:border-[#735CDD]/40 hover:bg-[#EAE4FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
         }
         title={`Ganti Siswa Aktif (${active.name} - ${active.grade})`}
       >
@@ -124,29 +124,29 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
             name={active.name}
             avatar={active.avatar}
             size="xs"
-            theme={compact ? "light" : "dark"}
+            theme="light"
             className="shrink-0"
           />
           <div className="text-left min-w-0 flex-1 truncate leading-tight">
-            <span className={`font-extrabold text-xs ${compact ? "text-[#1D1836]" : "text-white"}`}>
+            <span className="font-extrabold text-xs text-[#1D1836]">
               {active.name}
             </span>{" "}
-            <span className={`text-[10px] font-medium ${compact ? "text-[#5E548E]" : "text-violet-300"}`}>
+            <span className="text-[10px] font-medium text-[#5E548E]">
               ({active.grade})
             </span>
           </div>
         </div>
         <ChevronDown
-          className={`h-3.5 w-3.5 transition-transform shrink-0 ${
-            compact ? "text-[#735CDD]" : "text-violet-300"
-          } ${isOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 text-[#735CDD] transition-transform shrink-0 ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </button>
 
       {/* Floating Dropdown Dialog */}
       {isOpen && (
         <div
-          className={`absolute z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-violet-500/30 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl max-h-[calc(100vh-4rem)] flex flex-col ${
+          className={`absolute z-50 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-[#735CDD]/22 bg-white/98 p-4 shadow-[0_20px_50px_-15px_rgba(67,56,202,0.28)] backdrop-blur-xl max-h-[calc(100vh-4rem)] flex flex-col ${
             openUpward
               ? "bottom-full mb-2 animate-in fade-in slide-in-from-bottom-2"
               : "top-full mt-2 animate-in fade-in slide-in-from-top-2"
@@ -154,14 +154,18 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
             alignLeft ? "left-0" : "right-0"
           }`}
         >
-          <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-2.5 shrink-0">
+          <div className="mb-3 flex items-center justify-between border-b border-[#735CDD]/12 pb-2.5 shrink-0">
             <div>
-              <div className="text-xs font-extrabold uppercase tracking-wider text-violet-300">Profil Siswa Aktif</div>
-              <div className="text-[11px] text-slate-400">Pilih siapa yang sedang merangkai di papan:</div>
+              <div className="text-xs font-extrabold uppercase tracking-wider text-[#5840BA]">
+                Profil Siswa Aktif
+              </div>
+              <div className="text-[11px] text-[#5E548E]">
+                Pilih siapa yang sedang merangkai di papan:
+              </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1 text-[#6E659F] hover:bg-[#F3EFFE] hover:text-[#1D1836] transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -179,8 +183,8 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   onClick={() => handleSelectStudent(p)}
                   className={`group flex items-center justify-between rounded-xl p-2.5 transition-all cursor-pointer ${
                     isSelected
-                      ? "border border-violet-500/60 bg-violet-950/50 shadow-inner"
-                      : "hover:bg-slate-900 border border-transparent"
+                      ? "border border-[#735CDD] bg-[#F4F1FF] shadow-2xs"
+                      : "hover:bg-[#FAF8FF] border border-transparent"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -189,17 +193,23 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                       name={p.name}
                       avatar={p.avatar}
                       size="sm"
-                      theme="dark"
+                      theme="light"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-white truncate">{p.name}</span>
-                        {isSelected && <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                        <span className="text-xs font-extrabold text-[#1D1836] truncate">
+                          {p.name}
+                        </span>
+                        {isSelected && (
+                          <Check className="h-3.5 w-3.5 text-[#735CDD] shrink-0" />
+                        )}
                       </div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                      <div className="text-[10.5px] text-[#5E548E] flex items-center gap-1.5">
                         <span>{p.grade}</span>
                         <span>•</span>
-                        <span className="text-violet-300 font-medium">{prog.xp} XP</span>
+                        <span className="text-[#5840BA] font-extrabold">
+                          {prog.xp} XP
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -207,7 +217,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   {/* Tombol Reset cepat per siswa */}
                   <button
                     onClick={(e) => handleResetCurrent(e, p.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-amber-400 hover:bg-white/10 rounded transition-all shrink-0"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-[#6E659F] hover:text-[#9A5B00] hover:bg-[#FFF3D6] rounded-lg transition-all shrink-0"
                     title="Reset progres siswa ini"
                   >
                     <RotateCcw className="h-3 w-3" />
@@ -218,11 +228,11 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
           </div>
 
           {/* Form Tambah Siswa Baru */}
-          <div className="mt-3 pt-3 border-t border-white/10 shrink-0">
+          <div className="mt-3 pt-3 border-t border-[#735CDD]/12 shrink-0">
             {!showAddInput ? (
               <button
                 onClick={() => setShowAddInput(true)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-violet-400/40 py-2 text-xs font-semibold text-violet-300 hover:border-violet-300 hover:bg-violet-950/30 transition-colors"
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#735CDD]/35 bg-[#FAF8FF] py-2 text-xs font-extrabold text-[#5840BA] hover:border-[#735CDD] hover:bg-[#F3EFFE] transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" /> Tambah Siswa Baru
               </button>
@@ -233,20 +243,20 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                   placeholder="Nama Siswa (misal: Budi Santoso)"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full rounded-lg border border-violet-500/40 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-400"
+                  className="w-full rounded-lg border border-[#735CDD]/30 bg-white px-3 py-1.5 text-xs font-semibold text-[#1D1836] placeholder-[#6E659F]/60 focus:outline-none focus:border-[#735CDD]"
                   autoFocus
                 />
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="flex-1 rounded-lg bg-violet-600 py-1.5 text-xs font-bold text-white hover:bg-violet-500 transition-colors"
+                    className="flex-1 rounded-lg bg-[#735CDD] py-1.5 text-xs font-extrabold text-white hover:bg-[#5E47C9] transition-colors"
                   >
                     Simpan
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddInput(false)}
-                    className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700"
+                    className="rounded-lg bg-[#F4F1FF] px-3 py-1.5 text-xs font-bold text-[#5E548E] hover:bg-[#EAE4FF]"
                   >
                     Batal
                   </button>
@@ -259,8 +269,8 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
 
       {/* Floating Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-violet-500/40 bg-slate-900/95 px-4 py-2.5 text-xs font-bold text-violet-100 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2">
-          <Sparkles className="h-4 w-4 text-emerald-400" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-[#735CDD]/25 bg-[#1D1836] px-4 py-2.5 text-xs font-bold text-white shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2">
+          <Sparkles className="h-4 w-4 text-[#FFF3D6]" />
           <span>{toast}</span>
         </div>
       )}
