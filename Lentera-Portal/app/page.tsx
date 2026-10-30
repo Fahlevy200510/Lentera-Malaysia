@@ -1,82 +1,80 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ArrowRight,
   ArrowUpRight,
-  Compass,
   LayoutDashboard,
+  Menu,
   ScanEye,
-  ShieldCheck,
   Volume2,
   X,
+  ShieldCheck,
   User,
 } from "lucide-react";
-import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
-import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import {
+  resolveEndpoints,
+  getActiveLenteraEndpoint,
+} from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
-import { PRESET_STUDENTS, setActiveStudent } from "@/utils/progress";
+import { getActiveStudent, setActiveStudent } from "@/utils/progress";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 
-let hasAutoPlayedIntro = false;
+const TYPEWRITER_WORDS = [
+  "sentuhan dan suara.",
+  "papan taktil cerdas.",
+  "eksplorasi mandiri.",
+  "sensor AI interaktif.",
+];
 
-const STUDENT_CARD_MAP: Record<number, { id: string; greeting: string }> = {
-  35: {
-    id: "student-via",
-    greeting:
-      "Halo Via! Kartu belajar kamu berhasil dikenali. Selamat datang di Lentera Lab, mari kita mulai merangkai!",
-  },
-  36: {
-    id: "student-amira",
-    greeting:
-      "Halo Amira! Kartu belajar kamu berhasil dikenali. Selamat datang di Lentera Lab, mari kita mulai merangkai!",
-  },
-  37: {
-    id: "student-ajib",
-    greeting:
-      "Halo Ajib! Kartu belajar kamu berhasil dikenali. Selamat datang di Lentera Lab, mari kita mulai merangkai!",
-  },
+type Destination = {
+  href: string;
+  title: string;
+  tagline: string;
+  description: string;
+  accent: string;
+  accentSoft: string;
+  Icon: typeof LayoutDashboard;
 };
 
-const destinations = [
-  {
-    href: "/aruco",
-    title: "LENTERA Lab",
-    tagline: "Papan Taktil & Kamera ArUco",
-    description:
-      "Ruang praktik eksperimen langsung untuk menyusun rangkaian listrik fisik dengan deteksi kamera real-time dan panduan suara.",
-    Icon: ScanEye,
-    accent: "#735CDD",
-    accentSoft: "#EAE4FC",
-  },
+const destinations: Destination[] = [
   {
     href: "/dashboard",
     title: "LENTERA Learn",
-    tagline: "Kurikulum & AI Tutor",
+    tagline: "Dashboard Pembelajaran Adaptif",
     description:
-      "Pusat belajar mandiri berisi materi terstruktur, misi interaktif, progres belajar, serta asisten AI berbasis suara.",
+      "Pemetaan keterampilan, jalur belajar adaptif, AI Tutor, dan Analitik Pembelajaran untuk siswa, guru, dan orang tua.",
+    accent: "#735CDD",
+    accentSoft: "#EAE4FC",
     Icon: LayoutDashboard,
+  },
+  {
+    href: "/aruco",
+    title: "LENTERA Lab",
+    tagline: "Deteksi Rangkaian Real-time",
+    description:
+      "Hubungkan kamera, deteksi komponen, dan pantau status rangkaian dari satu ruang kerja.",
     accent: "#B45309",
     accentSoft: "#FFF3D6",
+    Icon: ScanEye,
   },
 ];
 
 function LenteraHeroEmblem() {
   return (
     <div className="relative w-full max-w-[500px] mx-auto">
-      {/* Main Architectural Card in Logo Periwinkle (#735CDD) */}
       <div className="relative overflow-hidden rounded-[36px] bg-[#735CDD] p-8 sm:p-10 text-white border-2 border-[#5B43C6] shadow-[0_24px_60px_-18px_rgba(91,67,198,0.45)]">
-        {/* Subtle Warm Lantern Radial Glow inside the card */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(255, 243, 214, 0.32) 0%, rgba(252, 230, 180, 0.10) 48%, transparent 72%)",
+              "radial-gradient(circle, rgba(255, 243, 214, 0.34) 0%, rgba(252, 230, 180, 0.12) 48%, transparent 72%)",
           }}
         />
 
-        {/* Concentric Clean Architectural Rings */}
         <div className="relative z-10 flex flex-col items-center">
           <div className="w-full flex items-center justify-between text-xs font-bold tracking-wider uppercase text-[#EAE4FC]">
             <span>Smart Tactile Ecosystem</span>
@@ -85,7 +83,6 @@ function LenteraHeroEmblem() {
             </span>
           </div>
 
-          {/* Centerpiece Logo & Warm Lantern Halo */}
           <div className="my-8 sm:my-10 relative flex items-center justify-center">
             <div
               aria-hidden="true"
@@ -104,7 +101,6 @@ function LenteraHeroEmblem() {
               </div>
             </div>
 
-            {/* 4 Corner Pill Badges representing the core LENTERA pillars */}
             <div className="absolute -top-2 -left-1 sm:left-0 rounded-2xl bg-[#FAF8F4] px-3.5 py-2 text-[#1E1938] shadow-md border border-[#EAE4FC]">
               <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#735CDD]">
                 Rabaan 3D
@@ -134,11 +130,9 @@ function LenteraHeroEmblem() {
             </div>
           </div>
 
-          {/* Bottom Caption inside the visual card */}
           <div className="mt-2 w-full rounded-2xl bg-[#5B43C6]/80 border border-white/15 px-4 py-3 text-center">
             <div className="text-xs sm:text-[13px] font-semibold text-[#FFF3D6]">
-              Learning Electricity through Non-visual Tactile Exploration &
-              Real-time Audio
+              SENTUH · PAHAMI · BELAJAR MANDIRI
             </div>
           </div>
         </div>
@@ -147,17 +141,122 @@ function LenteraHeroEmblem() {
   );
 }
 
-export default function PortalLandingPage() {
+export default function PortalHome() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
-  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
-
   const [session, setSession] = useState<{ name: string; role: string } | null>(
     null
   );
+  const [ready, setReady] = useState(false);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const hasSpokenOnFirstClickRef = useRef(false);
+  const speakingRef = useRef(false);
+  const isRedirectingRef = useRef(false);
 
-  // Pre-load daftar voice browser agar suara bahasa Indonesia langsung siap saat halaman terbuka
+  // Typewriter effect state
+  const [typedWord, setTypedWord] = useState("");
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Typewriter ticker effect: smooth, relaxed, and natural cadence
+  useEffect(() => {
+    if (!hasStarted) {
+      const initTimer = setTimeout(() => {
+        setHasStarted(true);
+      }, 350);
+      return () => clearTimeout(initTimer);
+    }
+
+    const currentWord = TYPEWRITER_WORDS[wordIndex % TYPEWRITER_WORDS.length];
+    let timer: NodeJS.Timeout;
+
+    if (!isDeleting) {
+      if (typedWord.length < currentWord.length) {
+        timer = setTimeout(() => {
+          setTypedWord(currentWord.slice(0, typedWord.length + 1));
+        }, 110);
+      } else {
+        timer = setTimeout(() => {
+          setIsDeleting(true);
+        }, 3000);
+      }
+    } else {
+      if (typedWord.length > 0) {
+        timer = setTimeout(() => {
+          setTypedWord(currentWord.slice(0, typedWord.length - 1));
+        }, 55);
+      } else {
+        timer = setTimeout(() => {
+          setIsDeleting(false);
+          setWordIndex((prev) => (prev + 1) % TYPEWRITER_WORDS.length);
+        }, 600);
+      }
+    }
+
+    return () => clearTimeout(timer);
+  }, [typedWord, isDeleting, wordIndex, hasStarted]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("lentera-session");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.name && parsed?.role) {
+          setSession(parsed);
+        }
+      }
+    } catch {
+      setSession(null);
+    } finally {
+      setReady(true);
+    }
+
+    const handleAuth = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setSession(detail || null);
+    };
+    window.addEventListener("lentera-auth-update", handleAuth);
+    window.addEventListener("storage", () => {
+      try {
+        const s = localStorage.getItem("lentera-session");
+        setSession(s ? JSON.parse(s) : null);
+      } catch {
+        setSession(null);
+      }
+    });
+    return () => {
+      window.removeEventListener("lentera-auth-update", handleAuth);
+    };
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem("lentera-session");
+    setSession(null);
+    window.dispatchEvent(new Event("storage"));
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    closeBtnRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) menuBtnRef.current?.focus();
+  }, [open]);
+
+  // Pre-load daftar voice browser agar suara bahasa Indonesia langsung siap
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.getVoices();
@@ -174,283 +273,351 @@ export default function PortalLandingPage() {
     }
   }, []);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("lentera-session");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.name && parsed?.role) {
-          setSession(parsed);
-        }
-      }
-    } catch {}
-  }, []);
-
-  // Background WebSocket Listener: Auto-redirect ke /aruco saat balok atau kartu siswa diletakkan di papan fisik
-  useEffect(() => {
-    let ws: WebSocket | null = null;
-    let redirectTriggered = false;
-    let reconnectTimer: NodeJS.Timeout | null = null;
-
-    const initBackgroundWS = () => {
-      try {
-        const host = window.location.hostname || "localhost";
-        ws = new WebSocket(`ws://${host}:8765`);
-
-        ws.onmessage = (event) => {
-          if (redirectTriggered) return;
-          try {
-            const data = JSON.parse(event.data);
-            if (Array.isArray(data.markers) && data.markers.length > 0) {
-              redirectTriggered = true;
-
-              const studentMarker = data.markers.find(
-                (m: { id: number }) => STUDENT_CARD_MAP[m.id] !== undefined
-              );
-
-              if (studentMarker) {
-                const cardInfo = STUDENT_CARD_MAP[studentMarker.id];
-                const matchedProfile = PRESET_STUDENTS.find(
-                  (s) => s.id === cardInfo.id
-                );
-                if (matchedProfile) {
-                  setActiveStudent(matchedProfile);
-                }
-                sessionStorage.setItem("lentera_student_card_greeted", "1");
-
-                speakNarration(
-                  normalizeIndonesianPhonetics(cardInfo.greeting),
-                  {
-                    tag: "student-card-welcome",
-                  }
-                );
-              } else {
-                const msg =
-                  "Komponen terdeteksi di papan. Membuka ruang kerja Lentera Lab.";
-                speakNarration(normalizeIndonesianPhonetics(msg), {
-                  tag: "auto-redirect",
-                });
-              }
-
-              setTimeout(() => {
-                router.push("/aruco");
-              }, 1400);
-            }
-          } catch {}
-        };
-
-        ws.onclose = () => {
-          if (!redirectTriggered) {
-            reconnectTimer = setTimeout(initBackgroundWS, 4000);
-          }
-        };
-      } catch {}
-    };
-
-    initBackgroundWS();
-
-    return () => {
-      redirectTriggered = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (ws) {
-        ws.onclose = null;
-        ws.close();
-      }
-    };
-  }, [router]);
-
-  const logout = () => {
-    localStorage.removeItem("lentera-session");
-    setSession(null);
-  };
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
-    if (open) closeBtnRef.current?.focus();
-  }, [open]);
-
-  // Suara otomatis jalan saat interaksi pertama pengguna di halaman
-  useEffect(() => {
-    if (hasAutoPlayedIntro) return;
-
-    const triggerFirstInteractionAudio = (e: Event) => {
-      if (hasAutoPlayedIntro) return;
-      const target = e.target as HTMLElement | null;
-      if (target && target.closest("#btn-voice-guide")) {
-        hasAutoPlayedIntro = true;
-        cleanupListeners();
-        return;
-      }
-
-      hasAutoPlayedIntro = true;
-      cleanupListeners();
-
-      const text =
-        "Selamat datang di LENTERA: Learning Electricity through Non-visual Tactile Exploration and Real-time Audio. Silakan letakkan kartu siswa atau balok komponen di papan fisik untuk langsung memulai eksperimen.";
-
-      setSpeaking(true);
-      speakNarration(normalizeIndonesianPhonetics(text), {
-        tag: "landing-intro",
-        onEnd: () => setSpeaking(false),
-      });
-    };
-
-    const cleanupListeners = () => {
-      window.removeEventListener("pointerdown", triggerFirstInteractionAudio);
-      window.removeEventListener("keydown", triggerFirstInteractionAudio);
-    };
-
-    window.addEventListener("pointerdown", triggerFirstInteractionAudio, {
-      once: true,
-    });
-    window.addEventListener("keydown", triggerFirstInteractionAudio, {
-      once: true,
-    });
-
-    return () => {
-      cleanupListeners();
-    };
-  }, []);
-
-  const readIntro = () => {
+  const readIntro = useCallback(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    if (speaking) {
+
+    if (speakingRef.current || (window as any).__lenteraSpeaking) {
       cancelSpeech();
+      speakingRef.current = false;
       setSpeaking(false);
       return;
     }
 
     const text =
-      "Selamat datang di portal LENTERA: Learning Electricity through Non-visual Tactile Exploration and Real-time Audio. Halaman ini adalah pintu masuk utama menuju dua ruang kerja: Lentera Lab untuk eksperimen papan fisik, dan Lentera Learn untuk pembelajaran kurikulum.";
+      "Selamat datang di LENTERA — Papan Belajar Rangkaian Listrik Taktil dan Interaktif untuk Siswa Tunanetra. Sistem ini menghubungkan balok fisik di tangan Anda dengan sensor pintar di bawah papan untuk memberikan umpan balik suara seketika. Untuk memulai, Anda dapat meletakkan kartu identitas siswa di atas papan fisik, atau memilih tombol LENTERA Lab di layar. Selamat bereksplorasi!";
 
+    speakingRef.current = true;
     setSpeaking(true);
-    speakNarration(normalizeIndonesianPhonetics(text), {
-      tag: "landing-intro-manual",
-      onEnd: () => setSpeaking(false),
+
+    speakNarration(text, {
+      rate: 0.94,
+      pitch: 1.0,
+      tag: "landing-intro",
+      onEnd: () => {
+        speakingRef.current = false;
+        setSpeaking(false);
+      },
     });
-  };
+  }, []);
+
+  // Autoplay intro HANYA SEKALI pada sentuhan/klik pertama di area mana pun di landing page
+  useEffect(() => {
+    const handleFirstInteraction = (e: MouseEvent | TouchEvent) => {
+      if (hasSpokenOnFirstClickRef.current) return;
+
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("#btn-voice-guide")) {
+        return;
+      }
+
+      hasSpokenOnFirstClickRef.current = true;
+
+      window.removeEventListener("click", handleFirstInteraction);
+      window.removeEventListener("touchstart", handleFirstInteraction);
+
+      readIntro();
+    };
+
+    window.addEventListener("click", handleFirstInteraction, { passive: true });
+    window.addEventListener("touchstart", handleFirstInteraction, {
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener("click", handleFirstInteraction);
+      window.removeEventListener("touchstart", handleFirstInteraction);
+      if (
+        !isRedirectingRef.current &&
+        typeof window !== "undefined" &&
+        "speechSynthesis" in window
+      ) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [readIntro]);
+
+  // Background WebSocket: Auto-redirect ke /aruco (LENTERA Lab) jika ada balok diletakkan di papan
+  useEffect(() => {
+    router.prefetch("/aruco");
+    let ws: WebSocket | null = null;
+    let redirected = false;
+    let cancelled = false;
+
+    async function initBackgroundWS() {
+      const endpoint = await getActiveLenteraEndpoint();
+      if (cancelled) return;
+
+      const { wsUrl } = resolveEndpoints(endpoint);
+      console.log("[LENTERA Auto-Redirect WS] Menghubungkan ke:", wsUrl);
+
+      try {
+        ws = new WebSocket(wsUrl);
+        ws.onopen = () => {
+          console.log("[LENTERA Auto-Redirect WS] Terhubung ke papan fisik!");
+        };
+        const STUDENT_TOKENS: Record<
+          string,
+          { id: string; name: string; grade: string; avatar: string }
+        > = {
+          student_via: {
+            id: "via",
+            name: "Via",
+            grade: "Kelas 11 SMA",
+            avatar: "via",
+          },
+          student_amira: {
+            id: "amira",
+            name: "Amira",
+            grade: "Kelas 11 SMA",
+            avatar: "amira",
+          },
+          student_ajib: {
+            id: "ajib",
+            name: "Ajib",
+            grade: "Kelas 11 SMA",
+            avatar: "ajib",
+          },
+          "35": {
+            id: "via",
+            name: "Via",
+            grade: "Kelas 11 SMA",
+            avatar: "via",
+          },
+          "36": {
+            id: "amira",
+            name: "Amira",
+            grade: "Kelas 11 SMA",
+            avatar: "amira",
+          },
+          "37": {
+            id: "ajib",
+            name: "Ajib",
+            grade: "Kelas 11 SMA",
+            avatar: "ajib",
+          },
+        };
+
+        const COMPONENT_LABEL: Record<string, string> = {
+          battery: "Baterai",
+          lamp: "Lampu",
+          switch: "Saklar",
+          straight_cable: "Kabel lurus",
+          l_cable: "Kabel sudut",
+          t_cable: "Kabel cabang T",
+          student_via: "Kartu Identitas Via",
+          student_amira: "Kartu Identitas Amira",
+          student_ajib: "Kartu Identitas Ajib",
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === "grid_state" && data.cells && !redirected) {
+              let detectedStudentCell: string | null = null;
+              let detectedStudentMeta: {
+                id: string;
+                name: string;
+                grade: string;
+                avatar: string;
+              } | null = null;
+
+              for (const [cellName, cellData] of Object.entries(data.cells)) {
+                if (cellData && typeof cellData === "object") {
+                  const cd = cellData as { component?: string; id?: number };
+                  const compKey = cd.component || "";
+                  const idKey = String(cd.id ?? "");
+                  if (STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey]) {
+                    detectedStudentCell = cellName;
+                    detectedStudentMeta =
+                      STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
+                    break;
+                  }
+                }
+              }
+
+              const placed = Object.values(data.cells).filter(
+                Boolean
+              ) as Array<{
+                component: string;
+                rotation: number;
+                id?: number;
+              }>;
+
+              if (detectedStudentMeta || placed.length > 0) {
+                redirected = true;
+                isRedirectingRef.current = true;
+
+                let speechText = "";
+                if (detectedStudentMeta && detectedStudentCell) {
+                  setActiveStudent({
+                    id: detectedStudentMeta.id,
+                    name: detectedStudentMeta.name,
+                    grade: detectedStudentMeta.grade,
+                    avatar: detectedStudentMeta.avatar,
+                  });
+                  localStorage.setItem(
+                    "lentera-session",
+                    JSON.stringify({
+                      name: detectedStudentMeta.name,
+                      role: "student",
+                      grade: detectedStudentMeta.grade,
+                    })
+                  );
+                  speechText = `Selamat datang, ${detectedStudentMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedStudentCell}. Membuka LENTERA Lab.`;
+                } else {
+                  const comp = placed[0]?.component;
+                  const label = COMPONENT_LABEL[comp] || "komponen";
+                  const activeStudent = getActiveStudent();
+                  speechText = `Balok ${label} terdeteksi! Melanjutkan sesi untuk ${activeStudent.name}. Membuka LENTERA Lab.`;
+                }
+
+                const navigateToLab = () => {
+                  router.push("/aruco");
+                };
+
+                const navTimer = setTimeout(navigateToLab, 4500);
+                speakNarration(speechText, {
+                  rate: 0.95,
+                  pitch: 1.05,
+                  tag: "landing-redirect",
+                  onEnd: () => {
+                    clearTimeout(navTimer);
+                    setTimeout(navigateToLab, 300);
+                  },
+                });
+              }
+            }
+          } catch {}
+        };
+      } catch (err) {
+        console.warn("[LENTERA Auto-Redirect WS] Gagal terhubung:", err);
+      }
+    }
+
+    initBackgroundWS();
+
+    return () => {
+      cancelled = true;
+      if (ws) ws.close();
+    };
+  }, [router]);
 
   const roleLabel =
-    session?.role === "guru"
-      ? "Guru Pendamping"
-      : session?.role === "orangtua"
-      ? "Orang Tua"
-      : "Siswa";
+    session?.role === "student"
+      ? "Siswa"
+      : session?.role === "teacher"
+      ? "Guru"
+      : "Orang Tua";
 
   return (
-    <main className="portal-page relative min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-[#735CDD] selection:text-white">
-      {/* Top Header */}
-      <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-5 pt-6 pb-4 sm:px-8 print:hidden border-b border-[#1E1938]/10">
+    <main className="portal-page relative min-h-screen overflow-hidden font-body text-[#1E1938] print:bg-white print:min-h-0 print:p-0">
+      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10 print:hidden border-b border-[#1E1938]/10">
         <Link
           href="/"
-          className="flex items-center gap-3.5 focus:outline-none"
+          className="flex items-center gap-3.5"
           aria-label="Beranda LENTERA"
         >
-          <div className="h-11 w-11 overflow-hidden rounded-[14px] bg-[#735CDD] shrink-0 border border-[#5B43C6]">
+          <div className="h-10 w-10 sm:h-11 sm:w-11 overflow-hidden rounded-[14px] bg-[#735CDD] shrink-0 border border-[#5B43C6]">
             <img
               src="/logo-lentera.png"
-              alt="Logo Lentera"
+              alt="Logo LENTERA"
               width={44}
               height={44}
               className="h-full w-full object-cover scale-[1.34]"
             />
           </div>
           <div>
-            <div className="font-heading text-lg font-extrabold tracking-tight text-[#1E1938] leading-none">
+            <div className="font-heading text-lg font-extrabold tracking-tight text-[#1E1938]">
               LENTERA
             </div>
-            <div className="mt-1 text-xs font-semibold text-[#5A5376]">
-              Smart Tactile Circuit Board
+            <div className="hidden sm:block text-[10px] font-bold tracking-[0.24em] text-[#735CDD]">
+              SENTUH · PAHAMI · BELAJAR MANDIRI
             </div>
           </div>
         </Link>
 
-        <div className="flex items-center gap-2.5">
+        <div className="hidden items-center gap-3 md:flex">
           <StudentProfileSwitcher />
 
-          <Link
-            href="/aruco"
-            className="portal-ghost-btn hidden md:inline-flex"
-          >
-            <ScanEye className="h-4 w-4 text-[#735CDD]" />
-            <span>LENTERA Lab</span>
-          </Link>
-
-          <Link
-            href="/dashboard"
-            className="portal-ghost-btn hidden md:inline-flex"
-          >
-            <LayoutDashboard className="h-4 w-4 text-[#D97706]" />
-            <span>LENTERA Learn</span>
-          </Link>
+          {ready && session ? (
+            <button
+              onClick={logout}
+              className="portal-ghost-btn text-rose-600 hover:text-rose-700"
+              title="Keluar dari akun"
+            >
+              Keluar
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#735CDD] hover:bg-[#5B43C6] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-95"
+            >
+              Masuk / Login <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
 
           <button
-            type="button"
             onClick={() => setOpen(true)}
-            aria-expanded={open}
-            aria-controls="portal-sidebar"
             className="portal-menu-btn"
+            aria-label="Buka menu navigasi"
           >
-            <Compass className="h-4 w-4" />
-            <span>Menu</span>
+            <Menu className="h-4 w-4" />
+            Menu
           </button>
         </div>
+
+        <button
+          ref={menuBtnRef}
+          onClick={() => setOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls="portal-sidebar"
+          aria-label="Buka menu portal"
+          className="portal-menu-btn md:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
       </header>
 
-      {/* Main Hero Section */}
-      <section className="relative z-10 mx-auto my-auto grid w-full max-w-7xl items-center gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.12fr_.88fr] lg:py-14">
-        <div className="rise">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#735CDD]/25 bg-[#EAE4FC] px-4 py-1.5 text-xs font-bold text-[#5B43C6]">
-            <span className="h-2 w-2 rounded-full bg-[#735CDD]" />
-            <span>Portal Utama LENTERA</span>
-          </div>
-
-          <h1 className="mt-5 font-heading text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.08] tracking-tight text-[#1E1938]">
-            Belajar sains melalui{" "}
-            <span className="text-[#735CDD]">sentuhan</span> dan{" "}
-            <span className="inline-block rounded-2xl bg-[#FFF3D6] px-3.5 py-0.5 text-[#1E1938] border border-[#F5B841]">
-              suara.
+      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-88px)] max-w-7xl items-center gap-8 lg:gap-12 px-5 pb-14 pt-6 sm:pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-16 print:hidden">
+        <div className="rise max-w-2xl">
+          <h1
+            className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.14] tracking-tight text-[#1E1938]"
+            aria-label="Belajar sains melalui sentuhan dan suara."
+          >
+            <span className="block">Belajar sains melalui</span>
+            <span className="block text-[#735CDD] min-h-[1.25em] mt-1 sm:mt-1.5">
+              <span>{typedWord}</span>
+              <span
+                className="inline-block w-[3.5px] h-[0.78em] ml-2 bg-[#F5B841] rounded-sm animate-pulse align-middle"
+                aria-hidden="true"
+              />
             </span>
           </h1>
 
           <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-[#5A5376]">
-            LENTERA menggabungkan{" "}
-            <strong className="text-[#1E1938]">
-              Smart Tactile Experiment Board
-            </strong>{" "}
-            dengan sensor kamera cerdas, AI Tutor, dan panduan suara agar siswa
-            tunanetra serta low vision dapat bereksperimen listrik secara
-            mandiri dan aman.
+            LENTERA menggabungkan Smart Tactile Experiment Board dengan sensor
+            cerdas, AI Tutor, dan panduan suara agar siswa tunanetra serta low
+            vision dapat bereksperimen listrik secara mandiri dan aman.
           </p>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-8 space-y-3.5">
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/aruco"
                 className="portal-primary-btn text-base py-3.5 px-6 flex items-center justify-center gap-2.5"
               >
-                <ScanEye className="h-5 w-5" />
-                <span>Buka LENTERA Lab</span>
+                <ScanEye className="h-5 w-5" /> Buka LENTERA Lab
               </Link>
-
               <Link
                 href="/dashboard"
                 className="portal-secondary-btn text-base py-3.5 px-6 flex items-center justify-center gap-2.5"
               >
-                <LayoutDashboard className="h-5 w-5 text-[#735CDD]" />
-                <span>Buka LENTERA Learn</span>
+                <LayoutDashboard className="h-5 w-5 text-[#735CDD]" /> Buka
+                LENTERA Learn
               </Link>
-
               <button
                 id="btn-voice-guide"
-                type="button"
                 onClick={readIntro}
                 className="portal-secondary-btn text-base py-3.5 px-5 flex items-center justify-center gap-2"
                 aria-label={
@@ -464,21 +631,21 @@ export default function PortalLandingPage() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-[#735CDD]/20 bg-[#F3EFFB] px-4 py-3 text-xs sm:text-[13px] text-[#1E1938]">
-              <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#735CDD] opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#735CDD]" />
+            <div className="flex items-center gap-2.5 rounded-xl border border-[#735CDD]/20 bg-[#F3EFFB] px-4 py-2.5 text-xs text-[#1E1938]">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#735CDD] opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#735CDD]"></span>
               </span>
               <span>
-                <strong>Akses Taktil Mandiri:</strong> Letakkan kartu siswa atau
-                balok di papan fisik kapan saja untuk langsung membuka Lab.
+                <strong>Akses Taktil Mandiri:</strong> Letakkan balok di papan
+                fisik kapan saja untuk langsung membuka Lab.
               </span>
             </div>
           </div>
 
           <div className="mt-8 sm:mt-10 border-t border-[#1E1938]/10 pt-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="rounded-2xl bg-white p-3.5 border border-[#1E1938]/8">
+              <div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
                   Interaksi Fisik
                 </div>
@@ -486,7 +653,7 @@ export default function PortalLandingPage() {
                   Balok Taktil & Huruf Braille 3D
                 </div>
               </div>
-              <div className="rounded-2xl bg-white p-3.5 border border-[#1E1938]/8">
+              <div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
                   Visi Komputer
                 </div>
@@ -494,7 +661,7 @@ export default function PortalLandingPage() {
                   Sensor Kamera ArUco
                 </div>
               </div>
-              <div className="rounded-2xl bg-white p-3.5 border border-[#1E1938]/8">
+              <div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
                   Audio Inklusif
                 </div>
@@ -506,16 +673,14 @@ export default function PortalLandingPage() {
           </div>
         </div>
 
-        {/* Right Visual */}
         <div
-          className="relative rise lg:pl-6 flex items-center justify-center w-full"
-          style={{ animationDelay: ".1s" }}
+          className="relative rise lg:pl-8 flex items-center justify-center w-full"
+          style={{ animationDelay: ".12s" }}
         >
           <LenteraHeroEmblem />
         </div>
       </section>
 
-      {/* Backdrop for Sidebar Drawer */}
       <div
         onClick={() => setOpen(false)}
         aria-hidden="true"
@@ -524,24 +689,23 @@ export default function PortalLandingPage() {
         }`}
       />
 
-      {/* Slide-over Sidebar Drawer */}
       <aside
         id="portal-sidebar"
         role="dialog"
         aria-modal="true"
         aria-label="Menu portal LENTERA"
-        className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l-2 border-[#735CDD]/20 bg-[#FAF8F4] p-6 shadow-2xl transition-transform duration-300 print:hidden ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l-2 border-[#735CDD]/20 bg-[#FAF8F4] p-6 shadow-2xl transition-transform duration-500 print:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 overflow-hidden rounded-xl bg-[#735CDD] shrink-0 border border-[#5B43C6]">
+            <div className="h-9 w-9 overflow-hidden rounded-xl bg-[#735CDD] shrink-0 border border-[#5B43C6]">
               <img
                 src="/logo-lentera.png"
                 alt=""
-                width={40}
-                height={40}
+                width={36}
+                height={36}
                 className="h-full w-full object-cover scale-[1.34]"
               />
             </div>
@@ -568,7 +732,7 @@ export default function PortalLandingPage() {
           Pilih ruang kerja yang ingin kamu gunakan.
         </p>
 
-        <nav className="mt-6 grid gap-3">
+        <nav className="mt-7 grid gap-3">
           {destinations.map((d) => {
             const targetHref = session
               ? d.href
@@ -605,7 +769,7 @@ export default function PortalLandingPage() {
           })}
         </nav>
 
-        <div className="mt-auto space-y-3 pt-6">
+        <div className="mt-auto space-y-3">
           {session ? (
             <div className="rounded-2xl border border-[#1E1938]/12 bg-white p-4 flex items-center justify-between">
               <div>
