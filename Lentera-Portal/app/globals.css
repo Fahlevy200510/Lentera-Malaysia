@@ -139,8 +139,17 @@ button,
 
 /* ---------------------------------------------------------------- portal landing (Logo Periwinkle #735CDD & Lantern Cream #FFF3D6) */
 .portal-page {
-  background: var(--lentera-paper);
+  background-color: var(--lentera-paper);
+  background-image:
+    radial-gradient(circle at 85% 18%, rgba(255, 243, 214, 0.75) 0%, transparent 38%),
+    radial-gradient(circle at 12% 82%, rgba(234, 228, 252, 0.85) 0%, transparent 42%);
   color: var(--lentera-ink);
+}
+
+.portal-tactile-dots {
+  background-image: radial-gradient(rgba(115, 92, 221, 0.13) 1.25px, transparent 1.25px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 80% 75% at 50% 45%, black 35%, transparent 100%);
 }
 
 .portal-ghost-btn,
@@ -151,14 +160,14 @@ button,
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 14px;
+  border-radius: 16px;
   font-weight: 700;
-  transition: transform .18s cubic-bezier(.2, .7, .2, 1), background .18s ease, border-color .18s ease, color .18s ease;
+  transition: transform .2s cubic-bezier(.2, .7, .2, 1), background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
 }
 
 .portal-ghost-btn {
   border: 1.5px solid rgba(30, 25, 56, 0.12);
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.88);
   color: var(--lentera-ink);
   padding: 10px 16px;
   font-size: 13px;
@@ -170,7 +179,7 @@ button,
 }
 
 .portal-menu-btn {
-  border: 1.5px solid rgba(115, 92, 221, 0.25);
+  border: 1.5px solid rgba(115, 92, 221, 0.28);
   background: var(--lentera-iris-soft);
   color: var(--lentera-iris-deep);
   padding: 10px 16px;
@@ -185,23 +194,26 @@ button,
 
 .portal-primary-btn {
   background: var(--lentera-iris);
-  border: 2px solid var(--lentera-iris);
+  border: 2px solid #5B43C6;
   color: #FFFFFF;
   padding: 14px 24px;
   font-size: 15px;
+  box-shadow: 0 12px 28px -8px rgba(91, 67, 198, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .portal-primary-btn:hover {
   background: var(--lentera-iris-deep);
-  border-color: var(--lentera-iris-deep);
+  border-color: #4933A8;
+  box-shadow: 0 16px 34px -8px rgba(91, 67, 198, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
 
 .portal-secondary-btn {
   background: #FFFFFF;
-  border: 2px solid rgba(30, 25, 56, 0.14);
+  border: 2px solid rgba(30, 25, 56, 0.13);
   color: var(--lentera-ink);
   padding: 14px 22px;
   font-size: 15px;
+  box-shadow: 0 4px 14px rgba(30, 25, 56, 0.04);
 }
 .portal-secondary-btn:hover {
   border-color: var(--lentera-iris);
@@ -230,24 +242,49 @@ button,
   align-items: flex-start;
   border: 1.5px solid rgba(30, 25, 56, 0.10);
   border-radius: 20px;
-  background: var(--lentera-paper);
+  background: #FFFFFF;
   padding: 16px;
   color: var(--lentera-ink);
-  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 .portal-destination:hover {
   transform: translateY(-2px);
   background: var(--lentera-paper-warm);
   border-color: var(--lentera-iris);
+  box-shadow: 0 10px 24px -10px rgba(115, 92, 221, 0.22);
 }
 
-@keyframes lanternPulse {
-  0%, 100% { transform: scale(1); opacity: 0.92; }
+@keyframes lanternHalo {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
   50% { transform: scale(1.06); opacity: 1; }
 }
-.lantern-flame-pulse {
-  transform-origin: center bottom;
-  animation: lanternPulse 2.8s ease-in-out infinite;
+@keyframes circuitDash {
+  from { stroke-dashoffset: 240; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes cardFloatSubtle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.lantern-halo-ring {
+  animation: lanternHalo 4s ease-in-out infinite;
+}
+.circuit-trace-anim {
+  stroke-dasharray: 10 14;
+  animation: circuitDash 14s linear infinite;
+}
+.float-badge-1 {
+  animation: cardFloatSubtle 5s ease-in-out infinite;
+}
+.float-badge-2 {
+  animation: cardFloatSubtle 5.5s ease-in-out 1.2s infinite;
+}
+.float-badge-3 {
+  animation: cardFloatSubtle 6s ease-in-out 0.6s infinite;
+}
+.float-badge-4 {
+  animation: cardFloatSubtle 5.2s ease-in-out 1.8s infinite;
 }
 
 .notif-popover {
