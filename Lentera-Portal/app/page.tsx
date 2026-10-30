@@ -630,14 +630,41 @@ export default function PortalHome() {
 
   return (
     <main className="portal-page relative min-h-screen overflow-hidden font-body text-[#1E1938] print:bg-white print:min-h-0 print:p-0">
-      {/* Subtle Tactile Coordinate Matrix Watermark */}
+      {/* Layered Periwinkle & Warm Lantern Ambient Canvas */}
       <div
-        className="portal-tactile-dots pointer-events-none absolute inset-0 z-0 print:hidden"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden print:hidden"
         aria-hidden="true"
-      />
+      >
+        {/* Top-left soft periwinkle-lavender bloom */}
+        <div
+          className="blob1 absolute -left-28 -top-24 h-[440px] w-[440px] rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(115, 92, 221, 0.22) 0%, rgba(167, 139, 250, 0.08) 55%, transparent 75%)",
+          }}
+        />
+        {/* Right-center warm lantern buttercream-gold bloom */}
+        <div
+          className="blob2 absolute right-[-4%] top-[14%] h-[520px] w-[520px] rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(245, 184, 65, 0.24) 0%, rgba(255, 243, 214, 0.55) 45%, transparent 75%)",
+          }}
+        />
+        {/* Bottom-center soft violet-iris grounding wash */}
+        <div
+          className="blob3 absolute left-[24%] -bottom-36 h-[420px] w-[520px] rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(115, 92, 221, 0.16) 0%, rgba(234, 228, 252, 0.35) 50%, transparent 75%)",
+          }}
+        />
+        {/* Tactile Coordinate Grid & Braille Dots Watermark */}
+        <div className="portal-tactile-dots absolute inset-0" />
+      </div>
 
       {/* Top Header */}
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-10 print:hidden border-b border-[#1E1938]/10 bg-[#FAF8F4]/80 backdrop-blur-md">
+      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-10 print:hidden border-b border-[#735CDD]/12 bg-white/65 backdrop-blur-md">
         <Link
           href="/"
           className="flex items-center gap-3.5 group"

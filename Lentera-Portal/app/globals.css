@@ -5,17 +5,17 @@
 @tailwind utilities;
 
 :root {
-  --cs-bg: #FAF8F4;
+  --cs-bg: #F4F1FC;
   --cs-text: #1E1938;
-  --lentera-paper: #FAF8F4;
-  --lentera-paper-warm: #F3EFFB;
+  --lentera-paper: #F4F1FC;
+  --lentera-paper-warm: #EDE7FB;
   --lentera-iris: #735CDD;
   --lentera-iris-deep: #5B43C6;
-  --lentera-iris-soft: #EAE4FC;
+  --lentera-iris-soft: #E6DDFB;
   --lentera-cream: #FFF3D6;
   --lentera-amber: #F5B841;
   --lentera-ink: #1E1938;
-  --lentera-muted: #5A5376;
+  --lentera-muted: #534B6E;
 }
 
 * {
@@ -139,17 +139,22 @@ button,
 
 /* ---------------------------------------------------------------- portal landing (Logo Periwinkle #735CDD & Lantern Cream #FFF3D6) */
 .portal-page {
-  background-color: var(--lentera-paper);
+  background-color: #F3EFFC;
   background-image:
-    radial-gradient(circle at 85% 18%, rgba(255, 243, 214, 0.75) 0%, transparent 38%),
-    radial-gradient(circle at 12% 82%, rgba(234, 228, 252, 0.85) 0%, transparent 42%);
+    radial-gradient(circle at 78% 42%, rgba(255, 236, 189, 0.68) 0%, rgba(255, 243, 214, 0.28) 28%, transparent 56%),
+    radial-gradient(circle at 14% 18%, rgba(115, 92, 221, 0.16) 0%, rgba(167, 139, 250, 0.07) 34%, transparent 60%),
+    radial-gradient(circle at 38% 92%, rgba(115, 92, 221, 0.12) 0%, transparent 50%),
+    linear-gradient(135deg, #EEE8FB 0%, #F7F4FD 48%, #FCF8EE 100%);
   color: var(--lentera-ink);
 }
 
 .portal-tactile-dots {
-  background-image: radial-gradient(rgba(115, 92, 221, 0.13) 1.25px, transparent 1.25px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse 80% 75% at 50% 45%, black 35%, transparent 100%);
+  background-image:
+    linear-gradient(to right, rgba(115, 92, 221, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(115, 92, 221, 0.055) 1px, transparent 1px),
+    radial-gradient(rgba(115, 92, 221, 0.16) 1.25px, transparent 1.25px);
+  background-size: 56px 56px, 56px 56px, 28px 28px;
+  mask-image: radial-gradient(ellipse 88% 80% at 50% 48%, black 40%, transparent 100%);
 }
 
 .portal-ghost-btn,
@@ -166,24 +171,26 @@ button,
 }
 
 .portal-ghost-btn {
-  border: 1.5px solid rgba(30, 25, 56, 0.12);
-  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid rgba(115, 92, 221, 0.18);
+  background: rgba(255, 255, 255, 0.85);
   color: var(--lentera-ink);
   padding: 10px 16px;
   font-size: 13px;
+  backdrop-filter: blur(10px);
 }
 .portal-ghost-btn:hover {
   border-color: var(--lentera-iris);
-  background: var(--lentera-paper-warm);
+  background: #FFFFFF;
   transform: translateY(-1px);
 }
 
 .portal-menu-btn {
   border: 1.5px solid rgba(115, 92, 221, 0.28);
-  background: var(--lentera-iris-soft);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--lentera-iris-deep);
   padding: 10px 16px;
   font-size: 13px;
+  box-shadow: 0 4px 12px rgba(115, 92, 221, 0.08);
 }
 .portal-menu-btn:hover {
   background: var(--lentera-iris);
@@ -208,16 +215,18 @@ button,
 }
 
 .portal-secondary-btn {
-  background: #FFFFFF;
-  border: 2px solid rgba(30, 25, 56, 0.13);
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(115, 92, 221, 0.18);
   color: var(--lentera-ink);
   padding: 14px 22px;
   font-size: 15px;
-  box-shadow: 0 4px 14px rgba(30, 25, 56, 0.04);
+  box-shadow: 0 6px 18px rgba(46, 36, 94, 0.06);
+  backdrop-filter: blur(8px);
 }
 .portal-secondary-btn:hover {
   border-color: var(--lentera-iris);
-  background: var(--lentera-paper-warm);
+  background: #FFFFFF;
+  box-shadow: 0 10px 22px rgba(115, 92, 221, 0.14);
   transform: translateY(-2px);
 }
 
@@ -228,7 +237,7 @@ button,
   height: 40px;
   border-radius: 12px;
   border: 1.5px solid rgba(30, 25, 56, 0.12);
-  background: var(--lentera-paper);
+  background: #FFFFFF;
   color: var(--lentera-ink);
 }
 .portal-close-btn:hover {
@@ -240,7 +249,7 @@ button,
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  border: 1.5px solid rgba(30, 25, 56, 0.10);
+  border: 1.5px solid rgba(115, 92, 221, 0.14);
   border-radius: 20px;
   background: #FFFFFF;
   padding: 16px;
@@ -249,7 +258,7 @@ button,
 }
 .portal-destination:hover {
   transform: translateY(-2px);
-  background: var(--lentera-paper-warm);
+  background: var(--lentera-paper);
   border-color: var(--lentera-iris);
   box-shadow: 0 10px 24px -10px rgba(115, 92, 221, 0.22);
 }
