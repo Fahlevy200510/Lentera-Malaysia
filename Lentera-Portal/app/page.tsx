@@ -13,10 +13,6 @@ import {
   X,
   ShieldCheck,
   User,
-  Cpu,
-  Sparkles,
-  Radio,
-  CreditCard,
 } from "lucide-react";
 import {
   resolveEndpoints,
@@ -68,19 +64,19 @@ const destinations: Destination[] = [
 
 function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
   return (
-    <div className="relative w-full max-w-[530px] mx-auto">
+    <div className="relative w-full max-w-[510px] mx-auto">
       {/* Soft warm lantern back-glow behind the main card */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-3 rounded-[44px] opacity-75 blur-2xl"
         style={{
           background:
-            "radial-gradient(circle at 50% 35%, rgba(245, 184, 65, 0.32), rgba(115, 92, 221, 0.28) 60%, transparent 80%)",
+            "radial-gradient(circle at 50% 35%, rgba(245, 184, 65, 0.30), rgba(115, 92, 221, 0.25) 60%, transparent 80%)",
         }}
       />
 
       {/* Main Architectural Stage in Logo Periwinkle (#735CDD -> #5B43C6) */}
-      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-[#7862E2] via-[#735CDD] to-[#5B43C6] p-6 sm:p-8 text-white border-2 border-white/30 shadow-[0_28px_70px_-18px_rgba(73,51,168,0.55)]">
+      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-[#7862E2] via-[#735CDD] to-[#5B43C6] p-7 sm:p-9 text-white border-2 border-white/30 shadow-[0_28px_70px_-18px_rgba(73,51,168,0.55)]">
         {/* Subtle 5x5 Acrylic Board Blueprint Grid Watermark */}
         <div
           aria-hidden="true"
@@ -97,7 +93,7 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
         {/* Warm Lantern Radial Core Glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[43%] -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full"
+          className="pointer-events-none absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full"
           style={{
             background:
               "radial-gradient(circle, rgba(255, 243, 214, 0.42) 0%, rgba(245, 184, 65, 0.16) 45%, transparent 72%)",
@@ -105,9 +101,9 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
         />
 
         <div className="relative z-10 flex flex-col items-center">
-          {/* Top Telemetry Header */}
+          {/* Top Header inside Visual Card */}
           <div className="w-full flex items-center justify-between gap-2 pb-4 border-b border-white/15">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#1E1938]/30 px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-[#FFF3D6] border border-white/15">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#1E1938]/25 px-3.5 py-1.5 text-xs font-semibold text-[#FFF3D6] border border-white/15">
               <span className="relative flex h-2 w-2">
                 <span
                   className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
@@ -122,18 +118,18 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               </span>
               <span>
                 {wsConnected
-                  ? "PAPAN FISIK AKTIF · SIAP SCAN"
-                  : "SENSOR ARUCO SIAGA · 5×5 GRID"}
+                  ? "Terhubung ke Papan Eksperimen"
+                  : "Papan Eksperimen Taktil"}
               </span>
             </div>
 
-            <span className="rounded-full bg-[#FFF3D6] px-3 py-1 text-[11px] font-extrabold tracking-wider text-[#1E1938] shadow-xs">
-              ⠿🄻 A1 – E5
+            <span className="rounded-full bg-[#FFF3D6] px-3 py-1 text-xs font-bold text-[#1E1938] shadow-xs">
+              Braille & Suara
             </span>
           </div>
 
           {/* Centerpiece: Animated Circuit Traces + Winged Lantern Logo */}
-          <div className="my-7 sm:my-8 relative w-full flex items-center justify-center min-h-[260px] sm:min-h-[280px]">
+          <div className="my-8 sm:my-10 relative w-full flex items-center justify-center min-h-[265px] sm:min-h-[285px]">
             {/* Animated SVG Circuit Traces connecting the 4 nodes to the Lantern Core */}
             <svg
               viewBox="0 0 420 280"
@@ -141,7 +137,6 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 h-full w-full"
             >
-              {/* Outer & Inner Acoustic / Light Rings */}
               <circle
                 cx="210"
                 cy="140"
@@ -157,7 +152,6 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
                 stroke="rgba(255,243,214,0.32)"
                 strokeWidth="1.5"
               />
-              {/* Flowing Golden Current Paths to 4 Corners */}
               <path
                 d="M95 55 L155 100 M325 55 L265 100 M95 225 L155 180 M325 225 L265 180"
                 stroke="#FFF3D6"
@@ -187,31 +181,28 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               </div>
             </div>
 
-            {/* 4 Floating Hardware-Software Pillar Badges */}
+            {/* 4 Floating Pillar Badges with Natural Formal Copy */}
             <div className="float-badge-1 absolute top-0 left-0 sm:left-1 rounded-2xl bg-[#FAF8F4] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#EAE4FC]">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[#735CDD]">
-                <span>01 · Rabaan 3D</span>
-                <span aria-hidden="true">⠿🄱</span>
+              <div className="text-[10px] font-bold text-[#735CDD]">
+                Media Raba
               </div>
               <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                Balok & Braille
+                Balok & Huruf Braille
               </div>
             </div>
 
             <div className="float-badge-2 absolute top-0 right-0 sm:right-1 rounded-2xl bg-[#FAF8F4] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#EAE4FC]">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[#735CDD]">
-                <span>02 · Visi Edge</span>
-                <span aria-hidden="true">⠿🄲</span>
+              <div className="text-[10px] font-bold text-[#735CDD]">
+                Pemindaian Otomatis
               </div>
               <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                Kamera ArUco Bawah
+                Sensor Kamera Bawah
               </div>
             </div>
 
             <div className="float-badge-3 absolute bottom-0 left-0 sm:left-1 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#F5B841]">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[#92400E]">
-                <span>03 · Real-Time</span>
-                <span aria-hidden="true">⠿🄰</span>
+              <div className="text-[10px] font-bold text-[#92400E]">
+                Umpan Balik Langsung
               </div>
               <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
                 Panduan Suara
@@ -219,53 +210,19 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
             </div>
 
             <div className="float-badge-4 absolute bottom-0 right-0 sm:right-1 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#F5B841]">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-extrabold uppercase tracking-wider text-[#92400E]">
-                <span>04 · Sokratik</span>
-                <span aria-hidden="true">⠿🅃</span>
+              <div className="text-[10px] font-bold text-[#92400E]">
+                Pendamping Belajar
               </div>
               <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                AI Tutor Inklusif
+                Asisten AI Tutor
               </div>
             </div>
           </div>
 
-          {/* Bottom Student ID Card Auto-Login Dock (Shows Judges the Tap-to-Login Magic) */}
-          <div className="w-full rounded-2xl bg-[#1E1938]/35 border border-white/20 p-3.5 backdrop-blur-md">
-            <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-[#FFF3D6]">
-              <span className="inline-flex items-center gap-1.5">
-                <CreditCard className="h-3.5 w-3.5 text-[#F5B841]" />
-                <span>Kartu ID Taktil Siswa (Auto-Login Lab):</span>
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-[#EAE4FC]">
-                ArUco #35–#37
-              </span>
-            </div>
-
-            <div className="mt-2.5 grid grid-cols-3 gap-2">
-              <div className="rounded-xl bg-white/12 border border-white/15 px-2.5 py-1.5 text-center">
-                <div className="text-[11px] font-extrabold text-white">
-                  Via
-                </div>
-                <div className="text-[10px] font-semibold text-[#FFF3D6]">
-                  ID #35 · ⠿🅅
-                </div>
-              </div>
-              <div className="rounded-xl bg-white/12 border border-white/15 px-2.5 py-1.5 text-center">
-                <div className="text-[11px] font-extrabold text-white">
-                  Amira
-                </div>
-                <div className="text-[10px] font-semibold text-[#FFF3D6]">
-                  ID #36 · ⠿🄰
-                </div>
-              </div>
-              <div className="rounded-xl bg-white/12 border border-white/15 px-2.5 py-1.5 text-center">
-                <div className="text-[11px] font-extrabold text-white">
-                  Ajib
-                </div>
-                <div className="text-[10px] font-semibold text-[#FFF3D6]">
-                  ID #37 · ⠿🄹
-                </div>
-              </div>
+          {/* Clean Bottom Tagline */}
+          <div className="w-full rounded-2xl bg-[#1E1938]/25 border border-white/15 px-4 py-3 text-center">
+            <div className="text-xs sm:text-[13px] font-semibold text-[#FFF3D6]">
+              Merangkai listrik secara mandiri melalui sentuhan dan suara
             </div>
           </div>
         </div>
@@ -673,7 +630,7 @@ export default function PortalHome() {
 
   return (
     <main className="portal-page relative min-h-screen overflow-hidden font-body text-[#1E1938] print:bg-white print:min-h-0 print:p-0">
-      {/* Subtle Tactile Braille Coordinate Matrix Watermark */}
+      {/* Subtle Tactile Coordinate Matrix Watermark */}
       <div
         className="portal-tactile-dots pointer-events-none absolute inset-0 z-0 print:hidden"
         aria-hidden="true"
@@ -696,13 +653,8 @@ export default function PortalHome() {
             />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-heading text-lg font-extrabold tracking-tight text-[#1E1938]">
-                LENTERA
-              </span>
-              <span className="hidden sm:inline-flex items-center rounded-md bg-[#EAE4FC] px-2 py-0.5 text-[10px] font-extrabold text-[#5B43C6]">
-                ⠿🄻 EDTECH
-              </span>
+            <div className="font-heading text-lg font-extrabold tracking-tight text-[#1E1938]">
+              LENTERA
             </div>
             <div className="hidden sm:block text-[10px] font-bold tracking-[0.22em] text-[#735CDD]">
               SENTUH · PAHAMI · BELAJAR MANDIRI
@@ -756,12 +708,9 @@ export default function PortalHome() {
       {/* Main Single-Screen Hero Section */}
       <section className="relative z-10 mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl items-center gap-8 lg:gap-12 px-5 pb-12 pt-6 sm:pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-14 print:hidden">
         <div className="rise max-w-2xl">
-          {/* Competition Eyebrow Badge */}
           <div className="inline-flex items-center gap-2.5 rounded-full border border-[#735CDD]/25 bg-white px-4 py-1.5 text-xs font-bold text-[#5B43C6] shadow-xs">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FFF3D6] text-[11px] font-extrabold text-[#B45309] border border-[#F5B841]">
-              ⠿
-            </span>
-            <span>Smart Tactile & Audio Physics Lab untuk Tunanetra</span>
+            <span className="h-2 w-2 rounded-full bg-[#735CDD]" />
+            <span>Media Pembelajaran Sains Inklusif</span>
           </div>
 
           <h1
@@ -779,13 +728,9 @@ export default function PortalHome() {
           </h1>
 
           <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-[#5A5376]">
-            LENTERA menggabungkan{" "}
-            <strong className="font-bold text-[#1E1938]">
-              Smart Tactile Experiment Board
-            </strong>{" "}
-            dengan sensor cerdas, AI Tutor, dan panduan suara agar siswa
-            tunanetra serta low vision dapat bereksperimen listrik secara
-            mandiri dan aman.
+            LENTERA memadukan papan eksperimen taktil, pemindaian kamera cerdas,
+            dan panduan suara interaktif agar siswa tunanetra maupun low vision
+            dapat mempelajari rangkaian listrik secara mandiri dan aman.
           </p>
 
           <div className="mt-7 space-y-3.5">
@@ -822,75 +767,53 @@ export default function PortalHome() {
               </button>
             </div>
 
-            {/* Hands-Free Hardware Trigger Callout */}
-            <div className="flex items-center justify-between gap-3 rounded-2xl border-2 border-[#735CDD]/20 bg-white/90 px-4 py-3 text-xs sm:text-[13px] text-[#1E1938] shadow-xs">
-              <div className="flex items-center gap-3">
-                <span className="relative flex h-2.5 w-2.5 shrink-0">
-                  <span
-                    className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
-                      wsConnected ? "bg-emerald-500" : "bg-[#735CDD]"
-                    }`}
-                  />
-                  <span
-                    className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-                      wsConnected ? "bg-emerald-600" : "bg-[#735CDD]"
-                    }`}
-                  />
-                </span>
-                <span>
-                  <strong>Akses Taktil Mandiri:</strong> Letakkan kartu siswa
-                  atau balok di papan fisik kapan saja untuk langsung membuka
-                  Lab.
-                </span>
-              </div>
-              <span className="hidden sm:inline-block shrink-0 rounded-lg bg-[#FFF3D6] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-[#92400E] border border-[#F5B841]">
-                Hands-Free
+            <div className="flex items-center gap-3 rounded-2xl border-2 border-[#735CDD]/20 bg-white/90 px-4 py-3 text-xs sm:text-[13px] text-[#1E1938] shadow-xs">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span
+                  className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
+                    wsConnected ? "bg-emerald-500" : "bg-[#735CDD]"
+                  }`}
+                />
+                <span
+                  className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
+                    wsConnected ? "bg-emerald-600" : "bg-[#735CDD]"
+                  }`}
+                />
+              </span>
+              <span>
+                <strong>Mulai Langsung dari Papan:</strong> Letakkan kartu siswa
+                atau balok komponen di atas papan fisik untuk langsung membuka
+                ruang praktik.
               </span>
             </div>
           </div>
 
-          {/* 3 Embossed Tactile Hardware-Software Pillars */}
           <div className="mt-8 border-t border-[#1E1938]/10 pt-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-              <div className="group rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs transition-all hover:border-[#735CDD] hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#735CDD]">
-                    Interaksi Fisik
-                  </span>
-                  <span className="text-xs font-bold text-[#735CDD]/60">
-                    ⠿🄱
-                  </span>
+              <div className="rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
+                  Eksplorasi Raba
                 </div>
-                <div className="mt-1.5 text-sm font-extrabold text-[#1E1938]">
-                  Balok Taktil & Huruf Braille 3D
+                <div className="mt-1 text-sm font-extrabold text-[#1E1938]">
+                  Balok Taktil & Huruf Braille
                 </div>
               </div>
 
-              <div className="group rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs transition-all hover:border-[#735CDD] hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#735CDD]">
-                    Visi Komputer
-                  </span>
-                  <span className="text-xs font-bold text-[#735CDD]/60">
-                    ⠿🄲
-                  </span>
+              <div className="rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
+                  Deteksi Otomatis
                 </div>
-                <div className="mt-1.5 text-sm font-extrabold text-[#1E1938]">
+                <div className="mt-1 text-sm font-extrabold text-[#1E1938]">
                   Sensor Kamera ArUco
                 </div>
               </div>
 
-              <div className="group rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs transition-all hover:border-[#735CDD] hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#B45309]">
-                    Audio Inklusif
-                  </span>
-                  <span className="text-xs font-bold text-[#B45309]/70">
-                    ⠿🄰
-                  </span>
+              <div className="rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[#B45309]">
+                  Pendamping Suara
                 </div>
-                <div className="mt-1.5 text-sm font-extrabold text-[#1E1938]">
-                  Panduan Suara Interaktif
+                <div className="mt-1 text-sm font-extrabold text-[#1E1938]">
+                  Panduan Audio Interaktif
                 </div>
               </div>
             </div>
