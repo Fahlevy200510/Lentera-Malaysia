@@ -159,7 +159,7 @@ export default function ArucoPage() {
   };
 
   return (
-    <main className="portal-page relative min-h-screen overflow-x-hidden font-body text-[#1D1836] print:bg-white print:min-h-0 print:p-0">
+    <main className="portal-page relative min-h-screen font-body text-[#1D1836] print:bg-white print:min-h-0 print:p-0">
       {/* Ambient Background selaras dengan Beranda LENTERA */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden print:hidden">
         <div
@@ -186,18 +186,18 @@ export default function ArucoPage() {
         <div className="portal-tactile-dots absolute inset-0 opacity-60" />
       </div>
 
-      <section className="mx-auto flex min-h-screen max-w-[1440px] flex-col gap-5 px-4 py-5 md:flex-row md:items-start lg:gap-6 lg:px-7 print:hidden">
-        {/* Sidebar Navigasi LENTERA Lab (Sticky di layar laptop/desktop) */}
-        <aside className="rise relative z-40 flex flex-col justify-between gap-5 rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:sticky md:top-5 md:h-[calc(100vh-2.5rem)] md:w-60 md:flex-shrink-0 lg:w-64">
-          <div>
+      <section className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-4 md:flex-row md:items-stretch lg:gap-5 lg:px-6 print:hidden">
+        {/* Sidebar Navigasi LENTERA Lab */}
+        <aside className="rise relative z-40 flex flex-col justify-between gap-4 rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl md:w-60 md:flex-shrink-0 lg:w-64">
+          <div className="space-y-4">
             {/* Brand Header */}
             <Link
               href="/"
-              className="group flex items-center gap-3 rounded-2xl pb-4 border-b border-[#735CDD]/12 focus-visible:outline-none"
+              className="group flex items-center gap-3 rounded-2xl pb-3.5 border-b border-[#735CDD]/12 focus-visible:outline-none"
             >
               <div
                 className="relative flex items-center justify-center overflow-hidden rounded-xl bg-[#765EE0] shadow-[0_8px_20px_-4px_rgba(115,92,221,0.45)] ring-2 ring-[#FFF3D6] transition-transform duration-200 group-hover:scale-[1.03]"
-                style={{ width: 42, height: 42 }}
+                style={{ width: 40, height: 40 }}
               >
                 <img
                   src="/logo-lentera.png"
@@ -207,55 +207,55 @@ export default function ArucoPage() {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-heading text-lg font-extrabold tracking-tight text-[#1D1836]">
+                  <span className="font-heading text-base font-extrabold tracking-tight text-[#1D1836]">
                     LENTERA
                   </span>
-                  <span className="rounded-md bg-[#735CDD]/12 px-1.5 py-0.5 font-heading text-[10px] font-extrabold uppercase tracking-wider text-[#5840BA]">
+                  <span className="rounded-md bg-[#735CDD]/12 px-1.5 py-0.5 font-heading text-[9.5px] font-extrabold uppercase tracking-wider text-[#5840BA]">
                     Lab
                   </span>
                 </div>
-                <p className="text-[10.5px] font-bold tracking-wide text-[#5E548E]">
+                <p className="text-[10px] font-bold tracking-wide text-[#5E548E]">
                   Ruang Praktik Taktil
                 </p>
               </div>
             </Link>
 
             {/* Menu Navigasi */}
-            <div className="mt-5 space-y-1.5">
+            <div className="space-y-1">
               <Link
                 href="/"
-                className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#4A4458] transition-all hover:bg-[#F3EFFE] hover:text-[#1D1836]"
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-[#4A4458] transition-all hover:bg-[#F3EFFE] hover:text-[#1D1836]"
               >
                 <ArrowLeft className="h-4 w-4 text-[#735CDD]" />
                 <span>Kembali ke Beranda</span>
               </Link>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#4A4458] transition-all hover:bg-[#F3EFFE] hover:text-[#1D1836]"
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-[#4A4458] transition-all hover:bg-[#F3EFFE] hover:text-[#1D1836]"
               >
                 <BookOpen className="h-4 w-4 text-[#735CDD]" />
                 <span>Buka LENTERA Learn</span>
               </Link>
 
-              <div className="pt-3.5 mt-3.5 border-t border-[#735CDD]/12">
-                <p className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#6E659F]">
+              <div className="pt-2.5 mt-2.5 border-t border-[#735CDD]/12">
+                <p className="px-3 pb-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-[#6E659F]">
                   Mode Pendamping Lab
                 </p>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <button
                     onClick={() => setActiveTab("guide")}
-                    className={`flex items-center justify-between w-full text-left rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
+                    className={`flex items-center justify-between w-full text-left rounded-xl px-3 py-2 text-xs font-bold transition-all ${
                       activeTab === "guide"
-                        ? "bg-[#735CDD] text-white shadow-[0_10px_22px_-6px_rgba(115,92,221,0.5)] font-extrabold"
+                        ? "bg-[#735CDD] text-white shadow-[0_8px_18px_-6px_rgba(115,92,221,0.5)] font-extrabold"
                         : "text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836]"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <ScanEye className="h-4 w-4" />
                       <span>Panduan Modul</span>
                     </div>
                     <span
-                      className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-extrabold ${
+                      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-extrabold ${
                         activeTab === "guide"
                           ? "bg-[#FFF3D6] text-[#53389E]"
                           : "bg-[#F3EFFE] text-[#5840BA]"
@@ -267,18 +267,18 @@ export default function ArucoPage() {
 
                   <button
                     onClick={() => setActiveTab("tutor")}
-                    className={`flex items-center justify-between w-full text-left rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
+                    className={`flex items-center justify-between w-full text-left rounded-xl px-3 py-2 text-xs font-bold transition-all ${
                       activeTab === "tutor"
-                        ? "bg-[#735CDD] text-white shadow-[0_10px_22px_-6px_rgba(115,92,221,0.5)] font-extrabold"
+                        ? "bg-[#735CDD] text-white shadow-[0_8px_18px_-6px_rgba(115,92,221,0.5)] font-extrabold"
                         : "text-[#4A4458] hover:bg-[#F3EFFE] hover:text-[#1D1836]"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4" />
                       <span>Tanya AI Tutor</span>
                     </div>
                     <span
-                      className={`text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-extrabold ${
+                      className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-md font-extrabold ${
                         activeTab === "tutor"
                           ? "bg-[#FFF3D6] text-[#53389E]"
                           : "bg-[#FFF3D6] text-[#9A5B00] border border-[#F5B841]/40"
@@ -290,11 +290,44 @@ export default function ArucoPage() {
                 </div>
               </div>
             </div>
+
+            {/* Ringkasan Sistem Perangkat di Tengah Sidebar (Mengisi Ruang Kosong Secara Rapi) */}
+            <div className="pt-2.5 border-t border-[#735CDD]/12 space-y-1.5">
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-[#6E659F]">
+                  Perangkat LENTERA Edge
+                </p>
+                <span className="text-[9px] font-extrabold text-[#5840BA] bg-[#F3EFFE] px-1.5 py-0.5 rounded">
+                  5×5
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {wiringPoints.map((item) => (
+                  <div
+                    key={item.title}
+                    title={item.text}
+                    className="flex items-start gap-2.5 rounded-xl border border-[#735CDD]/12 bg-[#FAF9FF] p-2.5"
+                  >
+                    <div className="mt-0.5 flex-shrink-0 rounded-lg bg-[#F3EFFE] p-1.5 border border-[#735CDD]/15">
+                      {item.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-heading text-[11px] font-extrabold text-[#1D1836] leading-tight">
+                        {item.title}
+                      </h3>
+                      <p className="mt-0.5 text-[10px] leading-snug text-[#4A4458] line-clamp-2">
+                        {item.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Bagian Bawah Sidebar: Siswa Aktif */}
-          <div className="rounded-2xl border border-[#735CDD]/20 bg-gradient-to-br from-[#231B42] to-[#352961] p-3.5 text-white shadow-sm">
-            <div className="flex items-center justify-between gap-2 mb-2.5">
+          <div className="rounded-2xl border border-[#735CDD]/20 bg-gradient-to-br from-[#231B42] to-[#352961] p-3 text-white shadow-sm">
+            <div className="flex items-center justify-between gap-2 mb-2">
               <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFF3D6]/90 whitespace-nowrap">
                 Siswa Aktif
               </p>
@@ -311,17 +344,21 @@ export default function ArucoPage() {
           </div>
         </aside>
 
-        {/* Area Utama: Kiri (Kamera & Skema Rangkaian) | Kanan (Panduan Modul/AI Tutor & Info Perangkat) */}
-        <div className="relative z-10 flex-1 grid gap-5 lg:grid-cols-12 items-start">
+        {/* Area Utama: Kiri (Kamera & Skema Rangkaian) | Kanan (Panduan Modul / AI Tutor) */}
+        <div className="relative z-10 flex-1 grid gap-4 lg:grid-cols-12 items-start">
           {/* Kolom Kiri (5/12): Kamera Fisik & Skema Rangkaian Digital */}
-          <div className="space-y-5 lg:col-span-5">
+          <div className="space-y-4 lg:col-span-5">
             {/* 1. Kamera & Sensor Papan Fisik */}
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 sm:p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.16)] backdrop-blur-xl space-y-3.5" style={{ animationDelay: ".05s" }}>
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.16)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".05s" }}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#735CDD]/20 bg-[#F3EFFE] px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-[#5840BA]">
-                  <span className="h-2 w-2 rounded-full bg-[#735CDD]" />
-                  Pemindaian Papan Taktil
-                </span>
+                <div>
+                  <span className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#5840BA] block">
+                    Pemindaian Papan Taktil
+                  </span>
+                  <h1 className="font-heading text-base sm:text-lg font-extrabold leading-tight text-[#1D1836]">
+                    Kamera & Sensor Papan Fisik
+                  </h1>
+                </div>
                 <button
                   id="btn-lab-voice"
                   onClick={() => {
@@ -333,25 +370,16 @@ export default function ArucoPage() {
                       speakLabIntro();
                     }
                   }}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-extrabold transition-all shadow-2xs ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-extrabold transition-all shadow-2xs ${
                     speaking
                       ? "border-amber-300 bg-[#FFF3D6] text-[#9A5B00]"
                       : "border-[#735CDD]/25 bg-white text-[#5840BA] hover:bg-[#F3EFFE]"
                   }`}
                   title="Dengarkan kembali penjelasan ruang kerja"
                 >
-                  <Volume2 className={`h-3.5 w-3.5 ${speaking ? "text-[#D97706] animate-pulse" : "text-[#735CDD]"}`} />
-                  {speaking ? "Hentikan Suara" : "Dengarkan Arahan Lab"}
+                  <Volume2 className={`h-3 w-3 ${speaking ? "text-[#D97706] animate-pulse" : "text-[#735CDD]"}`} />
+                  {speaking ? "Hentikan Suara" : "Arahan Suara"}
                 </button>
-              </div>
-
-              <div>
-                <h1 className="font-heading text-xl font-extrabold leading-tight text-[#1D1836] sm:text-2xl">
-                  Kamera & Sensor Papan Fisik
-                </h1>
-                <p className="mt-1 text-xs leading-relaxed text-[#4A4458]">
-                  Menampilkan pemindaian balok komponen secara langsung dari kamera bawah papan LENTERA.
-                </p>
               </div>
 
               {/* ArUcoDetector (yang sudah support Grid 5x5 + Input IP) */}
@@ -359,20 +387,20 @@ export default function ArucoPage() {
             </div>
 
             {/* 2. Skema Rangkaian Listrik (Proporsional tepat di bawah Kamera) */}
-            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 sm:p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl" style={{ animationDelay: ".08s" }}>
-              <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5">
+            <div className="rise rounded-[1.75rem] border border-[#735CDD]/18 bg-white/90 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl space-y-2.5" style={{ animationDelay: ".08s" }}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#5840BA]">
+                  <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-[#5840BA]">
                     Visualisasi Aliran Arus
                   </p>
-                  <h2 className="font-heading text-base sm:text-lg font-extrabold text-[#1D1836]">
+                  <h2 className="font-heading text-base font-extrabold text-[#1D1836]">
                     Skema Rangkaian Listrik
                   </h2>
                 </div>
-                <div className="flex gap-1 rounded-xl border border-[#735CDD]/15 bg-[#F3EFFE]/80 p-1">
+                <div className="flex gap-1 rounded-xl border border-[#735CDD]/15 bg-[#F3EFFE]/80 p-0.5">
                   <button
                     onClick={() => setDiagramMode("live")}
-                    className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-lg transition-all ${
+                    className={`px-2 py-1 text-[10px] font-extrabold rounded-lg transition-all ${
                       diagramMode === "live"
                         ? "bg-[#735CDD] text-white shadow-xs"
                         : "text-[#5E548E] hover:text-[#1D1836]"
@@ -382,7 +410,7 @@ export default function ArucoPage() {
                   </button>
                   <button
                     onClick={() => setDiagramMode("series")}
-                    className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-lg transition-all ${
+                    className={`px-2 py-1 text-[10px] font-extrabold rounded-lg transition-all ${
                       diagramMode === "series"
                         ? "bg-[#735CDD] text-white shadow-xs"
                         : "text-[#5E548E] hover:text-[#1D1836]"
@@ -392,7 +420,7 @@ export default function ArucoPage() {
                   </button>
                   <button
                     onClick={() => setDiagramMode("parallel")}
-                    className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-lg transition-all ${
+                    className={`px-2 py-1 text-[10px] font-extrabold rounded-lg transition-all ${
                       diagramMode === "parallel"
                         ? "bg-[#735CDD] text-white shadow-xs"
                         : "text-[#5E548E] hover:text-[#1D1836]"
@@ -403,56 +431,21 @@ export default function ArucoPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3 flex items-center justify-center shadow-inner">
-                <div className="w-full max-w-[290px] mx-auto">
+              <div className="rounded-xl border border-[#2E2559] bg-[#0B1021] p-2.5 flex items-center justify-center shadow-inner">
+                <div className="w-full max-w-[235px] mx-auto">
                   <CircuitDiagram variant={diagramMode} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Kolom Kanan (7/12): Panduan Modul / AI Tutor (Langsung di Atas) & Arsitektur Perangkat */}
-          <div className="rise space-y-5 lg:col-span-7" style={{ animationDelay: ".1s" }}>
-            {/* 1. Panel Utama: Panduan Modul Belajar atau Tanya AI Tutor */}
+          {/* Kolom Kanan (7/12): Panduan Modul / AI Tutor */}
+          <div className="rise lg:col-span-7" style={{ animationDelay: ".1s" }}>
             {activeTab === "guide" ? (
               <VoiceGuide />
             ) : (
               <AITutorLab onBack={() => setActiveTab("guide")} />
             )}
-
-            {/* 2. Ringkasan Sistem Perangkat LENTERA Edge (Grid 3 Kolom Sejajar di Bawah Panduan) */}
-            <div className="rounded-[1.75rem] border border-[#735CDD]/16 bg-white/88 p-4 sm:p-5 shadow-[0_14px_34px_-16px_rgba(67,56,202,0.14)] backdrop-blur-md space-y-3">
-              <div className="flex items-center justify-between px-0.5">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#5840BA]">
-                  Arsitektur Sistem LENTERA Edge
-                </p>
-                <span className="rounded-full bg-[#F3EFFE] border border-[#735CDD]/15 px-2.5 py-0.5 text-[10px] font-extrabold text-[#5840BA]">
-                  Grid 5×5 Aktif
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {wiringPoints.map((item) => (
-                  <article
-                    key={item.title}
-                    className="flex flex-col justify-between rounded-2xl border border-[#735CDD]/12 bg-[#FAF9FF] p-3.5 transition-all hover:border-[#735CDD]/30 hover:bg-white hover:shadow-xs"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2.5 mb-2">
-                        <div className="flex-shrink-0 rounded-lg bg-[#F3EFFE] p-2 border border-[#735CDD]/15">
-                          {item.icon}
-                        </div>
-                        <h3 className="font-heading text-xs font-extrabold text-[#1D1836] leading-snug">
-                          {item.title}
-                        </h3>
-                      </div>
-                      <p className="text-[11px] leading-relaxed text-[#4A4458]">
-                        {item.text}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>

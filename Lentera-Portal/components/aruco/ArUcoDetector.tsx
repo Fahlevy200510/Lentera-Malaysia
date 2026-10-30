@@ -323,13 +323,13 @@ export default function ArUcoDetector() {
   const resolved = resolveEndpoints(endpoint);
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2.5">
       {/* Status Bar */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-[#735CDD]/18 bg-[#FAF9FF] px-3.5 py-3 shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex flex-col gap-2.5 rounded-xl border border-[#735CDD]/16 bg-[#FAF9FF] px-3 py-2 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <span
-              className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+              className={`h-2 w-2 shrink-0 rounded-full ${
                 detections.status === "connected"
                   ? "bg-emerald-500 animate-pulse"
                   : detections.status === "connecting"
@@ -338,20 +338,20 @@ export default function ArUcoDetector() {
               }`}
             />
             <div className="min-w-0 truncate">
-              <span className="text-xs font-extrabold text-[#1D1836]">
-                Status: {STATUS_LABEL[detections.status]}
+              <span className="text-[11.5px] font-extrabold text-[#1D1836]">
+                {STATUS_LABEL[detections.status]}
               </span>
-              <span className="ml-1.5 text-[10px] text-[#6E659F] font-semibold">
+              <span className="ml-1 text-[10px] text-[#6E659F] font-semibold">
                 ({resolved.displayHost})
               </span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             {detections.status === "connected" ? (
               <button
                 onClick={handleDisconnect}
-                className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[10.5px] font-bold text-slate-600 hover:bg-slate-100 transition-colors"
               >
                 Putuskan
               </button>
@@ -368,31 +368,31 @@ export default function ArUcoDetector() {
                     connectWebSocket(endpoint);
                   }
                 }}
-                className="flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-extrabold text-emerald-700 hover:bg-emerald-500/20 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[10.5px] font-extrabold text-emerald-700 hover:bg-emerald-500/20 transition-colors"
               >
-                <RefreshCw className="h-3.5 w-3.5" /> Sambungkan Ulang
+                <RefreshCw className="h-3 w-3" /> Sambungkan
               </button>
             )}
 
             <button
               onClick={handleCalibrate}
               disabled={isCalibrating || detections.status !== "connected"}
-              className="flex items-center gap-1.5 rounded-xl border border-[#735CDD]/20 bg-[#F3EFFE] px-3 py-1.5 text-[11px] font-extrabold text-[#5840BA] hover:bg-[#735CDD]/18 disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1 rounded-lg border border-[#735CDD]/20 bg-[#F3EFFE] px-2.5 py-1 text-[10.5px] font-extrabold text-[#5840BA] hover:bg-[#735CDD]/18 disabled:opacity-40 transition-colors"
             >
-              <Sparkles className="h-3.5 w-3.5 text-[#735CDD]" />
-              {isCalibrating ? "Mengkalibrasi…" : "Kalibrasi"}
+              <Sparkles className="h-3 w-3 text-[#735CDD]" />
+              {isCalibrating ? "Kalibrasi…" : "Kalibrasi"}
             </button>
 
             <button
               onClick={() => setShowConfig(!showConfig)}
-              className={`p-1.5 rounded-xl border transition-colors ${
+              className={`p-1 rounded-lg border transition-colors ${
                 showConfig
                   ? "border-[#735CDD]/30 bg-[#F3EFFE] text-[#5840BA]"
                   : "border-transparent text-[#6E659F] hover:text-[#1D1836] hover:bg-white"
               }`}
               title="Pengaturan Sambungan"
             >
-              <SlidersHorizontal className="h-4 w-4" />
+              <SlidersHorizontal className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -457,8 +457,8 @@ export default function ArUcoDetector() {
       </div>
 
       {/* Video Stream Card */}
-      <div className="grid grid-cols-1 gap-3">
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#2E2559] bg-[#0B1021] p-3 shadow-inner overflow-hidden min-h-[200px]">
+      <div className="grid grid-cols-1 gap-2.5">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-[#2E2559] bg-[#0B1021] p-2.5 shadow-inner overflow-hidden min-h-[160px]">
           {detections.status === "connected" ? (
             <div className="relative w-full">
               {liveFrame || (!resolved.isTunnel && resolved.streamUrl) ? (
@@ -466,7 +466,7 @@ export default function ArUcoDetector() {
                   <img
                     src={liveFrame || resolved.streamUrl}
                     alt="Tayangan Kamera Lentera Edge"
-                    className="w-full h-auto rounded-xl object-contain bg-black max-h-[320px]"
+                    className="w-full h-auto rounded-lg object-contain bg-black max-h-[260px]"
                     onError={(e) => {
                       if (!liveFrame) {
                         (e.target as HTMLImageElement).src =
@@ -474,38 +474,38 @@ export default function ArUcoDetector() {
                       }
                     }}
                   />
-                  <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-md border border-white/10">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-black/65 px-2.5 py-0.5 text-[9.5px] font-extrabold text-white backdrop-blur-md border border-white/10">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     LIVE
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-xl bg-[#0F172A] text-white min-h-[195px] max-h-[320px] py-6 px-4 text-center">
-                  <div className="relative mb-2.5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
-                    <span className="absolute h-full w-full animate-ping rounded-2xl bg-emerald-400/20" />
-                    <Camera className="h-6 w-6 text-emerald-400 animate-pulse stroke-[1.5]" />
+                <div className="flex flex-col items-center justify-center rounded-lg bg-[#0F172A] text-white min-h-[150px] max-h-[260px] py-4 px-3 text-center">
+                  <div className="relative mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md">
+                    <span className="absolute h-full w-full animate-ping rounded-xl bg-emerald-400/20" />
+                    <Camera className="h-5 w-5 text-emerald-400 animate-pulse stroke-[1.5]" />
                   </div>
-                  <p className="text-xs sm:text-sm font-extrabold text-slate-100">
+                  <p className="text-xs font-extrabold text-slate-100">
                     Menunggu Tayangan Kamera...
                   </p>
-                  <p className="mt-1 text-[11px] text-slate-400 max-w-sm leading-relaxed">
-                    WebSocket terhubung. Pastikan kamera Raspberry Pi aktif untuk menampilkan pemindaian papan secara langsung.
+                  <p className="mt-0.5 text-[10.5px] text-slate-400 max-w-xs leading-snug">
+                    WebSocket terhubung. Pastikan kamera Raspberry Pi aktif untuk menampilkan pemindaian papan.
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-slate-300 gap-2 py-7 px-4 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/8 border border-white/12 text-[#C4B5FD] shadow-inner">
-                <Camera className="h-6 w-6 stroke-[1.75]" />
+            <div className="flex flex-col items-center justify-center text-slate-300 gap-1.5 py-4 px-3 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/8 border border-white/12 text-[#C4B5FD] shadow-inner">
+                <Camera className="h-5 w-5 stroke-[1.75]" />
               </div>
               <p className="text-xs font-extrabold text-white">
                 {detections.status === "connecting"
                   ? "Menghubungkan ke Kamera Lentera Edge..."
                   : "Kamera Belum Terhubung"}
               </p>
-              <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed">
-                Pastikan unit Raspberry Pi sudah menyala dan terhubung agar pemindaian balok berjalan otomatis.
+              <p className="text-[10.5px] text-slate-400 max-w-xs leading-snug">
+                Pastikan unit Raspberry Pi menyala dan terhubung agar pemindaian balok berjalan otomatis.
               </p>
             </div>
           )}

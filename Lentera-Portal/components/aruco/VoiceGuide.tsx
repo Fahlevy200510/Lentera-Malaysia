@@ -2148,27 +2148,27 @@ export default function VoiceGuide() {
     ];
 
     return (
-      <div className="rounded-[1.75rem] border border-[#735CDD]/18 bg-white/92 p-4 sm:p-5 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl space-y-4">
-        {/* Header Komponen & Progres Siswa */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#735CDD]/12 pb-3.5">
+      <div className="rounded-[1.75rem] border border-[#735CDD]/18 bg-white/92 p-4 shadow-[0_18px_45px_-20px_rgba(67,56,202,0.18)] backdrop-blur-xl space-y-3">
+        {/* Header Komponen & Progres Siswa (1 Baris Rapi) */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#735CDD]/12 pb-2.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/25">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/25">
               <Sparkles className="h-4 w-4 text-[#FFF3D6]" />
             </div>
             <div>
-              <h3 className="font-heading text-sm sm:text-base font-extrabold text-[#1D1836] leading-tight">
+              <h3 className="font-heading text-sm sm:text-[15px] font-extrabold text-[#1D1836] leading-tight">
                 Panduan Modul Belajar
               </h3>
-              <p className="text-[11px] font-medium text-[#5E548E]">
+              <p className="text-[10.5px] font-medium text-[#5E548E]">
                 Kurikulum 5 tahap terintegrasi dengan sensor papan fisik
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             {/* Indikator Progres 5 Segmen */}
             <div className="flex items-center gap-1.5 rounded-xl bg-[#F8F6FF] border border-[#735CDD]/15 px-2.5 py-1 text-xs">
-              <span className="text-[11px] font-extrabold text-[#4A4458]">
+              <span className="text-[10.5px] font-extrabold text-[#4A4458]">
                 Progres {completedCount}/5
               </span>
               <div className="flex items-center gap-1" title={`${completedCount} dari 5 modul selesai`}>
@@ -2181,7 +2181,7 @@ export default function VoiceGuide() {
                 ].map((done, idx) => (
                   <span
                     key={idx}
-                    className={`h-1.5 w-3 rounded-full transition-all ${
+                    className={`h-1.5 w-2.5 rounded-full transition-all ${
                       done ? "bg-emerald-500" : "bg-[#735CDD]/20"
                     }`}
                   />
@@ -2201,7 +2201,7 @@ export default function VoiceGuide() {
                 size="xs"
                 theme="light"
               />
-              <span suppressHydrationWarning className="truncate max-w-[90px] font-extrabold">
+              <span suppressHydrationWarning className="truncate max-w-[80px] text-[11px] font-extrabold">
                 {activeStudent.name.split(" ")[0]}
               </span>
               <span suppressHydrationWarning className="text-[10px] text-[#5840BA] font-extrabold">
@@ -2211,135 +2211,135 @@ export default function VoiceGuide() {
           </div>
         </div>
 
-        {/* Tip Pintasan Taktil Mandiri (Zero-Screen TUI) Terstruktur */}
-        <div className="rounded-2xl border border-[#735CDD]/18 bg-gradient-to-r from-[#F3EFFE]/90 via-[#FAF8FF] to-[#FFF9EB] p-3 text-xs space-y-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#735CDD] text-white shadow-2xs shrink-0">
+        {/* Tip Pintasan Taktil Mandiri (Zero-Screen TUI) Ringkas 1 Baris Chip */}
+        <div className="rounded-xl border border-[#735CDD]/16 bg-gradient-to-r from-[#F3EFFE]/90 via-[#FAF8FF] to-[#FFF9EB] px-3 py-2 text-xs space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#735CDD] text-white shrink-0">
                 <Zap className="h-3 w-3 text-[#FFF3D6]" />
               </span>
-              <span className="text-xs font-extrabold text-[#1D1836]">
-                Pintasan Fisik Papan Taktil (Tanpa Menyentuh Layar)
+              <span className="text-[11px] font-extrabold text-[#1D1836]">
+                Pintasan Papan Taktil (Tanpa Menyentuh Layar)
               </span>
             </div>
             <button
               onClick={speakMenuGuidance}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#735CDD]/25 bg-white px-2.5 py-1 text-[11px] font-extrabold text-[#5840BA] hover:bg-[#F3EFFE] active:scale-95 transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#735CDD]/25 bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[#5840BA] hover:bg-[#F3EFFE] active:scale-95 transition-all shadow-2xs shrink-0"
               title="Dengarkan panduan suara cara memilih materi"
             >
-              <Volume2 className="h-3.5 w-3.5 text-[#735CDD]" />
+              <Volume2 className="h-3 w-3 text-[#735CDD]" />
               <span>Dengarkan Menu</span>
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-1 text-[11px] text-[#4A4458]">
+          <div className="flex flex-wrap gap-1">
+            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
               <strong className="font-mono font-black text-[#5840BA]">A1–E1</strong>
-              <span>5 Modul Belajar</span>
+              <span>5 Modul</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-1 text-[11px] text-[#4A4458]">
+            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
               <strong className="font-mono font-black text-purple-700">Kartu A1</strong>
-              <span>LENTERA Learn</span>
+              <span>Learn</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-1 text-[11px] text-[#4A4458]">
+            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
               <strong className="font-mono font-black text-[#B45309]">A5</strong>
-              <span>Tanya AI Tutor</span>
+              <span>AI Tutor</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-1 text-[11px] text-[#4A4458]">
+            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
               <strong className="font-mono font-black text-emerald-700">C5</strong>
-              <span>Eksplorasi Bebas</span>
+              <span>Eksplorasi</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#735CDD]/15 bg-white px-2 py-1 text-[11px] text-[#4A4458]">
+            <span className="inline-flex items-center gap-1 rounded-md border border-[#735CDD]/14 bg-white px-2 py-0.5 text-[10.5px] text-[#4A4458]">
               <strong className="font-mono font-black text-rose-600">E5</strong>
-              <span>Keluar Sesi</span>
+              <span>Keluar</span>
             </span>
           </div>
         </div>
 
         {/* Banner Status Menunggu Papan Bersih saat Transisi Mode */}
         {pendingGuideMode && (
-          <div className="flex items-center justify-between gap-3 rounded-2xl border-2 border-[#735CDD] bg-[#F3EFFE] p-3.5 shadow-sm animate-pulse">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#735CDD] text-white shadow-xs shrink-0">
-                <Hand className="h-4 w-4 animate-bounce" />
+          <div className="flex items-center justify-between gap-3 rounded-xl border-2 border-[#735CDD] bg-[#F3EFFE] p-3 shadow-sm animate-pulse">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#735CDD] text-white shadow-xs shrink-0">
+                <Hand className="h-3.5 w-3.5 animate-bounce" />
               </span>
               <div>
                 <p className="text-xs font-extrabold text-[#1D1836]">
                   Menyiapkan {MODULE_TITLES[pendingGuideMode] || "Modul"}...
                 </p>
-                <p className="text-[11px] text-[#4A4458] leading-snug">
+                <p className="text-[10.5px] text-[#4A4458] leading-snug">
                   Silakan angkat semua balok dari papan fisik agar papan bersih untuk memulai.
                 </p>
               </div>
             </div>
-            <span className="rounded-xl bg-[#735CDD]/15 px-2.5 py-1 text-xs font-black text-[#5840BA] shrink-0">
+            <span className="rounded-lg bg-[#735CDD]/15 px-2 py-1 text-[11px] font-black text-[#5840BA] shrink-0">
               {boardBlockCount > 0 ? `${boardBlockCount} balok di papan` : "Papan bersih! Memulai..."}
             </span>
           </div>
         )}
 
         {/* Daftar 5 Modul Pembelajaran */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {MODULES.map((item) => {
             const isRecommended = item.mode === recommendedMode && !item.isCompleted && !item.isLocked;
 
             return (
               <div
                 key={item.id}
-                className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl transition-all ${
+                className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all ${
                   item.isLocked
                     ? "bg-slate-50/70 border border-slate-200/70 opacity-75"
                     : isRecommended
-                    ? "bg-gradient-to-r from-[#F3EFFE]/90 via-white to-[#FFF9EB] border-2 border-[#735CDD] shadow-sm shadow-[#735CDD]/10"
+                    ? "bg-gradient-to-r from-[#F3EFFE]/90 via-white to-[#FFF9EB] border-2 border-[#735CDD] shadow-2xs"
                     : item.isCompleted
                     ? "bg-emerald-50/25 border border-emerald-200/80 hover:border-emerald-300"
-                    : "bg-[#FAF9FF] border border-[#735CDD]/15 hover:border-[#735CDD]/35 hover:bg-white hover:shadow-xs"
+                    : "bg-[#FAF9FF] border border-[#735CDD]/14 hover:border-[#735CDD]/35 hover:bg-white"
                 }`}
               >
                 {/* Info Kiri: Badge Sel + Judul + Deskripsi */}
-                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className={`flex flex-col items-center justify-center h-10 w-10 sm:h-11 sm:w-11 rounded-xl font-mono shrink-0 transition-all ${
+                    className={`flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 transition-all ${
                       item.isLocked
                         ? "bg-slate-100 text-slate-400 border border-slate-200/60"
                         : item.isCompleted
                         ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         : isRecommended
-                        ? "bg-[#735CDD] text-white shadow-sm shadow-[#735CDD]/35"
+                        ? "bg-[#735CDD] text-white shadow-xs"
                         : "bg-[#F3EFFE] text-[#5840BA] border border-[#735CDD]/20"
                     }`}
                   >
-                    <span className="text-xs font-black">{item.cell}</span>
-                    <span className="text-[8.5px] font-bold opacity-80 leading-none">Tahap {item.stage}</span>
+                    <span className="text-[11px] font-black leading-none">{item.cell}</span>
+                    <span className="text-[8px] font-bold opacity-80 leading-none mt-0.5">Thp {item.stage}</span>
                   </div>
 
-                  <div className="space-y-0.5 min-w-0">
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <h4 className={`font-heading text-xs sm:text-sm font-extrabold ${item.isLocked ? "text-slate-600" : "text-[#1D1836]"}`}>
+                      <h4 className={`font-heading text-xs font-extrabold ${item.isLocked ? "text-slate-600" : "text-[#1D1836]"}`}>
                         {item.title}
                       </h4>
                       {item.isLocked ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/80 px-1.5 py-0.5 text-[9.5px] font-bold text-slate-500">
                           <Lock className="h-2.5 w-2.5 text-slate-400" />
                           <span>Terkunci</span>
                         </span>
                       ) : item.isCompleted ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-800">
+                          <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
                           <span>Dikuasai</span>
                         </span>
                       ) : isRecommended ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3D6] border border-[#F5B841]/50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-[#9A5B00]">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF3D6] border border-[#F5B841]/50 px-1.5 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-[#9A5B00]">
                           <Sparkles className="h-2.5 w-2.5 text-[#D97706]" />
                           <span>Rekomendasi</span>
                         </span>
                       ) : (
-                        <span className="text-[10px] font-extrabold text-[#5840BA] bg-[#F3EFFE] px-1.5 py-0.5 rounded-md">
+                        <span className="text-[9.5px] font-extrabold text-[#5840BA] bg-[#F3EFFE] px-1.5 py-0.5 rounded-md">
                           +{item.xp} XP
                         </span>
                       )}
                     </div>
-                    <p className={`text-[11.5px] leading-snug ${item.isLocked ? "text-slate-400" : "text-[#4A4458]"}`}>
+                    <p className={`text-[11px] leading-snug truncate ${item.isLocked ? "text-slate-400" : "text-[#4A4458]"}`}>
                       {item.desc}
                     </p>
                   </div>
@@ -2353,24 +2353,24 @@ export default function VoiceGuide() {
                         playEarcon("warning");
                         speak("Tahap ini masih terkunci. Selesaikan terlebih dahulu Tahap 1 Pengenalan Bentuk Taktil agar materi berikutnya terbuka.");
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/90 px-3 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 transition-all active:scale-95"
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100/90 px-2.5 py-1 text-[11px] font-bold text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 transition-all active:scale-95"
                       title="Selesaikan Tahap 1 terlebih dahulu"
                     >
-                      <Lock className="h-3 w-3 text-slate-400" />
+                      <Lock className="h-2.5 w-2.5 text-slate-400" />
                       <span>Terkunci</span>
                     </button>
                   ) : (
                     <button
                       onClick={() => startGuide(item.mode)}
-                      className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-extrabold transition-all active:scale-95 shadow-xs ${
+                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[11px] font-extrabold transition-all active:scale-95 shadow-2xs ${
                         isRecommended
-                          ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white shadow-[#735CDD]/25"
+                          ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white"
                           : item.isCompleted
                           ? "bg-white hover:bg-[#F3EFFE] text-[#4A4458] border border-[#735CDD]/20"
                           : "bg-[#1D1836] hover:bg-[#735CDD] text-white"
                       }`}
                     >
-                      <Play className={`h-3 w-3 ${item.isCompleted ? "text-[#735CDD] fill-[#735CDD]" : "fill-white text-white"}`} />
+                      <Play className={`h-2.5 w-2.5 ${item.isCompleted ? "text-[#735CDD] fill-[#735CDD]" : "fill-white text-white"}`} />
                       <span>{item.isCompleted ? "Ulangi" : "Mulai"}</span>
                     </button>
                   )}
@@ -2381,34 +2381,34 @@ export default function VoiceGuide() {
         </div>
 
         {/* Mode Eksplorasi Bebas — Didukung Groq AI Live Tutor (Pintasan C5) */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-500/12 via-teal-500/8 to-[#735CDD]/12 p-3.5 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start sm:items-center gap-3 min-w-0">
-              <div className="flex flex-col items-center justify-center h-11 w-11 rounded-xl font-mono shrink-0 bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-                <span className="text-xs font-black">C5</span>
-                <span className="text-[8px] font-bold opacity-80 leading-none">Bebas</span>
+        <div className="relative overflow-hidden rounded-xl border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-500/12 via-teal-500/8 to-[#735CDD]/12 px-3 py-2.5 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 bg-emerald-600 text-white shadow-sm">
+                <span className="text-[11px] font-black leading-none">C5</span>
+                <span className="text-[7.5px] font-bold opacity-85 leading-none mt-0.5">Bebas</span>
               </div>
-              <div className="space-y-0.5 min-w-0">
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <h4 className="font-heading text-xs sm:text-sm font-extrabold text-[#1D1836]">
+                  <h4 className="font-heading text-xs font-extrabold text-[#1D1836]">
                     Mode Eksplorasi Bebas (Lab Terbuka)
                   </h4>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9.5px] font-extrabold text-emerald-800">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-800">
                     <Sparkles className="h-2.5 w-2.5 text-emerald-600" />
                     <span>Didukung Groq AI Tutor</span>
                   </span>
                 </div>
-                <p className="text-[11.5px] text-[#4A4458] leading-snug">
-                  <strong className="text-emerald-950 font-bold">Pintasan Fisik:</strong> Letakkan balok di tengah atas (<span className="font-mono font-bold text-emerald-700">C5</span>). Rakit sirkuit sesukamu tanpa batasan langkah. AI Live Tutor otomatis membimbing saat sirkuit belum menyala.
+                <p className="text-[10.5px] text-[#4A4458] leading-snug">
+                  <strong className="text-emerald-950 font-bold">Pintasan C5:</strong> Rakit sirkuit sesukamu tanpa batasan langkah dengan pendampingan AI Live Tutor otomatis.
                 </p>
               </div>
             </div>
 
             <button
               onClick={() => startGuide("free_exploration")}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-extrabold text-white shadow-sm shadow-emerald-600/30 hover:from-emerald-700 hover:to-teal-700 active:scale-95 transition-all shrink-0 self-end sm:self-auto"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-1.5 text-[11px] font-extrabold text-white shadow-2xs hover:from-emerald-700 hover:to-teal-700 active:scale-95 transition-all shrink-0 self-end sm:self-auto"
             >
-              <Play className="h-3.5 w-3.5 fill-white text-white" />
+              <Play className="h-3 w-3 fill-white text-white" />
               <span>Mulai Eksplorasi</span>
             </button>
           </div>
