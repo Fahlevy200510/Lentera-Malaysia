@@ -280,7 +280,7 @@ export default function ArucoPage() {
                   id="btn-lab-voice"
                   onClick={() => {
                     if ((speaking || speakingRef.current) && typeof window !== "undefined") {
-                      window.speechSynthesis.cancel();
+                      cancelSpeech();
                       speakingRef.current = false;
                       setSpeaking(false);
                     } else {

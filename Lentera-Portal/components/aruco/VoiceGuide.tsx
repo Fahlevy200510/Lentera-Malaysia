@@ -1022,7 +1022,7 @@ export default function VoiceGuide() {
           return;
         }
 
-        if (placedCount === 1) {
+        if (placedCount === 1 && !isSpeakingRef.current && !isSpeakingAudio() && !(window as any).__lenteraSpeaking) {
           const now = Date.now();
           if (now - lastMenuSelectRef.current > 3500) {
             const currentProgress = getStudentProgress();
@@ -1362,20 +1362,12 @@ export default function VoiceGuide() {
                 setCompletedCells(new Set());
                 if (currentStep < totalSteps - 1) {
                   playEarcon("step");
-                  const advancePraises = [
-                    "Bagus sekali! Balok sudah diangkat. Mari lanjut ke komponen berikutnya.",
-                    "Hebat! Balok berhasil kamu kenali. Ayo lanjut ke komponen berikutnya.",
-                    "Pintar! Satu komponen telah tuntas. Sekarang lanjut ke komponen berikutnya.",
-                  ];
-                  const advanceText = advancePraises[currentStep % advancePraises.length];
-                  // Segera majukan currentStep ke langkah berikutnya agar frame kamera
-                  // berikutnya tidak pernah memicu ulang penjelasan balok yang baru saja diangkat
+                  // Langsung majukan currentStep agar useEffect([currentStep]) membacakan instruksi komponen berikutnya tanpa saling memotong
                   setCurrentStep((prev) => prev + 1);
-                  speak(advanceText);
                 } else {
                   playEarcon("victory");
+                  // Langsung majukan ke totalSteps agar useEffect([isFinished]) membacakan apresiasi selesai secara utuh
                   setCurrentStep(totalSteps);
-                  speak("Luar biasa! Seluruh balok komponen dasar telah berhasil kamu kenali dengan sempurna.");
                 }
               }, 3000);
             }
@@ -1651,20 +1643,31 @@ export default function VoiceGuide() {
       }
 
       // Socratic Clue Feedback saat komponen yang diletakkan salah di sel target atau di kotak lain
-      if (step.targetCells && !allFound && !stepCompleted && !isFinished) {
+      // Jangan pernah memotong instruksi langkah yang sedang dibacakan
+      const isAnyAudioSpeaking = isSpeakingRef.current || isSpeakingAudio() || Boolean((window as any).__lenteraSpeaking);
+      if (step.targetCells && !allFound && !stepCompleted && !isFinished && !isAnyAudioSpeaking) {
         const now = Date.now();
         let handledClue = false;
 
-        // 1. Cek apakah komponen target ada di kotak yang salah di papan
+        // Kumpulkan sel yang sudah ditempati secara sah pada langkah-langkah sebelumnya (0 .. currentStep-1)
+        const priorStepCells = new Set<string>();
+        for (let i = 0; i < currentStep; i++) {
+          const prevTargets = steps[i]?.targetCells;
+          if (prevTargets) {
+            for (const c of Object.keys(prevTargets)) priorStepCells.add(c);
+          }
+        }
+
+        // 1. Cek apakah komponen target ada di kotak yang salah di papan (abaikan sel dari langkah sebelumnya)
         for (const [targetCell, expectedComponent] of Object.entries(step.targetCells)) {
           const placedAtTarget = cells[targetCell];
           if (!placedAtTarget || placedAtTarget.component !== expectedComponent) {
             const wrongCellEntry = Object.entries(cells).find(
-              ([c, d]) => c !== targetCell && (d as any)?.component === expectedComponent && !step.targetCells?.[c]
+              ([c, d]) => c !== targetCell && !priorStepCells.has(c) && (d as any)?.component === expectedComponent && !step.targetCells?.[c]
             );
             if (wrongCellEntry) {
               const [wrongCell] = wrongCellEntry;
-              if (now - lastClueRef.current > 4500) {
+              if (now - lastClueRef.current > 5000) {
                 lastClueRef.current = now;
                 playEarcon("clue");
                 const compName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
@@ -1682,7 +1685,7 @@ export default function VoiceGuide() {
           for (const [cell, expectedComponent] of Object.entries(step.targetCells)) {
             const placed = cells[cell];
             if (placed && placed.component !== expectedComponent) {
-              if (now - lastClueRef.current > 4500) {
+              if (now - lastClueRef.current > 5000) {
                 lastClueRef.current = now;
                 const placedName = COMPONENT_LABEL[placed.component] || placed.component;
                 const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
@@ -1696,15 +1699,15 @@ export default function VoiceGuide() {
           }
         }
 
-        // 3. Siswa meletakkan balok di kotak luar target padahal target masih kosong
+        // 3. Siswa meletakkan balok di kotak luar target padahal target masih kosong (abaikan sel dari langkah sebelumnya)
         if (!handledClue) {
           const missingTarget = Object.entries(step.targetCells).find(([tc, ec]) => !cells[tc] || cells[tc].component !== ec);
           if (missingTarget) {
             const [targetCell] = missingTarget;
             const extraPlacedEntry = Object.entries(cells).find(
-              ([c, d]) => !step.targetCells?.[c] && Boolean(d) && !isStudentToken(d)
+              ([c, d]) => !step.targetCells?.[c] && !priorStepCells.has(c) && Boolean(d) && !isStudentToken(d)
             );
-            if (extraPlacedEntry && now - lastClueRef.current > 5000) {
+            if (extraPlacedEntry && now - lastClueRef.current > 5500) {
               lastClueRef.current = now;
               const [wrongCell, placedData] = extraPlacedEntry;
               const placedName = COMPONENT_LABEL[(placedData as any)?.component] || "balok";
@@ -1717,7 +1720,7 @@ export default function VoiceGuide() {
       }
       
       // Reminder bila saklar masih posisi OFF/NO saat rangkaian sudah terpasang
-      if (detail?.status === "switch_off" && !allFound && !stepCompleted && !isFinished && !isSpeakingRef.current) {
+      if (detail?.status === "switch_off" && !allFound && !stepCompleted && !isFinished && !isAnyAudioSpeaking) {
         const now = Date.now();
         if (now - lastClueRef.current > 14000) {
           lastClueRef.current = now;
@@ -1767,15 +1770,16 @@ export default function VoiceGuide() {
 
         if (isLastStep) {
           const finalSpeech = step.explanation || "Luar biasa! Saklar sudah ON dan sirkuit tertutup. Lampu berhasil menyala terang!";
-          advanceTimerRef.current = setTimeout(doAdvance, 5000);
+          const fallbackMs = Math.max(9000, finalSpeech.length * 95 + 2500);
+          advanceTimerRef.current = setTimeout(doAdvance, fallbackMs);
           speak(finalSpeech, () => {
-            setTimeout(doAdvance, 500);
+            setTimeout(doAdvance, 450);
           });
         } else if (step.explanation) {
-          // Fallback safety timer 4.5s
-          advanceTimerRef.current = setTimeout(doAdvance, 4500);
+          const fallbackMs = Math.max(8000, step.explanation.length * 95 + 2500);
+          advanceTimerRef.current = setTimeout(doAdvance, fallbackMs);
           speak(step.explanation, () => {
-            setTimeout(doAdvance, 500);
+            setTimeout(doAdvance, 450);
           });
         } else {
           const praises = [
@@ -1787,11 +1791,11 @@ export default function VoiceGuide() {
           ];
           const praise = praises[currentStep % praises.length];
 
-          // FALLBACK TIMER: Garansi 100% langkah MAJU dalam 2.8s walaupun speech engine browser macet/pause
-          advanceTimerRef.current = setTimeout(doAdvance, 2800);
+          // Fallback safety timer hanya jika onEnd dari browser macet (>6 detik)
+          advanceTimerRef.current = setTimeout(doAdvance, 6500);
 
           speak(praise, () => {
-            setTimeout(doAdvance, 300);
+            setTimeout(doAdvance, 350);
           });
         }
       }

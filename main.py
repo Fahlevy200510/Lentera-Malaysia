@@ -359,7 +359,7 @@ def main():
                 # Kirim dan ucapkan tiap event
                 for event in events:
                     ws.broadcast_sync(event)
-                    if "narration" in event:
+                    if "narration" in event and not ws.clients:
                         audio.enqueue_narration(event["narration"])
                         
             # Delay sedikit untuk simulasi FPS target ~24

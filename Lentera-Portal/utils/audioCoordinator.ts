@@ -104,16 +104,18 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
 
       (window as any).__lenteraActiveUtterance = utterance;
 
-      // Keepalive Chrome di Windows agar narasi panjang tidak mendadak terhenti
-      keepAliveTimer = setInterval(() => {
-        if (!hasEnded && synth.speaking) {
-          synth.pause();
-          synth.resume();
-        } else if (keepAliveTimer) {
-          clearInterval(keepAliveTimer);
-          keepAliveTimer = null;
-        }
-      }, 7000);
+      // Keepalive khusus voice network/remote di Chrome agar narasi >15s tidak terputus
+      if (idVoice && idVoice.localService === false) {
+        keepAliveTimer = setInterval(() => {
+          if (!hasEnded && synth.speaking) {
+            synth.pause();
+            synth.resume();
+          } else if (keepAliveTimer) {
+            clearInterval(keepAliveTimer);
+            keepAliveTimer = null;
+          }
+        }, 12000);
+      }
 
       if (synth.paused) synth.resume();
       synth.speak(utterance);
