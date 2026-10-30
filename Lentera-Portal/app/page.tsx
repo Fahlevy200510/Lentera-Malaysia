@@ -13,6 +13,9 @@ import {
   X,
   ShieldCheck,
   User,
+  Sparkles,
+  Hand,
+  Cpu,
 } from "lucide-react";
 import {
   resolveEndpoints,
@@ -64,50 +67,50 @@ const destinations: Destination[] = [
 
 function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
   return (
-    <div className="relative w-full max-w-[510px] mx-auto">
+    <div className="relative w-full max-w-[500px] mx-auto">
       {/* Soft warm lantern back-glow behind the main card */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-3 rounded-[44px] opacity-75 blur-2xl"
+        className="pointer-events-none absolute -inset-4 rounded-[48px] opacity-80 blur-2xl"
         style={{
           background:
-            "radial-gradient(circle at 50% 35%, rgba(245, 184, 65, 0.30), rgba(115, 92, 221, 0.25) 60%, transparent 80%)",
+            "radial-gradient(circle at 50% 40%, rgba(245, 184, 65, 0.36), rgba(115, 92, 221, 0.30) 62%, transparent 82%)",
         }}
       />
 
-      {/* Main Architectural Stage in Logo Periwinkle (#735CDD -> #5B43C6) */}
-      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-[#7862E2] via-[#735CDD] to-[#5B43C6] p-7 sm:p-9 text-white border-2 border-white/30 shadow-[0_28px_70px_-18px_rgba(73,51,168,0.55)]">
+      {/* Main Architectural Stage in Logo Periwinkle (#7862E2 -> #5B43C6) */}
+      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-[#7B65E6] via-[#7159DB] to-[#5940C4] p-6 sm:p-8 text-white border-2 border-white/40 shadow-[0_30px_70px_-18px_rgba(73,51,168,0.52),inset_0_1px_1px_rgba(255,255,255,0.4)]">
         {/* Subtle 5x5 Acrylic Board Blueprint Grid Watermark */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-15"
+          className="pointer-events-none absolute inset-0 opacity-12"
           style={{
             backgroundImage:
-              "linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px)",
-            backgroundSize: "52px 52px",
+              "linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
             maskImage:
-              "radial-gradient(circle at 50% 45%, black 35%, transparent 85%)",
+              "radial-gradient(circle at 50% 48%, black 30%, transparent 82%)",
           }}
         />
 
         {/* Warm Lantern Radial Core Glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full"
+          className="pointer-events-none absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(255, 243, 214, 0.42) 0%, rgba(245, 184, 65, 0.16) 45%, transparent 72%)",
+              "radial-gradient(circle, rgba(255, 243, 214, 0.46) 0%, rgba(245, 184, 65, 0.18) 46%, transparent 72%)",
           }}
         />
 
         <div className="relative z-10 flex flex-col items-center">
           {/* Top Header inside Visual Card */}
           <div className="w-full flex items-center justify-between gap-2 pb-4 border-b border-white/15">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#1E1938]/25 px-3.5 py-1.5 text-xs font-semibold text-[#FFF3D6] border border-white/15">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/14 px-3.5 py-1.5 text-xs font-semibold text-white border border-white/20 backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span
                   className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
-                    wsConnected ? "bg-emerald-300" : "bg-[#F5B841]"
+                    wsConnected ? "bg-emerald-300" : "bg-[#FFF3D6]"
                   }`}
                 />
                 <span
@@ -123,57 +126,91 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               </span>
             </div>
 
-            <span className="rounded-full bg-[#FFF3D6] px-3 py-1 text-xs font-bold text-[#1E1938] shadow-xs">
+            <span className="rounded-full bg-[#FFF3D6] px-3.5 py-1 text-xs font-extrabold text-[#1E1938] shadow-xs">
               Braille & Suara
             </span>
           </div>
 
-          {/* Centerpiece: Animated Circuit Traces + Winged Lantern Logo */}
-          <div className="my-8 sm:my-10 relative w-full flex items-center justify-center min-h-[265px] sm:min-h-[285px]">
-            {/* Animated SVG Circuit Traces connecting the 4 nodes to the Lantern Core */}
+          {/* Centerpiece: Curved PCB Circuit Traces + Winged Lantern Logo */}
+          <div className="my-6 sm:my-7 relative w-full flex items-center justify-center min-h-[255px] sm:min-h-[270px]">
             <svg
-              viewBox="0 0 420 280"
+              viewBox="0 0 420 270"
               fill="none"
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 h-full w-full"
             >
+              {/* Concentric Acoustic Halo Rings */}
               <circle
                 cx="210"
-                cy="140"
-                r="118"
+                cy="135"
+                r="112"
                 stroke="rgba(255,255,255,0.16)"
-                strokeWidth="1.2"
-                strokeDasharray="4 6"
+                strokeWidth="1.25"
+                strokeDasharray="5 7"
               />
               <circle
                 cx="210"
-                cy="140"
-                r="90"
-                stroke="rgba(255,243,214,0.32)"
+                cy="135"
+                r="86"
+                stroke="rgba(255,243,214,0.34)"
                 strokeWidth="1.5"
               />
+
+              {/* Smooth Curved PCB Traces from Center Ring to the 4 Cards */}
               <path
-                d="M95 55 L155 100 M325 55 L265 100 M95 225 L155 180 M325 225 L265 180"
+                d="M148 92 C 128 72, 110 62, 85 58"
+                stroke="rgba(255,243,214,0.45)"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+              <path
+                d="M272 92 C 292 72, 310 62, 335 58"
+                stroke="rgba(255,243,214,0.45)"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+              <path
+                d="M148 178 C 128 198, 110 208, 85 212"
+                stroke="rgba(255,243,214,0.45)"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+              <path
+                d="M272 178 C 292 198, 310 208, 335 212"
+                stroke="rgba(255,243,214,0.45)"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+              />
+
+              {/* Animated Flowing Golden Pulses */}
+              <path
+                d="M148 92 C 128 72, 110 62, 85 58 M272 92 C 292 72, 310 62, 335 58 M148 178 C 128 198, 110 208, 85 212 M272 178 C 292 198, 310 208, 335 212"
                 stroke="#FFF3D6"
-                strokeWidth="2"
+                strokeWidth="2.2"
                 strokeLinecap="round"
                 className="circuit-trace-anim"
               />
+
+              {/* Glowing Terminal Nodes on the Inner Ring */}
+              <circle cx="148" cy="92" r="3.5" fill="#FFF3D6" />
+              <circle cx="272" cy="92" r="3.5" fill="#FFF3D6" />
+              <circle cx="148" cy="178" r="3.5" fill="#FFF3D6" />
+              <circle cx="272" cy="178" r="3.5" fill="#FFF3D6" />
             </svg>
 
             {/* Pulsing Warm Lantern Halo + Crisp Logo Squircle */}
             <div className="relative flex items-center justify-center">
               <div
                 aria-hidden="true"
-                className="lantern-halo-ring h-48 w-48 sm:h-52 sm:w-52 rounded-full border border-[#FFF3D6]/40 bg-[#FFF3D6]/10 flex items-center justify-center"
+                className="lantern-halo-ring h-44 w-44 sm:h-48 sm:w-48 rounded-full border border-[#FFF3D6]/40 bg-[#FFF3D6]/10 flex items-center justify-center"
               >
-                <div className="h-36 w-36 sm:h-40 sm:w-40 rounded-full border-2 border-[#FFF3D6]/70 bg-[#FFF3D6]/20 flex items-center justify-center shadow-[0_0_50px_rgba(255,243,214,0.35)]">
-                  <div className="h-28 w-28 sm:h-32 sm:w-32 overflow-hidden rounded-[28px] bg-[#735CDD] border-[3px] border-[#FFF3D6] shadow-[0_14px_34px_rgba(30,25,56,0.38)]">
+                <div className="h-34 w-34 sm:h-38 sm:w-38 rounded-full border-2 border-[#FFF3D6]/70 bg-[#FFF3D6]/20 flex items-center justify-center shadow-[0_0_50px_rgba(255,243,214,0.4)]">
+                  <div className="h-26 w-26 sm:h-30 sm:w-30 overflow-hidden rounded-[26px] bg-[#735CDD] border-[3px] border-[#FFF3D6] shadow-[0_14px_34px_rgba(30,25,56,0.38)]">
                     <img
                       src="/logo-lentera.png"
                       alt="Logo LENTERA"
-                      width={132}
-                      height={132}
+                      width={124}
+                      height={124}
                       className="h-full w-full object-cover scale-[1.34]"
                     />
                   </div>
@@ -181,46 +218,66 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
               </div>
             </div>
 
-            {/* 4 Floating Pillar Badges with Natural Formal Copy */}
-            <div className="float-badge-1 absolute top-0 left-0 sm:left-1 rounded-2xl bg-[#FAF8F4] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#EAE4FC]">
-              <div className="text-[10px] font-bold text-[#735CDD]">
-                Media Raba
-              </div>
-              <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                Balok & Huruf Braille
-              </div>
-            </div>
-
-            <div className="float-badge-2 absolute top-0 right-0 sm:right-1 rounded-2xl bg-[#FAF8F4] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#EAE4FC]">
-              <div className="text-[10px] font-bold text-[#735CDD]">
-                Pemindaian Otomatis
-              </div>
-              <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                Sensor Kamera Bawah
+            {/* 4 Floating Pillar Badges with Icons & Natural Formal Copy */}
+            <div className="float-badge-1 absolute top-0 left-0 flex items-center gap-2.5 rounded-2xl bg-white/95 px-3.5 py-2.5 text-[#1E1938] shadow-lg border border-white">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
+                <Hand className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="text-[10px] font-bold text-[#735CDD] leading-tight">
+                  Media Raba
+                </div>
+                <div className="text-xs font-extrabold text-[#1E1938]">
+                  Balok & Braille
+                </div>
               </div>
             </div>
 
-            <div className="float-badge-3 absolute bottom-0 left-0 sm:left-1 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#F5B841]">
-              <div className="text-[10px] font-bold text-[#92400E]">
-                Umpan Balik Langsung
-              </div>
-              <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                Panduan Suara
+            <div className="float-badge-2 absolute top-0 right-0 flex items-center gap-2.5 rounded-2xl bg-white/95 px-3.5 py-2.5 text-[#1E1938] shadow-lg border border-white">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
+                <ScanEye className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="text-[10px] font-bold text-[#735CDD] leading-tight">
+                  Deteksi Otomatis
+                </div>
+                <div className="text-xs font-extrabold text-[#1E1938]">
+                  Kamera Bawah
+                </div>
               </div>
             </div>
 
-            <div className="float-badge-4 absolute bottom-0 right-0 sm:right-1 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-lg border-2 border-[#F5B841]">
-              <div className="text-[10px] font-bold text-[#92400E]">
-                Pendamping Belajar
+            <div className="float-badge-3 absolute bottom-0 left-0 flex items-center gap-2.5 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-lg border border-[#F5B841]">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5B841]/25 text-[#92400E]">
+                <Volume2 className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="text-[10px] font-bold text-[#92400E] leading-tight">
+                  Respon Langsung
+                </div>
+                <div className="text-xs font-extrabold text-[#1E1938]">
+                  Panduan Suara
+                </div>
               </div>
-              <div className="mt-0.5 text-xs font-extrabold text-[#1E1938]">
-                Asisten AI Tutor
+            </div>
+
+            <div className="float-badge-4 absolute bottom-0 right-0 flex items-center gap-2.5 rounded-2xl bg-[#FFF3D6] px-3.5 py-2.5 text-[#1E1938] shadow-lg border border-[#F5B841]">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#F5B841]/25 text-[#92400E]">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="text-[10px] font-bold text-[#92400E] leading-tight">
+                  Teman Belajar
+                </div>
+                <div className="text-xs font-extrabold text-[#1E1938]">
+                  Asisten AI Tutor
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Clean Bottom Tagline */}
-          <div className="w-full rounded-2xl bg-[#1E1938]/25 border border-white/15 px-4 py-3 text-center">
+          {/* Luminous Frosted Bottom Tagline */}
+          <div className="w-full rounded-2xl bg-white/14 border border-white/25 px-4 py-3 text-center backdrop-blur-md">
             <div className="text-xs sm:text-[13px] font-semibold text-[#FFF3D6]">
               Merangkai listrik secara mandiri melalui sentuhan dan suara
             </div>
@@ -790,37 +847,44 @@ export default function PortalHome() {
         </button>
       </header>
 
-      {/* Main Single-Screen Hero Section */}
-      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl items-center gap-8 lg:gap-12 px-5 pb-12 pt-6 sm:pt-8 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-14 print:hidden">
+      {/* Main Single-Screen Hero Section (Fits 100vh cleanly without vertical overflow) */}
+      <section className="relative z-10 mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl items-center gap-8 lg:gap-12 px-5 pb-8 pt-2 sm:pt-4 lg:grid-cols-[1.08fr_.92fr] lg:px-10 lg:pb-10 print:hidden">
         <div className="rise max-w-2xl">
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-[#735CDD]/25 bg-white px-4 py-1.5 text-xs font-bold text-[#5B43C6] shadow-xs">
+          <div className="inline-flex items-center gap-2.5 rounded-full border border-[#735CDD]/25 bg-white/90 px-4 py-1.5 text-xs font-bold text-[#5B43C6] shadow-xs backdrop-blur-sm">
             <span className="h-2 w-2 rounded-full bg-[#735CDD]" />
             <span>Media Pembelajaran Sains Inklusif</span>
           </div>
 
           <h1
-            className="mt-5 font-heading text-3xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.15] tracking-tight text-[#1E1938]"
+            className="mt-4 font-heading text-3xl sm:text-5xl lg:text-[3.35rem] font-extrabold leading-[1.15] tracking-tight text-[#1E1938]"
             aria-label="Belajar sains melalui sentuhan dan suara."
           >
             <span className="block">Belajar sains melalui</span>
-            <span className="mt-2.5 block min-h-[1.42em]">
-              <span className="inline-flex items-center whitespace-nowrap rounded-2xl bg-white/95 border-2 border-[#735CDD]/30 px-4 py-1 text-[#735CDD] shadow-[0_12px_30px_-8px_rgba(91,67,198,0.25)]">
-                <span>{"\u200B"}{typedWord}</span>
-                <span
-                  className="typewriter-cursor inline-block w-[3.5px] h-[0.82em] ml-1.5 bg-[#F5B841] rounded-full shrink-0"
-                  aria-hidden="true"
-                />
+            <span className="mt-1.5 block min-h-[1.3em] whitespace-nowrap">
+              <span
+                className="inline px-1.5 rounded-lg text-[#5B43C6]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(180deg, transparent 58%, rgba(255, 232, 158, 0.9) 58%)",
+                }}
+              >
+                {"\u200B"}
+                {typedWord}
               </span>
+              <span
+                className="typewriter-cursor inline-block w-[3.5px] h-[0.82em] ml-1.5 bg-[#F5B841] rounded-full align-middle"
+                aria-hidden="true"
+              />
             </span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-[#463E66] font-medium">
+          <p className="mt-4 max-w-xl text-base sm:text-lg leading-relaxed text-[#463E66] font-medium">
             LENTERA memadukan papan eksperimen taktil, pemindaian kamera cerdas,
             dan panduan suara interaktif agar siswa tunanetra maupun low vision
             dapat mempelajari rangkaian listrik secara mandiri dan aman.
           </p>
 
-          <div className="mt-7 space-y-3.5">
+          <div className="mt-6 space-y-3">
             <div className="flex flex-wrap items-center gap-2.5">
               <Link
                 href="/aruco"
@@ -854,7 +918,7 @@ export default function PortalHome() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border-2 border-[#735CDD]/20 bg-white/90 px-4 py-3 text-xs sm:text-[13px] text-[#1E1938] shadow-xs">
+            <div className="flex items-center gap-3 rounded-2xl border border-[#735CDD]/22 bg-white/88 px-4 py-3 text-xs sm:text-[13px] text-[#1E1938] shadow-xs backdrop-blur-md">
               <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span
                   className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
@@ -875,32 +939,47 @@ export default function PortalHome() {
             </div>
           </div>
 
-          <div className="mt-8 border-t border-[#1E1938]/10 pt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-              <div className="rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
-                  Eksplorasi Raba
-                </div>
-                <div className="mt-1 text-sm font-extrabold text-[#1E1938]">
-                  Balok Taktil & Huruf Braille
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[#735CDD]">
-                  Deteksi Otomatis
-                </div>
-                <div className="mt-1 text-sm font-extrabold text-[#1E1938]">
-                  Sensor Kamera ArUco
+          <div className="mt-6 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-start gap-3 rounded-2xl bg-white/90 p-3.5 border border-[#735CDD]/16 shadow-xs backdrop-blur-md transition-transform hover:-translate-y-0.5">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
+                  <Hand className="h-4 w-4" />
+                </span>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#735CDD]">
+                    Eksplorasi Raba
+                  </div>
+                  <div className="mt-0.5 text-xs sm:text-[13px] font-extrabold text-[#1E1938] leading-snug">
+                    Balok Taktil & Braille 3D
+                  </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-4 border border-[#1E1938]/10 shadow-xs">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[#B45309]">
-                  Pendamping Suara
+              <div className="flex items-start gap-3 rounded-2xl bg-white/90 p-3.5 border border-[#735CDD]/16 shadow-xs backdrop-blur-md transition-transform hover:-translate-y-0.5">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#EAE4FC] text-[#5B43C6]">
+                  <Cpu className="h-4 w-4" />
+                </span>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#735CDD]">
+                    Deteksi Otomatis
+                  </div>
+                  <div className="mt-0.5 text-xs sm:text-[13px] font-extrabold text-[#1E1938] leading-snug">
+                    Sensor Kamera ArUco
+                  </div>
                 </div>
-                <div className="mt-1 text-sm font-extrabold text-[#1E1938]">
-                  Panduan Audio Interaktif
+              </div>
+
+              <div className="flex items-start gap-3 rounded-2xl bg-white/90 p-3.5 border border-[#F5B841]/40 shadow-xs backdrop-blur-md transition-transform hover:-translate-y-0.5">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#FFF3D6] text-[#B45309]">
+                  <Volume2 className="h-4 w-4" />
+                </span>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#B45309]">
+                    Pendamping Suara
+                  </div>
+                  <div className="mt-0.5 text-xs sm:text-[13px] font-extrabold text-[#1E1938] leading-snug">
+                    Panduan Audio Interaktif
+                  </div>
                 </div>
               </div>
             </div>
