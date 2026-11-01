@@ -2,6 +2,7 @@ import { normalizeIndonesianPhonetics } from "./phonetics";
 
 let activeTimer: ReturnType<typeof setTimeout> | null = null;
 let keepAliveTimer: ReturnType<typeof setInterval> | null = null;
+let currentSpeechSeq = 0;
 
 export interface SpeakOptions {
   rate?: number;
@@ -12,6 +13,7 @@ export interface SpeakOptions {
 
 export function cancelSpeech(): void {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  currentSpeechSeq += 1;
   if (activeTimer) {
     clearTimeout(activeTimer);
     activeTimer = null;
@@ -45,6 +47,7 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
   }
 
   const synth = window.speechSynthesis;
+  const mySeq = ++currentSpeechSeq;
 
   if (activeTimer) {
     clearTimeout(activeTimer);
@@ -63,8 +66,9 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
   (window as any).__lenteraSpeaking = true;
   (window as any).__lenteraCurrentTag = options.tag || "general";
 
-  // Jeda 80ms agar antrean speech engine Chrome di Windows bersih sebelum memutar ucapan baru
+  // Jeda 80ms agar antrean speech engine Chrome bersih sebelum memutar ucapan baru
   activeTimer = setTimeout(() => {
+    if (mySeq !== currentSpeechSeq) return;
     activeTimer = null;
     try {
       const phoneticText = normalizeIndonesianPhonetics(cleanText);
@@ -80,26 +84,39 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
       utterance.pitch = options.pitch ?? 1.02;
 
       let hasEnded = false;
-      const finish = () => {
+      const finish = (wasCanceled = false) => {
         if (hasEnded) return;
         hasEnded = true;
+        if (mySeq !== currentSpeechSeq) return;
         if (keepAliveTimer) {
           clearInterval(keepAliveTimer);
           keepAliveTimer = null;
         }
         (window as any).__lenteraSpeaking = false;
         (window as any).__lenteraActiveUtterance = null;
-        options.onEnd?.();
+        if (!wasCanceled) {
+          options.onEnd?.();
+          try {
+            window.dispatchEvent(new CustomEvent("lentera-speech-ended"));
+          } catch {}
+        }
       };
 
       utterance.onstart = () => {
-        (window as any).__lenteraSpeaking = true;
+        if (mySeq === currentSpeechSeq) {
+          (window as any).__lenteraSpeaking = true;
+        }
       };
 
-      utterance.onend = finish;
+      utterance.onend = () => finish(false);
       utterance.onerror = (err) => {
+        const errType = (err as any)?.error;
+        if (errType === "canceled" || errType === "interrupted") {
+          finish(true);
+          return;
+        }
         console.warn("[audioCoordinator] Speech error:", err);
-        finish();
+        finish(false);
       };
 
       (window as any).__lenteraActiveUtterance = utterance;
@@ -107,6 +124,13 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
       // Keepalive khusus voice network/remote di Chrome agar narasi >15s tidak terputus
       if (idVoice && idVoice.localService === false) {
         keepAliveTimer = setInterval(() => {
+          if (mySeq !== currentSpeechSeq) {
+            if (keepAliveTimer) {
+              clearInterval(keepAliveTimer);
+              keepAliveTimer = null;
+            }
+            return;
+          }
           if (!hasEnded && synth.speaking) {
             synth.pause();
             synth.resume();
@@ -121,6 +145,7 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
       synth.speak(utterance);
     } catch (e) {
       console.error("[audioCoordinator] speak failed:", e);
+      if (mySeq !== currentSpeechSeq) return;
       if (keepAliveTimer) {
         clearInterval(keepAliveTimer);
         keepAliveTimer = null;

@@ -562,6 +562,8 @@ export default function VoiceGuide() {
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const latestCellsRef = useRef<Record<string, any>>({});
+  const latestDetailRef = useRef<any>(null);
+  const lastStepWrongSigRef = useRef<string | null>(null);
   const lastRemindRef = useRef<number>(0);
   const lastClueRef = useRef<number>(0);
   const lastShortCircuitRef = useRef<number>(0);
@@ -901,6 +903,8 @@ export default function VoiceGuide() {
       const detail = (e as CustomEvent).detail;
       const cells = detail?.cells || {};
       latestCellsRef.current = cells;
+      latestDetailRef.current = detail;
+      const isCurrentlySpeaking = isSpeakingRef.current || isSpeakingAudio() || Boolean((window as any).__lenteraSpeaking);
 
       const placedCount = Object.values(cells).filter(Boolean).length;
       setBoardBlockCount(placedCount);
@@ -912,6 +916,7 @@ export default function VoiceGuide() {
         const targetMode = pendingStartModeRef.current;
         const targetTitle = MODULE_TITLES[targetMode] || "modul pembelajaran";
         if (placedCount === 0) {
+          if (isCurrentlySpeaking) return;
           pendingStartModeRef.current = null;
           setPendingGuideMode(null);
           playEarcon("clear");
@@ -933,6 +938,7 @@ export default function VoiceGuide() {
       if (pendingTabSwitchRef.current) {
         const targetTab = pendingTabSwitchRef.current;
         if (placedCount === 0) {
+          if (isCurrentlySpeaking) return;
           pendingTabSwitchRef.current = null;
           playEarcon("clear");
           window.dispatchEvent(new CustomEvent("lentera-switch-tab", { detail: targetTab }));
@@ -1204,7 +1210,7 @@ export default function VoiceGuide() {
         const targetNext = NEXT_GUIDE_MAP[mode];
 
         if (checkpointPhase === "waiting_clear") {
-          if (placedCount === 0 && !checkpointClearSpokenRef.current) {
+          if (placedCount === 0 && !checkpointClearSpokenRef.current && !isCurrentlySpeaking) {
             checkpointClearSpokenRef.current = true;
             playEarcon("clear");
             setCheckpointPhase("waiting_choice");
@@ -1223,7 +1229,7 @@ export default function VoiceGuide() {
         }
 
         if (checkpointPhase === "waiting_choice") {
-          if (checkpointHandledRef.current) return;
+          if (checkpointHandledRef.current || isCurrentlySpeaking) return;
 
           if (cells["A1"] && targetNext && !isStudentToken(cells["A1"])) {
             checkpointHandledRef.current = true;
@@ -1269,8 +1275,11 @@ export default function VoiceGuide() {
           const nextMode = pendingStartModeRef.current || pendingNextGuideRef.current;
           if (placedCount === 0) {
             setCheckpointPhase("confirmed");
+            if (isCurrentlySpeaking) return;
+            setCheckpointPhase("confirmed");
             pendingNextGuideRef.current = null;
-            pendingStartModeRef.current = null;
+            if (isCurrentlySpeaking) return;
+          pendingStartModeRef.current = null;
             setPendingGuideMode(null);
             playEarcon("clear");
             if (nextMode) {
@@ -1303,7 +1312,7 @@ export default function VoiceGuide() {
         if (isTargetMatched) recognitionWrongSigRef.current = null;
 
         // 1. Balok baru diletakkan di C3 -> Jelaskan & tanyakan kejelasan (HANYA SEKALI PER LANGKAH)
-        if (isTargetMatched && recognitionExplainedStepRef.current !== currentStep) {
+        if (isTargetMatched && recognitionExplainedStepRef.current !== currentStep && !isCurrentlySpeaking) {
           if (recognitionLiftTimerRef.current) {
             clearTimeout(recognitionLiftTimerRef.current);
             recognitionLiftTimerRef.current = null;
@@ -1677,6 +1686,9 @@ export default function VoiceGuide() {
             );
             if (wrongCellEntry) {
               const [wrongCell] = wrongCellEntry;
+              const sig1 = `dir_${wrongCell}_${expectedComponent}_${currentStep}`;
+              if (lastStepWrongSigRef.current === sig1) break;
+              lastStepWrongSigRef.current = sig1;
               if (now - lastClueRef.current > 5000) {
                 lastClueRef.current = now;
                 playEarcon("clue");
@@ -1698,6 +1710,9 @@ export default function VoiceGuide() {
               if (now - lastClueRef.current > 5000) {
                 lastClueRef.current = now;
                 const placedName = COMPONENT_LABEL[placed.component] || placed.component;
+                const sig2 = `comp_${cell}_${placed.component}_${currentStep}`;
+                if (lastStepWrongSigRef.current === sig2) break;
+                lastStepWrongSigRef.current = sig2;
                 const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
                 const clue = COMPONENT_TACTILE_HINT[expectedComponent] || "bentuk yang sesuai";
                 playEarcon("wrong");
@@ -1717,7 +1732,9 @@ export default function VoiceGuide() {
             const extraPlacedEntry = Object.entries(cells).find(
               ([c, d]) => !step.targetCells?.[c] && !priorStepCells.has(c) && Boolean(d) && !isStudentToken(d)
             );
-            if (extraPlacedEntry && now - lastClueRef.current > 5500) {
+            const sig3 = extraPlacedEntry ? `extra_${extraPlacedEntry[0]}_${(extraPlacedEntry[1] as any)?.component}_${currentStep}` : "";
+            if (extraPlacedEntry && lastStepWrongSigRef.current !== sig3) {
+              lastStepWrongSigRef.current = sig3;
               lastClueRef.current = now;
               const [wrongCell, placedData] = extraPlacedEntry;
               const placedName = COMPONENT_LABEL[(placedData as any)?.component] || "balok";
@@ -1748,7 +1765,8 @@ export default function VoiceGuide() {
         setCompletedCells(newCompleted);
       }
 
-      if (allFound && !stepCompleted) {
+      if (allFound && !stepCompleted && !isAnyAudioSpeaking) {
+        lastStepWrongSigRef.current = null;
         setStepCompleted(true);
         setCompletedCells(newCompleted);
 
@@ -1811,8 +1829,19 @@ export default function VoiceGuide() {
       }
     };
 
+    const handleSpeechEnded = () => {
+      setTimeout(() => {
+        if (!isSpeakingRef.current && !isSpeakingAudio() && !(window as any).__lenteraSpeaking && latestDetailRef.current) {
+          handleCircuitUpdate(new CustomEvent("circuit-update", { detail: latestDetailRef.current }));
+        }
+      }, 120);
+    };
     window.addEventListener("circuit-update", handleCircuitUpdate);
-    return () => window.removeEventListener("circuit-update", handleCircuitUpdate);
+    window.addEventListener("lentera-speech-ended", handleSpeechEnded);
+    return () => {
+      window.removeEventListener("circuit-update", handleCircuitUpdate);
+      window.removeEventListener("lentera-speech-ended", handleSpeechEnded);
+    };
   }, [mode, step, stepCompleted, currentStep, totalSteps, isFinished, checkpointPhase, speak]);
 
   // Speak current step instruction when step changes
