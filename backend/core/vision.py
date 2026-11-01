@@ -50,7 +50,7 @@ class VisionCore:
         sides = [float(np.linalg.norm(pts[(i + 1) % 4] - pts[i])) for i in range(4)]
         min_side, max_side = min(sides), max(sides)
         h, w = ref_gray.shape[:2]
-        if min_side < 12 or max_side > min(h, w) * 0.25 or (max_side / max(min_side, 1.0)) > 1.50:
+        if min_side < 12 or max_side > min(h, w) * 0.25 or (max_side / max(min_side, 1.0)) > 1.85:
             return False
 
         dst = np.array([[0, 0], [35, 0], [35, 35], [0, 35]], dtype=np.float32)
@@ -71,7 +71,7 @@ class VisionCore:
         ]
         # Pada stiker asli, ke-4 sisi bingkai hitam lebih gelap dari bit putih (p90) dan seragam.
         # Pada lubang kosong B3 yang disorot LED, salah satu tepi sangat terang (>= p90) dan timpang (> 65).
-        if max(edges) > p90 - 8 or (max(edges) - min(edges)) > 65:
+        if max(edges) > p90 or (max(edges) - min(edges)) > 90:
             return False
         return True
 
@@ -109,6 +109,8 @@ class VisionCore:
             collect(gray)
             collect(self.clahe.apply(gray))
             collect(frame[:, :, 0])  # Blue channel memiliki kontras tertinggi di bawah lampu LED putih
+            collect(frame[:, :, 2])  # Red channel kebal terhadap silau cyan/biru LED pada sudut papan
+            collect(self.clahe.apply(frame[:, :, 2]))
 
         return [(m_id, c) for m_id, c, _ in detections]
 

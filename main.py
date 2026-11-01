@@ -134,14 +134,23 @@ def main():
     def handle_calibrate():
         print("[CALIBRATION] Menerima perintah auto-calibrate dari UI...")
         now = time.time()
-        # Ambil semua marker yang terdeteksi dalam 2.5 detik terakhir
-        valid_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 2.5]
+        # Ambil semua marker yang terdeteksi dalam 4.0 detik terakhir (toleran kedip/glare sudut)
+        valid_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 4.0]
         print(f"[CALIBRATION] Marker valid terkumpul: {len(valid_markers)}")
         
         calib_input = [(m["id"], m["corners"]) for m in valid_markers]
         success, msg = mapper.auto_calibrate(calib_input)
         print(f"[CALIBRATION] {msg}")
         audio.enqueue_narration(msg)
+        try:
+            ws.broadcast_sync({
+                "type": "calibration_result",
+                "success": success,
+                "message": msg,
+                "detected_count": len(valid_markers)
+            })
+        except Exception:
+            pass
         
     ws.on_calibrate = handle_calibrate
 

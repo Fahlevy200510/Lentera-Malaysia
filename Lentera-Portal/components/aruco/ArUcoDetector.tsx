@@ -167,6 +167,12 @@ export default function ArUcoDetector() {
         try {
           const data = JSON.parse(event.data);
 
+          if (data.type === "calibration_result") {
+            setIsCalibrating(false);
+            showToast(data.message || (data.success ? "Kalibrasi berhasil!" : "Kalibrasi gagal."));
+            return;
+          }
+
           if (data.type === "system_event" && data.event === "shutting_down") {
             showToast(data.message || "Alat LENTERA sedang dimatikan secara aman.");
             return;
