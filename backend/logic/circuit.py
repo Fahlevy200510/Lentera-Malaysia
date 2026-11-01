@@ -54,7 +54,7 @@ def get_component_terminals(component, rotation):
 
 def get_open_sides(component, rotation):
     """Mengembalikan sisi-sisi yang secara fisik memiliki terminal terbuka."""
-    if component.startswith("student_"):
+    if component.startswith("student_") or component.startswith("teacher"):
         return []
     if component not in COMPONENT_DEFAULT_SIDES:
         return ["Atas", "Bawah", "Kiri", "Kanan"]

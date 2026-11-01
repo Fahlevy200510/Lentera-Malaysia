@@ -11,7 +11,8 @@ MARKER_ID_MAP = {
     7: "switch",  # Fallback toleransi untuk stiker saklar lama
     35: "student_via",
     36: "student_amira",
-    37: "student_ajib"
+    37: "student_ajib",
+    38: "teacher"
 }
 
 COMPONENTS_WITH_ROTATION = ["battery", "straight_cable", "l_cable", "t_cable", "switch", "lamp"]
@@ -27,7 +28,8 @@ COMPONENT_NAME_ID = {
     "switch": "saklar",
     "student_via": "kartu identitas Via",
     "student_amira": "kartu identitas Amira",
-    "student_ajib": "kartu identitas Ajib"
+    "student_ajib": "kartu identitas Ajib",
+    "teacher": "kartu identitas Guru"
 }
 
 class GridState:
