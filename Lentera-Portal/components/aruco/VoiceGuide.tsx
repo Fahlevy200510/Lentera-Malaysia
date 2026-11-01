@@ -142,7 +142,7 @@ const RECOGNITION_STEPS: StepDef[] = [
     voice: "Komponen kedua adalah Saklar, pengendali aliran listrik. Raba balok yang memiliki tuas geser timbul di bagian atasnya yang bisa kamu geser dengan jari. Saklar berfungsi menyambung dan memutus arus. Letakkan balok Saklar ini di sel C3.",
     targetCells: { "C3": "switch" },
     hint: "Raba bagian atas balok: temukan tuas geser timbul yang dapat digeser untuk menyambung dan memutus aliran listrik.",
-    explanation: "Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Saat tuas saklar digeser ke posisi ON, arus listrik mengalir. Saat tuas digeser ke posisi OFF, aliran listrik terputus dan lampu akan padam.",
+    explanation: "Ini adalah balok Saklar. Saklar berfungsi menghubungkan dan memutuskan aliran listrik. Untuk menyalakannya, putar balok saklar 90 derajat dari posisi terakhirnya hingga ON, maka arus listrik mengalir. Putar lagi 90 derajat untuk kembali ke OFF, aliran listrik terputus dan lampu akan padam.",
   },
   {
     instruction: "Raba dan cari balok Lampu LED (kubah bundar timbul & polaritas + / -), letakkan di sel C3.",
@@ -361,12 +361,12 @@ const SERIES_STEPS: StepDef[] = [
     explanation: "Hebat! Semua balok sudah tersambung di papan. Tapi perhatikan, lampu belum menyala karena saklar masih terbuka atau mati.",
   },
   {
-    instruction: "Langkah 13: Geser Saklar di C5 & E4 ke Posisi ON untuk Menyalakan Lampu",
-    voice: "Langkah 13: Sekarang saklarnya masih terbuka atau mati. Raba tuas saklar di posisi C5 dan E4, lalu geser saklar tersebut ke posisi ON untuk menutup sirkuit dan menyalakan kedua lampu!",
+    instruction: "Langkah 13: Putar Balok Saklar di C5 & E4 90° dari Posisi Terakhir untuk Menyalakan Lampu",
+    voice: "Langkah 13: Sekarang saklarnya masih terbuka atau mati. Raba balok saklar di posisi C5 dan E4, lalu putar masing-masing balok saklar 90 derajat dari posisi terakhirnya tanpa memindahkan kotaknya, untuk menutup sirkuit dan menyalakan kedua lampu!",
     targetCells: { "C5": "switch", "E4": "switch" },
     validator: (cells, status) => status === "success",
-    hint: "Raba tuas saklar di C5 dan E4. Geser tuasnya ke posisi ON hingga lampu menyala bersamaan.",
-    explanation: "Sempurna! Kedua saklar sudah digeser ke ON dan arus listrik mengalir lancar ke seluruh rangkaian seri. Kedua lampu menyala terang bersamaan! Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
+    hint: "Raba balok saklar di C5 dan E4. Putar masing-masing balok 90 derajat dari posisi terakhirnya hingga lampu menyala bersamaan.",
+    explanation: "Sempurna! Kedua saklar sudah diputar ke ON dan arus listrik mengalir lancar ke seluruh rangkaian seri. Kedua lampu menyala terang bersamaan! Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
   },
 ];
 
@@ -457,11 +457,11 @@ const PARALLEL_STEPS: StepDef[] = [
     explanation: "Hebat! Seluruh 12 balok rangkaian paralel telah terpasang di papan. Tapi lampu belum menyala karena kedua saklar masih terbuka atau mati.",
   },
   {
-    instruction: "Langkah 13: Putar Saklar di C4 atau C3 ke Posisi ON untuk Menyalakan Lampu",
-    voice: "Langkah 13: Sekarang saklarnya masih NO atau mati. Putar tuas saklar di posisi C4 atau C3 ke posisi ON untuk mengalirkan arus dan menyalakan lampu pada cabangnya!",
+    instruction: "Langkah 13: Putar Balok Saklar di C4 atau C3 90° dari Posisi Terakhir untuk Menyalakan Lampu",
+    voice: "Langkah 13: Sekarang saklarnya masih terbuka atau mati. Putar balok saklar di posisi C4 atau C3 sebesar 90 derajat dari posisi terakhirnya tanpa memindahkan kotaknya, untuk mengalirkan arus dan menyalakan lampu pada cabangnya!",
     targetCells: { "C4": "switch", "C3": "switch" },
     validator: (cells, status) => status === "success",
-    hint: "Raba tuas saklar di C4 atau C3. Putar tuasnya 90 derajat ke posisi ON hingga lampu pada cabangnya menyala.",
+    hint: "Raba balok saklar di C4 atau C3. Putar baloknya 90 derajat dari posisi terakhirnya hingga lampu pada cabangnya menyala.",
     explanation: "Luar biasa! Lampu berhasil menyala! Di rangkaian paralel, tiap cabang bekerja secara mandiri sehingga lampu bisa dinyalakan dan dimatikan tanpa mempengaruhi cabang lain. Selamat, kamu berhasil menyelesaikan misi rangkaian paralel!",
   },
 ];
@@ -524,13 +524,13 @@ const TROUBLESHOOT_STEPS: StepDef[] = [
   },
   {
     instruction: "Tantangan 2: Uji Pemutus Aliran Arus",
-    voice: "Misi kedua! Tanpa melepas balok komponen dari papan, geser tuas saklar ke posisi terbuka atau OFF untuk memutus aliran listrik!",
+    voice: "Misi kedua! Tanpa memindahkan balok komponen ke kotak lain, putar balok saklar 90 derajat dari posisi terakhirnya ke posisi terbuka atau OFF untuk memutus aliran listrik!",
     validator: (cells, status) => {
       const placedCount = Object.values(cells).filter(Boolean).length;
       return placedCount >= 4 && status !== "success" && status !== "short_circuit";
     },
-    hint: "Raba tuas timbul di atas saklar, lalu geser ke posisi OFF untuk mematikan sirkuit.",
-    explanation: "Sempurna! Kamu telah membuktikan saklar geser dapat memutuskan aliran listrik secara aman tanpa harus membongkar rangkaian.",
+    hint: "Raba balok saklar, lalu putar 90 derajat dari posisi terakhirnya ke posisi OFF untuk mematikan sirkuit.",
+    explanation: "Sempurna! Kamu telah membuktikan saklar dapat memutuskan aliran listrik secara aman hanya dengan memutar baloknya, tanpa harus membongkar rangkaian.",
   },
   {
     instruction: "Tantangan 3: Rancang Sirkuit Paralel Mandiri",
@@ -1868,9 +1868,9 @@ export default function VoiceGuide() {
           lastClueRef.current = now;
           playEarcon("warning");
           if (mode === "series") {
-            speak("Rangkaian seri belum menyala karena saklar masih terbuka atau mati. Putar saklar di C5 dan E4 ke posisi ON.");
+            speak("Rangkaian seri belum menyala karena saklar masih terbuka atau mati. Putar balok saklar di C5 dan E4 sebesar 90 derajat dari posisi terakhirnya.");
           } else {
-            speak("Putar saklar di C4 atau C3 ke posisi ON agar lampu pada cabang menyala.");
+            speak("Putar balok saklar di C4 atau C3 sebesar 90 derajat dari posisi terakhirnya agar lampu pada cabang menyala.");
           }
         }
       }
