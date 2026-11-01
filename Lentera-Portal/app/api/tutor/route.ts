@@ -33,10 +33,11 @@ interface ChatTurn {
 //  - legacy:       { isLampReversed, isSwitchOpen }
 function normalizeCircuit(cs: any): { lampReversed: boolean; switchOpen: boolean; pathOpen: boolean; allGood: boolean } | null {
   if (!cs || typeof cs !== "object") return null;
-  const lampReversed = cs.isLampReversed === true || cs.polarity_correct === false;
-  const switchOpen = cs.isSwitchOpen === true || cs.switch_state === "off";
-  const pathOpen = cs.circuit_closed === false;
-  const allGood = !lampReversed && !switchOpen && !pathOpen && (cs.circuit_closed === true || cs.polarity_correct === true);
+  const status = String(cs.status || "");
+  const lampReversed = cs.isLampReversed === true || cs.polarity_correct === false || status === "polarity_reversed";
+  const switchOpen = cs.isSwitchOpen === true || cs.switch_state === "off" || status === "switch_off";
+  const pathOpen = cs.circuit_closed === false || status === "open_circuit" || status === "not_connected";
+  const allGood = !lampReversed && !switchOpen && !pathOpen && (cs.circuit_closed === true || cs.polarity_correct === true || status === "success");
   return { lampReversed, switchOpen, pathOpen, allGood };
 }
 
@@ -74,8 +75,8 @@ function generateCLEFallbackResponse(
   if (cs && wantsDiagnosis && (cs.lampReversed || cs.switchOpen || cs.pathOpen)) {
     if (cs.lampReversed) {
       return {
-        text: "Raba dudukan komponen lampu di petak B1. Bisakah kamu merasakan kutub positif yang timbul menghadap ke baterai? Putar balok lampu 180 derajat lalu rasakan lagi perbedaannya.",
-        note: "Diagnosis CLE: Polaritas lampu terbalik (Jelaskan-Sebelum-Menjawab)",
+        text: "Kutub polaritas lampu LED di rangkaianmu terbalik sehingga lampu belum menyala. Raba balok lampu tersebut, lalu angkat dan putar posisinya 180 derajat agar kutub bertanda plus menghadap ke arah kutub positif baterai.",
+        note: "Diagnosis CLE: Polaritas lampu terbalik",
       };
     }
     if (cs.switchOpen) {
@@ -194,8 +195,20 @@ export async function POST(req: NextRequest) {
     }
 
     // If Groq API key is provided, use LLaMA 3.3 70B
+    let diagnosisRule = "";
+    const sensorStatus = String(circuitState?.status || "");
+    if (sensorStatus === "polarity_reversed") {
+      diagnosisRule = "\n\nATURAN MUTLAK DIAGNOSIS SENSOR: Status sirkuit terdeteksi polarity_reversed (kutub polaritas lampu LED terbalik). Jalur sirkuit SUDAH TERSAMBUNG DAN LOOP SUDAH TERTUTUP! JANGAN PERNAH menyuruh menghubungkan kabel lagi, JANGAN menyuruh memasang kabel di C3! Beritahu siswa dengan jelas bahwa rangkaiannya sudah terhubung, tetapi kutub lampu LED terbalik. Bimbing siswa untuk meraba balok lampu tersebut, lalu memutar posisinya 180 derajat agar kutub bertanda plus (+) menghadap ke arah kutub positif baterai.";
+    } else if (sensorStatus === "switch_off") {
+      diagnosisRule = "\n\nATURAN MUTLAK DIAGNOSIS SENSOR: Rangkaian sudah tersambung tetapi saklar masih terbuka atau OFF. Bimbing siswa untuk meraba balok saklar dan memutar tuasnya 90 derajat ke posisi ON agar arus mengalir.";
+    } else if (sensorStatus === "short_circuit") {
+      diagnosisRule = "\n\nPERINGATAN BAHAYA SENSOR: Terjadi korsleting arus pendek tanpa beban! Bimbing siswa segera melepaskan kabel atau memasang lampu.";
+    } else if (sensorStatus === "success") {
+      diagnosisRule = "\n\nSTATUS SENSOR: Rangkaian berhasil menyala sempurna! Berikan pujian hangat atas ketelitian taktil siswa.";
+    }
+
     const contextBlock = circuitState
-      ? `\n\nData sensor rangkaian fisik saat ini:\n${JSON.stringify(circuitState, null, 2)}\nMode saat ini: ${mode}`
+      ? `\n\nData sensor rangkaian fisik saat ini:\n${JSON.stringify(circuitState, null, 2)}\nMode saat ini: ${mode}${diagnosisRule}`
       : `\n\nMode saat ini: ${mode}`;
 
     const messages = [

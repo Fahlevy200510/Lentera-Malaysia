@@ -27,7 +27,7 @@ class VisionCore:
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
         self.clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
         # ID 1-7: Komponen resmi Lentera | ID 35: Via, ID 36: Amira, ID 37: Ajib (Kelas 11 SMA)
-        self.valid_ids = {1, 2, 3, 4, 5, 6, 7, 35, 36, 37}
+        self.valid_ids = {1, 2, 3, 4, 5, 6, 7, 35, 36, 37, 38}
         
         # Kamera parameters (Intrinsic), default mock
         self.camera_matrix = np.eye(3)
@@ -72,6 +72,10 @@ class VisionCore:
         # Pada stiker asli, ke-4 sisi bingkai hitam lebih gelap dari bit putih (p90) dan seragam.
         # Pada lubang kosong B3 yang disorot LED, salah satu tepi sangat terang (>= p90) dan timpang (> 65).
         if max(edges) > p90 or (max(edges) - min(edges)) > 90:
+            return False
+        # Border hitam asli harus pekat dan jauh lebih gelap dari bit putih
+        mean_edge = float(np.mean(edges))
+        if mean_edge > 95 or (p90 > 50 and mean_edge > p90 * 0.72):
             return False
         return True
 

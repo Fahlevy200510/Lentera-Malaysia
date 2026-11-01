@@ -537,7 +537,7 @@ const TROUBLESHOOT_STEPS: StepDef[] = [
     voice: "Misi ketiga: Buatlah rangkaian bercabang paralel dengan minimal dua lampu menggunakan kabel cabang T. Pastikan kedua lampu menyala bersamaan!",
     validator: (cells, status, graphType) => {
       const lamps = Object.values(cells).filter((c: any) => c && c.component === "lamp").length;
-      return status === "success" && graphType === "parallel" && lamps >= 2;
+      return status === "success" && (graphType === "parallel" || lamps >= 2);
     },
     hint: "Gunakan kabel cabang T untuk membagi aliran arus ke dua lampu terpisah.",
     explanation: "Luar biasa! Kamu resmi menjadi Master Sirkuit Taktil Lentera! Kemampuan analisismu setara ilmuwan cilik sejati.",
@@ -554,13 +554,14 @@ export const isStudentToken = (cell: any): boolean => {
   if (!cell || typeof cell !== "object") return false;
   const comp = String(cell.component || "");
   const id = Number(cell.id);
-  return comp.startsWith("student_") || [35, 36, 37].includes(id);
+  return comp.startsWith("student_") || comp.startsWith("teacher") || [35, 36, 37, 38].includes(id);
 };
 
 export const getStudentNameFromToken = (cell: any): string => {
   if (!cell) return "Siswa";
   const comp = String(cell.component || "");
   const id = Number(cell.id);
+  if (comp.startsWith("teacher") || id === 38) return "Guru";
   if (comp === "student_via" || id === 35) return "Via";
   if (comp === "student_amira" || id === 36) return "Amira";
   if (comp === "student_ajib" || id === 37) return "Ajib";
@@ -896,12 +897,25 @@ export default function VoiceGuide() {
           .map(([pos, v]) => `${COMPONENT_LABEL[(v as any).component] || (v as any).component} di sel ${pos}`)
           .join(", ");
 
+        let promptMessage = `Siswa bernama ${sName} sedang merakit rangkaian bebas di lab. Komponen terpasang saat ini: ${placedSummary}.`;
+        if (status === "polarity_reversed") {
+          promptMessage += ` PERINGATAN SENSOR: Polaritas lampu LED terbalik (polarity_reversed). Seluruh lintasan sirkuit baterai dan kabel SEBENARNYA SUDAH TERSAMBUNG DAN TERTUTUP! Hanya kutub lampu LED yang terbalik. Bimbing siswa untuk meraba balok lampu tersebut, lalu memutar posisinya 180 derajat. JANGAN menyuruh menyambung kabel lagi!`;
+        } else if (status === "switch_off") {
+          promptMessage += ` DIAGNOSIS SENSOR: Rangkaian sudah tersambung tetapi saklar masih terbuka atau OFF. Bimbing siswa untuk memutar tuas saklar 90 derajat ke posisi ON.`;
+        } else if (status === "short_circuit") {
+          promptMessage += ` PERINGATAN BAHAYA: Terjadi korsleting arus pendek tanpa hambatan beban! Bimbing siswa segera melepaskan kabel atau memasang lampu.`;
+        } else if (status === "success") {
+          promptMessage += ` STATUS: Rangkaian berhasil menyala sempurna! Berikan apresiasi hangat atas ketelitian taktil siswa.`;
+        } else {
+          promptMessage += ` Status sirkuit: ${status}. Berikan bimbingan taktil singkat 2 kalimat yang ramah dan memotivasi untuk menyambungkan rangkaian tertutup.`;
+        }
+
         const res = await fetch("/api/tutor", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             mode: "exploration",
-            message: `Siswa bernama ${sName} sedang merakit rangkaian bebas di lab. Komponen terpasang saat ini: ${placedSummary}. Status sirkuit: ${status}. Berikan bimbingan taktil singkat 2 kalimat yang ramah dan memotivasi untuk menyambungkan rangkaian tertutup.`,
+            message: promptMessage,
             circuitState: {
               cells,
               status,
@@ -956,6 +970,10 @@ export default function VoiceGuide() {
       } else if (mode === "series" || mode === "adaptive_series") {
         speak(
           "Hebat sekali! Kamu berhasil menyelesaikan Rangkaian Seri dan lampu menyala! Sebelum kita lanjut ke Rangkaian Paralel, silakan angkat terlebih dahulu semua balok dari papan."
+        );
+      } else if (mode === "troubleshoot") {
+        speak(
+          "Luar biasa, Detektif Cilik! Kamu berhasil menuntaskan seluruh Misi Detektif Sirkuit dan resmi menguasai seluruh modul LENTERA! Silakan angkat semua balok dari papan untuk kembali ke menu utama atau bereksplorasi bebas."
         );
       } else {
         speak(
@@ -1039,23 +1057,31 @@ export default function VoiceGuide() {
       // =========================================================================
       if (
         !isRedirectingRef.current &&
-        Date.now() - mountTimeRef.current >= 2000 &&
-        !ignoreIdleMenuUntilLiftRef.current
+        Date.now() - mountTimeRef.current >= 1500
       ) {
         const cellA1 = cells["A1"];
         const cellE5 = cells["E5"];
 
-        // 1. Kartu identitas siswa di sel A1 -> Pindah ke LENTERA Learn
+        // 1. Kartu identitas siswa / guru di sel A1 -> Pindah ke LENTERA Learn
         if (isStudentToken(cellA1)) {
           isRedirectingRef.current = true;
           cancelSpeech();
           playEarcon("click");
           const sName = getStudentNameFromToken(cellA1);
+          const isTeacher = String((cellA1 as any)?.component || "").startsWith("teacher") || Number((cellA1 as any)?.id) === 38;
+          if (isTeacher) {
+            localStorage.setItem(
+              "lentera-session",
+              JSON.stringify({ name: "Guru", role: "teacher", grade: "Guru Fisika" })
+            );
+          }
           const navTimer = setTimeout(() => {
             window.location.href = "/dashboard";
           }, 4500);
           speakNarration(
-            `Kartu identitas ${sName} terdeteksi di sel A1. Membuka LENTERA Learn untuk melihat nilai, materi, dan progres belajarmu.`,
+            isTeacher
+              ? `Kartu identitas guru terdeteksi di sel A1. Membuka Dashboard Guru LENTERA Learn.`
+              : `Kartu identitas ${sName} terdeteksi di sel A1. Membuka LENTERA Learn untuk melihat nilai, materi, dan progres belajarmu.`,
             {
               onEnd: () => {
                 clearTimeout(navTimer);
@@ -1066,18 +1092,21 @@ export default function VoiceGuide() {
           return;
         }
 
-        // 3. Kartu identitas siswa di sel E5 -> Logout / Selesai Sesi
+        // 3. Kartu identitas siswa / guru di sel E5 -> Logout / Selesai Sesi
         if (isStudentToken(cellE5)) {
           isRedirectingRef.current = true;
           cancelSpeech();
           playEarcon("clear");
           const sName = getStudentNameFromToken(cellE5);
+          const isTeacher = String((cellE5 as any)?.component || "").startsWith("teacher") || Number((cellE5 as any)?.id) === 38;
           localStorage.removeItem("lentera-session");
           const navTimer = setTimeout(() => {
             window.location.href = "/";
           }, 4500);
           speakNarration(
-            `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
+            isTeacher
+              ? `Kartu identitas guru terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
+              : `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
             {
               onEnd: () => {
                 clearTimeout(navTimer);
@@ -1759,12 +1788,15 @@ export default function VoiceGuide() {
         const hasActiveAttempt = Object.entries(cells).some(
           ([c, d]) => !priorCellsCheck.has(c) && Boolean(d) && !isStudentToken(d)
         );
-        if (!hasActiveAttempt) {
+        // Hanya reset signature jika papan benar-benar kosong stabil > 5s agar transisi angkat tidak memicu suara ulang
+        if (!hasActiveAttempt && Date.now() - lastClueRef.current > 5000) {
           lastStepWrongSigRef.current = null;
         }
       }
       if (step.targetCells && !allFound && !stepCompleted && !isFinished && !isAnyAudioSpeaking) {
         const now = Date.now();
+        // Jeda pengaman minimum 6.5s antar-koreksi kesalahan agar audio tidak berulang saat siswa sedang mengangkat/memindahkan balok
+        if (now - lastClueRef.current < 6500) return;
         let handledClue = false;
 
         // Kumpulkan sel yang sudah ditempati secara sah pada langkah-langkah sebelumnya (0 .. currentStep-1)
@@ -2680,8 +2712,30 @@ export default function VoiceGuide() {
                       <p className="text-[11px] text-cs-text/70 leading-relaxed">
                         Silakan angkat semua balok yang ada di papan fisik agar grid bersih sebelum lanjut ke modul berikutnya.
                       </p>
-                      <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-100/80 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
-                        <span>{boardBlockCount > 0 ? `${boardBlockCount} balok masih di papan` : "Papan sudah bersih..."}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-100/80 px-2.5 py-1 text-[11px] font-semibold text-amber-900">
+                          <span>{boardBlockCount > 0 ? `${boardBlockCount} balok masih di papan` : "Papan sudah bersih..."}</span>
+                        </div>
+                        {boardBlockCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playEarcon("clear");
+                              setBoardBlockCount(0);
+                              setCheckpointPhase("waiting_choice");
+                              const targetNext = NEXT_GUIDE_MAP[mode];
+                              if (targetNext) {
+                                speak(`Papan sudah bersih. Apakah kamu ingin lanjut ke panduan ${targetNext.title}? Letakkan balok di A1 untuk Lanjut, atau di E1 untuk Istirahat.`);
+                              } else {
+                                speak("Papan sudah bersih. Silakan mulai eksplorasi bebas.");
+                              }
+                            }}
+                            className="text-[11px] font-bold text-indigo-700 underline hover:text-indigo-950 transition"
+                            title="Klik jika semua balok sudah diangkat namun ada pantulan sensor yang masih terbaca"
+                          >
+                            Papan Sudah Kosong (Lanjut)
+                          </button>
+                        )}
                       </div>
                     </div>
                   ) : checkpointPhase === "waiting_choice" ? (
