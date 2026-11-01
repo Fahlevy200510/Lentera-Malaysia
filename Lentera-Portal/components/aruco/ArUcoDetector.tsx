@@ -520,7 +520,32 @@ export default function ArUcoDetector() {
                       : "bg-[#FFF3D6] border-[#F5B841]/50 text-[#9A5B00] font-bold"
                 }`}
             >
-              {detections.circuit_status.narration}
+              {(() => {
+                const st = detections.circuit_status?.status;
+                if (st === "no_battery" || st === "no_lamp") {
+                  const COMP_NAMES: Record<string, string> = {
+                    battery: "Baterai",
+                    lamp: "Lampu",
+                    switch: "Saklar",
+                    straight_cable: "Kabel Lurus",
+                    l_cable: "Kabel Belok (L)",
+                    t_cable: "Kabel Simpang (T)",
+                    resistor: "Resistor",
+                    student_via: "Kartu Via",
+                    student_amira: "Kartu Amira",
+                    student_ajib: "Kartu Ajib",
+                  };
+                  const activeEntries = Object.entries(detections.cells || {}).filter(([, v]) => Boolean(v));
+                  if (activeEntries.length === 0) {
+                    return "Papan siap — belum ada balok di atas papan.";
+                  }
+                  const listStr = activeEntries
+                    .map(([cell, v]) => `${COMP_NAMES[v.component] || v.component} (${cell})`)
+                    .join(", ");
+                  return `Terdeteksi di papan: ${listStr}`;
+                }
+                return detections.circuit_status?.narration;
+              })()}
             </div>
           )}
         </div>
