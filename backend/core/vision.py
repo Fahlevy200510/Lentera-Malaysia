@@ -14,9 +14,9 @@ class VisionCore:
         self.aruco_params.adaptiveThreshWinSizeStep = 8  # Langkah lebih rapat (3, 11, 19, 27, 35, 43)
         self.aruco_params.adaptiveThreshConstant = 5  # Lebih sensitif pada area tengah papan yang redup
         self.aruco_params.minDistanceToBorder = 1
-        self.aruco_params.minOtsuStdDev = 4.0  # Cegah area plastik polos/silau dianggap memiliki bit
-        self.aruco_params.errorCorrectionRate = 0.55  # Cegah silau lampu LED dipaksa cocok ke ID 37
-        self.aruco_params.maxErroneousBitsInBorderRate = 0.30  # Wajibkan bingkai hitam utuh di ke-4 sisi stiker
+        self.aruco_params.minOtsuStdDev = 2.5  # Tetap baca bit di area tengah papan yang kontrasnya tipis
+        self.aruco_params.errorCorrectionRate = 0.70  # Toleran terhadap bayangan dinding slot
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.38  # Toleransi pantulan tipis di tepi border hitam
         self.aruco_params.perspectiveRemoveIgnoredMarginPerCell = 0.22  # Fokus ke tengah tiap bit agar tidak terpengaruh tepi
         self.aruco_params.minMarkerPerimeterRate = 0.03  # Mampu mendeteksi marker sedikit lebih jauh/kecil
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
@@ -41,15 +41,16 @@ class VisionCore:
     def _is_valid_marker(self, ref_gray, corners):
         """
         Tolak ghost marker akibat silau LED pada lubang slot kosong (seperti ID 37 di B3):
-        1. Ukuran & rasio sisi kotak harus wajar seperti stiker fisik (bukan dinding luar lubang slot).
-        2. Keempat tepi bingkai luar (top, bottom, left, right) harus gelap seragam (bukan silau LED 1 sisi).
+        1. Di pusat lensa (C3), marker tampak lebih besar (~66-75px pada 480p) dibanding sudut (~50px),
+           sehingga batas ukuran dibuat longgar (25% tinggi frame = 120px) agar C3 tidak pernah ditolak.
+        2. Keempat tepi bingkai luar (top, bottom, left, right) tidak boleh berupa sorotan lampu LED
+           putih sebelah (pada ghost B3, tepi bawah = 200 > p90 dan selisih tepi > 100).
         """
         pts = np.asarray(corners, dtype=np.float32).reshape(4, 2)
         sides = [float(np.linalg.norm(pts[(i + 1) % 4] - pts[i])) for i in range(4)]
         min_side, max_side = min(sides), max(sides)
         h, w = ref_gray.shape[:2]
-        # ponytail: max_side dibatasi 13.5% dimensi pendek frame (~64px pada 480p); sesuaikan jika kamera ganti resolusi/jarak
-        if min_side < 14 or max_side > min(h, w) * 0.135 or (max_side / max(min_side, 1.0)) > 1.42:
+        if min_side < 12 or max_side > min(h, w) * 0.25 or (max_side / max(min_side, 1.0)) > 1.50:
             return False
 
         dst = np.array([[0, 0], [35, 0], [35, 35], [0, 35]], dtype=np.float32)
@@ -59,7 +60,7 @@ class VisionCore:
         inner = patch[6:30, 6:30]
         p90 = float(np.percentile(inner, 90))
         p10 = float(np.percentile(inner, 10))
-        if p90 - p10 < 25:
+        if p90 - p10 < 20:
             return False
 
         edges = [
@@ -68,14 +69,16 @@ class VisionCore:
             float(patch[4:32, 1:5].mean()),   # Left border
             float(patch[4:32, 31:35].mean()), # Right border
         ]
-        if max(edges) > p90 - 12 or (max(edges) - min(edges)) > 55:
+        # Pada stiker asli, ke-4 sisi bingkai hitam lebih gelap dari bit putih (p90) dan seragam.
+        # Pada lubang kosong B3 yang disorot LED, salah satu tepi sangat terang (>= p90) dan timpang (> 65).
+        if max(edges) > p90 - 8 or (max(edges) - min(edges)) > 65:
             return False
         return True
 
     def detect_markers(self, frame):
         """
         Deteksi marker ArUco yang cepat, adaptif, dan tahan terhadap distorsi inframerah/ungu.
-        Menggabungkan pembacaan Green Channel (kebal banjir IR), CLAHE, dan Grayscale
+        Menggabungkan pembacaan Green Channel (kebal banjir IR), CLAHE, Grayscale, dan Blue Channel
         dengan deduplikasi spasial serta filter anti-ghosting silau LED.
         """
         has_channels = len(frame.shape) == 3 and frame.shape[2] >= 3
@@ -105,6 +108,7 @@ class VisionCore:
         if has_channels:
             collect(gray)
             collect(self.clahe.apply(gray))
+            collect(frame[:, :, 0])  # Blue channel memiliki kontras tertinggi di bawah lampu LED putih
 
         return [(m_id, c) for m_id, c, _ in detections]
 
