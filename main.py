@@ -222,7 +222,7 @@ def main():
                 matched = False
                 for tracker in marker_tracker:
                     tcx, tcy = tracker["centroid"]
-                    if math.hypot(cx - tcx, cy - tcy) < 30:
+                    if math.hypot(cx - tcx, cy - tcy) < 55:
                         tracker["id"] = m_id
                         tracker["corners"] = corners
                         tracker["centroid"] = (cx, cy)
@@ -241,7 +241,7 @@ def main():
             marker_tracker = [m for m in marker_tracker if (now - m["last_seen"]) < 2.5]
             
             # Marker yang aktif saat ini (toleransi dropout 0.5s agar tidak kedip)
-            active_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 0.5]
+            active_markers = [m for m in marker_tracker if (now - m["last_seen"]) < 0.15]
             
             # Kamera di bawah papan -> citra tercermin. Balik vertikal agar preview = tampilan siswa dari atas (A1 kiri bawah).
             # Deteksi tetap memakai frame mentah; hanya koordinat overlay yang dicerminkan.
@@ -306,7 +306,7 @@ def main():
                         "raw_angle": rot
                     }
             else:
-                for m in active_markers:
+                for m in sorted(active_markers, key=lambda item: item["last_seen"]):
                     undistorted_corners = vision.undistort_corners(m["corners"])
                     cx, cy = calculate_centroid(undistorted_corners)
                     
@@ -363,7 +363,7 @@ def main():
                         audio.enqueue_narration(event["narration"])
                         
             # Delay sedikit untuk simulasi FPS target ~24
-            time.sleep(1/24)
+            time.sleep(0.015)
             
     except KeyboardInterrupt:
         print("Menghentikan sistem...")

@@ -9,9 +9,9 @@ class VisionCore:
         self.aruco_params = cv2.aruco.DetectorParameters()
         # Parameter adaptif, toleran terhadap silau/pantulan dan gradasi bayangan
         self.aruco_params.polygonalApproxAccuracyRate = 0.04
-        self.aruco_params.adaptiveThreshWinSizeMin = 3
-        self.aruco_params.adaptiveThreshWinSizeMax = 43  # Diperluas dari 23 ke 43 agar tahan gradasi terang-gelap
-        self.aruco_params.adaptiveThreshWinSizeStep = 8  # Langkah lebih rapat (3, 11, 19, 27, 35, 43)
+        self.aruco_params.adaptiveThreshWinSizeMin = 5
+        self.aruco_params.adaptiveThreshWinSizeMax = 35  # 4 window (5, 15, 25, 35): 2x lebih cepat di Raspi namun tetap tahan gradasi
+        self.aruco_params.adaptiveThreshWinSizeStep = 10
         self.aruco_params.adaptiveThreshConstant = 5  # Lebih sensitif pada area tengah papan yang redup
         self.aruco_params.minDistanceToBorder = 1
         self.aruco_params.minOtsuStdDev = 2.5  # Tetap baca bit di area tengah papan yang kontrasnya tipis

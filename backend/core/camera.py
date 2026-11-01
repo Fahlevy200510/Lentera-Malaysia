@@ -16,6 +16,8 @@ class DummyCamera(BaseCamera):
         if not self.cap.isOpened():
             print("Peringatan: Webcam tidak ditemukan, menggunakan gambar kosong (blank frame).")
             self.cap = None
+        else:
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
     def get_frame(self):
         if self.cap:
@@ -45,7 +47,10 @@ class PiCamera(BaseCamera):
         except Exception as e:
             print(f"[CAMERA] Tuning NoIR gagal dimuat ({e}), pakai tuning default.")
             self.picam2 = Picamera2()
-        config = self.picam2.create_video_configuration(main={"size": resolution, "format": "RGB888"})  # Picamera2 RGB888 = urutan byte BGR di memori (cocok OpenCV)
+        config = self.picam2.create_video_configuration(
+            main={"size": resolution, "format": "RGB888"},
+            buffer_count=2,
+        )  # Picamera2 RGB888 = urutan byte BGR di memori, buffer_count=2 meminimalkan antrean frame lama
         self.picam2.configure(config)
         self.picam2.start()
         time.sleep(1.2)  # Beri waktu bagi sensor AEC/AWB untuk konvergensi pencahayaan alami

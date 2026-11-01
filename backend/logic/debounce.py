@@ -1,5 +1,5 @@
-PRESENCE_CONFIRM_FRAMES = 4   # ~160ms pada 24 FPS - responsif saat ditaruh
-REMOVAL_CONFIRM_FRAMES = 12   # ~500ms pada 24 FPS - anti-kedip (tahan jika 1-3 frame hilang sesaat)
+PRESENCE_CONFIRM_FRAMES = 2   # ~150ms pada FPS Raspi nyata - langsung responsif saat balok ditaruh/diganti
+REMOVAL_CONFIRM_FRAMES = 3    # ~350ms (bersama hold 0.15s di tracker) - responsif saat balok diangkat tanpa kedip
 ROTATION_DEADZONE_DEG = 22    # +/- 22 derajat hysteresis agar sudut rotasi tidak goyang
 
 def discretize_rotation(raw_angle_deg, previous_bucket):

@@ -571,6 +571,7 @@ export default function VoiceGuide() {
   const recognitionExplainedRef = useRef<boolean>(false);
   const recognitionRotationRef = useRef<number | null>(null);
   const lastRecognitionReplayRef = useRef<number>(0);
+  const recognitionWrongSigRef = useRef<string | null>(null);
   const lastQuizWrongRef = useRef<number>(0);
   const lastQuizWrongCompRef = useRef<string | null>(null);
   const quizWrongWaitingLiftRef = useRef<boolean>(false);
@@ -720,6 +721,8 @@ export default function VoiceGuide() {
       tag: "voice-guide",
       onEnd: () => {
         clearTimeout(safetyTimeout);
+        lastSpokenTimeRef.current = Date.now();
+        lastClueRef.current = Date.now();
         isSpeakingRef.current = false;
         setIsSpeaking(false);
         if (onEnd) onEnd();
@@ -1297,6 +1300,7 @@ export default function VoiceGuide() {
         const targetExpected = step.targetCells?.["C3"];
         const placedC3 = cells["C3"];
         const isTargetMatched = Boolean(placedC3 && targetExpected && placedC3.component === targetExpected);
+        if (isTargetMatched) recognitionWrongSigRef.current = null;
 
         // 1. Balok baru diletakkan di C3 -> Jelaskan & tanyakan kejelasan (HANYA SEKALI PER LANGKAH)
         if (isTargetMatched && recognitionExplainedStepRef.current !== currentStep) {
@@ -1383,7 +1387,9 @@ export default function VoiceGuide() {
             recognitionLiftTimerRef.current = null;
           }
           const now = Date.now();
-          if (now - lastClueRef.current > 5000 && !isSpeakingRef.current && !(window as any).__lenteraSpeaking) {
+          const wrongSig = `C3_${placedC3.component}_${currentStep}`;
+          if (recognitionWrongSigRef.current !== wrongSig && !isSpeakingRef.current && !isSpeakingAudio() && !(window as any).__lenteraSpeaking) {
+            recognitionWrongSigRef.current = wrongSig;
             lastClueRef.current = now;
             playEarcon("wrong");
             const placedName = COMPONENT_LABEL[placedC3.component] || placedC3.component;
@@ -1396,9 +1402,12 @@ export default function VoiceGuide() {
 
         // D. Siswa meletakkan balok di kotak selain C3 saat pengenalan komponen
         const placedNonC3 = Object.entries(cells).filter(([c, d]) => c !== "C3" && Boolean(d) && !isStudentToken(d));
+        if (!placedC3 && placedNonC3.length === 0) recognitionWrongSigRef.current = null;
         if (!placedC3 && placedNonC3.length > 0 && recognitionExplainedStepRef.current !== currentStep) {
           const now = Date.now();
-          if (now - lastClueRef.current > 4500 && !isSpeakingRef.current && !(window as any).__lenteraSpeaking) {
+          const wrongNonC3Sig = `${placedNonC3[0][0]}_${(placedNonC3[0][1] as any)?.component}_${currentStep}`;
+          if (recognitionWrongSigRef.current !== wrongNonC3Sig && !isSpeakingRef.current && !isSpeakingAudio() && !(window as any).__lenteraSpeaking) {
+            recognitionWrongSigRef.current = wrongNonC3Sig;
             lastClueRef.current = now;
             playEarcon("wrong");
             const [wrongCell, placedData] = placedNonC3[0];
