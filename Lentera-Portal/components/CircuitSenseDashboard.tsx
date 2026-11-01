@@ -65,8 +65,8 @@ function Card({
 }) {
   return (
     <div
-      className={`${hover ? "card" : ""} rise ${className}`}
-      style={{ ...glassStyle(), animationDelay: `${delay}ms`, ...style }}
+      className={`${hover ? "card" : ""} reveal-popup ${className}`}
+      style={{ ...glassStyle(), transitionDelay: `${delay}ms`, ...style }}
     >
       {children}
     </div>
@@ -1688,6 +1688,56 @@ export default function CircuitSenseDashboard() {
   const [role, setRole] = useState("student");
   const [name, setName] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+
+  // Scroll reveal pop-up observer for LENTERA Learn cards
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const scrollContainer = mainRef.current;
+    const elements = scrollContainer?.querySelectorAll(".reveal-popup") || document.querySelectorAll(".reveal-popup");
+
+    if (!("IntersectionObserver" in window)) {
+      elements.forEach((el) => el.classList.add("is-revealed"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        root: scrollContainer,
+        threshold: 0.08,
+        rootMargin: "0px 0px -25px 0px",
+      }
+    );
+
+    elements.forEach((el) => {
+      if (scrollContainer) {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const rect = el.getBoundingClientRect();
+        const inView = rect.top < containerRect.bottom - 25 && rect.bottom > containerRect.top;
+        if (inView) {
+          setTimeout(() => {
+            el.classList.add("is-revealed");
+          }, 80);
+        } else {
+          observer.observe(el);
+        }
+      } else {
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [role, view, authed]);
+
 
   useEffect(() => {
     const handleOpen = () => setShowReportModal(true);
@@ -2031,9 +2081,9 @@ export default function CircuitSenseDashboard() {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", height: "100vh" }}>
           <TopBar view={view} setView={setView} role={role} name={name} onLogout={logout} />
 
-          <main className="cs-scroll" style={{ flex: 1, overflowY: "auto", padding: "26px clamp(16px, 4vw, 34px) 40px" }}>
+          <main ref={mainRef} className="cs-scroll" style={{ flex: 1, overflowY: "auto", padding: "26px clamp(16px, 4vw, 34px) 40px" }}>
             <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-              <div className="rise" style={{ marginBottom: 22, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+              <div className="reveal-popup" style={{ marginBottom: 22, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
                 <div>
                   <h1 style={{ fontFamily: HEAD, fontWeight: 800, fontSize: "clamp(26px, 4vw, 36px)", color: C.text, lineHeight: 1.05 }}>{heading}</h1>
                   <p style={{ fontSize: 14.5, color: C.textSoft, marginTop: 6 }}>{subheading}</p>

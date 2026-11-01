@@ -148,6 +148,26 @@ body {
   transform: translateY(-5px);
 }
 
+/* Smooth Bouncy Pop-up on Scroll */
+.reveal-popup {
+  opacity: 0;
+  transform: translateY(38px) scale(0.93);
+  transition: opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 0.65s cubic-bezier(0.34, 1.35, 0.64, 1) !important;
+  will-change: opacity, transform;
+}
+
+.reveal-popup.is-revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.reveal-popup.is-revealed.card:hover {
+  transform: translateY(-5px) scale(1) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+
 .navitem {
   transition: all .18s ease;
 }
