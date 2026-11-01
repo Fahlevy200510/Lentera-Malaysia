@@ -123,7 +123,13 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
 
   const handlePrint = () => {
     if (typeof window !== "undefined") {
+      const origTitle = document.title;
+      const cleanName = (student?.name || "Siswa").replace(/[^a-zA-Z0-9_-]/g, "_");
+      document.title = `Rapor-LENTERA-${cleanName}`;
       window.print();
+      setTimeout(() => {
+        document.title = origTitle;
+      }, 1000);
     }
   };
 
@@ -176,10 +182,15 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:p-0 print:bg-white print:static print:z-auto print:inset-auto"
     >
       <style dangerouslySetInnerHTML={{ __html: `
+        @media screen {
+          .print-only {
+            display: none !important;
+          }
+        }
         @media print {
           @page {
             size: A4 portrait;
-            margin: 6mm 8mm;
+            margin: 8mm 10mm;
           }
           * {
             -webkit-print-color-adjust: exact !important;
@@ -193,20 +204,39 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             padding: 0 !important;
             width: 100% !important;
             height: auto !important;
-          }
-          body > *:not(main) {
-            display: none !important;
-          }
-          body > main {
-            display: block !important;
-            background: #ffffff !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            min-height: 0 !important;
+            min-height: 100% !important;
             overflow: visible !important;
           }
-          body > main > *:not(#student-report-modal-backdrop) {
+          /* Sembunyikan elemen UI dashboard di luar modal rapor */
+          aside,
+          header,
+          main,
+          nav,
+          .cs-scroll,
+          .blob1,
+          .blob2,
+          .blob3,
+          .screen-only,
+          .print-hidden,
+          .print\\:hidden,
+          button,
+          [role="button"] {
             display: none !important;
+          }
+          /* Netralkan wrapper induk agar bisa mengalir ke kertas cetak */
+          body > div,
+          div[style*="height"],
+          div[style*="overflow"] {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            position: static !important;
+            display: block !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           #student-report-modal-backdrop {
             display: block !important;
@@ -218,6 +248,8 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             height: auto !important;
             inset: auto !important;
             z-index: 1 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
           }
           #student-report-card {
             display: block !important;
@@ -227,7 +259,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             border: none !important;
             box-shadow: none !important;
             overflow: visible !important;
-            padding: 2mm 4mm !important;
+            padding: 0 !important;
             margin: 0 !important;
             max-height: none !important;
             background: #ffffff !important;
@@ -248,10 +280,8 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
-          .print-hidden,
-          .print\\:hidden,
-          button {
-            display: none !important;
+          .print-only {
+            display: block !important;
           }
         }
       ` }} />
@@ -262,7 +292,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
       >
         
         {/* Modal Top Bar (Hidden on Print) */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-3.5 print:hidden">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-3.5 screen-only print:hidden">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
               <FileText className="h-4 w-4" />
@@ -454,7 +484,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             </div>
 
             {/* Interactive Textarea for Screen Editing */}
-            <div className="print:hidden">
+            <div className="screen-only print:hidden">
               <textarea
                 value={teacherNotes}
                 onChange={(e) => setTeacherNotes(e.target.value)}
@@ -468,7 +498,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
             </div>
 
             {/* Static Paragraph for Print Output */}
-            <div className="hidden print:block text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap">
+            <div className="print-only text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap">
               {teacherNotes}
             </div>
           </div>
