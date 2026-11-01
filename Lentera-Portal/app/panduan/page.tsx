@@ -815,6 +815,36 @@ export default function PanduanPage() {
     }
   }, [activeFeature, feature.cells, selectedCell]);
 
+  // Scroll reveal animation observer for smooth popups
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      document.querySelectorAll(".reveal-scroll").forEach((el) => {
+        el.classList.add("is-revealed");
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.08,
+        rootMargin: "0px 0px -40px 0px",
+      }
+    );
+
+    const elements = document.querySelectorAll(".reveal-scroll");
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [activeFeature, showSyllabus]);
+
   // Audio narration toggle
   const toggleAudioGuide = () => {
     if (speaking) {
@@ -868,6 +898,32 @@ export default function PanduanPage() {
 
   return (
     <div className="min-h-screen bg-[#F6F4FD] font-body text-[#1E1938]">
+      {/* Smooth Pop-up Animation on Scroll */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        .reveal-scroll {
+          opacity: 0;
+          transform: translateY(28px) scale(0.97);
+          transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+                      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+        }
+        .reveal-scroll.is-revealed {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal-scroll {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+        }
+      `,
+        }}
+      />
+
       {/* Top Ambient Glow */}
       <div
         aria-hidden="true"
@@ -948,7 +1004,7 @@ export default function PanduanPage() {
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Hero Section */}
-        <div className="mb-10 text-center sm:text-left">
+        <div className="mb-10 text-center sm:text-left reveal-scroll">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#735CDD]/20 bg-white/90 px-3.5 py-1.5 text-xs font-bold text-[#5B43C6] shadow-xs backdrop-blur-sm">
             <Bookmark className="h-3.5 w-3.5 text-[#F5B841]" />
             <span>Dokumentasi Resmi & Panduan Papan Fisik</span>
@@ -992,7 +1048,7 @@ export default function PanduanPage() {
         </div>
 
         {/* ============================================================== DOWNLOAD HUB CARD */}
-        <section className="mb-12">
+        <section className="mb-12 reveal-scroll">
           <div className="relative overflow-hidden rounded-3xl border-2 border-[#735CDD]/25 bg-gradient-to-br from-white via-[#FAF8FF] to-[#FFF9EE] p-6 shadow-xl sm:p-8">
             {/* Background Emblem Watermark */}
             <div
@@ -1104,10 +1160,11 @@ export default function PanduanPage() {
                   Daftar Isi & Silabus Bab Modul Ajar
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {SYLLABUS_CHAPTERS.map((ch) => (
+                  {SYLLABUS_CHAPTERS.map((ch, idx) => (
                     <div
                       key={ch.num}
-                      className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs hover:border-[#735CDD]/40 transition"
+                      className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs hover:border-[#735CDD]/40 transition reveal-scroll"
+                      style={{ transitionDelay: `${idx * 60}ms` }}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-black text-[#735CDD]">
@@ -1132,7 +1189,7 @@ export default function PanduanPage() {
         </section>
 
         {/* ============================================================== FEATURE BLOCK MAPPING EXPLORER */}
-        <section className="mb-14">
+        <section className="mb-14 reveal-scroll">
           <div className="mb-4">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-5 w-5 text-[#735CDD]" />
@@ -1146,7 +1203,7 @@ export default function PanduanPage() {
           </div>
 
           {/* Feature Tab Switcher */}
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="mb-6 flex flex-wrap gap-2 reveal-scroll">
             {FEATURES.map((f) => {
               const active = f.key === activeFeature;
               const Icon = f.icon;
@@ -1168,7 +1225,7 @@ export default function PanduanPage() {
           </div>
 
           {/* Active Feature Display Card */}
-          <div className="rounded-3xl border border-[#735CDD]/20 bg-white p-5 sm:p-7 shadow-lg">
+          <div className="rounded-3xl border border-[#735CDD]/20 bg-white p-5 sm:p-7 shadow-lg reveal-scroll">
             {/* Feature Header */}
             <div className="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -1196,7 +1253,7 @@ export default function PanduanPage() {
             <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_1.15fr] lg:items-start">
               
               {/* Left Column: Interactive 5x5 Grid Board */}
-              <div className="rounded-2xl border border-slate-200/90 bg-[#FAF9FF] p-5 shadow-inner">
+              <div className="rounded-2xl border border-slate-200/90 bg-[#FAF9FF] p-5 shadow-inner reveal-scroll" style={{ transitionDelay: "100ms" }}>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="text-xs font-extrabold text-[#1E1938]">
                     Peta Papan Taktil LENTERA 5×5
@@ -1284,7 +1341,7 @@ export default function PanduanPage() {
               </div>
 
               {/* Right Column: Selected Cell Inspector + Step Guide */}
-              <div className="space-y-5">
+              <div className="space-y-5 reveal-scroll" style={{ transitionDelay: "180ms" }}>
                 
                 {/* Cell Inspector Card */}
                 <div className="rounded-2xl border-2 border-[#735CDD]/20 bg-gradient-to-br from-white to-[#FAF8FF] p-5 shadow-xs">
@@ -1395,7 +1452,7 @@ export default function PanduanPage() {
         </section>
 
         {/* ============================================================== ARUCO MARKER & TOKEN LEGEND */}
-        <section className="mb-14">
+        <section className="mb-14 reveal-scroll">
           <div className="mb-4">
             <div className="flex items-center gap-2">
               <Cpu className="h-5 w-5 text-[#735CDD]" />
@@ -1409,12 +1466,13 @@ export default function PanduanPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ARUCO_MARKERS.map((m) => {
+            {ARUCO_MARKERS.map((m, idx) => {
               const Icon = m.Icon;
               return (
                 <div
                   key={m.id}
-                  className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs hover:border-[#735CDD]/40 hover:shadow-md transition-all"
+                  className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs hover:border-[#735CDD]/40 hover:shadow-md transition-all reveal-scroll"
+                  style={{ transitionDelay: `${(idx % 3) * 80 + Math.floor(idx / 3) * 40}ms` }}
                 >
                   <div className="flex items-center justify-between">
                     <span
@@ -1470,7 +1528,7 @@ export default function PanduanPage() {
         </section>
 
         {/* ============================================================== FOOTER NAVIGATION */}
-        <footer className="border-t border-[#735CDD]/15 pt-8 text-center text-xs text-slate-500">
+        <footer className="border-t border-[#735CDD]/15 pt-8 text-center text-xs text-slate-500 reveal-scroll">
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/" className="font-bold text-[#5B43C6] hover:underline">
               Beranda LENTERA
