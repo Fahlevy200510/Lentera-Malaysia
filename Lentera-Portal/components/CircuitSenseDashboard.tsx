@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
-import { getStudentProgress, getActiveStudent, buildStudentLearningNarration, type StudentProgress } from "@/utils/progress";
+import { getStudentProgress, getActiveStudent, setActiveStudent, PRESET_STUDENTS, buildStudentLearningNarration, type StudentProgress } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
@@ -2396,6 +2396,8 @@ export default function CircuitSenseDashboard() {
     let cancelled = false;
     const mountTime = Date.now();
     let ignoreUntilLift = true;
+    let hasTriggeredA1 = false;
+    let hasTriggeredC5 = false;
 
     const CIRCUIT_COMPONENTS = new Set([
       "battery", "lamp", "switch", "straight_cable", "l_cable", "t_cable", "resistor"
@@ -2467,28 +2469,57 @@ export default function CircuitSenseDashboard() {
                 (String(cellA1.component || "").startsWith("student_") || [35, 36, 37].includes(Number(cellA1.id)))
               );
 
-              // B. Balok diletakkan di sel A1 -> Bacakan Data Pembelajaran Lengkap!
+              // B. Balok diletakkan di sel A1 -> Bacakan Data Pembelajaran Lengkap! (Edge-triggered)
               if (cellA1 && !isA1Student) {
-                cancelSpeech();
-                playEarcon("step");
-                const active = getActiveStudent();
-                const prog = getStudentProgress();
-                const nar = buildStudentLearningNarration(active, prog);
-                speakNarration(nar.fullReport, {
-                  tag: "full-report",
-                  rate: 0.94,
-                  pitch: 1.02,
-                });
+                if (!hasTriggeredA1) {
+                  hasTriggeredA1 = true;
+                  cancelSpeech();
+                  playEarcon("step");
+                  const active = getActiveStudent();
+                  const prog = getStudentProgress();
+                  const nar = buildStudentLearningNarration(active, prog);
+                  speakNarration(nar.fullReport, {
+                    tag: "full-report",
+                    rate: 0.94,
+                    pitch: 1.02,
+                  });
+                }
                 return;
+              } else {
+                hasTriggeredA1 = false;
               }
 
               const cellC5 = cells["C5"] as { component?: string; id?: number } | undefined;
-              // Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis)
+              // Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis) (Edge-triggered)
               if (cellC5) {
-                cancelSpeech();
-                playEarcon("click");
-                setShowReportModal(true);
+                if (!hasTriggeredC5) {
+                  hasTriggeredC5 = true;
+                  const c5Id = Number(cellC5.id);
+                  const c5Comp = String(cellC5.component || "");
+                  const studentTokenMap: Record<string, string> = {
+                    "35": "via",
+                    "student_via": "via",
+                    "36": "amira",
+                    "student_amira": "amira",
+                    "37": "ajib",
+                    "student_ajib": "ajib",
+                  };
+                  const matchedStudentId = studentTokenMap[String(c5Id)] || studentTokenMap[c5Comp];
+                  if (matchedStudentId) {
+                    const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedStudentId);
+                    if (targetStudent) {
+                      setActiveStudent(targetStudent);
+                      setName(targetStudent.name);
+                    }
+                  }
+
+                  cancelSpeech();
+                  playEarcon("click");
+                  setShowReportModal(true);
+                }
                 return;
+              } else {
+                hasTriggeredC5 = false;
               }
 
               // C. Balok komponen sirkuit (di luar sel A1 dan C5) -> Kembali ke LENTERA Lab (/aruco)
