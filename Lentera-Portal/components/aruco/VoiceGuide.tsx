@@ -129,49 +129,49 @@ const ALL_REGISTERED_QUIZ_BANK: {
   hint: string;
   explanation: string;
 }[] = [
-  {
-    title: "Sumber Energi Listrik",
-    question: "Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik?",
-    component: "battery",
-    hint: "Cari balok yang memiliki simbol timbul tanda tambah (+) dan minus (-) di kedua ujungnya.",
-    explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi utama yang menghasilkan tegangan untuk mendorong arus.",
-  },
-  {
-    title: "Pengubah Listrik Menjadi Cahaya",
-    question: "Komponen manakah yang berfungsi sebagai beban untuk mengubah energi listrik menjadi energi cahaya?",
-    component: "lamp",
-    hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya serta simbol tanda plus dan minus timbul di sisinya.",
-    explanation: "Luar biasa! Benar sekali, itu adalah Lampu LED yang bersinar terang saat dialiri arus listrik tertutup.",
-  },
-  {
-    title: "Pengendali Aliran Listrik",
-    question: "Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik dengan tuas geser?",
-    component: "switch",
-    hint: "Cari balok yang memiliki tuas geser timbul yang dapat digeser ke posisi ON atau OFF di bagian atasnya.",
-    explanation: "Tepat sekali! Itu adalah Saklar geser untuk menghubungkan dan memutuskan aliran listrik.",
-  },
-  {
-    title: "Penghantar Arus Jalur Lurus",
-    question: "Kabel manakah yang berfungsi mengalirkan arus listrik dalam satu garis lurus tanpa belokan?",
-    component: "straight_cable",
-    hint: "Cari balok yang memiliki alur garis timbul lurus melintang tembus dari satu sisi ke sisi seberangnya.",
-    explanation: "Bagus sekali! Itu adalah Kabel Lurus penghantar arus listrik searah tanpa belokan.",
-  },
-  {
-    title: "Pembelok Aliran Sudut 90 Derajat",
-    question: "Kabel manakah yang berfungsi membelokkan aliran listrik siku-siku di setiap sudut papan agar sirkuit bisa berputar?",
-    component: "l_cable",
-    hint: "Cari balok yang memiliki alur garis timbul siku-siku menyerupai huruf L.",
-    explanation: "Hebat! Itu adalah Kabel Sudut L yang membelokkan arus 90 derajat di sudut rangkaian.",
-  },
-  {
-    title: "Kabel Cabang T Rangkaian Paralel",
-    question: "Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel?",
-    component: "t_cable",
-    hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
-    explanation: "Sempurna! Itu adalah Kabel Cabang T untuk membagi arus listrik menjadi cabang-cabang mandiri.",
-  },
-];
+    {
+      title: "Sumber Energi Listrik",
+      question: "Komponen manakah yang berfungsi sebagai penyimpan energi dan sumber tegangan listrik?",
+      component: "battery",
+      hint: "Cari balok yang memiliki simbol timbul tanda tambah (+) dan minus (-) di kedua ujungnya.",
+      explanation: "Hebat sekali! Jawabanmu tepat! Baterai adalah sumber energi utama yang menghasilkan tegangan untuk mendorong arus.",
+    },
+    {
+      title: "Pengubah Listrik Menjadi Cahaya",
+      question: "Komponen manakah yang berfungsi sebagai beban untuk mengubah energi listrik menjadi energi cahaya?",
+      component: "lamp",
+      hint: "Cari balok yang memiliki kubah bulat timbul di bagian atasnya serta simbol tanda plus dan minus timbul di sisinya.",
+      explanation: "Luar biasa! Benar sekali, itu adalah Lampu LED yang bersinar terang saat dialiri arus listrik tertutup.",
+    },
+    {
+      title: "Pengendali Aliran Listrik",
+      question: "Komponen manakah yang berfungsi menghubungkan dan memutuskan aliran listrik dengan tuas geser?",
+      component: "switch",
+      hint: "Cari balok yang memiliki tuas geser timbul yang dapat digeser ke posisi ON atau OFF di bagian atasnya.",
+      explanation: "Tepat sekali! Itu adalah Saklar geser untuk menghubungkan dan memutuskan aliran listrik.",
+    },
+    {
+      title: "Penghantar Arus Jalur Lurus",
+      question: "Kabel manakah yang berfungsi mengalirkan arus listrik dalam satu garis lurus tanpa belokan?",
+      component: "straight_cable",
+      hint: "Cari balok yang memiliki alur garis timbul lurus melintang tembus dari satu sisi ke sisi seberangnya.",
+      explanation: "Bagus sekali! Itu adalah Kabel Lurus penghantar arus listrik searah tanpa belokan.",
+    },
+    {
+      title: "Pembelok Aliran Sudut 90 Derajat",
+      question: "Kabel manakah yang berfungsi membelokkan aliran listrik siku-siku di setiap sudut papan agar sirkuit bisa berputar?",
+      component: "l_cable",
+      hint: "Cari balok yang memiliki alur garis timbul siku-siku menyerupai huruf L.",
+      explanation: "Hebat! Itu adalah Kabel Sudut L yang membelokkan arus 90 derajat di sudut rangkaian.",
+    },
+    {
+      title: "Kabel Cabang T Rangkaian Paralel",
+      question: "Kabel manakah yang memiliki tiga percabangan untuk membagi aliran listrik pada rangkaian paralel?",
+      component: "t_cable",
+      hint: "Cari kabel yang memiliki alur timbul bercabang tiga seperti huruf T.",
+      explanation: "Sempurna! Itu adalah Kabel Cabang T untuk membagi arus listrik menjadi cabang-cabang mandiri.",
+    },
+  ];
 
 // Generator Kuis Dinamis: Memilih 4 pertanyaan acak dari 7 komponen fisik terdaftar
 function createDynamicQuizSteps(shuffle = true, previousFirstComp?: string): StepDef[] {
@@ -647,18 +647,18 @@ export default function VoiceGuide() {
     mode === "recognition"
       ? RECOGNITION_STEPS
       : mode === "quiz"
-      ? quizSteps
-      : mode === "series"
-      ? SERIES_STEPS
-      : mode === "parallel"
-      ? PARALLEL_STEPS
-      : mode === "adaptive_series"
-      ? ADAPTIVE_SERIES_STEPS
-      : mode === "adaptive_parallel"
-      ? ADAPTIVE_PARALLEL_STEPS
-      : mode === "troubleshoot"
-      ? TROUBLESHOOT_STEPS
-      : [];
+        ? quizSteps
+        : mode === "series"
+          ? SERIES_STEPS
+          : mode === "parallel"
+            ? PARALLEL_STEPS
+            : mode === "adaptive_series"
+              ? ADAPTIVE_SERIES_STEPS
+              : mode === "adaptive_parallel"
+                ? ADAPTIVE_PARALLEL_STEPS
+                : mode === "troubleshoot"
+                  ? TROUBLESHOOT_STEPS
+                  : [];
   const step = steps[currentStep];
   const totalSteps = steps.length;
   const isFinished = totalSteps > 0 && currentStep >= totalSteps;
@@ -725,6 +725,9 @@ export default function VoiceGuide() {
         clearTimeout(safetyTimeout);
         lastSpokenTimeRef.current = Date.now();
         lastClueRef.current = Date.now();
+        quizLiftGraceStartRef.current = Date.now();
+        lastQuizRemindRef.current = Date.now();
+        lastLiftRemindRef.current = Date.now();
         isSpeakingRef.current = false;
         setIsSpeaking(false);
         if (onEnd) onEnd();
@@ -1279,7 +1282,7 @@ export default function VoiceGuide() {
             setCheckpointPhase("confirmed");
             pendingNextGuideRef.current = null;
             if (isCurrentlySpeaking) return;
-          pendingStartModeRef.current = null;
+            pendingStartModeRef.current = null;
             setPendingGuideMode(null);
             playEarcon("clear");
             if (nextMode) {
@@ -1456,7 +1459,8 @@ export default function VoiceGuide() {
             // Pengingat ramah jika siswa belum mengangkat balok setelah 12 detik DAN tidak sedang berbicara
             const now = Date.now();
             if (
-              now - quizLiftGraceStartRef.current > 12000 &&
+              now - quizLiftGraceStartRef.current > 14000 &&
+              now - lastSpokenTimeRef.current > 14000 &&
               now - lastQuizRemindRef.current > 10000 &&
               !isSpeakingRef.current &&
               !isSpeakingAudio() &&
@@ -1656,7 +1660,7 @@ export default function VoiceGuide() {
           }
         }
       }
-      
+
       if (step.validator) {
         allFound = step.validator(cells, detail?.status, detail?.graph_type);
       }
@@ -1745,7 +1749,7 @@ export default function VoiceGuide() {
           }
         }
       }
-      
+
       // Reminder bila saklar masih posisi OFF/NO saat rangkaian sudah terpasang
       if (detail?.status === "switch_off" && !allFound && !stepCompleted && !isFinished && !isAnyAudioSpeaking) {
         const now = Date.now();
@@ -2219,9 +2223,8 @@ export default function VoiceGuide() {
                 ].map((done, idx) => (
                   <span
                     key={idx}
-                    className={`h-1.5 w-2.5 rounded-full transition-all ${
-                      done ? "bg-[#735CDD]" : "bg-[#735CDD]/20"
-                    }`}
+                    className={`h-1.5 w-2.5 rounded-full transition-all ${done ? "bg-[#735CDD]" : "bg-[#735CDD]/20"
+                      }`}
                   />
                 ))}
               </div>
@@ -2321,28 +2324,26 @@ export default function VoiceGuide() {
             return (
               <div
                 key={item.id}
-                className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all ${
-                  item.isLocked
+                className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 rounded-xl transition-all ${item.isLocked
                     ? "bg-slate-50/70 border border-slate-200/70 opacity-70"
                     : isRecommended
-                    ? "bg-gradient-to-r from-[#F4F0FF] via-white to-[#FFFBF2] border-2 border-[#735CDD] shadow-[0_6px_18px_-8px_rgba(115,92,221,0.35)]"
-                    : item.isCompleted
-                    ? "bg-[#FAF9FF] border border-[#735CDD]/20 hover:border-[#735CDD]/35"
-                    : "bg-white border border-[#735CDD]/15 hover:border-[#735CDD]/30"
-                }`}
+                      ? "bg-gradient-to-r from-[#F4F0FF] via-white to-[#FFFBF2] border-2 border-[#735CDD] shadow-[0_6px_18px_-8px_rgba(115,92,221,0.35)]"
+                      : item.isCompleted
+                        ? "bg-[#FAF9FF] border border-[#735CDD]/20 hover:border-[#735CDD]/35"
+                        : "bg-white border border-[#735CDD]/15 hover:border-[#735CDD]/30"
+                  }`}
               >
                 {/* Info Kiri: Badge Sel + Judul + Deskripsi */}
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className={`flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 transition-all ${
-                      item.isLocked
+                    className={`flex flex-col items-center justify-center h-9 w-9 rounded-lg font-mono shrink-0 transition-all ${item.isLocked
                         ? "bg-slate-100 text-slate-400 border border-slate-200/60"
                         : isRecommended
-                        ? "bg-[#735CDD] text-white shadow-xs"
-                        : item.isCompleted
-                        ? "bg-[#EAE4FF] text-[#4C35A8] border border-[#735CDD]/25"
-                        : "bg-[#F4F1FF] text-[#5840BA] border border-[#735CDD]/15"
-                    }`}
+                          ? "bg-[#735CDD] text-white shadow-xs"
+                          : item.isCompleted
+                            ? "bg-[#EAE4FF] text-[#4C35A8] border border-[#735CDD]/25"
+                            : "bg-[#F4F1FF] text-[#5840BA] border border-[#735CDD]/15"
+                      }`}
                   >
                     <span className="text-[11px] font-black leading-none">{item.cell}</span>
                     <span className="text-[8px] font-bold opacity-80 leading-none mt-0.5">Thp {item.stage}</span>
@@ -2397,13 +2398,12 @@ export default function VoiceGuide() {
                   ) : (
                     <button
                       onClick={() => startGuide(item.mode)}
-                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[11px] font-extrabold transition-all active:scale-95 ${
-                        isRecommended
+                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[11px] font-extrabold transition-all active:scale-95 ${isRecommended
                           ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white shadow-xs"
                           : item.isCompleted
-                          ? "bg-white hover:bg-[#F3EFFE] text-[#5840BA] border border-[#735CDD]/20"
-                          : "bg-[#F3EFFE] hover:bg-[#735CDD] text-[#5840BA] hover:text-white border border-[#735CDD]/20"
-                      }`}
+                            ? "bg-white hover:bg-[#F3EFFE] text-[#5840BA] border border-[#735CDD]/20"
+                            : "bg-[#F3EFFE] hover:bg-[#735CDD] text-[#5840BA] hover:text-white border border-[#735CDD]/20"
+                        }`}
                     >
                       <Play className={`h-2.5 w-2.5 ${isRecommended ? "fill-white text-white" : "fill-current"}`} />
                       <span>{item.isCompleted ? "Ulangi" : "Mulai"}</span>
@@ -2461,26 +2461,25 @@ export default function VoiceGuide() {
     mode === "free_exploration"
       ? "Eksplorasi Bebas • AI Live Tutor"
       : mode === "recognition"
-      ? "Pengenalan Blok Komponen"
-      : mode === "quiz"
-      ? "Kuis Tebak Komponen Taktil"
-      : mode === "troubleshoot"
-      ? "Tantangan Detektif Sirkuit"
-      : `${mode.includes("adaptive") ? "Rangkaian Bebas" : "Panduan"} ${
-          mode.includes("series") ? "Seri" : "Paralel"
-        }`;
+        ? "Pengenalan Blok Komponen"
+        : mode === "quiz"
+          ? "Kuis Tebak Komponen Taktil"
+          : mode === "troubleshoot"
+            ? "Tantangan Detektif Sirkuit"
+            : `${mode.includes("adaptive") ? "Rangkaian Bebas" : "Panduan"} ${mode.includes("series") ? "Seri" : "Paralel"
+            }`;
 
   const stepSubtitle = isFinished
     ? "Selesai!"
     : mode === "free_exploration"
-    ? `${boardBlockCount} Balok Terdeteksi`
-    : mode === "recognition"
-    ? `Komponen ${currentStep + 1} dari ${totalSteps}`
-    : mode === "quiz"
-    ? `Soal ${currentStep + 1} dari ${totalSteps}`
-    : mode === "troubleshoot"
-    ? `Misi ${currentStep + 1} dari ${totalSteps}`
-    : `Langkah ${currentStep + 1} dari ${totalSteps}`;
+      ? `${boardBlockCount} Balok Terdeteksi`
+      : mode === "recognition"
+        ? `Komponen ${currentStep + 1} dari ${totalSteps}`
+        : mode === "quiz"
+          ? `Soal ${currentStep + 1} dari ${totalSteps}`
+          : mode === "troubleshoot"
+            ? `Misi ${currentStep + 1} dari ${totalSteps}`
+            : `Langkah ${currentStep + 1} dari ${totalSteps}`;
 
   return (
     <div className="card rounded-2xl border border-cs-text/10 bg-white/80 shadow-[0_8px_24px_rgba(46,42,94,0.06)] backdrop-blur-md overflow-hidden">
@@ -2537,21 +2536,21 @@ export default function VoiceGuide() {
                   {mode === "recognition"
                     ? "Pengenalan Selesai!"
                     : mode === "quiz"
-                    ? "Kuis Taktil Tuntas!"
-                    : mode === "troubleshoot"
-                    ? "Misi Detektif Selesai!"
-                    : "Rangkaian Selesai!"}
+                      ? "Kuis Taktil Tuntas!"
+                      : mode === "troubleshoot"
+                        ? "Misi Detektif Selesai!"
+                        : "Rangkaian Selesai!"}
                 </h3>
                 <p className="text-xs text-cs-text/60 mt-0.5 leading-relaxed max-w-xs mx-auto">
                   {mode === "recognition"
                     ? "Hebat sekali! Kamu telah mengenal bentuk taktil dan fungsi seluruh komponen Lentera."
                     : mode === "quiz"
-                    ? "Luar biasa! Kamu berhasil menjawab semua tebakan fungsi komponen secara mandiri di papan fisik."
-                    : mode === "troubleshoot"
-                    ? "Hebat sekali, detektif! Kamu membuktikan pemahaman mendalam tentang kendali saklar dan sirkuit listrik."
-                    : mode === "series" || mode === "adaptive_series"
-                    ? "Kamu telah membuat rangkaian seri! Semua komponen berbagi satu jalur."
-                    : "Kamu telah membuat rangkaian paralel! Setiap cabang bekerja sendiri-sendiri."}
+                      ? "Luar biasa! Kamu berhasil menjawab semua tebakan fungsi komponen secara mandiri di papan fisik."
+                      : mode === "troubleshoot"
+                        ? "Hebat sekali, detektif! Kamu membuktikan pemahaman mendalam tentang kendali saklar dan sirkuit listrik."
+                        : mode === "series" || mode === "adaptive_series"
+                          ? "Kamu telah membuat rangkaian seri! Semua komponen berbagi satu jalur."
+                          : "Kamu telah membuat rangkaian paralel! Setiap cabang bekerja sendiri-sendiri."}
                 </p>
               </div>
 
@@ -2585,7 +2584,7 @@ export default function VoiceGuide() {
                       <p className="text-xs font-bold text-cs-text leading-tight">
                         Lanjut ke {nextGuide.title}?
                       </p>
-                      
+
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         {/* Pilihan A1 = IYA */}
                         <button
@@ -2630,7 +2629,7 @@ export default function VoiceGuide() {
                           </div>
                         </button>
                       </div>
-                      
+
                       <p className="text-[10px] text-cs-text/50 italic text-center pt-0.5 flex items-center justify-center gap-1.5">
                         <Lightbulb className="h-3 w-3 text-amber-500 shrink-0 inline" />
                         <span>Letakkan balok di sudut kiri bawah (A1) atau sudut kanan bawah (E1).</span>
@@ -2782,19 +2781,18 @@ export default function VoiceGuide() {
             <>
               {/* Current Instruction */}
               <div
-                className={`rounded-xl border-2 p-3.5 transition-all ${
-                  stepCompleted
+                className={`rounded-xl border-2 p-3.5 transition-all ${stepCompleted
                     ? "border-emerald-300 bg-emerald-50/70"
                     : mode === "recognition"
-                    ? "border-amber-200 bg-amber-50/40"
-                    : mode === "quiz"
-                    ? "border-indigo-200 bg-indigo-50/40"
-                    : mode === "troubleshoot"
-                    ? "border-rose-200 bg-rose-50/40"
-                    : mode === "series" || mode === "adaptive_series"
-                    ? "border-violet-200 bg-violet-50/50"
-                    : "border-sky-200 bg-sky-50/50"
-                }`}
+                      ? "border-amber-200 bg-amber-50/40"
+                      : mode === "quiz"
+                        ? "border-indigo-200 bg-indigo-50/40"
+                        : mode === "troubleshoot"
+                          ? "border-rose-200 bg-rose-50/40"
+                          : mode === "series" || mode === "adaptive_series"
+                            ? "border-violet-200 bg-violet-50/50"
+                            : "border-sky-200 bg-sky-50/50"
+                  }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2">
@@ -2830,11 +2828,10 @@ export default function VoiceGuide() {
                         return (
                           <span
                             key={cell}
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold transition-all ${
-                              done
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold transition-all ${done
                                 ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300"
                                 : "bg-white text-cs-text/60 ring-1 ring-slate-200"
-                            }`}
+                              }`}
                           >
                             {done ? <CheckCircle2 className="h-3 w-3" /> : null}
                             {cell}: {COMPONENT_LABEL[comp] ?? comp}
@@ -2890,9 +2887,8 @@ export default function VoiceGuide() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={toggleMute}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-                      isMuted ? "bg-rose-100 text-rose-500" : "bg-slate-100 text-cs-text/50 hover:text-cs-text"
-                    }`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${isMuted ? "bg-rose-100 text-rose-500" : "bg-slate-100 text-cs-text/50 hover:text-cs-text"
+                      }`}
                     title={isMuted ? "Nyalakan suara" : "Matikan suara"}
                   >
                     {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
