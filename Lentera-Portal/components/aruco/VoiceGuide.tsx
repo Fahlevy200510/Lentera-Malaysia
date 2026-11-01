@@ -1075,20 +1075,26 @@ export default function VoiceGuide() {
               JSON.stringify({ name: "Guru", role: "teacher", grade: "Guru Fisika" })
             );
           }
-          const navTimer = setTimeout(() => {
+          const speechText = isTeacher
+            ? `Kartu identitas guru terdeteksi di sel A1. Membuka Dashboard Guru LENTERA Learn.`
+            : `Kartu identitas ${sName} terdeteksi di sel A1. Membuka LENTERA Learn untuk melihat nilai, materi, dan progres belajarmu.`;
+
+          let navigated = false;
+          const doNavigate = () => {
+            if (navigated) return;
+            navigated = true;
+            clearTimeout(navTimer);
             window.location.href = "/dashboard";
-          }, 4500);
-          speakNarration(
-            isTeacher
-              ? `Kartu identitas guru terdeteksi di sel A1. Membuka Dashboard Guru LENTERA Learn.`
-              : `Kartu identitas ${sName} terdeteksi di sel A1. Membuka LENTERA Learn untuk melihat nilai, materi, dan progres belajarmu.`,
-            {
-              onEnd: () => {
-                clearTimeout(navTimer);
-                window.location.href = "/dashboard";
-              },
-            }
-          );
+          };
+
+          const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+          const navTimer = setTimeout(doNavigate, fallbackDelay);
+
+          speakNarration(speechText, {
+            onEnd: () => {
+              setTimeout(doNavigate, 250);
+            },
+          });
           return;
         }
 
@@ -1100,20 +1106,26 @@ export default function VoiceGuide() {
           const sName = getStudentNameFromToken(cellE5);
           const isTeacher = String((cellE5 as any)?.component || "").startsWith("teacher") || Number((cellE5 as any)?.id) === 38;
           localStorage.removeItem("lentera-session");
-          const navTimer = setTimeout(() => {
+          const speechText = isTeacher
+            ? `Kartu identitas guru terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
+            : `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`;
+
+          let navigated = false;
+          const doNavigate = () => {
+            if (navigated) return;
+            navigated = true;
+            clearTimeout(navTimer);
             window.location.href = "/";
-          }, 4500);
-          speakNarration(
-            isTeacher
-              ? `Kartu identitas guru terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
-              : `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
-            {
-              onEnd: () => {
-                clearTimeout(navTimer);
-                window.location.href = "/";
-              },
-            }
-          );
+          };
+
+          const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+          const navTimer = setTimeout(doNavigate, fallbackDelay);
+
+          speakNarration(speechText, {
+            onEnd: () => {
+              setTimeout(doNavigate, 250);
+            },
+          });
           return;
         }
       }

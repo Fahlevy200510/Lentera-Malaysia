@@ -94,16 +94,22 @@ function LoginFormContent() {
         grade: "Guru Fisika · Kelas 11 SMA",
       };
       localStorage.setItem("lentera-session", JSON.stringify(session));
-      speakNarration(
-        "Masuk sebagai Guru Fisika. Membuka Dashboard Guru LENTERA Learn.",
-        {
-          rate: 0.95,
-          onEnd: () => {
-            router.push("/dashboard");
-          },
-        }
-      );
-      setTimeout(() => router.push("/dashboard"), 3000);
+      const speechText = "Masuk sebagai Guru Fisika. Membuka Dashboard Guru LENTERA Learn.";
+      let navigated = false;
+      const doNavigate = () => {
+        if (navigated) return;
+        navigated = true;
+        clearTimeout(navTimer);
+        router.push("/dashboard");
+      };
+      const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+      const navTimer = setTimeout(doNavigate, fallbackDelay);
+      speakNarration(speechText, {
+        rate: 0.95,
+        onEnd: () => {
+          setTimeout(doNavigate, 250);
+        },
+      });
     } else {
       const student = PRESET_STUDENTS[0] || { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" };
       setActiveStudent(student);
@@ -115,16 +121,22 @@ function LoginFormContent() {
         grade: student.grade,
       };
       localStorage.setItem("lentera-session", JSON.stringify(session));
-      speakNarration(
-        `Masuk sebagai ${student.name}, siswa kelas 11 SMA. Membuka ruang praktikum LENTERA Lab.`,
-        {
-          rate: 0.95,
-          onEnd: () => {
-            router.push("/aruco");
-          },
-        }
-      );
-      setTimeout(() => router.push("/aruco"), 3000);
+      const speechText = `Masuk sebagai ${student.name}, siswa kelas 11 SMA. Membuka ruang praktikum LENTERA Lab.`;
+      let navigated = false;
+      const doNavigate = () => {
+        if (navigated) return;
+        navigated = true;
+        clearTimeout(navTimer);
+        router.push("/aruco");
+      };
+      const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+      const navTimer = setTimeout(doNavigate, fallbackDelay);
+      speakNarration(speechText, {
+        rate: 0.95,
+        onEnd: () => {
+          setTimeout(doNavigate, 250);
+        },
+      });
     }
   };
 

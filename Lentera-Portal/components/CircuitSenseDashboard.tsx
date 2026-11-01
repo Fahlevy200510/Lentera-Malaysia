@@ -2076,20 +2076,26 @@ export default function CircuitSenseDashboard() {
                   ? (name || "Guru")
                   : (getActiveStudent()?.name || name || "Siswa");
                 localStorage.removeItem("lentera-session");
-                const navTimer = setTimeout(() => {
+                const speechText = isTeacher
+                  ? `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
+                  : `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi belajar ${displayName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`;
+
+                let navigated = false;
+                const doNavigate = () => {
+                  if (navigated) return;
+                  navigated = true;
+                  clearTimeout(navTimer);
                   window.location.href = "/";
-                }, 4500);
-                speakNarration(
-                  isTeacher
-                    ? `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
-                    : `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi belajar ${displayName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
-                  {
-                    onEnd: () => {
-                      clearTimeout(navTimer);
-                      window.location.href = "/";
-                    },
-                  }
-                );
+                };
+
+                const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+                const navTimer = setTimeout(doNavigate, fallbackDelay);
+
+                speakNarration(speechText, {
+                  onEnd: () => {
+                    setTimeout(doNavigate, 250);
+                  },
+                });
                 return;
               }
 
@@ -2173,18 +2179,23 @@ export default function CircuitSenseDashboard() {
                 isRedirecting = true;
                 cancelSpeech();
                 playEarcon("click");
-                const navTimer = setTimeout(() => {
+                const speechText = "Balok komponen terdeteksi di papan. Membuka kembali LENTERA Lab untuk melanjutkan perakitan sirkuit.";
+                let navigated = false;
+                const doNavigate = () => {
+                  if (navigated) return;
+                  navigated = true;
+                  clearTimeout(navTimer);
                   window.location.href = "/aruco";
-                }, 4500);
-                speakNarration(
-                  "Balok komponen terdeteksi di papan. Membuka kembali LENTERA Lab untuk melanjutkan perakitan sirkuit.",
-                  {
-                    onEnd: () => {
-                      clearTimeout(navTimer);
-                      window.location.href = "/aruco";
-                    },
-                  }
-                );
+                };
+
+                const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+                const navTimer = setTimeout(doNavigate, fallbackDelay);
+
+                speakNarration(speechText, {
+                  onEnd: () => {
+                    setTimeout(doNavigate, 250);
+                  },
+                });
                 return;
               }
             }

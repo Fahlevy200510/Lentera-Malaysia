@@ -425,18 +425,23 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           playEarcon("clear");
           const sName = getStudentNameFromToken(cellE5);
           localStorage.removeItem("lentera-session");
-          const navTimer = setTimeout(() => {
+          const speechText = `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar selesai. Sampai jumpa!`;
+          let navigated = false;
+          const doNavigate = () => {
+            if (navigated) return;
+            navigated = true;
+            clearTimeout(navTimer);
             window.location.href = "/";
-          }, 4500);
-          speakNarration(
-            `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar selesai. Sampai jumpa!`,
-            {
-              onEnd: () => {
-                clearTimeout(navTimer);
-                window.location.href = "/";
-              },
-            }
-          );
+          };
+
+          const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+          const navTimer = setTimeout(doNavigate, fallbackDelay);
+
+          speakNarration(speechText, {
+            onEnd: () => {
+              setTimeout(doNavigate, 250);
+            },
+          });
           return;
         }
 

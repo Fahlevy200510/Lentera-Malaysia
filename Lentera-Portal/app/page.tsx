@@ -792,18 +792,22 @@ export default function PortalHome() {
                   targetRoute = "/aruco";
                 }
 
+                let navigated = false;
                 const navigateToDestination = () => {
+                  if (navigated) return;
+                  navigated = true;
+                  clearTimeout(navTimer);
                   router.push(targetRoute);
                 };
 
-                const navTimer = setTimeout(navigateToDestination, 4500);
+                const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
+                const navTimer = setTimeout(navigateToDestination, fallbackDelay);
                 speakNarration(speechText, {
                   rate: 0.95,
                   pitch: 1.02,
                   tag: "landing-redirect",
                   onEnd: () => {
-                    clearTimeout(navTimer);
-                    setTimeout(navigateToDestination, 300);
+                    setTimeout(navigateToDestination, 250);
                   },
                 });
               }
