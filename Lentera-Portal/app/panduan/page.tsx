@@ -161,14 +161,14 @@ const FEATURES: FeatureMapping[] = [
     summary:
       "Pengguna tunanetra (Siswa maupun Guru) tidak perlu mengetik username atau password. Cukup sentuh dan letakkan kartu identitas taktil di atas papan fisik LENTERA.",
     audioGuide:
-      "Di Beranda utama LENTERA, Anda dapat masuk secara otomatis tanpa mengetik. Letakkan kartu identitas siswa (ID 35, 36, 37) untuk masuk ke LENTERA Lab, atau kartu identitas guru Bu Sari (ID 38) untuk langsung membuka Dashboard Guru LENTERA Learn dengan sambutan audio ramah.",
+      "Di Beranda utama LENTERA, Anda dapat masuk secara otomatis tanpa mengetik. Letakkan kartu identitas siswa (ID 35, 36, 37) untuk masuk ke LENTERA Lab, atau kartu identitas guru (ID 38) untuk langsung membuka Dashboard Guru LENTERA Learn dengan sambutan audio ramah.",
     cells: {
       ANY: {
         cell: "A1..E5",
         name: "Sel Mana Saja di Papan 5×5",
         component: "Kartu Identitas Siswa / Guru (Token Taktil)",
         arucoId: "ID 35, 36, 37 (Siswa) & ID 38 (Guru)",
-        role: "Mendeteksi peran dan identitas pengguna: Siswa (Via, Amira, Ajib) diarahkan ke LENTERA Lab (/aruco), sedangkan Guru Tunanetra (Bu Sari) diarahkan ke Dashboard LENTERA Learn (/dashboard) dengan sambutan audio ramah.",
+        role: "Mendeteksi peran dan identitas pengguna: Siswa (Via, Amira, Ajib) diarahkan ke LENTERA Lab (/aruco), sedangkan Guru Tunanetra diarahkan ke Dashboard LENTERA Learn (/dashboard) dengan sambutan audio ramah.",
         tactileCue: "Kartu berhuruf Braille timbul (inisial nama siswa atau 'G' untuk guru).",
         badge: "Auto-Login Siswa / Guru",
         badgeColor: "#7C3AED",
@@ -759,9 +759,9 @@ const ARUCO_MARKERS = [
   },
   {
     id: "ID 38",
-    name: "Kartu Guru: Bu Sari",
+    name: "Kartu Identitas Guru",
     category: "Token Guru Tunanetra",
-    tactile: "Kartu datar dengan inisial Braille 'G' + label Guru Fisika Kelas 11 SMA.",
+    tactile: "Kartu datar dengan inisial Braille 'G' + label Guru Fisika.",
     rotation: "Bebas rotasi.",
     note: "Memicu login otomatis Guru Tunanetra ke Dashboard LENTERA Learn, memutar Briefing Eksekutif analisis kelas, dan memberikan navigasi evaluasi siswa.",
     color: "#7C3AED",

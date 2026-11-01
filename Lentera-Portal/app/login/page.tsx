@@ -87,15 +87,15 @@ function LoginFormContent() {
     cancelSpeech();
     if (targetRole === "teacher") {
       const session = {
-        id: "teacher-sari",
+        id: "teacher",
         email: "teacher@lentera.demo",
-        name: "Bu Sari",
+        name: "Guru",
         role: "teacher" as const,
         grade: "Guru Fisika · Kelas 11 SMA",
       };
       localStorage.setItem("lentera-session", JSON.stringify(session));
       speakNarration(
-        "Masuk sebagai Bu Sari, Guru Fisika. Membuka Dashboard Guru LENTERA Learn.",
+        "Masuk sebagai Guru Fisika. Membuka Dashboard Guru LENTERA Learn.",
         {
           rate: 0.95,
           onEnd: () => {
@@ -131,7 +131,7 @@ function LoginFormContent() {
   const playBlindAudioGuide = () => {
     cancelSpeech();
     speakNarration(
-      "Panduan masuk LENTERA untuk Guru dan Siswa Tunanetra. Pertama: Jika Anda berada di depan papan fisik 5 kali 5, Anda dapat menempelkan kartu identitas taktil berhuruf Braille di atas papan tanpa perlu mengetik apapun di layar. ID 38 untuk Guru Bu Sari, dan ID 35 untuk Siswa Via. Kedua: Di halaman web ini, Anda dapat menekan tombol Masuk Guru Bu Sari untuk membuka Dashboard, atau tombol Masuk Siswa Via untuk membuka Lab Sains.",
+      "Panduan masuk LENTERA untuk Guru dan Siswa Tunanetra. Pertama: Jika Anda berada di depan papan fisik 5 kali 5, Anda dapat menempelkan kartu identitas taktil berhuruf Braille di atas papan tanpa perlu mengetik apapun di layar. ID 38 untuk Kartu Guru, dan ID 35 untuk Kartu Siswa. Kedua: Di halaman web ini, Anda dapat menekan tombol Masuk Guru untuk membuka Dashboard, atau tombol Masuk Siswa untuk membuka Lab Sains.",
       { rate: 0.94 }
     );
   };
@@ -317,11 +317,11 @@ function LoginFormContent() {
                   type="button"
                   onClick={() => quickLoginAs("teacher")}
                   className="flex flex-col items-start p-2.5 rounded-xl bg-white text-left border border-violet-200 hover:border-violet-500 hover:shadow-xs transition"
-                  aria-label="Masuk instan sebagai Guru Bu Sari ke Dashboard LENTERA Learn"
+                  aria-label="Masuk instan sebagai Guru ke Dashboard LENTERA Learn"
                 >
                   <div className="flex items-center gap-1.5 text-xs font-bold text-violet-800">
                     <GraduationCap className="h-3.5 w-3.5 text-violet-600" />
-                    <span>Guru Bu Sari</span>
+                    <span>Guru</span>
                   </div>
                   <span className="text-[10px] text-slate-500 mt-0.5">Dashboard LENTERA Learn</span>
                 </button>

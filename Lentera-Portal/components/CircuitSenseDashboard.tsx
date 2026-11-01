@@ -1043,7 +1043,7 @@ function ParentDashboard() {
       <div className="row2 row2-a">
         {/* teacher notes */}
         <Card delay={160} style={{ padding: 24 }}>
-          <SectionTitle icon={BookOpen} title="Laporan Guru" sub="Catatan progres Kai dari Bu Sari" />
+          <SectionTitle icon={BookOpen} title="Laporan Guru" sub="Catatan progres belajar dari Guru Fisika" />
           <div style={{ display: "grid", gap: 12, marginTop: 6 }}>
             {teacherNotes.map((n, i) => (
               <div key={i} style={{ padding: 15, borderRadius: 16, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(139,92,246,0.1)" }}>
@@ -1779,7 +1779,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
     { id: "panduan", label: "Panduan & Modul", icon: BookOpen, href: "/panduan" },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
-  const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Bu Sari";
+  const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Guru";
   const tag = role === "student" ? "Teknisi · Lv 2" : role === "parent" ? "Orang tua siswa" : "Kelas 11 SMA · Guru";
   const person = { name: name || fallbackName, tag };
   return (
@@ -1982,7 +1982,7 @@ export default function CircuitSenseDashboard() {
     let textToSpeak = "";
 
     if (role === "teacher") {
-      const teacherNar = buildTeacherClassNarration(name || "Bu Sari");
+      const teacherNar = buildTeacherClassNarration(name || "Guru");
       textToSpeak = teacherNar.briefing;
     } else {
       const active = getActiveStudent();
@@ -2073,7 +2073,7 @@ export default function CircuitSenseDashboard() {
                   String(cellE5?.component || "").startsWith("teacher_") ||
                   Number(cellE5?.id) === 38;
                 const displayName = isTeacher
-                  ? (name || "Guru Bu Sari")
+                  ? (name || "Guru")
                   : (getActiveStudent()?.name || name || "Siswa");
                 localStorage.removeItem("lentera-session");
                 const navTimer = setTimeout(() => {
@@ -2106,7 +2106,7 @@ export default function CircuitSenseDashboard() {
                   cancelSpeech();
                   playEarcon("step");
                   if (role === "teacher") {
-                    const teacherNar = buildTeacherClassNarration(name || "Bu Sari");
+                    const teacherNar = buildTeacherClassNarration(name || "Guru");
                     speakNarration(teacherNar.fullAnalysis, {
                       tag: "teacher-full-report",
                       rate: 0.94,
@@ -2272,7 +2272,7 @@ export default function CircuitSenseDashboard() {
     );
   }
 
-  const firstName = name ? name.split(" ")[0] : role === "student" ? "Kai" : role === "parent" ? "Bpk/Ibu" : "Bu Sari";
+  const firstName = name ? name.split(" ")[0] : role === "student" ? "Kai" : role === "parent" ? "Bpk/Ibu" : "Guru";
   const heading = view === "handbook"
     ? "Buku Panduan Guru"
     : role === "student"
@@ -2309,7 +2309,7 @@ export default function CircuitSenseDashboard() {
                   <button
                     onClick={() => {
                       if (role === "teacher") {
-                        const tNar = buildTeacherClassNarration(name || "Bu Sari");
+                        const tNar = buildTeacherClassNarration(name || "Guru");
                         speakNarration(tNar.fullAnalysis, { tag: "teacher-full-report", rate: 0.94 });
                       } else {
                         const active = getActiveStudent();

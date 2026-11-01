@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     ) {
       const demoNames: Record<string, string> = {
         student: "Siswa Kai",
-        teacher: "Bu Sari (Guru)",
+        teacher: "Guru (Fisika)",
         parent: "Bpk/Ibu Hendra (Orang Tua)",
       };
 

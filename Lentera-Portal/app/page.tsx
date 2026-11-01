@@ -677,20 +677,28 @@ export default function PortalHome() {
             avatar: "ajib",
             targetUrl: "/aruco",
           },
-          teacher_sari: {
-            id: "sari",
-            name: "Bu Sari",
+          teacher: {
+            id: "teacher",
+            name: "Guru",
             role: "teacher",
-            grade: "Guru Fisika · Kelas 11 SMA",
-            avatar: "sari",
+            grade: "Guru Fisika",
+            avatar: "teacher",
+            targetUrl: "/dashboard",
+          },
+          teacher_sari: {
+            id: "teacher",
+            name: "Guru",
+            role: "teacher",
+            grade: "Guru Fisika",
+            avatar: "teacher",
             targetUrl: "/dashboard",
           },
           "38": {
-            id: "sari",
-            name: "Bu Sari",
+            id: "teacher",
+            name: "Guru",
             role: "teacher",
-            grade: "Guru Fisika · Kelas 11 SMA",
-            avatar: "sari",
+            grade: "Guru Fisika",
+            avatar: "teacher",
             targetUrl: "/dashboard",
           },
         };
@@ -705,8 +713,9 @@ export default function PortalHome() {
           student_via: "Kartu Identitas Via",
           student_amira: "Kartu Identitas Amira",
           student_ajib: "Kartu Identitas Ajib",
-          teacher_sari: "Kartu Identitas Guru Bu Sari",
-          "38": "Kartu Identitas Guru Bu Sari",
+          teacher: "Kartu Identitas Guru",
+          teacher_sari: "Kartu Identitas Guru",
+          "38": "Kartu Identitas Guru",
         };
 
         ws.onmessage = (event) => {
@@ -771,7 +780,7 @@ export default function PortalHome() {
                     })
                   );
                   if (detectedUserMeta.role === "teacher") {
-                    speechText = `Selamat datang, ${detectedUserMeta.name}, Guru Fisika Kelas 11 SMA! Kartu identitas guru terdeteksi di sel ${detectedUserCell}. Membuka Dashboard Guru LENTERA Learn.`;
+                    speechText = `Selamat datang, Bapak atau Ibu Guru! Kartu identitas guru terdeteksi di sel ${detectedUserCell}. Membuka Dashboard Guru LENTERA Learn.`;
                   } else {
                     speechText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedUserCell}. Membuka LENTERA Lab.`;
                   }
