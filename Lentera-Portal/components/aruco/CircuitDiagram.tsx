@@ -80,13 +80,13 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
   const getXY = (cell: string) => {
     const colIdx = cols.indexOf(cell[0]);
     const rowIdx = parseInt(cell[1]) - 1;
-    // Jarak antar sel = 80, padding = 50
+    // Jarak antar sel = 80, padding = 74 agar komponen di sel tepi (radius 40px) tidak menabrak bingkai/label
     // Balik Y-axis (4 - rowIdx) agar baris 1 berada di bawah (dekat siswa) dan baris 5 di atas
-    return { x: 50 + colIdx * 80, y: 50 + (4 - rowIdx) * 80 };
+    return { x: 74 + colIdx * 80, y: 74 + (4 - rowIdx) * 80 };
   };
 
   return (
-    <svg viewBox="0 0 420 420" className="h-auto w-full overflow-visible" role="img">
+    <svg viewBox="0 0 468 468" className="h-auto w-full overflow-visible" role="img">
       <defs>
         <filter id="bulbGlow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
@@ -98,27 +98,27 @@ export default function CircuitDiagram({ variant }: { variant?: string }) {
         </filter>
       </defs>
       
-      {/* Subtle Board Grid Frame */}
-      <rect x="25" y="25" width="370" height="370" rx="16" fill="rgba(30, 27, 75, 0.55)" stroke="rgba(167, 139, 250, 0.32)" strokeWidth="1.5" strokeDasharray="4 4" />
+      {/* Subtle Board Grid Frame (radius 48px dari titik pusat sel terluar) */}
+      <rect x="26" y="26" width="416" height="416" rx="18" fill="rgba(30, 27, 75, 0.55)" stroke="rgba(167, 139, 250, 0.32)" strokeWidth="1.5" strokeDasharray="4 4" />
 
       {/* Axis Labels: Columns A-E (Top & Bottom) */}
       {cols.map((col, idx) => {
-        const x = 50 + idx * 80;
+        const x = 74 + idx * 80;
         return (
           <g key={`col-label-${col}`}>
-            <text x={x} y="18" textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
-            <text x={x} y="412" textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
+            <text x={x} y="13" textAnchor="middle" dominantBaseline="central" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
+            <text x={x} y="455" textAnchor="middle" dominantBaseline="central" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{col}</text>
           </g>
         );
       })}
 
       {/* Axis Labels: Rows 5-1 (Left & Right) */}
       {[5, 4, 3, 2, 1].map((row, idx) => {
-        const y = 50 + idx * 80 + 4;
+        const y = 74 + idx * 80;
         return (
           <g key={`row-label-${row}`}>
-            <text x="14" y={y} textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
-            <text x="406" y={y} textAnchor="middle" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
+            <text x="12" y={y} textAnchor="middle" dominantBaseline="central" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
+            <text x="456" y={y} textAnchor="middle" dominantBaseline="central" fill="#cbd5e1" fontSize="11" fontWeight="800" fontFamily="monospace">{row}</text>
           </g>
         );
       })}
@@ -185,8 +185,12 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           {/* Negative (Short) di Bawah */}
           <line x1="-4" y1="10" x2="4" y2="10" stroke={isComplete ? "#c084fc" : dim} strokeWidth="3" />
           
-          <text x="0" y="-31" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, -36)`}>+</text>
-          <text x="0" y="43" fill={isComplete ? "#c084fc" : dim} fontSize="18" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 0, 38)`}>-</text>
+          <g transform={`translate(0, -34) rotate(${-rotation})`}>
+            <text x="0" y="0" fill={isComplete ? "#c084fc" : dim} fontSize="14" fontWeight="bold" textAnchor="middle" dominantBaseline="central">+</text>
+          </g>
+          <g transform={`translate(0, 34) rotate(${-rotation})`}>
+            <text x="0" y="0" fill={isComplete ? "#c084fc" : dim} fontSize="16" fontWeight="bold" textAnchor="middle" dominantBaseline="central">-</text>
+          </g>
         </g>
       );
       break;
@@ -197,8 +201,12 @@ function renderComponent(type: string, isComplete: boolean, rotation: number = 0
           <path d="M -10 -10 L 10 10 M -10 10 L 10 -10" stroke={isComplete ? "#fef08a" : dim} strokeWidth="3" strokeLinecap="round" />
           
           {/* Default fisik: + di Kiri, - di Kanan */}
-          <text x="-28" y="5" fill={dim} fontSize="14" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, -28, 0)`}>+</text>
-          <text x="28" y="5" fill={dim} fontSize="16" fontWeight="bold" textAnchor="middle" transform={`rotate(${-rotation}, 28, 0)`}>-</text>
+          <g transform={`translate(-30, 0) rotate(${-rotation})`}>
+            <text x="0" y="0" fill={dim} fontSize="13" fontWeight="bold" textAnchor="middle" dominantBaseline="central">+</text>
+          </g>
+          <g transform={`translate(30, 0) rotate(${-rotation})`}>
+            <text x="0" y="0" fill={dim} fontSize="15" fontWeight="bold" textAnchor="middle" dominantBaseline="central">-</text>
+          </g>
         </g>
       );
       break;
