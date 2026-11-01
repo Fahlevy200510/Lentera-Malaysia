@@ -2031,9 +2031,21 @@ export default function CircuitSenseDashboard() {
 
           <main className="cs-scroll" style={{ flex: 1, overflowY: "auto", padding: "26px clamp(16px, 4vw, 34px) 40px" }}>
             <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-              <div className="rise" style={{ marginBottom: 22 }}>
-                <h1 style={{ fontFamily: HEAD, fontWeight: 800, fontSize: "clamp(26px, 4vw, 36px)", color: C.text, lineHeight: 1.05 }}>{heading}</h1>
-                <p style={{ fontSize: 14.5, color: C.textSoft, marginTop: 6 }}>{subheading}</p>
+              <div className="rise" style={{ marginBottom: 22, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <h1 style={{ fontFamily: HEAD, fontWeight: 800, fontSize: "clamp(26px, 4vw, 36px)", color: C.text, lineHeight: 1.05 }}>{heading}</h1>
+                  <p style={{ fontSize: 14.5, color: C.textSoft, marginTop: 6 }}>{subheading}</p>
+                </div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 99, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.18)", fontSize: 12, color: C.textSoft }} title="A1: Narasi Laporan Suara | C5: Buka Rapor AI | E5: Kartu Siswa Logout | Sel Lain: Buka Lab Sirkuit">
+                  <span style={{ fontWeight: 800, color: C.primaryDeep }}>💡 Pintasan Papan:</span>
+                  <span><strong style={{ color: C.text }}>A1</strong> Laporan Suara</span>
+                  <span>•</span>
+                  <span><strong style={{ color: C.text }}>C5</strong> Rapor AI</span>
+                  <span>•</span>
+                  <span><strong style={{ color: C.text }}>E5</strong> Keluar</span>
+                  <span>•</span>
+                  <span><strong style={{ color: C.text }}>Lainnya</strong> Buka Lab</span>
+                </div>
               </div>
 
               {view === "handbook" ? <TeacherHandbook /> : role === "student" ? <StudentHome /> : role === "parent" ? <ParentDashboard /> : <TeacherOverview />}
