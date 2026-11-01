@@ -398,3 +398,26 @@ export function buildStudentLearningNarration(
     modulesNarration,
   };
 }
+
+export function buildTeacherClassNarration(teacherName: string = "Bu Sari") {
+  const briefing = `Selamat datang di Dashboard Guru LENTERA Learn, ${teacherName}. Ringkasan kelas hari ini: 19 dari 24 siswa aktif praktikum dengan rata-rata penguasaan materi kelas mencapai 68 persen. Tren pemahaman kelas terus meningkat positif sebesar 26 persen. Tekan tombol Analisis Kelas atau letakkan balok di sel A1 untuk mendengarkan rincian lengkap grafik kurva tren, profil radar keterampilan, dan status tiap siswa.`;
+
+  const trendNarration = `Analisis Grafik Tren Penguasaan Kelas: Pemahaman kelas 11 SMA menunjukkan tren kenaikan stabil sebesar 26 persen selama 6 minggu terakhir. Dimulai dari 42 persen pada Minggu 1, naik menjadi 48 persen di Minggu 2, 55 persen di Minggu 3, 61 persen di Minggu 4, 65 persen di Minggu 5, dan mencapai 68 persen pada Minggu 6. Arah kurva berstatus positif dan konsisten naik.`;
+
+  const radarNarration = `Analisis Radar Profil Keterampilan Kelas: Kemampuan tertinggi siswa berada pada konsep Baterai dengan nilai 90 persen dan Kabel 82 persen. Saklar berada di 76 persen dan Rangkaian Seri di 63 persen. Namun, konsep Aliran Arus berada di 54 persen karena miskonsepsi kutub, serta Rangkaian Paralel berada di angka terendah yaitu 38 persen. Topik rangkaian paralel sangat disarankan menjadi fokus bimbingan tatap muka Ibu berikutnya.`;
+
+  const insightsNarration = `Wawasan Diagnostik Cerdas Guru: Pertama, peringatan perangkat fisik, 82 persen siswa salah meletakkan kabel di terminal kanan karena tekstur taktil yang terlalu samar. Kedua, miskonsepsi kutub baterai masih dialami 6 siswa pada konsep aliran arus. Ketiga, tiga siswa telah menguasai rangkaian seri dan siap membuka modul rangkaian paralel.`;
+
+  const studentsNarration = `Laporan Capaian Individu Siswa: Tiga siswa teratas berstatus siap naik level, yaitu Via 92 persen, Ajib 85 persen, dan Amira 75 persen. Dua siswa sesuai target yaitu Lina 72 persen dan Kai 64 persen. Satu siswa memerlukan pendampingan khusus yaitu Bagas dengan nilai 38 persen.`;
+
+  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa Kelas 11 SMA, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Anda dapat menekan tombol Rapor Siswa untuk melihat detail grafik tiap anak dan mencetak dokumen PDF.`;
+
+  return {
+    briefing,
+    fullAnalysis,
+    trendNarration,
+    radarNarration,
+    insightsNarration,
+    studentsNarration,
+  };
+}

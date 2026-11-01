@@ -84,12 +84,12 @@ const FEATURES: FeatureMapping[] = [
     cells: {
       A1: {
         cell: "A1",
-        name: "Sudut Kiri Depan (Dekat Siswa)",
-        component: "Balok Sirkuit Apa Saja (Baterai, Lampu, Kabel)",
+        name: "Sudut Kiri Depan (Dekat Siswa & Guru)",
+        component: "Balok Sirkuit Apa Saja (Baterai, Lampu, Kabel, dll.)",
         arucoId: "ID 1 – 7",
-        role: "Memicu pembacaan suara audio lengkap mengenai capaian belajar, tingkatan XP, modul yang dikuasai, dan rekomendasi fokus belajar hari ini.",
-        tactileCue: "Slot pojok kiri paling dekat dengan tubuh siswa.",
-        badge: "Audio Capaian Belajar",
+        role: "Memicu narasi audio lengkap adaptif: Bagi Siswa, membacakan capaian XP, level, bintang keterampilan tiap komponen, dan rekomendasi praktikum. Bagi Guru Tunanetra, membacakan Briefing Eksekutif Kelas lengkap (aktivitas kelas, arah kurva grafik tren 6 minggu, radar konsep terkuat vs terlemah, dan siswa yang butuh pendampingan khusus).",
+        tactileCue: "Slot pojok kiri paling dekat dengan tubuh pengguna.",
+        badge: "Audio Progres & Analisis Kelas",
         badgeColor: "#7C3AED",
       },
       C5: {
@@ -127,8 +127,8 @@ const FEATURES: FeatureMapping[] = [
       {
         step: 1,
         cell: "A1",
-        text: "Dengarkan Capaian Belajar",
-        note: "Letakkan balok sirkuit di sel A1 untuk mendengar ringkasan suara.",
+        text: "Dengarkan Analisis / Capaian Belajar",
+        note: "Letakkan balok di sel A1. Siswa mendengar progres XP & keterampilan; Guru tunanetra mendengar briefing kurva tren & radar konsep.",
       },
       {
         step: 2,

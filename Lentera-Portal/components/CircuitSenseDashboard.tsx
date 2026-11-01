@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
-import { getStudentProgress, getActiveStudent, setActiveStudent, PRESET_STUDENTS, buildStudentLearningNarration, type StudentProgress } from "@/utils/progress";
+import { getStudentProgress, getActiveStudent, setActiveStudent, PRESET_STUDENTS, buildStudentLearningNarration, buildTeacherClassNarration, type StudentProgress } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
@@ -480,8 +480,55 @@ function StudentHome() {
       {/* activity + streak */}
       <div className="row2 row2-a">
         <Card delay={200} style={{ padding: 24 }}>
-          <SectionTitle icon={TrendingUp} title="Minggu ini" sub="Menit belajar di papan, per hari" />
+          <SectionTitle
+            icon={TrendingUp}
+            title="Minggu ini"
+            sub="Menit belajar di papan, per hari"
+            right={
+              <button
+                onClick={() => {
+                  const summary = weekly.map((w) => `${w.day} ${w.min} menit`).join(", ");
+                  speakNarration(`Grafik durasi praktik di papan minggu ini: ${summary}. Seluruh waktu tercatat otomatis oleh sensor LENTERA.`, {
+                    tag: "chart-weekly",
+                    rate: 0.94,
+                  });
+                }}
+                title="Dengarkan data durasi belajar per hari"
+                style={{
+                  background: "rgba(139,92,246,0.12)",
+                  border: "none",
+                  borderRadius: 99,
+                  padding: "5px 12px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: C.primaryDeep,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  cursor: "pointer",
+                }}
+              >
+                <Volume2 size={13} /> Dengar Menit
+              </button>
+            }
+          />
           <div style={{ height: 190 }}>
+            {/* Screen Reader Semantic Fallback Table */}
+            <table className="sr-only">
+              <caption>Tabel Durasi Praktik Mingguan Siswa di Papan LENTERA</caption>
+              <thead>
+                <tr><th scope="col">Hari</th><th scope="col">Durasi (Menit)</th></tr>
+              </thead>
+              <tbody>
+                {weekly.map((d) => (
+                  <tr key={d.day}>
+                    <td>Hari {d.day}</td>
+                    <td>{d.min} menit</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weekly} margin={{ top: 8, right: 6, left: -22, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 4" stroke="rgba(46,42,94,0.06)" vertical={false} />
@@ -610,8 +657,55 @@ function TeacherOverview() {
       {/* trend + radar */}
       <div className="row2 row2-b">
         <Card delay={200} style={{ padding: 24 }}>
-          <SectionTitle icon={TrendingUp} title="Penguasaan kelas dari waktu ke waktu" sub="Rata-rata pemahaman seluruh kelas" right={<Pill tone="green">Tren naik</Pill>} />
+          <SectionTitle
+            icon={TrendingUp}
+            title="Penguasaan kelas dari waktu ke waktu"
+            sub="Rata-rata pemahaman seluruh kelas"
+            right={
+              <div className="flex items-center" style={{ gap: 8 }}>
+                <button
+                  onClick={() => {
+                    const tNar = buildTeacherClassNarration();
+                    speakNarration(tNar.trendNarration, { tag: "chart-trend", rate: 0.94 });
+                  }}
+                  title="Dengarkan narasi grafik kurva tren penguasaan kelas"
+                  style={{
+                    background: "rgba(139,92,246,0.12)",
+                    border: "none",
+                    borderRadius: 99,
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: C.primaryDeep,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Volume2 size={13} /> Dengar Tren
+                </button>
+                <Pill tone="green">Tren naik</Pill>
+              </div>
+            }
+          />
           <div style={{ height: 230 }}>
+            {/* Screen Reader Semantic Table Fallback */}
+            <table className="sr-only">
+              <caption>Tabel Tren Penguasaan Kelas Mingguan</caption>
+              <thead>
+                <tr><th scope="col">Minggu</th><th scope="col">Tingkat Penguasaan</th></tr>
+              </thead>
+              <tbody>
+                {masteryTrend.map((m) => (
+                  <tr key={m.week}>
+                    <td>Minggu {m.week.replace("M", "")}</td>
+                    <td>{m.mastery} persen</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={masteryTrend} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
                 <defs>
@@ -631,8 +725,52 @@ function TeacherOverview() {
         </Card>
 
         <Card delay={260} style={{ padding: 24 }}>
-          <SectionTitle icon={CircuitBoard} title="Profil keterampilan" sub="Rata-rata kelas per konsep" />
+          <SectionTitle
+            icon={CircuitBoard}
+            title="Profil keterampilan"
+            sub="Rata-rata kelas per konsep"
+            right={
+              <button
+                onClick={() => {
+                  const tNar = buildTeacherClassNarration();
+                  speakNarration(tNar.radarNarration, { tag: "chart-radar", rate: 0.94 });
+                }}
+                title="Dengarkan narasi radar profil keterampilan konsep"
+                style={{
+                  background: "rgba(139,92,246,0.12)",
+                  border: "none",
+                  borderRadius: 99,
+                  padding: "6px 12px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: C.primaryDeep,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  cursor: "pointer",
+                }}
+              >
+                <Volume2 size={13} /> Dengar Radar
+              </button>
+            }
+          />
           <div style={{ height: 260 }}>
+            {/* Screen Reader Semantic Table Fallback */}
+            <table className="sr-only">
+              <caption>Tabel Radar Profil Keterampilan Konsep Kelas</caption>
+              <thead>
+                <tr><th scope="col">Konsep Sirkuit</th><th scope="col">Tingkat Penguasaan</th></tr>
+              </thead>
+              <tbody>
+                {skillRadar.map((s) => (
+                  <tr key={s.skill}>
+                    <td>{s.skill}</td>
+                    <td>{s.value} persen</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={skillRadar} outerRadius="72%">
                 <PolarGrid stroke="rgba(46,42,94,0.12)" />
@@ -647,7 +785,38 @@ function TeacherOverview() {
 
       {/* AI insights — the novelty */}
       <Card delay={320} style={{ padding: 24, background: `linear-gradient(140deg, ${C.primarySoft}, #FBFAFF)` }}>
-        <SectionTitle icon={Brain} title="Wawasan AI" sub="Lentera tidak hanya menilai — tapi juga mendiagnosis kelas dan papan" right={<Pill tone="purple">Langsung</Pill>} />
+        <SectionTitle
+          icon={Brain}
+          title="Wawasan AI"
+          sub="Lentera tidak hanya menilai — tapi juga mendiagnosis kelas dan papan"
+          right={
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <button
+                onClick={() => {
+                  const tNar = buildTeacherClassNarration();
+                  speakNarration(tNar.insightsNarration, { tag: "chart-insights", rate: 0.94 });
+                }}
+                title="Dengarkan temuan diagnostik AI untuk guru"
+                style={{
+                  background: "rgba(139,92,246,0.14)",
+                  border: "none",
+                  borderRadius: 99,
+                  padding: "6px 12px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: C.primaryDeep,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  cursor: "pointer",
+                }}
+              >
+                <Volume2 size={13} /> Dengar Wawasan AI
+              </button>
+              <Pill tone="purple">Langsung</Pill>
+            </div>
+          }
+        />
         <div style={{ display: "grid", gap: 13, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
           {insights.map((ins, i) => {
             const tones: Record<string, [string, string]> = {
@@ -678,6 +847,28 @@ function TeacherOverview() {
           sub="Kelas 11 SMA · Kelistrikan"
           right={
             <div className="flex items-center" style={{ gap: 8 }}>
+              <button
+                onClick={() => {
+                  const tNar = buildTeacherClassNarration();
+                  speakNarration(tNar.studentsNarration, { tag: "students-status", rate: 0.94 });
+                }}
+                style={{
+                  background: "rgba(139,92,246,0.12)",
+                  border: "none",
+                  padding: "9px 15px",
+                  borderRadius: 99,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  color: C.primaryDeep,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  cursor: "pointer",
+                }}
+                title="Dengarkan laporan capaian tiap siswa"
+              >
+                <Volume2 size={15} /> Dengar Siswa
+              </button>
               <button
                 onClick={() => {
                   if (typeof window !== "undefined") {
@@ -1785,15 +1976,23 @@ export default function CircuitSenseDashboard() {
     }
   }, []);
 
-  // Narasi sambutan selamat datang di LENTERA Learn (Overview Progres Siswa)
+  // Narasi sambutan selamat datang di LENTERA Learn (Adaptif: Guru vs Siswa)
   useEffect(() => {
     if (!authed) return;
-    const active = getActiveStudent();
-    const progress = getStudentProgress();
-    const nar = buildStudentLearningNarration(active, progress);
+    let textToSpeak = "";
+
+    if (role === "teacher") {
+      const teacherNar = buildTeacherClassNarration(name || "Bu Sari");
+      textToSpeak = teacherNar.briefing;
+    } else {
+      const active = getActiveStudent();
+      const progress = getStudentProgress();
+      const nar = buildStudentLearningNarration(active, progress);
+      textToSpeak = nar.shortOverview;
+    }
 
     const timer = setTimeout(() => {
-      speakNarration(nar.shortOverview, {
+      speakNarration(textToSpeak, {
         rate: 0.94,
         pitch: 1.02,
         tag: "dashboard-overview",
@@ -1804,7 +2003,7 @@ export default function CircuitSenseDashboard() {
       clearTimeout(timer);
       cancelSpeech();
     };
-  }, [authed]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authed, role]);
 
   // Tangible Board Navigation & Report Trigger di LENTERA Learn
   // - Balok di sel A1 -> Bacakan Laporan Pembelajaran Lengkap
@@ -1897,14 +2096,23 @@ export default function CircuitSenseDashboard() {
                   hasTriggeredA1 = true;
                   cancelSpeech();
                   playEarcon("step");
-                  const active = getActiveStudent();
-                  const prog = getStudentProgress();
-                  const nar = buildStudentLearningNarration(active, prog);
-                  speakNarration(nar.fullReport, {
-                    tag: "full-report",
-                    rate: 0.94,
-                    pitch: 1.02,
-                  });
+                  if (role === "teacher") {
+                    const teacherNar = buildTeacherClassNarration(name || "Bu Sari");
+                    speakNarration(teacherNar.fullAnalysis, {
+                      tag: "teacher-full-report",
+                      rate: 0.94,
+                      pitch: 1.02,
+                    });
+                  } else {
+                    const active = getActiveStudent();
+                    const prog = getStudentProgress();
+                    const nar = buildStudentLearningNarration(active, prog);
+                    speakNarration(nar.fullReport, {
+                      tag: "full-report",
+                      rate: 0.94,
+                      pitch: 1.02,
+                    });
+                  }
                 }
                 return;
               } else {
@@ -2088,15 +2296,49 @@ export default function CircuitSenseDashboard() {
                   <h1 style={{ fontFamily: HEAD, fontWeight: 800, fontSize: "clamp(26px, 4vw, 36px)", color: C.text, lineHeight: 1.05 }}>{heading}</h1>
                   <p style={{ fontSize: 14.5, color: C.textSoft, marginTop: 6 }}>{subheading}</p>
                 </div>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 99, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.18)", fontSize: 12, color: C.textSoft }} title="A1: Narasi Laporan Suara | C5: Buka Rapor AI | E5: Kartu Siswa Logout | Sel Lain: Buka Lab Sirkuit">
-                  <span style={{ fontWeight: 800, color: C.primaryDeep }}>💡 Pintasan Papan:</span>
-                  <span><strong style={{ color: C.text }}>A1</strong> Laporan Suara</span>
-                  <span>•</span>
-                  <span><strong style={{ color: C.text }}>C5</strong> Rapor AI</span>
-                  <span>•</span>
-                  <span><strong style={{ color: C.text }}>E5</strong> Keluar</span>
-                  <span>•</span>
-                  <span><strong style={{ color: C.text }}>Lainnya</strong> Buka Lab</span>
+                <div className="flex items-center" style={{ gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => {
+                      if (role === "teacher") {
+                        const tNar = buildTeacherClassNarration(name || "Bu Sari");
+                        speakNarration(tNar.fullAnalysis, { tag: "teacher-full-report", rate: 0.94 });
+                      } else {
+                        const active = getActiveStudent();
+                        const prog = getStudentProgress();
+                        const nar = buildStudentLearningNarration(active, prog);
+                        speakNarration(nar.fullReport, { tag: "student-full-report", rate: 0.94 });
+                      }
+                    }}
+                    style={{
+                      background: `linear-gradient(135deg, ${C.primary}, ${C.primaryDeep})`,
+                      color: "#fff",
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: 99,
+                      fontWeight: 700,
+                      fontSize: 12.5,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      boxShadow: C.shadowSm,
+                      cursor: "pointer",
+                    }}
+                    title="Dengarkan seluruh laporan progres melalui suara"
+                  >
+                    <Volume2 size={14} />
+                    <span>{role === "teacher" ? "Dengar Analisis Kelas Lengkap" : "Dengar Data Progres Lengkap"}</span>
+                  </button>
+
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 99, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.18)", fontSize: 12, color: C.textSoft }} title="A1: Narasi Laporan Suara | C5: Buka Rapor AI | E5: Kartu Siswa Logout | Sel Lain: Buka Lab Sirkuit">
+                    <span style={{ fontWeight: 800, color: C.primaryDeep }}>💡 Pintasan Papan:</span>
+                    <span><strong style={{ color: C.text }}>A1</strong> {role === "teacher" ? "Analisis Kelas" : "Laporan Suara"}</span>
+                    <span>•</span>
+                    <span><strong style={{ color: C.text }}>C5</strong> Rapor AI</span>
+                    <span>•</span>
+                    <span><strong style={{ color: C.text }}>E5</strong> Keluar</span>
+                    <span>•</span>
+                    <span><strong style={{ color: C.text }}>Lainnya</strong> Buka Lab</span>
+                  </div>
                 </div>
               </div>
 
