@@ -19,3 +19,7 @@ dist-ssr/
 # Scratch & temporary
 scratch_birela/
 .env*.local
+
+# Local hardware calibration (immune to git pull)
+grid_roi_custom.json
+*.local.json

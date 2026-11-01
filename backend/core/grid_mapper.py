@@ -4,28 +4,37 @@ import math
 
 class GridMapper:
     def __init__(self, roi_file="grid_roi.json"):
-        self.roi_file = roi_file
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        if not os.path.isabs(roi_file):
+            self.roi_file = os.path.join(base_dir, roi_file)
+        else:
+            self.roi_file = roi_file
+        self.custom_roi_file = os.path.join(base_dir, "grid_roi_custom.json")
         self.grid_rois = {} # { "A1": {"centroid": (x,y), "radius": r}, ... }
         self.H = None
         self.load_roi()
 
     def load_roi(self):
-        if os.path.exists(self.roi_file):
+        # Prioritaskan custom_roi_file (hasil kalibrasi fisik pengguna di perangkat, kebal git pull)
+        active_file = self.custom_roi_file if os.path.exists(self.custom_roi_file) else self.roi_file
+        
+        if os.path.exists(active_file):
             try:
-                with open(self.roi_file, 'r') as f:
+                with open(active_file, 'r') as f:
                     content = f.read().strip()
                     if content:
                         self.grid_rois = json.loads(content)
+                        print(f"[GridMapper] Memuat ROI dari: {os.path.basename(active_file)}")
                 if "_camera_corners" in self.grid_rois:
                     from backend.core.vision import compute_homography
                     self.H = compute_homography(self.grid_rois["_camera_corners"])
             except Exception as e:
-                print(f"Gagal memuat {self.roi_file}: {e}")
+                print(f"Gagal memuat {active_file}: {e}")
                 self.grid_rois = {}
                 self.H = None
         else:
             # Fallback mock ROI jika belum dikalibrasi (khusus testing lokal)
-            print("Peringatan: grid_roi.json tidak ditemukan. Menggunakan mock ROI.")
+            print(f"Peringatan: {os.path.basename(active_file)} tidak ditemukan. Menggunakan mock ROI.")
             self._create_mock_roi()
 
     def _create_mock_roi(self):
@@ -144,7 +153,15 @@ class GridMapper:
         from backend.core.vision import compute_homography
         self.H = compute_homography(self.grid_rois["_camera_corners"])
                 
-        with open(self.roi_file, 'w') as f:
+        # Simpan ke custom_roi_file agar kebal dari git pull di masa mendatang
+        with open(self.custom_roi_file, 'w') as f:
             json.dump(self.grid_rois, f, indent=2)
+        print(f"[GridMapper] Kalibrasi tersimpan ke file kustom: {os.path.basename(self.custom_roi_file)}")
+            
+        try:
+            with open(self.roi_file, 'w') as f:
+                json.dump(self.grid_rois, f, indent=2)
+        except Exception:
+            pass
             
         return True, "Kalibrasi berhasil. Papan 5x5 sudah terpetakan sempurna."
