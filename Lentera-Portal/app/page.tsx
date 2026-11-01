@@ -16,6 +16,7 @@ import {
   Sparkles,
   Hand,
   Cpu,
+  BookOpen,
 } from "lucide-react";
 import {
   resolveEndpoints,
@@ -43,6 +44,17 @@ type Destination = {
 };
 
 const destinations: Destination[] = [
+  {
+    href: "/panduan",
+    title: "Buku Panduan & Modul",
+    tagline: "Pemetaan Blok & Download Manual",
+    description:
+      "Tata letak sel 5x5 untuk setiap fitur, kamus marker ArUco kamera bawah, dan modul ajar praktikum PDF.",
+    accent: "#059669",
+    accentSoft: "#DCFCE7",
+    Icon: BookOpen,
+  },
+
   {
     href: "/dashboard",
     title: "LENTERA Learn",
@@ -988,6 +1000,14 @@ export default function PortalHome() {
                 <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5 text-[#735CDD]" />{" "}
                 Buka LENTERA Learn
               </Link>
+              <Link
+                href="/panduan"
+                className="portal-secondary-btn flex items-center justify-center gap-2"
+              >
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-[#059669]" />
+                Buku Panduan & Modul
+              </Link>
+
               <button
                 id="btn-voice-guide"
                 onClick={readIntro}

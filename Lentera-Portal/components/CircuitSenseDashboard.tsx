@@ -1534,7 +1534,8 @@ function Sidebar({ view, setView, role, onLogout }: ShellProps) {
   const homeLabel = role === "student" ? "Dashboard Saya" : role === "parent" ? "Progres Anak" : "Ringkasan";
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: homeLabel, icon: LayoutDashboard },
-    ...(role === "teacher" ? [{ id: "handbook", label: "Buku Panduan", icon: BookOpen }] : []),
+    ...(role === "teacher" ? [{ id: "handbook", label: "Buku Panduan Guru", icon: BookOpen }] : []),
+    { id: "panduan", label: "Panduan & Modul Ajar", icon: BookOpen, href: "/panduan" },
     { id: "lab", label: "Lentera Lab", icon: ScanEye, href: "/aruco" },
   ];
   return (
@@ -1583,7 +1584,8 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
   const [search, setSearch] = useState("");
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: "Beranda", icon: LayoutDashboard },
-    ...(role === "teacher" ? [{ id: "handbook", label: "Panduan", icon: BookOpen }] : []),
+    ...(role === "teacher" ? [{ id: "handbook", label: "Panduan Guru", icon: BookOpen }] : []),
+    { id: "panduan", label: "Panduan & Modul", icon: BookOpen, href: "/panduan" },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
   const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Bu Sari";
