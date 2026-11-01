@@ -1383,7 +1383,7 @@ export default function VoiceGuide() {
                   // Langsung majukan ke totalSteps agar useEffect([isFinished]) membacakan apresiasi selesai secara utuh
                   setCurrentStep(totalSteps);
                 }
-              }, 3000);
+              }, 1200);
             }
             return;
           }
