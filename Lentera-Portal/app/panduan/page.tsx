@@ -23,6 +23,7 @@ import {
   ToggleRight,
   Cable,
   User,
+  GraduationCap,
   Info,
   AlertCircle,
   ExternalLink,
@@ -105,10 +106,10 @@ const FEATURES: FeatureMapping[] = [
       E5: {
         cell: "E5",
         name: "Sudut Kanan Belakang",
-        component: "Kartu Identitas Siswa",
-        arucoId: "ID 35 (Via), 36 (Amira), 37 (Ajib)",
-        role: "Mengakhiri sesi belajar siswa secara aman, menyimpan akumulasi progres ke sistem, dan kembali ke Beranda utama.",
-        tactileCue: "Slot pojok kanan paling jauh dari tubuh siswa.",
+        component: "Kartu Identitas Siswa / Guru",
+        arucoId: "ID 35, 36, 37 (Siswa) & ID 38 (Guru)",
+        role: "Mengakhiri sesi belajar atau mengajar secara aman, menyimpan akumulasi progres ke sistem, dan kembali ke Beranda utama.",
+        tactileCue: "Slot pojok kanan paling jauh dari tubuh pengguna.",
         badge: "Selesai Sesi / Logout",
         badgeColor: "#E11D48",
       },
@@ -158,19 +159,19 @@ const FEATURES: FeatureMapping[] = [
     color: "#D97706",
     accentSoft: "#FEF3C7",
     summary:
-      "Siswa tunanetra tidak perlu mengetik username atau password. Cukup sentuh dan letakkan kartu identitas di atas papan LENTERA.",
+      "Pengguna tunanetra (Siswa maupun Guru) tidak perlu mengetik username atau password. Cukup sentuh dan letakkan kartu identitas taktil di atas papan fisik LENTERA.",
     audioGuide:
-      "Di Beranda utama LENTERA, Anda dapat masuk secara otomatis tanpa keyboard. Cukup letakkan kartu identitas siswa di sel mana saja di atas papan fisik. Sistem akan menyapa nama Anda melalui suara dan langsung membawa Anda ke ruang eksperimen LENTERA Lab.",
+      "Di Beranda utama LENTERA, Anda dapat masuk secara otomatis tanpa mengetik. Letakkan kartu identitas siswa (ID 35, 36, 37) untuk masuk ke LENTERA Lab, atau kartu identitas guru Bu Sari (ID 38) untuk langsung membuka Dashboard Guru LENTERA Learn dengan sambutan audio ramah.",
     cells: {
       ANY: {
         cell: "A1..E5",
         name: "Sel Mana Saja di Papan 5×5",
-        component: "Kartu Identitas Siswa (Token Taktil)",
-        arucoId: "ID 35, ID 36, ID 37",
-        role: "Mendeteksi identitas siswa (Via, Amira, atau Ajib), memuat data pembelajaran mereka, menyapa via suara ramah, dan otomatis berpindah ke LENTERA Lab.",
-        tactileCue: "Kartu berbentuk persegi dengan huruf Braille inisial nama siswa di permukaannya.",
-        badge: "Auto-Login & Buka Lab",
-        badgeColor: "#D97706",
+        component: "Kartu Identitas Siswa / Guru (Token Taktil)",
+        arucoId: "ID 35, 36, 37 (Siswa) & ID 38 (Guru)",
+        role: "Mendeteksi peran dan identitas pengguna: Siswa (Via, Amira, Ajib) diarahkan ke LENTERA Lab (/aruco), sedangkan Guru Tunanetra (Bu Sari) diarahkan ke Dashboard LENTERA Learn (/dashboard) dengan sambutan audio ramah.",
+        tactileCue: "Kartu berhuruf Braille timbul (inisial nama siswa atau 'G' untuk guru).",
+        badge: "Auto-Login Siswa / Guru",
+        badgeColor: "#7C3AED",
       },
       CIRCUIT: {
         cell: "A1..E5",
@@ -755,6 +756,17 @@ const ARUCO_MARKERS = [
     color: "#2563EB",
     bg: "#EFF6FF",
     Icon: User,
+  },
+  {
+    id: "ID 38",
+    name: "Kartu Guru: Bu Sari",
+    category: "Token Guru Tunanetra",
+    tactile: "Kartu datar dengan inisial Braille 'G' + label Guru Fisika Kelas 11 SMA.",
+    rotation: "Bebas rotasi.",
+    note: "Memicu login otomatis Guru Tunanetra ke Dashboard LENTERA Learn, memutar Briefing Eksekutif analisis kelas, dan memberikan navigasi evaluasi siswa.",
+    color: "#7C3AED",
+    bg: "#F5F3FF",
+    Icon: GraduationCap,
   },
 ];
 

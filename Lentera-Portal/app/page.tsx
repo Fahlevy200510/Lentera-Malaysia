@@ -625,45 +625,73 @@ export default function PortalHome() {
             ws?.close();
           } catch {}
         };
-        const STUDENT_TOKENS: Record<
+        const USER_TOKENS: Record<
           string,
-          { id: string; name: string; grade: string; avatar: string }
+          { id: string; name: string; role: "student" | "teacher"; grade: string; avatar: string; targetUrl: string }
         > = {
           student_via: {
             id: "via",
             name: "Via",
+            role: "student",
             grade: "Kelas 11 SMA",
             avatar: "via",
+            targetUrl: "/aruco",
           },
           student_amira: {
             id: "amira",
             name: "Amira",
+            role: "student",
             grade: "Kelas 11 SMA",
             avatar: "amira",
+            targetUrl: "/aruco",
           },
           student_ajib: {
             id: "ajib",
             name: "Ajib",
+            role: "student",
             grade: "Kelas 11 SMA",
             avatar: "ajib",
+            targetUrl: "/aruco",
           },
           "35": {
             id: "via",
             name: "Via",
+            role: "student",
             grade: "Kelas 11 SMA",
             avatar: "via",
+            targetUrl: "/aruco",
           },
           "36": {
             id: "amira",
             name: "Amira",
+            role: "student",
             grade: "Kelas 11 SMA",
             avatar: "amira",
+            targetUrl: "/aruco",
           },
           "37": {
             id: "ajib",
             name: "Ajib",
+            role: "student",
             grade: "Kelas 11 SMA",
             avatar: "ajib",
+            targetUrl: "/aruco",
+          },
+          teacher_sari: {
+            id: "sari",
+            name: "Bu Sari",
+            role: "teacher",
+            grade: "Guru Fisika · Kelas 11 SMA",
+            avatar: "sari",
+            targetUrl: "/dashboard",
+          },
+          "38": {
+            id: "sari",
+            name: "Bu Sari",
+            role: "teacher",
+            grade: "Guru Fisika · Kelas 11 SMA",
+            avatar: "sari",
+            targetUrl: "/dashboard",
           },
         };
 
@@ -677,18 +705,22 @@ export default function PortalHome() {
           student_via: "Kartu Identitas Via",
           student_amira: "Kartu Identitas Amira",
           student_ajib: "Kartu Identitas Ajib",
+          teacher_sari: "Kartu Identitas Guru Bu Sari",
+          "38": "Kartu Identitas Guru Bu Sari",
         };
 
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "grid_state" && data.cells && !redirected) {
-              let detectedStudentCell: string | null = null;
-              let detectedStudentMeta: {
+              let detectedUserCell: string | null = null;
+              let detectedUserMeta: {
                 id: string;
                 name: string;
+                role: "student" | "teacher";
                 grade: string;
                 avatar: string;
+                targetUrl: string;
               } | null = null;
 
               for (const [cellName, cellData] of Object.entries(data.cells)) {
@@ -696,10 +728,10 @@ export default function PortalHome() {
                   const cd = cellData as { component?: string; id?: number };
                   const compKey = cd.component || "";
                   const idKey = String(cd.id ?? "");
-                  if (STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey]) {
-                    detectedStudentCell = cellName;
-                    detectedStudentMeta =
-                      STUDENT_TOKENS[compKey] || STUDENT_TOKENS[idKey];
+                  if (USER_TOKENS[compKey] || USER_TOKENS[idKey]) {
+                    detectedUserCell = cellName;
+                    detectedUserMeta =
+                      USER_TOKENS[compKey] || USER_TOKENS[idKey];
                     break;
                   }
                 }
@@ -713,46 +745,56 @@ export default function PortalHome() {
                 id?: number;
               }>;
 
-              if (detectedStudentMeta || placed.length > 0) {
+              if (detectedUserMeta || placed.length > 0) {
                 redirected = true;
                 isRedirectingRef.current = true;
 
                 let speechText = "";
-                if (detectedStudentMeta && detectedStudentCell) {
-                  setActiveStudent({
-                    id: detectedStudentMeta.id,
-                    name: detectedStudentMeta.name,
-                    grade: detectedStudentMeta.grade,
-                    avatar: detectedStudentMeta.avatar,
-                  });
+                let targetRoute = "/aruco";
+
+                if (detectedUserMeta && detectedUserCell) {
+                  targetRoute = detectedUserMeta.targetUrl;
+                  if (detectedUserMeta.role === "student") {
+                    setActiveStudent({
+                      id: detectedUserMeta.id,
+                      name: detectedUserMeta.name,
+                      grade: detectedUserMeta.grade,
+                      avatar: detectedUserMeta.avatar,
+                    });
+                  }
                   localStorage.setItem(
                     "lentera-session",
                     JSON.stringify({
-                      name: detectedStudentMeta.name,
-                      role: "student",
-                      grade: detectedStudentMeta.grade,
+                      name: detectedUserMeta.name,
+                      role: detectedUserMeta.role,
+                      grade: detectedUserMeta.grade,
                     })
                   );
-                  speechText = `Selamat datang, ${detectedStudentMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedStudentCell}. Membuka LENTERA Lab.`;
+                  if (detectedUserMeta.role === "teacher") {
+                    speechText = `Selamat datang, ${detectedUserMeta.name}, Guru Fisika Kelas 11 SMA! Kartu identitas guru terdeteksi di sel ${detectedUserCell}. Membuka Dashboard Guru LENTERA Learn.`;
+                  } else {
+                    speechText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedUserCell}. Membuka LENTERA Lab.`;
+                  }
                 } else {
                   const comp = placed[0]?.component;
                   const label = COMPONENT_LABEL[comp] || "komponen";
                   const activeStudent = getActiveStudent();
                   speechText = `Balok ${label} terdeteksi! Melanjutkan sesi untuk ${activeStudent.name}. Membuka LENTERA Lab.`;
+                  targetRoute = "/aruco";
                 }
 
-                const navigateToLab = () => {
-                  router.push("/aruco");
+                const navigateToDestination = () => {
+                  router.push(targetRoute);
                 };
 
-                const navTimer = setTimeout(navigateToLab, 4500);
+                const navTimer = setTimeout(navigateToDestination, 4500);
                 speakNarration(speechText, {
                   rate: 0.95,
-                  pitch: 1.05,
+                  pitch: 1.02,
                   tag: "landing-redirect",
                   onEnd: () => {
                     clearTimeout(navTimer);
-                    setTimeout(navigateToLab, 300);
+                    setTimeout(navigateToDestination, 300);
                   },
                 });
               }

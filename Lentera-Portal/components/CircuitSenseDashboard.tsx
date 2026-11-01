@@ -2056,24 +2056,33 @@ export default function CircuitSenseDashboard() {
               if (Date.now() - mountTime < 2000) return;
 
               const cellE5 = cells["E5"] as { component?: string; id?: number } | undefined;
-              const isE5Student = Boolean(
+              const isE5User = Boolean(
                 cellE5 &&
-                (String(cellE5.component || "").startsWith("student_") || [35, 36, 37].includes(Number(cellE5.id)))
+                (String(cellE5.component || "").startsWith("student_") ||
+                 String(cellE5.component || "").startsWith("teacher_") ||
+                 [35, 36, 37, 38].includes(Number(cellE5.id)))
               );
 
-              // A. Kartu identitas siswa di E5 -> Logout / Selesai Sesi
-              if (isE5Student) {
+              // A. Kartu identitas siswa / guru di E5 -> Logout / Selesai Sesi
+              if (isE5User) {
                 isRedirecting = true;
                 cancelSpeech();
                 playEarcon("clear");
-                const active = getActiveStudent();
-                const sName = active?.name || name || "Siswa";
+                const isTeacher =
+                  role === "teacher" ||
+                  String(cellE5?.component || "").startsWith("teacher_") ||
+                  Number(cellE5?.id) === 38;
+                const displayName = isTeacher
+                  ? (name || "Guru Bu Sari")
+                  : (getActiveStudent()?.name || name || "Siswa");
                 localStorage.removeItem("lentera-session");
                 const navTimer = setTimeout(() => {
                   window.location.href = "/";
                 }, 4500);
                 speakNarration(
-                  `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
+                  isTeacher
+                    ? `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
+                    : `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi belajar ${displayName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`,
                   {
                     onEnd: () => {
                       clearTimeout(navTimer);

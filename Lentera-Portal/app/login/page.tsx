@@ -5,9 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   User, GraduationCap, Hand, ArrowLeft, ShieldCheck,
-  Eye, EyeOff, Loader2, Sparkles, CheckCircle2, AlertTriangle, KeyRound,
+  Eye, EyeOff, Loader2, Sparkles, CheckCircle2, AlertTriangle, KeyRound, Volume2,
   type LucideIcon,
 } from "lucide-react";
+import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { setActiveStudent, PRESET_STUDENTS } from "@/utils/progress";
 
 const C = {
   bg: "#FCFBFF",
@@ -79,6 +81,59 @@ function LoginFormContent() {
     setEmail(roleCopy.defaultEmail);
     setPassword("lentera123");
     setError("");
+  };
+
+  const quickLoginAs = (targetRole: "teacher" | "student") => {
+    cancelSpeech();
+    if (targetRole === "teacher") {
+      const session = {
+        id: "teacher-sari",
+        email: "teacher@lentera.demo",
+        name: "Bu Sari",
+        role: "teacher" as const,
+        grade: "Guru Fisika · Kelas 11 SMA",
+      };
+      localStorage.setItem("lentera-session", JSON.stringify(session));
+      speakNarration(
+        "Masuk sebagai Bu Sari, Guru Fisika. Membuka Dashboard Guru LENTERA Learn.",
+        {
+          rate: 0.95,
+          onEnd: () => {
+            router.push("/dashboard");
+          },
+        }
+      );
+      setTimeout(() => router.push("/dashboard"), 3000);
+    } else {
+      const student = PRESET_STUDENTS[0] || { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" };
+      setActiveStudent(student);
+      const session = {
+        id: "student-via",
+        email: "student@lentera.demo",
+        name: student.name,
+        role: "student" as const,
+        grade: student.grade,
+      };
+      localStorage.setItem("lentera-session", JSON.stringify(session));
+      speakNarration(
+        `Masuk sebagai ${student.name}, siswa kelas 11 SMA. Membuka ruang praktikum LENTERA Lab.`,
+        {
+          rate: 0.95,
+          onEnd: () => {
+            router.push("/aruco");
+          },
+        }
+      );
+      setTimeout(() => router.push("/aruco"), 3000);
+    }
+  };
+
+  const playBlindAudioGuide = () => {
+    cancelSpeech();
+    speakNarration(
+      "Panduan masuk LENTERA untuk Guru dan Siswa Tunanetra. Pertama: Jika Anda berada di depan papan fisik 5 kali 5, Anda dapat menempelkan kartu identitas taktil berhuruf Braille di atas papan tanpa perlu mengetik apapun di layar. ID 38 untuk Guru Bu Sari, dan ID 35 untuk Siswa Via. Kedua: Di halaman web ini, Anda dapat menekan tombol Masuk Guru Bu Sari untuk membuka Dashboard, atau tombol Masuk Siswa Via untuk membuka Lab Sains.",
+      { rate: 0.94 }
+    );
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -232,6 +287,58 @@ function LoginFormContent() {
               <p className="mt-1 text-xs text-[#7C77A6] leading-relaxed">
                 {roleCopy.desc}
               </p>
+            </div>
+
+            {/* Akses Cepat Ramah Tunanetra (Guru & Siswa) */}
+            <div
+              className="mb-5 rounded-2xl p-3 border border-violet-200/90 bg-gradient-to-br from-violet-50/90 via-purple-50/60 to-pink-50/40"
+              role="region"
+              aria-label="Akses Cepat Ramah Tunanetra"
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-extrabold text-violet-900">
+                  <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+                  <span>Akses Cepat Inklusif (Tanpa Ketik)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={playBlindAudioGuide}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-700 hover:text-violet-900 bg-white/90 px-2 py-0.5 rounded-lg border border-violet-200 transition"
+                  title="Dengarkan panduan suara untuk guru dan siswa tunanetra"
+                  aria-label="Dengarkan panduan suara akses masuk tunanetra"
+                >
+                  <Volume2 className="h-3 w-3" />
+                  <span>Panduan Suara</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => quickLoginAs("teacher")}
+                  className="flex flex-col items-start p-2.5 rounded-xl bg-white text-left border border-violet-200 hover:border-violet-500 hover:shadow-xs transition"
+                  aria-label="Masuk instan sebagai Guru Bu Sari ke Dashboard LENTERA Learn"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-800">
+                    <GraduationCap className="h-3.5 w-3.5 text-violet-600" />
+                    <span>Guru Bu Sari</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Dashboard LENTERA Learn</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => quickLoginAs("student")}
+                  className="flex flex-col items-start p-2.5 rounded-xl bg-white text-left border border-pink-200 hover:border-pink-500 hover:shadow-xs transition"
+                  aria-label="Masuk instan sebagai Siswa Via ke LENTERA Lab"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-pink-700">
+                    <User className="h-3.5 w-3.5 text-pink-600" />
+                    <span>Siswa Via</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Ruang Praktikum Lab</span>
+                </button>
+              </div>
             </div>
 
             {error && (
