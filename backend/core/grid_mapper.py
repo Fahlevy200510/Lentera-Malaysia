@@ -29,19 +29,19 @@ class GridMapper:
             self._create_mock_roi()
 
     def _create_mock_roi(self):
-        # Koordinat default terkalibrasi sesuai geometri fisik papan 5x5 LENTERA pada resolusi 640x480
-        col_xs = [127, 216, 313, 409, 497]
-        row_ys = [54, 144, 241, 331, 409]
-        cols = ['A', 'B', 'C', 'D', 'E']
-        
-        for r in range(5):
-            for c in range(5):
-                cell_name = f"{cols[c]}{r+1}"
-                self.grid_rois[cell_name] = {
-                    "centroid": [float(col_xs[c]), float(row_ys[r])],
-                    "radius": 46.0
-                }
-        
+        # Koordinat terkalibrasi memperhitungkan distorsi barel lensa fisheye pada 640x480
+        calib_cells = {
+            "A1": [153.0, 95.0], "B1": [230.0, 90.0], "C1": [310.0, 87.0], "D1": [393.0, 90.0], "E1": [469.0, 95.0],
+            "A2": [149.0, 165.0], "B2": [228.0, 165.0], "C2": [309.0, 164.0], "D2": [396.0, 165.0], "E2": [473.0, 165.0],
+            "A3": [147.0, 241.0], "B3": [228.0, 241.0], "C3": [309.0, 241.0], "D3": [398.0, 241.0], "E3": [477.0, 241.0],
+            "A4": [149.0, 313.0], "B4": [228.0, 313.0], "C4": [309.0, 314.0], "D4": [396.0, 313.0], "E4": [473.0, 313.0],
+            "A5": [153.0, 381.0], "B5": [230.0, 386.0], "C5": [310.0, 389.0], "D5": [393.0, 386.0], "E5": [469.0, 381.0],
+        }
+        for cell_name, pt in calib_cells.items():
+            self.grid_rois[cell_name] = {
+                "centroid": pt,
+                "radius": 48.0
+            }
         with open(self.roi_file, 'w') as f:
             json.dump(self.grid_rois, f, indent=2)
 
