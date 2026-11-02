@@ -54,36 +54,13 @@ class PiCamera(BaseCamera):
         self.picam2.configure(config)
         self.picam2.start()
         time.sleep(1.2)  # Beri waktu bagi sensor AEC/AWB untuk konvergensi pencahayaan alami
-        self.ev = 0.0
-        self.frame_count = 0
-
-    def _auto_ev(self, frame):
-        # Siang hari: sensor NoIR (tanpa filter IR) kebanjiran cahaya matahari -> gambar pucat & border ArUco jadi abu-abu.
-        # Turunkan kompensasi EV bertahap saat terlalu terang, kembalikan ke 0 saat redup (malam tidak terpengaruh).
-        self.frame_count += 1
-        if self.frame_count % 15:
-            return
-        mean = float(frame[::8, ::8].mean())
-        new_ev = self.ev
-        if mean > 165 and self.ev > -4.0:
-            new_ev = self.ev - 0.5
-        elif mean < 110 and self.ev < 0.0:
-            new_ev = self.ev + 0.5
-        if new_ev != self.ev:
-            try:
-                self.picam2.set_controls({"ExposureValue": new_ev})
-                self.ev = new_ev
-            except Exception as e:
-                print(f"[CAMERA] Gagal set ExposureValue: {e}")
 
     def get_frame(self):
         # Mengembalikan frame numpy BGR 3-channel murni untuk OpenCV
         try:
             frame = self.picam2.capture_array()
             if frame is not None and len(frame.shape) == 3 and frame.shape[2] == 4:
-                frame = frame[:, :, :3]  # Pangkas alpha/padding jika ada XBGR
-            if frame is not None:
-                self._auto_ev(frame)
+                return frame[:, :, :3]  # Pangkas alpha/padding jika ada XBGR
             return frame
         except Exception as e:
             print(f"[CAMERA CAPTURE ERROR] {e}")
