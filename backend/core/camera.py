@@ -61,18 +61,20 @@ class PiCamera(BaseCamera):
         # Siang hari: sensor NoIR (tanpa filter IR) kebanjiran cahaya matahari -> gambar pucat & border ArUco jadi abu-abu.
         # Turunkan kompensasi EV bertahap saat terlalu terang, kembalikan ke 0 saat redup (malam tidak terpengaruh).
         self.frame_count += 1
-        if self.frame_count % 15:
+        if self.frame_count % 5:
             return
         mean = float(frame[::8, ::8].mean())
         new_ev = self.ev
-        if mean > 165 and self.ev > -4.0:
+        # Frame normal (siang kemarin & malam) ~110; frame pucat pagi ini ~180
+        if mean > 140 and self.ev > -6.0:
             new_ev = self.ev - 0.5
-        elif mean < 110 and self.ev < 0.0:
+        elif mean < 100 and self.ev < 0.0:
             new_ev = self.ev + 0.5
         if new_ev != self.ev:
             try:
                 self.picam2.set_controls({"ExposureValue": new_ev})
                 self.ev = new_ev
+                print(f"[CAMERA] Kecerahan {mean:.0f} -> ExposureValue {new_ev}")
             except Exception as e:
                 print(f"[CAMERA] Gagal set ExposureValue: {e}")
 
