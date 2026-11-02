@@ -75,7 +75,8 @@ class VisionCore:
             return False
         # Border hitam asli harus pekat dan jauh lebih gelap dari bit putih
         mean_edge = float(np.mean(edges))
-        if mean_edge > 95 or (p90 > 50 and mean_edge > p90 * 0.72):
+        # Relatif terhadap bit putih saja: siang hari border hitam tampak abu-abu (>95) tapi tetap jauh lebih gelap dari bit putih
+        if p90 > 50 and mean_edge > p90 * 0.72:
             return False
         return True
 
