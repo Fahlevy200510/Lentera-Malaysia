@@ -6,10 +6,10 @@ import { getSavedSpeechRate, setSavedSpeechRate, speakNarration } from "@/utils/
 
 export const SPEED_OPTIONS = [
   { rate: 1.0, name: "Normal", label: "1.0x Normal", desc: "Tempo wajar pemula" },
-  { rate: 1.25, name: "Sedang", label: "1.25x Sedang", desc: "Sedikit lebih lincah" },
-  { rate: 1.5, name: "Cepat", label: "1.5x Cepat", desc: "Efisien & jelas" },
-  { rate: 1.75, name: "Sangat Cepat", label: "1.75x Sangat Cepat", desc: "Ritme screen reader" },
-  { rate: 2.0, name: "Maksimal", label: "2.0x Maksimal", desc: "Tempo TalkBack pro" },
+  { rate: 1.5, name: "Sedang", label: "1.5x Sedang", desc: "Tempo percakapan lincah" },
+  { rate: 2.0, name: "Cepat", label: "2.0x Cepat", desc: "Efisien & jelas" },
+  { rate: 2.6, name: "Sangat Cepat", label: "2.6x Sangat Cepat", desc: "Ritme TalkBack harian" },
+  { rate: 3.2, name: "Maksimal", label: "3.2x Maksimal", desc: "Tempo TalkBack pro" },
 ];
 
 export default function SpeechSpeedSelector({

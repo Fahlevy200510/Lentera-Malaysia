@@ -29,10 +29,10 @@ import { speakNarration, cancelSpeech, getSavedSpeechRate, setSavedSpeechRate } 
 
 const SPEED_MODES: Record<string, { name: string; rate: number }> = {
   A2: { name: "Normal", rate: 1.0 },
-  B2: { name: "Sedang", rate: 1.25 },
-  C2: { name: "Cepat", rate: 1.5 },
-  D2: { name: "Sangat Cepat", rate: 1.75 },
-  E2: { name: "Maksimal", rate: 2.0 },
+  B2: { name: "Sedang", rate: 1.5 },
+  C2: { name: "Cepat", rate: 2.0 },
+  D2: { name: "Sangat Cepat", rate: 2.6 },
+  E2: { name: "Maksimal", rate: 3.2 },
 };
 
 const TYPEWRITER_WORDS = [

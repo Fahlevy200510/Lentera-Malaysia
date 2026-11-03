@@ -17,7 +17,7 @@ export function getSavedSpeechRate(): number {
     const saved = localStorage.getItem("lentera-speech-rate");
     if (saved) {
       const parsed = parseFloat(saved);
-      if (!isNaN(parsed) && parsed >= 0.5 && parsed <= 3.0) return parsed;
+      if (!isNaN(parsed) && parsed >= 0.5 && parsed <= 5.0) return parsed;
     }
   } catch {}
   return 1.0;
