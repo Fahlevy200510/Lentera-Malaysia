@@ -90,8 +90,17 @@ def main():
     mapper = GridMapper("grid_roi.json")
     grid_state = GridState()
     
-    # Inisialisasi Hardware (Buzzer di BCM 17)
+    # Inisialisasi Hardware (Buzzer di BCM 17 & 4 LED Board di BCM 18)
     buzzer = BuzzerController(pin=17)
+    try:
+        import RPi.GPIO as GPIO
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(18, GPIO.OUT)
+        GPIO.output(18, GPIO.HIGH)
+        print("[HARDWARE] 4 LED Board (BCM 18) dipastikan aktif menyala untuk penerangan boks.")
+    except Exception:
+        pass
     
     # 3. Inisialisasi Server Audio & WebSocket
     audio = AudioNarrator()

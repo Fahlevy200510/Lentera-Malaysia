@@ -41,12 +41,8 @@ class PiCamera(BaseCamera):
             raise RuntimeError("Modul Picamera2 tidak ditemukan. Pastikan berjalan di Raspberry Pi.")
         
         import time
-        # Modul OV5647 fisheye tanpa filter IR -> pakai tuning NoIR agar lampu pijar (banyak IR) tidak membuat gambar ungu
-        try:
-            self.picam2 = Picamera2(tuning=Picamera2.load_tuning_file("ov5647_noir.json"))
-        except Exception as e:
-            print(f"[CAMERA] Tuning NoIR gagal dimuat ({e}), pakai tuning default.")
-            self.picam2 = Picamera2()
+        # Gunakan tuning default Picamera2 (konfigurasi stabil 26 Oktober, kebal overexposure siang hari)
+        self.picam2 = Picamera2()
         config = self.picam2.create_video_configuration(
             main={"size": resolution, "format": "RGB888"},
             buffer_count=2,
