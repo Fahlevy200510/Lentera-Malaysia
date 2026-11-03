@@ -413,6 +413,7 @@ export default function PortalHome() {
   const [speedPrompt, setSpeedPrompt] = useState<{
     active: boolean;
     studentName: string;
+    currentMode?: string;
     selectedMode?: string;
     selectedSlot?: string;
   } | null>(null);
@@ -902,25 +903,32 @@ export default function PortalHome() {
                     return;
                   }
 
-                  // Jika ditaruh di A1 atau sel lain: Tawarkan pilihan kecepatan di Baris 2
+                  // Jika ditaruh di sel lain: Tawarkan pilihan kecepatan di Baris 2
                   awaitingSpeedStudent = detectedUserMeta;
+                  const currentRate = getSavedSpeechRate();
+                  const currentEntry = Object.entries(SPEED_MODES).find(
+                    ([, cfg]) => Math.abs(cfg.rate - currentRate) < 0.05
+                  );
+                  const currentMode = currentEntry ? currentEntry[1].name : "Normal";
+
                   setSpeedPrompt({
                     active: true,
                     studentName: detectedUserMeta.name,
+                    currentMode: currentMode,
                   });
 
-                  const promptText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi. Suaraku disetel Normal. Jika ingin lebih cepat, geser balokmu ke baris kedua: dari A2 Normal hingga E2 Maksimal. Atau diamkan balokmu di sini untuk langsung masuk ke Lab.`;
+                  const promptText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode ${currentMode}. Jika ingin tetap menggunakan kecepatan ini, biarkan saja balokmu di tempatnya. Jika ingin mengganti kecepatan, geser balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal.`;
 
                   const navigateToLabDefault = () => {
                     if (redirected) return;
                     redirected = true;
                     isRedirectingRef.current = true;
-                    setSavedSpeechRate(1.0);
+                    setSavedSpeechRate(currentRate);
                     router.push("/aruco");
                   };
 
                   speakNarration(promptText, {
-                    rate: 1.0,
+                    rate: currentRate,
                     pitch: 1.02,
                     tag: "landing-speed-prompt",
                     onEnd: () => {
@@ -928,7 +936,7 @@ export default function PortalHome() {
                         speedTimer = setTimeout(() => {
                           if (!redirected) {
                             speakNarration("Membuka LENTERA Lab.", {
-                              rate: 1.0,
+                              rate: currentRate,
                               onEnd: () => navigateToLabDefault(),
                             });
                             setTimeout(navigateToLabDefault, 2000);
@@ -938,7 +946,7 @@ export default function PortalHome() {
                     },
                   });
 
-                  const maxTimeout = Math.max(15000, promptText.length * 95 + 4000);
+                  const maxTimeout = Math.max(22000, promptText.length * 110 + 5000);
                   speedTimer = setTimeout(navigateToLabDefault, maxTimeout);
                   return;
                 }
@@ -1332,18 +1340,24 @@ export default function PortalHome() {
               <div className="grid grid-cols-5 gap-1.5 mt-3">
                 {Object.entries(SPEED_MODES).map(([slot, cfg]) => {
                   const isSelected = speedPrompt.selectedSlot === slot || speedPrompt.selectedMode === cfg.name;
+                  const isCurrent = !speedPrompt.selectedMode && (speedPrompt.currentMode === cfg.name || (!speedPrompt.currentMode && cfg.rate === 1.0));
                   return (
                     <div
                       key={slot}
                       className={`p-2 rounded-2xl text-center border transition-all duration-300 ${
                         isSelected
                           ? "bg-amber-400 text-slate-900 border-amber-200 font-bold scale-105 shadow-lg ring-2 ring-amber-300"
+                          : isCurrent
+                          ? "bg-white/20 text-white border-amber-300/80 font-bold ring-1 ring-amber-300/60"
                           : "bg-black/25 text-white/90 border-white/20"
                       }`}
                     >
                       <div className="text-xs font-mono font-black">{slot}</div>
                       <div className="text-[11px] truncate font-semibold">{cfg.name}</div>
                       <div className="text-[10px] opacity-80 font-mono">{cfg.rate}x</div>
+                      {isCurrent && !speedPrompt.selectedMode && (
+                        <div className="text-[8px] uppercase tracking-wider font-extrabold text-amber-300 mt-0.5">Aktif</div>
+                      )}
                     </div>
                   );
                 })}
@@ -1352,7 +1366,7 @@ export default function PortalHome() {
               <div className="text-[11px] text-white/80 mt-2.5 text-center">
                 {speedPrompt.selectedMode
                   ? `Kecepatan ${speedPrompt.selectedMode} tersimpan! Mengalihkan ke Lab...`
-                  : "Geser balok ke slot di atas untuk mengatur kecepatan, atau biarkan di A1 untuk Normal (1.0x)."}
+                  : `Kecepatan saat ini: Mode ${speedPrompt.currentMode || "Normal"}. Biarkan balok di tempatnya untuk melanjutkan, atau geser ke baris 2 untuk mengganti.`}
               </div>
             </div>
           )}
