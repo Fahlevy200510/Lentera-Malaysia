@@ -23,6 +23,7 @@ import {
   getActiveLenteraEndpoint,
 } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import SpeechSpeedSelector from "@/components/SpeechSpeedSelector";
 import { getActiveStudent, setActiveStudent } from "@/utils/progress";
 import { speakNarration, cancelSpeech, getSavedSpeechRate, setSavedSpeechRate } from "@/utils/audioCoordinator";
 
@@ -1130,6 +1131,7 @@ export default function PortalHome() {
         </Link>
 
         <div className="hidden items-center gap-3 md:flex">
+          <SpeechSpeedSelector />
           <StudentProfileSwitcher />
 
           {ready && session ? (
@@ -1342,14 +1344,35 @@ export default function PortalHome() {
                   const isSelected = speedPrompt.selectedSlot === slot || speedPrompt.selectedMode === cfg.name;
                   const isCurrent = !speedPrompt.selectedMode && (speedPrompt.currentMode === cfg.name || (!speedPrompt.currentMode && cfg.rate === 1.0));
                   return (
-                    <div
+                    <button
                       key={slot}
-                      className={`p-2 rounded-2xl text-center border transition-all duration-300 ${
+                      type="button"
+                      onClick={() => {
+                        cancelSpeech();
+                        setSavedSpeechRate(cfg.rate);
+                        setSpeedPrompt((prev) => ({
+                          active: true,
+                          studentName: prev?.studentName || "Siswa",
+                          currentMode: cfg.name,
+                          selectedMode: cfg.name,
+                          selectedSlot: slot,
+                        }));
+                        const text = `Mode ${cfg.name} aktif! Mengalihkan ke Lab.`;
+                        speakNarration(text, {
+                          rate: cfg.rate,
+                          pitch: 1.02,
+                          tag: "click-speed-confirm",
+                          onEnd: () => setTimeout(() => router.push("/aruco"), 300),
+                        });
+                        setTimeout(() => router.push("/aruco"), 4000);
+                      }}
+                      title={`Klik untuk memilih Mode ${cfg.name} (${cfg.rate}x)`}
+                      className={`p-2 rounded-2xl text-center border transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${
                         isSelected
                           ? "bg-amber-400 text-slate-900 border-amber-200 font-bold scale-105 shadow-lg ring-2 ring-amber-300"
                           : isCurrent
                           ? "bg-white/20 text-white border-amber-300/80 font-bold ring-1 ring-amber-300/60"
-                          : "bg-black/25 text-white/90 border-white/20"
+                          : "bg-black/25 text-white/90 border-white/20 hover:bg-white/10"
                       }`}
                     >
                       <div className="text-xs font-mono font-black">{slot}</div>
@@ -1358,7 +1381,7 @@ export default function PortalHome() {
                       {isCurrent && !speedPrompt.selectedMode && (
                         <div className="text-[8px] uppercase tracking-wider font-extrabold text-amber-300 mt-0.5">Aktif</div>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>

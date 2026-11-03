@@ -27,6 +27,7 @@ export function setSavedSpeechRate(rate: number): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem("lentera-speech-rate", rate.toString());
+    window.dispatchEvent(new CustomEvent("lentera-speech-rate-update", { detail: rate }));
   } catch {}
 }
 

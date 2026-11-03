@@ -8,6 +8,7 @@ import ArUcoDetector from "@/components/aruco/ArUcoDetector";
 import VoiceGuide from "@/components/aruco/VoiceGuide";
 import AITutorLab from "@/components/aruco/AITutorLab";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import SpeechSpeedSelector from "@/components/SpeechSpeedSelector";
 import { getStudentProgress, getActiveStudent } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
@@ -359,9 +360,11 @@ export default function ArucoPage() {
                     Kamera & Sensor Papan Fisik
                   </h1>
                 </div>
-                <button
-                  id="btn-lab-voice"
-                  onClick={() => {
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <SpeechSpeedSelector compact />
+                  <button
+                    id="btn-lab-voice"
+                    onClick={() => {
                     if ((speaking || speakingRef.current) && typeof window !== "undefined") {
                       cancelSpeech();
                       speakingRef.current = false;
@@ -380,6 +383,7 @@ export default function ArucoPage() {
                   <Volume2 className={`h-3 w-3 ${speaking ? "text-[#D97706] animate-pulse" : "text-[#735CDD]"}`} />
                   {speaking ? "Hentikan Suara" : "Arahan Suara"}
                 </button>
+                </div>
               </div>
 
               {/* ArUcoDetector (yang sudah support Grid 5x5 + Input IP) */}
