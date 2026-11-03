@@ -8,15 +8,15 @@ class VisionCore:
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
         self.aruco_params = cv2.aruco.DetectorParameters()
         # Parameter adaptif, toleran terhadap silau/pantulan dan gradasi bayangan
-        self.aruco_params.polygonalApproxAccuracyRate = 0.04
-        self.aruco_params.adaptiveThreshWinSizeMin = 5
-        self.aruco_params.adaptiveThreshWinSizeMax = 35  # 4 window (5, 15, 25, 35): 2x lebih cepat di Raspi namun tetap tahan gradasi
-        self.aruco_params.adaptiveThreshWinSizeStep = 10
-        self.aruco_params.adaptiveThreshConstant = 5  # Lebih sensitif pada area tengah papan yang redup
+        self.aruco_params.polygonalApproxAccuracyRate = 0.05
+        self.aruco_params.adaptiveThreshWinSizeMin = 3
+        self.aruco_params.adaptiveThreshWinSizeMax = 45  # Window 45px mampu melingkupi gradasi sinar matahari tanpa memutus border
+        self.aruco_params.adaptiveThreshWinSizeStep = 8
+        self.aruco_params.adaptiveThreshConstant = 4.0  # Lebih sensitif terhadap tinta hitam yang pudar tersorot matahari
         self.aruco_params.minDistanceToBorder = 1
-        self.aruco_params.minOtsuStdDev = 2.5  # Tetap baca bit di area tengah papan yang kontrasnya tipis
-        self.aruco_params.errorCorrectionRate = 0.70  # Toleran terhadap bayangan dinding slot
-        self.aruco_params.maxErroneousBitsInBorderRate = 0.38  # Toleransi pantulan tipis di tepi border hitam
+        self.aruco_params.minOtsuStdDev = 2.0  # Tetap baca bit di area yang kontrasnya tipis akibat cahaya terang
+        self.aruco_params.errorCorrectionRate = 0.75  # Toleransi koreksi bit payload yang terdistorsi bayangan slot
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.42  # Toleransi silau matahari pada 1 sisi border hitam stiker
         self.aruco_params.perspectiveRemoveIgnoredMarginPerCell = 0.22  # Fokus ke tengah tiap bit agar tidak terpengaruh tepi
         self.aruco_params.minMarkerPerimeterRate = 0.03  # Mampu mendeteksi marker sedikit lebih jauh/kecil
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
@@ -50,7 +50,7 @@ class VisionCore:
         sides = [float(np.linalg.norm(pts[(i + 1) % 4] - pts[i])) for i in range(4)]
         min_side, max_side = min(sides), max(sides)
         h, w = ref_gray.shape[:2]
-        if min_side < 12 or max_side > min(h, w) * 0.25 or (max_side / max(min_side, 1.0)) > 1.85:
+        if min_side < 12 or max_side > min(h, w) * 0.45 or (max_side / max(min_side, 1.0)) > 1.85:
             return False
 
         dst = np.array([[0, 0], [35, 0], [35, 35], [0, 35]], dtype=np.float32)
@@ -60,7 +60,7 @@ class VisionCore:
         inner = patch[6:30, 6:30]
         p90 = float(np.percentile(inner, 90))
         p10 = float(np.percentile(inner, 10))
-        if p90 - p10 < 20:
+        if p90 - p10 < 18:
             return False
 
         edges = [
@@ -70,13 +70,13 @@ class VisionCore:
             float(patch[4:32, 31:35].mean()), # Right border
         ]
         # Pada stiker asli, ke-4 sisi bingkai hitam lebih gelap dari bit putih (p90) dan seragam.
-        # Pada lubang kosong B3 yang disorot LED, salah satu tepi sangat terang (>= p90) dan timpang (> 65).
-        if max(edges) > p90 or (max(edges) - min(edges)) > 90:
+        # Pada lubang kosong B3 yang disorot LED, salah satu tepi sangat terang (>= p90) dan timpang (> 95).
+        if max(edges) > p90 or (max(edges) - min(edges)) > 95:
             return False
         # Border hitam asli harus pekat dan jauh lebih gelap dari bit putih
         mean_edge = float(np.mean(edges))
-        # Relatif terhadap bit putih saja: siang hari border hitam tampak abu-abu (>95) tapi tetap jauh lebih gelap dari bit putih
-        if p90 > 50 and mean_edge > p90 * 0.72:
+        # Relatif terhadap bit putih: siang hari border hitam tampak abu-abu tapi tetap lebih gelap dari bit putih
+        if p90 > 50 and mean_edge > p90 * 0.82:
             return False
         return True
 
@@ -89,6 +89,7 @@ class VisionCore:
         has_channels = len(frame.shape) == 3 and frame.shape[2] >= 3
         green = frame[:, :, 1] if has_channels else frame
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) if has_channels else frame
+        ref_check = frame[:, :, 2] if has_channels else gray
 
         detections = []  # [(m_id, corners, (cx, cy))]
 
@@ -102,7 +103,7 @@ class VisionCore:
                 if m_id not in self.valid_ids:
                     continue
                 c = corners[i][0]
-                if not self._is_valid_marker(gray, c):
+                if not self._is_valid_marker(ref_check, c):
                     continue
                 cx, cy = calculate_centroid(c)
                 if not any(math.hypot(cx - ex, cy - ey) < 25 for _, _, (ex, ey) in detections):
@@ -111,11 +112,12 @@ class VisionCore:
         collect(green)
         collect(self.clahe.apply(green))
         if has_channels:
+            red = frame[:, :, 2]
+            collect(red)
+            collect(self.clahe.apply(red))
             collect(gray)
             collect(self.clahe.apply(gray))
             collect(frame[:, :, 0])  # Blue channel memiliki kontras tertinggi di bawah lampu LED putih
-            collect(frame[:, :, 2])  # Red channel kebal terhadap silau cyan/biru LED pada sudut papan
-            collect(self.clahe.apply(frame[:, :, 2]))
 
         return [(m_id, c) for m_id, c, _ in detections]
 
