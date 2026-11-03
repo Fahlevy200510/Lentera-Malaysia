@@ -130,9 +130,9 @@ LENTERA menggunakan kamus marker OpenCV **`cv2.aruco.DICT_4X4_50`**. Stiker mark
 | **37** | Kartu Siswa: **Ajib** | Kartu taktil nama Ajib | Token Navigasi Khusus (Buka Rapor) |
 
 ## 2.4 Sistem Kamera Bawah Meja & Pencahayaan
-* **Sensor Kamera**: Raspberry Pi Camera Module Wide-Angle (FOV $\ge 120^\circ$) atau lensa fisheye dengan sensor NoIR.
-* **Pencahayaan Internal**: Strip LED putih netral 12V / 5V dipasang di dinding dalam enclosure mengarah ke atas secara tidak langsung (*diffused light*), mencegah silau langsung (*glare*) pada sensor kamera.
-* **Penyaring Saluran Hijau (*Green Channel*)**: Engine OpenCV membaca channel hijau (G) dari citra kamera yang terbukti paling kebal terhadap radiasi inframerah dan bayangan gradasi.
+* **Sensor Kamera**: Raspberry Pi Camera Module Wide-Angle (FOV $\ge 120^\circ$) atau lensa fisheye dengan sensor NoIR terkalibrasi matriks distorsi (*undistort*).
+* **Pencahayaan Internal (LED Strip USB DC 5V)**: Strip LED USB 5V (SMD 2835/3528, Cool White 6000K–6500K) dipasang melingkar di dinding samping bagian atas enclosure secara tidak langsung (*diffused perimeter lighting*). Desain ini mencegah titik silau tajam (*hotspot*) yang dapat memicu *ghost marker*, serta hemat daya (~300–500 mA) dan aman dicolok langsung ke port USB Raspberry Pi.
+* **Penyaring Multi-Kanal (Blue & Red Channel)**: Pipeline OpenCV membaca kanal warna Biru (`frame[:, :, 0]`) dan Merah dengan adaptive thresholding jendela lebar (hingga 45px) dan relative edge brightness check, kebal terhadap silau sinar matahari siang hari (*daylight-hardened*).
 
 ## 2.5 Panel Kontrol, Tombol Stainless Steel LED, & Buzzer
 * **Tombol Daya Stainless (16mm/22mm Detent Latching)**:
@@ -233,13 +233,22 @@ Siswa tunanetra **tidak perlu mengetik username atau password** di layar laptop.
 [ Bawa Blok Identitas ] ──> [ Letakkan di Papan Grid ] ──> [ Suara Menyapa Personal ] ──> [ Sesi Aktif ]
 ```
 
-### 1. Cara Login Mandiri di Awal Sesi (Dari Halaman Depan / Landing Page):
-1. Saat tiba di meja lab, siswa memegang blok identitas pribadinya.
-2. Siswa **cukup meletakkan blok identitas di mana saja di atas papan grid** (atau di kotak $A1$).
+### 1. Cara Login Mandiri di Awal Sesi & Pengaturan Kecepatan Suara Taktil:
+1. Saat tiba di meja lab, siswa memegang blok identitas pribadinya (ID 35: Via, ID 36: Amira, atau ID 37: Ajib).
+2. Siswa **bebas meletakkan blok identitas di mana saja di atas papan grid** (misalnya di sudut kiri atas $A1$).
 3. Kamera bawah meja mendeteksi ID siswa dalam waktu kurang dari 0.5 detik.
-4. Narator suara langsung menyapa secara personal:
-   > *"Halo Amira! Kartu identitasmu terdeteksi. Selamat datang kembali di LENTERA Lab. Seluruh modul dan progres belajarmu telah dimuat!"*
-5. Halaman web secara otomatis login ke profil siswa tersebut dan langsung membuka ruang praktikum LENTERA Lab (`/aruco`).
+4. Narator suara langsung menyapa secara personal dan memberitahukan opsi kecepatan bicara:
+   > *"Selamat datang, [Nama Siswa]! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode [Normal/Sedang/Cepat/Sangat Cepat/Maksimal]. Jika ingin tetap menggunakan kecepatan ini, biarkan saja balokmu di tempatnya. Jika ingin mengganti kecepatan, geser balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal."*
+5. **Pilihan Siswa (Tangible Audio Speed Slider di Baris 2)**:
+   * **Tetap memakai kecepatan saat ini**: Biarkan balok diam di tempatnya selama ~3.5 detik; sistem otomatis membuka LENTERA Lab.
+   * **Mengubah kecepatan bicara AI**: Geser balok identitas ke slot Baris 2 ($A2–E2$):
+     * **$A2$** $	o$ **Normal (1.0x)**: Tempo wajar pemula / guru.
+     * **$B2$** $	o$ **Sedang (1.6x)**: Percakapan lincah dan padat.
+     * **$C2$** $	o$ **Cepat (2.3x)**: Cepat, efisien, tanpa jeda.
+     * **$D2$** $	o$ **Sangat Cepat (3.2x)**: Ritme standar TalkBack tunanetra aktif.
+     * **$E2$** $	o$ **Maksimal (4.0x)**: *TalkBack Pro* — mentok batas tertinggi engine TTS (400% kecepatan normal).
+   * Begitu menyentuh slot Baris 2, sistem langsung mengonfirmasi dengan kecepatan baru tersebut (*"Mode Maksimal aktif! Membuka LENTERA Lab."*) dan langsung masuk ke ruang lab.
+6. **Akses Visual Guru / Pendamping**: Disediakan dropdown grafis `SpeechSpeedSelector` di navbar atas dan tombol interaktif pada layar untuk memilih kecepatan suara menggunakan mouse/layar sentuh.
 
 ### 2. Cara Melihat Nilai & Rapor Belajar Sendiri (LENTERA Learn):
 1. Saat sedang berada di dalam lab, siswa meletakkan blok identitasnya di kotak **A1 (Sudut Kiri Bawah)**.

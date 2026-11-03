@@ -41,12 +41,16 @@ Dokumen ini disusun sebagai panduan taktis tim LENTERA untuk menghadapi sesi pen
 > - **Speaker:** Menghadap juri, menjelaskan alur pedagogi dan teknologi.  
 > - **Operator:** Duduk di depan alat LENTERA, memperagakan peran "siswa tunanetra" dengan meraba balok sebelum ditaruh.
 
-### Skenario 1: Login Mandiri Siswa (Durasi: ~1 Menit)
+### Skenario 1: Login Mandiri Siswa & Tangible Speed Slider (Durasi: ~1 Menit)
 1. Operator mengambil balok identitas siswa (misal: ID Ajib / Via).
-2. Operator meraba balok, lalu meletakkannya di slot **A1**.
+2. Operator meraba balok, lalu meletakkannya di slot **A1** (atau sel mana saja).
 3. **Respon Alat:**  
-   - Suara AI: *"Halo Ajib, selamat datang di Lab Listrik LENTERA! Mari kita selesaikan tantangan membuat sirkuit seri sederhana."*
-4. **Poin untuk Juri:** Tunjukkan bahwa sistem mengenal siswa secara personal dan mendukung pembelajaran mandiri (*self-paced learning*).
+   - Suara AI menyapa: *"Selamat datang, Ajib! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode Normal. Jika ingin tetap menggunakan kecepatan ini, biarkan saja balokmu di tempatnya. Jika ingin mengganti kecepatan, geser balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal."*
+4. **Momen Interaktif Pameran Inovasi:** Operator menggeser balok dari **A1** ke **E2 (Maksimal 4.0x)**.
+   - Suara AI langsung bersuara super kilat 4.0x: *"Mode Maksimal aktif! Membuka LENTERA Lab."*
+5. **Poin untuk Juri:**
+   - Jelaskan bahwa tunanetra pengguna TalkBack/NVDA terbiasa mendengar suara pada kecepatan 300–500 kata per menit (2.5x–4.0x).
+   - Inovasi **Tangible Speed Slider** di Baris 2 memungkinkan siswa tunanetra mengatur tempo bicara AI secara mandiri tanpa tombol mouse atau layar sentuh.
 
 ### Skenario 2: Merangkai Sirkuit Sukses (Durasi: ~2 Menit)
 1. Operator meletakkan balok **Baterai** di slot baterai.  

@@ -4,7 +4,25 @@ Dokumen ini mencatat titik-titik commit stabil LENTERA yang telah **terverifikas
 
 ---
 
-## 📌 Checkpoint 2: Toleran Sinar Matahari Jendela & Lampu Ruangan (Rekomendasi Utama)
+## 📌 Checkpoint 3: Tangible Audio Speed Slider & UI Dropdown (Versi Terkini & Paling Lengkap)
+
+*Gunakan checkpoint ini sebagai versi produksi paling mutakhir: mencakup seluruh optimasi penglihatan daylight, slider fisik kecepatan suara di Baris 2 (1.0x - 4.0x), perbaikan dropdown UI non-tunanetra, dan reaktivitas suara.*
+
+- **Nama Tag Git:** `stable-speed-audio`
+- **Short Hash:** `50279fd`
+- **Tanggal:** Selasa, 3 November 2026
+- **Subjek Commit:** `feat(audio): push maximum speech rate to ceiling 4.0x`
+- **Branch:** `main` & `ui/lab-redesign`
+
+### ⚙️ Peningkatan di Checkpoint Ini:
+1. **Tangible Audio Speed Slider (Baris 2):** Siswa tunanetra dapat menyetel tempo bicara suara AI secara mandiri (A2: 1.0x, B2: 1.6x, C2: 2.3x, D2: 3.2x, E2: 4.0x mentok TalkBack Pro) hanya dengan menggeser balok identitas.
+2. **SpeechSpeedSelector UI:** Komponen dropdown pemilih kecepatan grafis untuk guru/juri di navbar Beranda dan tombol kompak di atas pemindai LENTERA Lab.
+3. **Reaktivitas Suara Seketika:** Perubahan kecepatan di dropdown langsung me-restart audio arahan yang sedang berbicara ke tempo baru secara instan.
+4. **Semua Optimasi Daylight Vision (Checkpoint 2) Tetap Terbawa Utuh.**
+
+---
+
+## 📌 Checkpoint 2: Toleran Sinar Matahari Jendela & Lampu Ruangan
 
 *Gunakan checkpoint ini untuk demo utama: terbukti membaca di dekat jendela terang siang hari dan di dalam ruangan berlampu LED.*
 

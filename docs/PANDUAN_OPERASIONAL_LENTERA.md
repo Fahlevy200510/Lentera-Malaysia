@@ -48,9 +48,13 @@
 * Buka alamat web resmi LENTERA: **https://lenteraa.netlify.app**
 * **Klik sembarang area layar sekali** agar browser mengaktifkan suara narator.
 
-### Langkah 5: Login dengan Blok Identitas Siswa
-* Siswa meletakkan **Blok Identitas pribadinya** (ID 35: Via, ID 36: Amira, atau ID 37: Ajib) di atas papan grid.
-* Sistem otomatis mendeteksi, menyapa nama siswa secara personal (*"Halo [Nama Siswa]! Selamat datang..."*), dan langsung masuk ke ruang praktikum LENTERA Lab.
+### Langkah 5: Login Mandiri & Pengaturan Kecepatan Suara (Baris 2)
+* Siswa meletakkan **Blok Identitas pribadinya** (ID 35: Via, ID 36: Amira, atau ID 37: Ajib) di sel mana saja pada papan grid (misal $A1$).
+* Sistem otomatis menyapa nama siswa dan mengumumkan kecepatan suara aktif saat ini.
+* **Pilihan Kecepatan Suara (Baris 2 $A2–E2$)**:
+  * **Tetap memakai kecepatan saat ini**: Biarkan balok diam di tempatnya selama ~3.5 detik untuk langsung masuk ke lab.
+  * **Mengganti kecepatan**: Geser balok ke Baris 2: **A2** (Normal 1.0x), **B2** (Sedang 1.6x), **C2** (Cepat 2.3x), **D2** (Sangat Cepat 3.2x), atau **E2** (Maksimal 4.0x TalkBack Pro).
+* Pendamping non-tunanetra juga dapat memilih kecepatan langsung melalui dropdown di navbar web.
 
 ---
 
