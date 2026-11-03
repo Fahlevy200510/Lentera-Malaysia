@@ -24,7 +24,15 @@ import {
 } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import { getActiveStudent, setActiveStudent } from "@/utils/progress";
-import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { speakNarration, cancelSpeech, getSavedSpeechRate, setSavedSpeechRate } from "@/utils/audioCoordinator";
+
+const SPEED_MODES: Record<string, { name: string; rate: number }> = {
+  A2: { name: "Normal", rate: 1.0 },
+  B2: { name: "Sedang", rate: 1.25 },
+  C2: { name: "Cepat", rate: 1.5 },
+  D2: { name: "Sangat Cepat", rate: 1.75 },
+  E2: { name: "Maksimal", rate: 2.0 },
+};
 
 const TYPEWRITER_WORDS = [
   "sentuhan dan suara.",
@@ -402,6 +410,12 @@ export default function PortalHome() {
   const hasSpokenOnFirstClickRef = useRef(false);
   const speakingRef = useRef(false);
   const isRedirectingRef = useRef(false);
+  const [speedPrompt, setSpeedPrompt] = useState<{
+    active: boolean;
+    studentName: string;
+    selectedMode?: string;
+    selectedSlot?: string;
+  } | null>(null);
 
   // Typewriter effect state
   const [typedWord, setTypedWord] = useState("");
@@ -591,6 +605,15 @@ export default function PortalHome() {
     let redirected = false;
     let cancelled = false;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let awaitingSpeedStudent: {
+      id: string;
+      name: string;
+      role: "student" | "teacher";
+      grade: string;
+      avatar: string;
+      targetUrl: string;
+    } | null = null;
+    let speedTimer: ReturnType<typeof setTimeout> | null = null;
 
     const scheduleReconnect = () => {
       if (cancelled || redirected) return;
@@ -722,6 +745,55 @@ export default function PortalHome() {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "grid_state" && data.cells && !redirected) {
+              // A. JIKA SEDANG MENUNGGU SISWA MEMILIH KECEPATAN DI BARIS 2 (A2 - E2):
+              if (awaitingSpeedStudent) {
+                let chosenSlot: string | null = null;
+                for (const slot of Object.keys(SPEED_MODES)) {
+                  if (data.cells[slot]) {
+                    chosenSlot = slot;
+                    break;
+                  }
+                }
+
+                if (chosenSlot) {
+                  const chosen = SPEED_MODES[chosenSlot];
+                  redirected = true;
+                  isRedirectingRef.current = true;
+                  if (speedTimer) clearTimeout(speedTimer);
+                  cancelSpeech();
+
+                  setSavedSpeechRate(chosen.rate);
+                  setSpeedPrompt({
+                    active: true,
+                    studentName: awaitingSpeedStudent.name,
+                    selectedMode: chosen.name,
+                    selectedSlot: chosenSlot,
+                  });
+
+                  const confirmText = `Mode ${chosen.name} aktif! Membuka LENTERA Lab.`;
+                  let navigated = false;
+                  const goToLab = () => {
+                    if (navigated) return;
+                    navigated = true;
+                    router.push("/aruco");
+                  };
+
+                  const fallbackTimer = setTimeout(goToLab, 4000);
+                  speakNarration(confirmText, {
+                    rate: chosen.rate,
+                    pitch: 1.02,
+                    tag: "speed-confirmed",
+                    onEnd: () => {
+                      clearTimeout(fallbackTimer);
+                      setTimeout(goToLab, 250);
+                    },
+                  });
+                  return;
+                }
+                return; // Masih menunggu gerakan siswa atau timeout
+              }
+
+              // B. DETEKSI IDENTITAS DI PAPAN
               let detectedUserCell: string | null = null;
               let detectedUserMeta: {
                 id: string;
@@ -755,22 +827,10 @@ export default function PortalHome() {
               }>;
 
               if (detectedUserMeta || placed.length > 0) {
-                redirected = true;
-                isRedirectingRef.current = true;
-
-                let speechText = "";
-                let targetRoute = "/aruco";
-
-                if (detectedUserMeta && detectedUserCell) {
-                  targetRoute = detectedUserMeta.targetUrl;
-                  if (detectedUserMeta.role === "student") {
-                    setActiveStudent({
-                      id: detectedUserMeta.id,
-                      name: detectedUserMeta.name,
-                      grade: detectedUserMeta.grade,
-                      avatar: detectedUserMeta.avatar,
-                    });
-                  }
+                // 1. Kartu Identitas Guru: langsung buka Dashboard Guru
+                if (detectedUserMeta && detectedUserMeta.role === "teacher") {
+                  redirected = true;
+                  isRedirectingRef.current = true;
                   localStorage.setItem(
                     "lentera-session",
                     JSON.stringify({
@@ -779,36 +839,129 @@ export default function PortalHome() {
                       grade: detectedUserMeta.grade,
                     })
                   );
-                  if (detectedUserMeta.role === "teacher") {
-                    speechText = `Selamat datang, Bapak atau Ibu Guru! Kartu identitas guru terdeteksi di sel ${detectedUserCell}. Membuka Dashboard Guru LENTERA Learn.`;
-                  } else {
-                    speechText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi di sel ${detectedUserCell}. Membuka LENTERA Lab.`;
-                  }
-                } else {
-                  const comp = placed[0]?.component;
-                  const label = COMPONENT_LABEL[comp] || "komponen";
-                  const activeStudent = getActiveStudent();
-                  speechText = `Balok ${label} terdeteksi! Melanjutkan sesi untuk ${activeStudent.name}. Membuka LENTERA Lab.`;
-                  targetRoute = "/aruco";
+                  const speechText = `Selamat datang, Bapak atau Ibu Guru! Kartu identitas guru terdeteksi di sel ${detectedUserCell}. Membuka Dashboard Guru LENTERA Learn.`;
+                  let navigated = false;
+                  const goToDashboard = () => {
+                    if (navigated) return;
+                    navigated = true;
+                    router.push("/dashboard");
+                  };
+                  setTimeout(goToDashboard, 10000);
+                  speakNarration(speechText, {
+                    rate: 0.95,
+                    pitch: 1.02,
+                    tag: "landing-teacher-redirect",
+                    onEnd: () => setTimeout(goToDashboard, 250),
+                  });
+                  return;
                 }
 
+                // 2. Kartu Identitas Siswa: Tawarkan pilihan kecepatan di Baris 2
+                if (detectedUserMeta && detectedUserCell) {
+                  setActiveStudent({
+                    id: detectedUserMeta.id,
+                    name: detectedUserMeta.name,
+                    grade: detectedUserMeta.grade,
+                    avatar: detectedUserMeta.avatar,
+                  });
+                  localStorage.setItem(
+                    "lentera-session",
+                    JSON.stringify({
+                      name: detectedUserMeta.name,
+                      role: detectedUserMeta.role,
+                      grade: detectedUserMeta.grade,
+                    })
+                  );
+
+                  // Jika balok siswa SUDAH ditaruh langsung di salah satu sel baris kedua (A2 - E2):
+                  if (SPEED_MODES[detectedUserCell]) {
+                    const chosen = SPEED_MODES[detectedUserCell];
+                    redirected = true;
+                    isRedirectingRef.current = true;
+                    setSavedSpeechRate(chosen.rate);
+                    setSpeedPrompt({
+                      active: true,
+                      studentName: detectedUserMeta.name,
+                      selectedMode: chosen.name,
+                      selectedSlot: detectedUserCell,
+                    });
+                    const speechText = `Selamat datang, ${detectedUserMeta.name}! Mode ${chosen.name} aktif. Membuka LENTERA Lab.`;
+                    let navigated = false;
+                    const goToLab = () => {
+                      if (navigated) return;
+                      navigated = true;
+                      router.push("/aruco");
+                    };
+                    setTimeout(goToLab, 5000);
+                    speakNarration(speechText, {
+                      rate: chosen.rate,
+                      pitch: 1.02,
+                      tag: "speed-direct",
+                      onEnd: () => setTimeout(goToLab, 250),
+                    });
+                    return;
+                  }
+
+                  // Jika ditaruh di A1 atau sel lain: Tawarkan pilihan kecepatan di Baris 2
+                  awaitingSpeedStudent = detectedUserMeta;
+                  setSpeedPrompt({
+                    active: true,
+                    studentName: detectedUserMeta.name,
+                  });
+
+                  const promptText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi. Suaraku disetel Normal. Jika ingin lebih cepat, geser balokmu ke baris kedua: dari A2 Normal hingga E2 Maksimal. Atau diamkan balokmu di sini untuk langsung masuk ke Lab.`;
+
+                  const navigateToLabDefault = () => {
+                    if (redirected) return;
+                    redirected = true;
+                    isRedirectingRef.current = true;
+                    setSavedSpeechRate(1.0);
+                    router.push("/aruco");
+                  };
+
+                  speakNarration(promptText, {
+                    rate: 1.0,
+                    pitch: 1.02,
+                    tag: "landing-speed-prompt",
+                    onEnd: () => {
+                      if (!redirected) {
+                        speedTimer = setTimeout(() => {
+                          if (!redirected) {
+                            speakNarration("Membuka LENTERA Lab.", {
+                              rate: 1.0,
+                              onEnd: () => navigateToLabDefault(),
+                            });
+                            setTimeout(navigateToLabDefault, 2000);
+                          }
+                        }, 3500);
+                      }
+                    },
+                  });
+
+                  const maxTimeout = Math.max(15000, promptText.length * 95 + 4000);
+                  speedTimer = setTimeout(navigateToLabDefault, maxTimeout);
+                  return;
+                }
+
+                // 3. Komponen biasa ditaruh tanpa kartu identitas
+                redirected = true;
+                isRedirectingRef.current = true;
+                const comp = placed[0]?.component;
+                const label = COMPONENT_LABEL[comp] || "komponen";
+                const activeStudent = getActiveStudent();
+                const speechText = `Balok ${label} terdeteksi! Melanjutkan sesi untuk ${activeStudent.name}. Membuka LENTERA Lab.`;
                 let navigated = false;
-                const navigateToDestination = () => {
+                const goToLab = () => {
                   if (navigated) return;
                   navigated = true;
-                  clearTimeout(navTimer);
-                  router.push(targetRoute);
+                  router.push("/aruco");
                 };
-
-                const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
-                const navTimer = setTimeout(navigateToDestination, fallbackDelay);
+                setTimeout(goToLab, 6000);
                 speakNarration(speechText, {
-                  rate: 0.95,
+                  rate: getSavedSpeechRate(),
                   pitch: 1.02,
-                  tag: "landing-redirect",
-                  onEnd: () => {
-                    setTimeout(navigateToDestination, 250);
-                  },
+                  tag: "landing-component-redirect",
+                  onEnd: () => setTimeout(goToLab, 250),
                 });
               }
             }
@@ -826,6 +979,7 @@ export default function PortalHome() {
     return () => {
       cancelled = true;
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (speedTimer) clearTimeout(speedTimer);
       if (ws) {
         ws.onclose = null;
         ws.close();
@@ -1156,6 +1310,52 @@ export default function PortalHome() {
           style={{ animationDelay: ".12s" }}
         >
           <LenteraHeroEmblem wsConnected={wsConnected} />
+          {speedPrompt?.active && (
+            <div className="mt-4 w-full max-w-[500px] mx-auto rounded-3xl bg-gradient-to-r from-[#735CDD] to-[#4F46E5] p-5 text-white shadow-2xl border-2 border-amber-300/80 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚡</span>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider font-extrabold text-amber-300">
+                      Pengaturan Kecepatan Narasi Suara
+                    </div>
+                    <div className="text-sm font-semibold text-white">
+                      {speedPrompt.studentName}: {speedPrompt.selectedMode ? `Mode ${speedPrompt.selectedMode} Dipilih` : "Geser balok ke Baris 2"}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs font-mono px-2.5 py-1 rounded-full bg-white/20 border border-white/30 font-bold">
+                  {speedPrompt.selectedSlot ? speedPrompt.selectedSlot : "A2 - E2"}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-5 gap-1.5 mt-3">
+                {Object.entries(SPEED_MODES).map(([slot, cfg]) => {
+                  const isSelected = speedPrompt.selectedSlot === slot || speedPrompt.selectedMode === cfg.name;
+                  return (
+                    <div
+                      key={slot}
+                      className={`p-2 rounded-2xl text-center border transition-all duration-300 ${
+                        isSelected
+                          ? "bg-amber-400 text-slate-900 border-amber-200 font-bold scale-105 shadow-lg ring-2 ring-amber-300"
+                          : "bg-black/25 text-white/90 border-white/20"
+                      }`}
+                    >
+                      <div className="text-xs font-mono font-black">{slot}</div>
+                      <div className="text-[11px] truncate font-semibold">{cfg.name}</div>
+                      <div className="text-[10px] opacity-80 font-mono">{cfg.rate}x</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="text-[11px] text-white/80 mt-2.5 text-center">
+                {speedPrompt.selectedMode
+                  ? `Kecepatan ${speedPrompt.selectedMode} tersimpan! Mengalihkan ke Lab...`
+                  : "Geser balok ke slot di atas untuk mengatur kecepatan, atau biarkan di A1 untuk Normal (1.0x)."}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

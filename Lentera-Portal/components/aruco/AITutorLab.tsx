@@ -15,7 +15,7 @@ import {
   RotateCcw,
   ArrowLeft,
 } from "lucide-react";
-import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { speakNarration, cancelSpeech, getSavedSpeechRate } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
 import { isStudentToken, getStudentNameFromToken } from "./VoiceGuide";
 
@@ -98,7 +98,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       "Selamat datang di Tanya AI Tutor! Di sini kamu bisa bertanya apa saja tentang rangkaian listrik dan komponen di mejamu. Cara bertanya: letakkan satu balok di kotak sudut kiri bawah A1, lalu langsung bicaralah mengajukan pertanyaanmu. Jika sudah selesai bicara, segera angkat balok dari A1 agar AI bisa memproses dan menjawab. Jika ingin kembali ke panduan modul, letakkan balok di sudut kanan atas E5. Silakan letakkan balok di A1 dan ajukan pertanyaanmu!",
       {
         tag: "ai-tutor-lab-intro",
-        rate: 0.94,
+        rate: getSavedSpeechRate(),
         pitch: 1.0,
       }
     );
@@ -119,7 +119,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     if (!voiceOn) return;
     speakNarration(text, {
       tag: "lab-ai-tutor-response",
-      rate: 0.95,
+      rate: getSavedSpeechRate(),
       pitch: 1.0,
     });
   };

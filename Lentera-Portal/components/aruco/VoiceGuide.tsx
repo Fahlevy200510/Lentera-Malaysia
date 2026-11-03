@@ -36,7 +36,7 @@ import {
 import StudentAvatarBadge from "@/components/StudentAvatarBadge";
 import { playEarcon } from "@/utils/soundEffects";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
-import { speakNarration, cancelSpeech, isSpeaking as isSpeakingAudio } from "@/utils/audioCoordinator";
+import { speakNarration, cancelSpeech, isSpeaking as isSpeakingAudio, getSavedSpeechRate } from "@/utils/audioCoordinator";
 
 /* ---------------------------------------------------------------- Types */
 type CellData = { component: string; rotation: number };
@@ -796,7 +796,7 @@ export default function VoiceGuide() {
     }, 14000);
 
     speakNarration(cleanText, {
-      rate: 0.92,
+      rate: getSavedSpeechRate(),
       pitch: 1.05,
       tag: "voice-guide",
       onEnd: () => {

@@ -11,6 +11,25 @@ export interface SpeakOptions {
   tag?: string;
 }
 
+export function getSavedSpeechRate(): number {
+  if (typeof window === "undefined") return 1.0;
+  try {
+    const saved = localStorage.getItem("lentera-speech-rate");
+    if (saved) {
+      const parsed = parseFloat(saved);
+      if (!isNaN(parsed) && parsed >= 0.5 && parsed <= 3.0) return parsed;
+    }
+  } catch {}
+  return 1.0;
+}
+
+export function setSavedSpeechRate(rate: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem("lentera-speech-rate", rate.toString());
+  } catch {}
+}
+
 export function cancelSpeech(): void {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   currentSpeechSeq += 1;
@@ -80,7 +99,7 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
       );
       if (idVoice) utterance.voice = idVoice;
       utterance.lang = idVoice ? idVoice.lang : "id-ID";
-      utterance.rate = options.rate ?? 0.94;
+      utterance.rate = options.rate ?? getSavedSpeechRate();
       utterance.pitch = options.pitch ?? 1.02;
 
       let hasEnded = false;
