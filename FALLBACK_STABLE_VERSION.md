@@ -1,10 +1,30 @@
 # Titik Aman Versi Stabil LENTERA (Fallback Checkpoint)
 
-Dokumen ini mencatat titik commit stabil yang telah **teruji berhasil 100% pada kondisi siang hari** (menggunakan pencahayaan sinar matahari jendela penuh dan 4 LED internal boks tanpa memerlukan bantuan senter).
+Dokumen ini mencatat titik-titik commit stabil LENTERA yang telah **terverifikasi 100% pada pengujian fisik**.
 
 ---
 
-## 📌 Informasi Commit Stabil
+## 📌 Checkpoint 2: Toleran Sinar Matahari Jendela & Lampu Ruangan (Rekomendasi Utama)
+
+*Gunakan checkpoint ini untuk demo utama: terbukti membaca di dekat jendela terang siang hari dan di dalam ruangan berlampu LED.*
+
+- **Nama Tag Git:** `stable-daylight`
+- **Short Hash:** `f9b381c`
+- **Full Hash:** `f9b381c62fdf21f7dbbe0c6d7a505b2ee3ff4a88`
+- **Tanggal:** Selasa, 3 November 2026
+- **Subjek Commit:**  
+  `fix(vision): enhance ArUco parameters and validation for ambient daylight tolerance`
+- **Branch:** `main` & `ui/lab-redesign`
+
+### ⚙️ Peningkatan di Checkpoint Ini:
+1. **Window Binarisasi Adaptif:** `adaptiveThreshWinSizeMax = 45`, `min = 3`, `step = 8` (mampu melingkupi gradasi silau jendela tanpa memutus border hitam stiker).
+2. **Sensitivitas Kontras Rendah:** `adaptiveThreshConstant = 4.0`, `minOtsuStdDev = 2.0` (mendeteksi tinta hitam yang memudar di bawah cahaya terang).
+3. **Prioritas Kanal Merah:** Menggunakan kanal Red + CLAHE Red karena kebal terhadap saturasi radiasi inframerah sinar matahari alami.
+4. **Validasi Anti-Ghosting Realistis:** Ambang batas perbandingan bingkai hitam stiker terhadap sel putih dilonggarkan ke `0.82` (mencegah penolakan stiker asli saat siang hari).
+
+---
+
+## 📌 Checkpoint 1: Versi Demo Awal (Cadangan)
 
 - **Nama Tag Git:** `stable-demo`
 - **Short Hash:** `61bf996`
@@ -12,40 +32,34 @@ Dokumen ini mencatat titik commit stabil yang telah **teruji berhasil 100% pada 
 - **Tanggal:** Selasa, 3 November 2026
 - **Subjek Commit:**  
   `Revert "fix(camera,hardware): restore default Picamera2 tuning and enforce 4 board LEDs on GPIO 18"`
-- **Branch Referensi:** `main` & `ui/lab-redesign`
 
 ---
 
-## ⚙️ Karakteristik Konfigurasi Stabil Ini
+## 🚀 Cara Cepat Kembali ke Titik Aman (Instruksi Fallback)
 
-1. **Kamera (Raspberry Pi):**
-   - Menggunakan tuning resmi `ov5647_noir.json` (`Picamera2(tuning=Picamera2.load_tuning_file("ov5647_noir.json"))`) yang mengompensasi radiasi inframerah sinar matahari alami agar kontras stiker tidak memudar (*washout*).
-   - Buffer count diatur ke `2` untuk menghilangkan lag/antrean frame lama.
-2. **Vision Core (Deteksi ArUco):**
-   - Batas statis kaku `mean_edge > 95` telah **dihapus**.
-   - Menggunakan verifikasi rasio relatif dinamis: `if p90 > 50 and mean_edge > p90 * 0.72: return False` (stiker diterima selama tepi hitam lebih gelap dari kotak putihnya, kebal terhadap variasi kecerahan ruangan).
-   - Multi-channel detection: Grayscale, CLAHE, Green, Blue, Red.
-3. **Audio & Navigasi Suara:**
-   - Navigasi token identitas (A1 ke Dashboard Learn, E5 ke Logout) menunggu tuntasnya suara `onEnd` (+ jeda artikulasi 250 ms), tidak pernah terpotong di tengah kalimat.
-
----
-
-## 🚀 Cara Cepat Kembali ke Titik Ini (Instruksi Fallback)
-
-Jika sewaktu-waktu ada perubahan kode baru yang menyebabkan kendala dan Anda ingin mengembalikan sistem ke kondisi stabil ini:
-
-### 1. Di Laptop (Windows PowerShell / CMD)
+### Kembali ke Checkpoint 2 (Paling Baru & Stabil Daylight):
+#### Di Raspberry Pi (Linux Terminal):
 ```bash
+cd ~/Lentera-Malaysia
 git fetch origin
-git reset --hard 61bf996
+git reset --hard stable-daylight
+sudo systemctl restart lentera
 ```
-*(Atau `git checkout stable-demo`)*
 
-### 2. Di Raspberry Pi (Linux Terminal)
-```bash
-cd /home/pilentera/Lentera-Malaysia
+#### Di Laptop (Windows PowerShell):
+```powershell
 git fetch origin
-git reset --hard 61bf996
+git reset --hard stable-daylight
+```
+
+---
+
+### Kembali ke Checkpoint 1 (Cadangan Awal):
+#### Di Raspberry Pi (Linux Terminal):
+```bash
+cd ~/Lentera-Malaysia
+git fetch origin
+git reset --hard stable-demo
 sudo systemctl restart lentera
 ```
 
