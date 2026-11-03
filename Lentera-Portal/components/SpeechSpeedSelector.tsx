@@ -15,9 +15,11 @@ export const SPEED_OPTIONS = [
 export default function SpeechSpeedSelector({
   compact = false,
   className = "",
+  align = "auto",
 }: {
   compact?: boolean;
   className?: string;
+  align?: "left" | "right" | "auto";
 }) {
   const [currentRate, setCurrentRate] = useState<number>(1.0);
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +45,7 @@ export default function SpeechSpeedSelector({
     };
   }, []);
 
-  // Close dropdown on outside click
+  // Tutup dropdown jika klik di luar
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -64,13 +66,18 @@ export default function SpeechSpeedSelector({
     setSavedSpeechRate(rate);
     setIsOpen(false);
 
-    // Audio preview confirmation at selected speed
-    speakNarration(`Kecepatan ${name} aktif.`, {
-      rate,
-      pitch: 1.02,
-      tag: "speed-preview",
-    });
+    // Jika sedang hening (tidak sedang membaca arahan lab), bunyikan preview konfirmasi
+    if (typeof window !== "undefined" && !(window as any).__lenteraSpeaking) {
+      speakNarration(`Kecepatan ${name} aktif.`, {
+        rate,
+        pitch: 1.02,
+        tag: "speed-preview",
+      });
+    }
   };
+
+  const alignClass =
+    align === "left" ? "left-0" : align === "right" ? "right-0" : compact ? "left-0" : "right-0";
 
   return (
     <div ref={dropdownRef} className={`relative inline-block text-left ${className}`}>
@@ -81,7 +88,7 @@ export default function SpeechSpeedSelector({
         aria-expanded={isOpen}
         aria-label="Pilih kecepatan suara narasi"
         title="Pengaturan Kecepatan Suara Narasi (Non-Tunanetra / Guru / Juri)"
-        className={`inline-flex items-center gap-1.5 rounded-full border transition-all shadow-2xs font-extrabold ${
+        className={`inline-flex items-center gap-1.5 rounded-full border transition-all shadow-2xs font-extrabold cursor-pointer ${
           compact
             ? "px-2.5 py-1 text-[10.5px] border-[#735CDD]/20 bg-[#F8F6FF] text-[#5840BA] hover:bg-[#F3EFFE]"
             : "px-3 py-1.5 text-xs border-[#735CDD]/25 bg-white text-[#4A3E8A] hover:border-[#735CDD]/40 hover:bg-[#FAF8FF]"
@@ -100,7 +107,7 @@ export default function SpeechSpeedSelector({
         <div
           role="listbox"
           aria-label="Daftar kecepatan suara"
-          className="absolute right-0 mt-1.5 w-56 rounded-2xl border border-[#735CDD]/20 bg-white p-1.5 shadow-xl backdrop-blur-xl z-50 animate-fade-in"
+          className={`absolute ${alignClass} top-full mt-1.5 w-48 rounded-2xl border border-[#735CDD]/20 bg-white p-1.5 shadow-2xl backdrop-blur-xl z-[999] animate-fade-in ring-1 ring-black/5`}
         >
           <div className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#6E659F] border-b border-slate-100 flex items-center justify-between">
             <span>Kecepatan Suara</span>
@@ -117,7 +124,7 @@ export default function SpeechSpeedSelector({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelectRate(opt.rate, opt.name)}
-                  className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition-colors ${
+                  className={`w-full flex items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xs transition-colors cursor-pointer ${
                     isSelected
                       ? "bg-[#735CDD] text-white font-bold shadow-xs"
                       : "text-slate-700 hover:bg-[#F4F1FF] hover:text-[#5840BA]"
@@ -128,7 +135,7 @@ export default function SpeechSpeedSelector({
                       <span>{opt.label}</span>
                     </div>
                     <div
-                      className={`text-[10px] ${
+                      className={`text-[9.5px] ${
                         isSelected ? "text-white/80" : "text-slate-400"
                       }`}
                     >
@@ -145,4 +152,3 @@ export default function SpeechSpeedSelector({
     </div>
   );
 }
-

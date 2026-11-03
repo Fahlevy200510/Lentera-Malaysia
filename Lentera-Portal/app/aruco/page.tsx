@@ -11,7 +11,7 @@ import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import SpeechSpeedSelector from "@/components/SpeechSpeedSelector";
 import { getStudentProgress, getActiveStudent } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
-import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { speakNarration, cancelSpeech, getSavedSpeechRate } from "@/utils/audioCoordinator";
 
 const wiringPoints = [
   {
@@ -76,7 +76,7 @@ export default function ArucoPage() {
     setSpeaking(true);
 
     speakNarration(text, {
-      rate: 0.94,
+      rate: getSavedSpeechRate(),
       pitch: 1.0,
       tag: "lab-intro",
       onEnd: () => {
@@ -91,6 +91,22 @@ export default function ArucoPage() {
       },
     });
   }, []);
+
+  // Bila kecepatan suara diubah (lewat dropdown UI atau balok fisik), restart suara arahan yang sedang berjalan seketika
+  useEffect(() => {
+    const handleRateChange = () => {
+      if (speakingRef.current) {
+        cancelSpeech();
+        speakingRef.current = false;
+        setSpeaking(false);
+        setTimeout(() => {
+          speakLabIntro();
+        }, 120);
+      }
+    };
+    window.addEventListener("lentera-speech-rate-update", handleRateChange);
+    return () => window.removeEventListener("lentera-speech-rate-update", handleRateChange);
+  }, [speakLabIntro]);
 
   // Dengarkan event perpindahan tab dari pintasan fisik papan taktil (misal: balok di A5 membuka AI Tutor)
   useEffect(() => {
@@ -346,7 +362,7 @@ export default function ArucoPage() {
         </aside>
 
         {/* Area Utama: Kiri (Kamera & Skema Rangkaian) | Kanan (Panduan Modul / AI Tutor) */}
-        <div className="relative z-10 flex-1 grid gap-4 lg:grid-cols-12 items-start">
+        <div className="relative z-20 flex-1 grid gap-4 lg:grid-cols-12 items-start">
           {/* Kolom Kiri (5/15): Kamera Fisik & Skema Rangkaian Digital */}
           <div className="space-y-4 lg:col-span-5">
             {/* 1. Kamera & Sensor Papan Fisik */}
@@ -361,7 +377,7 @@ export default function ArucoPage() {
                   </h1>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <SpeechSpeedSelector compact />
+                  <SpeechSpeedSelector compact align="left" />
                   <button
                     id="btn-lab-voice"
                     onClick={() => {
