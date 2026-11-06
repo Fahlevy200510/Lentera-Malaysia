@@ -134,6 +134,7 @@ export default function ArUcoDetector() {
   const wsRef = useRef<WebSocket | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const reconnectCountRef = useRef(0);
   const manualDisconnectRef = useRef(false);
   const lastNarrationRef = useRef<string>("");
   const lastNarrationTimeRef = useRef<number>(0);
@@ -160,6 +161,7 @@ export default function ArUcoDetector() {
       websocket.onopen = () => {
         setDetections((prev) => ({ ...prev, status: "connected" }));
         manualDisconnectRef.current = false;
+        reconnectCountRef.current = 0;
         showToast(isTunnel ? "Terhubung ke LENTERA Edge (Cloud Tunnel)" : "Terhubung ke LENTERA Lokal");
       };
 
@@ -219,9 +221,11 @@ export default function ArUcoDetector() {
 
       websocket.onclose = () => {
         setDetections((prev) => ({ ...prev, status: "disconnected" }));
-        // Auto-reconnect jika tidak sengaja terputus: selalu ambil endpoint terbaru dari relay Cloudflare
-        if (!manualDisconnectRef.current) {
+        // Auto-reconnect dengan exponential backoff (maks 5x saat Pi offline agar tidak spam console)
+        if (!manualDisconnectRef.current && reconnectCountRef.current < 5) {
           if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+          const delay = Math.min(3000 * Math.pow(1.8, reconnectCountRef.current), 15000);
+          reconnectCountRef.current += 1;
           reconnectTimerRef.current = setTimeout(async () => {
             try {
               const freshEndpoint = await getActiveLenteraEndpoint();
@@ -231,7 +235,7 @@ export default function ArUcoDetector() {
             } catch {
               connectWebSocket(targetEndpoint);
             }
-          }, 3000);
+          }, delay);
         }
       };
 
@@ -270,6 +274,7 @@ export default function ArUcoDetector() {
   const handleManualConnect = (newEndpoint: string) => {
     const clean = newEndpoint.trim();
     if (!clean) return;
+    reconnectCountRef.current = 0;
     setEndpoint(clean);
     try {
       localStorage.setItem("lentera_edge_endpoint", clean);
@@ -278,6 +283,7 @@ export default function ArUcoDetector() {
   };
 
   const handleResetToAuto = async () => {
+    reconnectCountRef.current = 0;
     try {
       localStorage.removeItem("lentera_edge_endpoint");
       localStorage.removeItem("lentera_endpoint");
@@ -364,6 +370,7 @@ export default function ArUcoDetector() {
               <button
                 onClick={async () => {
                   manualDisconnectRef.current = false;
+                  reconnectCountRef.current = 0;
                   try {
                     const freshEndpoint = await getActiveLenteraEndpoint();
                     setEndpoint(freshEndpoint);
@@ -382,6 +389,11 @@ export default function ArUcoDetector() {
             <button
               onClick={handleCalibrate}
               disabled={isCalibrating || detections.status !== "connected"}
+              title={
+                detections.status !== "connected"
+                  ? "Hubungkan unit Raspberry Pi terlebih dahulu untuk mengaktifkan kalibrasi bidang 5×5"
+                  : "Kalibrasi bidang deteksi papan 5×5"
+              }
               className="flex items-center gap-1 rounded-lg border border-[#735CDD]/20 bg-white px-2.5 py-1 text-[10.5px] font-extrabold text-[#5840BA] hover:bg-[#F3EFFE] disabled:opacity-40 transition-colors"
             >
               <Sparkles className="h-3 w-3 text-[#735CDD]" />

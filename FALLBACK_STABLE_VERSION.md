@@ -4,6 +4,28 @@ Dokumen ini mencatat titik-titik commit stabil LENTERA yang telah **terverifikas
 
 ---
 
+## 📌 Checkpoint 4: Pre-Playwright Audit (Titik Aman Sebelum Perbaikan UI Audit)
+
+*Titik cadangan persis sebelum eksekusi perbaikan hasil audit Playwright (tombol rapor daftar siswa, backoff WebSocket, tooltip kalibrasi, dan autocomplete login).*
+
+- **Nama Tag Git:** `stable-pre-audit`
+- **Short Hash:** `4ec4f00`
+- **Full Hash:** `4ec4f00fb8c9547282382cab17019c540b5258f8`
+- **Next.js Build ID:** `xKQfZcB_TxnBrzwoqc262`
+- **Tanggal Commit:** Selasa, 3 November 2026 (`22:18:22 +0700`)
+- **Tanggal Pencatatan:** Jumat, 6 November 2026
+- **Subjek Commit:** `docs: add comprehensive final report document DOKUMEN_LAPORAN_AKHIR_LENTERA.md for competition submission`
+- **Branch:** `main`
+
+### 🔄 Cara Rollback Cepat ke Checkpoint 4:
+```powershell
+git reset --hard 4ec4f00fb8c9547282382cab17019c540b5258f8
+# atau menggunakan tag:
+git reset --hard stable-pre-audit
+```
+
+---
+
 ## 📌 Checkpoint 3: Tangible Audio Speed Slider & UI Dropdown (Versi Terkini & Paling Lengkap)
 
 *Gunakan checkpoint ini sebagai versi produksi paling mutakhir: mencakup seluruh optimasi penglihatan daylight, slider fisik kecepatan suara di Baris 2 (1.0x - 4.0x), perbaikan dropdown UI non-tunanetra, dan reaktivitas suara.*

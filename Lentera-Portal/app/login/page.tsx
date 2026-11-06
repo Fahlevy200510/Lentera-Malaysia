@@ -280,11 +280,10 @@ function LoginFormContent() {
                     setRole(r);
                     setError("");
                   }}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
-                    role === r
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${role === r
                       ? "bg-white text-violet-700 shadow-sm"
                       : "text-slate-500 hover:text-slate-800"
-                  }`}
+                    }`}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{label}</span>
@@ -367,6 +366,7 @@ function LoginFormContent() {
                 </label>
                 <input
                   type="text"
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={roleCopy.defaultEmail}
@@ -381,6 +381,7 @@ function LoginFormContent() {
                 <div className="relative">
                   <input
                     type={showPw ? "text" : "password"}
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Masukkan kata sandi..."

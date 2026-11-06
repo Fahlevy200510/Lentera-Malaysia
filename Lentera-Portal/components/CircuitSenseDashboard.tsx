@@ -1636,6 +1636,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
                 <div className="flex items-center" style={{ gap: 9, border: "1px solid rgba(139,92,246,0.2)", background: "#fff", borderRadius: 12, padding: "10px 14px" }}>
                   <User size={16} color={C.textSoft} />
                   <input
+                    autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={roleCopy.placeholder}
@@ -1649,6 +1650,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
                   <KeyRound size={16} color={C.textSoft} />
                   <input
                     type={showPw ? "text" : "password"}
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
