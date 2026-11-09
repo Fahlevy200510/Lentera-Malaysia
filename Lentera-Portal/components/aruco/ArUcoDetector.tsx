@@ -86,11 +86,27 @@ export function markTunnelDead(endpoint: string) {
   }
 }
 
+export function clearDeadTunnels() {
+  deadTunnelsInSession.clear();
+}
+
 /**
- * Temukan endpoint aktif secara otomatis (Cloudflare Tunnel relay / saved localStorage / fallback local)
+ * Temukan endpoint aktif secara otomatis:
+ * 1. Jika pengguna memilih mode "manual" (misal Localhost atau IP spesifik), hormati pilihan tersebut 100%.
+ * 2. Jika mode "auto" (default), cari Cloudflare Quick Tunnel dari ntfy relay, lalu fallback ke localhost.
  */
 export async function getActiveLenteraEndpoint(): Promise<string> {
-  // 1. Prioritas Utama: Auto-discovery Cloudflare Quick Tunnel dari ntfy relay (100% Zero-Config)
+  try {
+    if (typeof window !== "undefined") {
+      const mode = localStorage.getItem("lentera_endpoint_mode");
+      const saved = localStorage.getItem("lentera_edge_endpoint") || localStorage.getItem("lentera_endpoint");
+      if (mode === "manual" && saved) {
+        return saved;
+      }
+    }
+  } catch { }
+
+  // 1. Prioritas Mode Auto: Auto-discovery Cloudflare Quick Tunnel dari ntfy relay
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -137,6 +153,7 @@ export default function ArUcoDetector() {
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [endpoint, setEndpoint] = useState<string>("localhost");
+  const [endpointMode, setEndpointMode] = useState<"auto" | "manual">("auto");
   const [showConfig, setShowConfig] = useState(false);
   const [customInput, setCustomInput] = useState("");
   const [liveFrame, setLiveFrame] = useState<string | null>(null);
@@ -156,8 +173,19 @@ export default function ArUcoDetector() {
   };
 
   const connectWebSocket = useCallback((targetEndpoint: string) => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = undefined;
+    }
     if (wsRef.current) {
-      wsRef.current.close();
+      const oldWs = wsRef.current;
+      oldWs.onopen = null;
+      oldWs.onmessage = null;
+      oldWs.onclose = null;
+      oldWs.onerror = null;
+      try {
+        oldWs.close();
+      } catch { }
       wsRef.current = null;
     }
 
@@ -170,6 +198,7 @@ export default function ArUcoDetector() {
       let opened = false;
 
       websocket.onopen = () => {
+        if (wsRef.current !== websocket) return;
         opened = true;
         setDetections((prev) => ({ ...prev, status: "connected" }));
         manualDisconnectRef.current = false;
@@ -178,6 +207,7 @@ export default function ArUcoDetector() {
       };
 
       websocket.onmessage = (event) => {
+        if (wsRef.current !== websocket) return;
         try {
           const data = JSON.parse(event.data);
 
@@ -232,6 +262,8 @@ export default function ArUcoDetector() {
       };
 
       websocket.onclose = () => {
+        // Abaikan penutupan socket lama jika sudah diganti koneksi baru (mencegah race condition balik ke Cloudflare)
+        if (wsRef.current !== websocket) return;
         setDetections((prev) => ({ ...prev, status: "disconnected" }));
         if (!opened && isTunnel) {
           markTunnelDead(targetEndpoint);
@@ -248,13 +280,14 @@ export default function ArUcoDetector() {
               setCustomInput(freshEndpoint);
               connectWebSocket(freshEndpoint);
             } catch {
-              connectWebSocket("localhost");
+              connectWebSocket(targetEndpoint);
             }
           }, delay);
         }
       };
 
       websocket.onerror = () => {
+        if (wsRef.current !== websocket) return;
         setDetections((prev) => ({ ...prev, status: "disconnected" }));
       };
     } catch (err) {
@@ -265,6 +298,10 @@ export default function ArUcoDetector() {
 
   useEffect(() => {
     let cancelled = false;
+    try {
+      const savedMode = localStorage.getItem("lentera_endpoint_mode");
+      if (savedMode === "manual") setEndpointMode("manual");
+    } catch { }
 
     async function autoDiscoverAndConnect() {
       const targetEndpoint = await getActiveLenteraEndpoint();
@@ -280,7 +317,10 @@ export default function ArUcoDetector() {
     return () => {
       cancelled = true;
       manualDisconnectRef.current = true;
-      wsRef.current?.close();
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.close();
+      }
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
@@ -289,17 +329,27 @@ export default function ArUcoDetector() {
   const handleManualConnect = (newEndpoint: string) => {
     const clean = newEndpoint.trim();
     if (!clean) return;
+    manualDisconnectRef.current = false;
     reconnectCountRef.current = 0;
+    setLiveFrame(null);
     setEndpoint(clean);
+    setCustomInput(clean);
+    setEndpointMode("manual");
     try {
+      localStorage.setItem("lentera_endpoint_mode", "manual");
       localStorage.setItem("lentera_edge_endpoint", clean);
     } catch { }
     connectWebSocket(clean);
   };
 
   const handleResetToAuto = async () => {
+    manualDisconnectRef.current = false;
     reconnectCountRef.current = 0;
+    clearDeadTunnels();
+    setLiveFrame(null);
+    setEndpointMode("auto");
     try {
+      localStorage.setItem("lentera_endpoint_mode", "auto");
       localStorage.removeItem("lentera_edge_endpoint");
       localStorage.removeItem("lentera_endpoint");
     } catch { }
@@ -434,7 +484,7 @@ export default function ArUcoDetector() {
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-[#1D1836]">Pengaturan Endpoint Edge:</span>
               <span className="rounded-md bg-[#FFF3D6] px-2 py-0.5 text-[10px] font-extrabold text-[#9A5B00]">
-                Mode Otomatis
+                {endpointMode === "manual" ? `Dikunci Manual (${endpoint})` : "Mode Otomatis"}
               </span>
             </div>
 
