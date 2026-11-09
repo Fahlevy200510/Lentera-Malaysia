@@ -1322,30 +1322,33 @@ export default function PortalHome() {
 
         {/* Right Showcase Stage */}
         <div
-          className="relative rise lg:pl-6 flex items-center justify-center w-full"
+          className="relative rise lg:pl-6 flex flex-col items-center justify-center w-full"
           style={{ animationDelay: ".12s" }}
         >
-          <LenteraHeroEmblem wsConnected={wsConnected} />
-          {speedPrompt?.active && (
-            <div className="mt-4 w-full max-w-[500px] mx-auto rounded-3xl bg-gradient-to-r from-[#735CDD] to-[#4F46E5] p-5 text-white shadow-2xl border-2 border-amber-300/80 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">⚡</span>
+          {!speedPrompt?.active ? (
+            <LenteraHeroEmblem wsConnected={wsConnected} />
+          ) : (
+            <div className="w-full max-w-[500px] mx-auto rounded-[32px] bg-gradient-to-br from-[#735CDD] via-[#5E47C9] to-[#4338CA] p-6 text-white shadow-2xl border-2 border-amber-300/80 animate-fade-in">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-300/20 border border-amber-300/40 text-2xl">
+                    ⚡
+                  </span>
                   <div>
-                    <div className="text-xs uppercase tracking-wider font-extrabold text-amber-300">
+                    <div className="text-[11px] uppercase tracking-wider font-extrabold text-amber-300">
                       Pengaturan Kecepatan Narasi Suara
                     </div>
-                    <div className="text-sm font-semibold text-white">
+                    <div className="text-base font-bold text-white mt-0.5">
                       {speedPrompt.studentName}: {speedPrompt.selectedMode ? `Mode ${speedPrompt.selectedMode} Dipilih` : "Geser balok ke Baris 2"}
                     </div>
                   </div>
                 </div>
-                <div className="text-xs font-mono px-2.5 py-1 rounded-full bg-white/20 border border-white/30 font-bold">
-                  {speedPrompt.selectedSlot ? speedPrompt.selectedSlot : "A2 - E2"}
+                <div className="shrink-0 text-xs font-mono px-3 py-1.5 rounded-full bg-white/20 border border-white/30 font-extrabold whitespace-nowrap">
+                  {speedPrompt.selectedSlot ? speedPrompt.selectedSlot : "A2 – E2"}
                 </div>
               </div>
 
-              <div className="grid grid-cols-5 gap-1.5 mt-3">
+              <div className="grid grid-cols-5 gap-2 mt-5">
                 {Object.entries(SPEED_MODES).map(([slot, cfg]) => {
                   const isSelected = speedPrompt.selectedSlot === slot || speedPrompt.selectedMode === cfg.name;
                   const isCurrent = !speedPrompt.selectedMode && (speedPrompt.currentMode === cfg.name || (!speedPrompt.currentMode && cfg.rate === 1.0));
@@ -1373,25 +1376,25 @@ export default function PortalHome() {
                         setTimeout(() => router.push("/aruco"), 4000);
                       }}
                       title={`Klik untuk memilih Mode ${cfg.name} (${cfg.rate}x)`}
-                      className={`p-2 rounded-2xl text-center border transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${isSelected
+                      className={`px-1.5 py-3 rounded-2xl text-center border transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 flex flex-col items-center justify-center ${isSelected
                           ? "bg-amber-400 text-slate-900 border-amber-200 font-bold scale-105 shadow-lg ring-2 ring-amber-300"
                           : isCurrent
                             ? "bg-white/20 text-white border-amber-300/80 font-bold ring-1 ring-amber-300/60"
                             : "bg-black/25 text-white/90 border-white/20 hover:bg-white/10"
                         }`}
                     >
-                      <div className="text-xs font-mono font-black">{slot}</div>
-                      <div className="text-[11px] truncate font-semibold">{cfg.name}</div>
-                      <div className="text-[10px] opacity-80 font-mono">{cfg.rate}x</div>
+                      <div className="text-sm font-mono font-black">{slot}</div>
+                      <div className="text-[11px] font-bold leading-tight mt-1">{cfg.name}</div>
+                      <div className="text-[10px] opacity-85 font-mono mt-0.5">{cfg.rate}x</div>
                       {isCurrent && !speedPrompt.selectedMode && (
-                        <div className="text-[8px] uppercase tracking-wider font-extrabold text-amber-300 mt-0.5">Aktif</div>
+                        <div className="text-[8px] uppercase tracking-wider font-extrabold text-amber-300 mt-1">Aktif</div>
                       )}
                     </button>
                   );
                 })}
               </div>
 
-              <div className="text-[11px] text-white/80 mt-2.5 text-center">
+              <div className="text-xs text-white/90 mt-4 text-center leading-relaxed bg-black/20 rounded-2xl p-3 border border-white/10">
                 {speedPrompt.selectedMode
                   ? `Kecepatan ${speedPrompt.selectedMode} tersimpan! Mengalihkan ke Lab...`
                   : `Kecepatan saat ini: Mode ${speedPrompt.currentMode || "Normal"}. Biarkan balok di tempatnya untuk melanjutkan, atau geser ke baris 2 untuk mengganti.`}
