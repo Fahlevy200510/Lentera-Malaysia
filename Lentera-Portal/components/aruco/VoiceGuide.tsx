@@ -358,7 +358,7 @@ const SERIES_STEPS: StepDef[] = [
     targetCells: { "B3": "straight_cable" },
     expectedRotations: { "B3": [90, 270] },
     hint: "Pasang kabel lurus tegak di B3 di antara B2 dan baterai.",
-    explanation: "Hebat! Semua balok sudah tersambung di papan. Tapi perhatikan, lampu belum menyala karena saklar masih terbuka atau mati.",
+    explanation: "Hebat! Semua balok sudah tersambung di papan membentuk satu jalur tertutup. Saat ini lampu belum menyala karena kedua saklar masih dalam posisi terbuka atau mati.",
   },
   {
     instruction: "Langkah 13: Putar Balok Saklar di C5 & E4 90° dari Posisi Terakhir untuk Menyalakan Lampu",
@@ -366,7 +366,7 @@ const SERIES_STEPS: StepDef[] = [
     targetCells: { "C5": "switch", "E4": "switch" },
     validator: (cells, status) => status === "success",
     hint: "Raba balok saklar di C5 dan E4. Putar masing-masing balok 90 derajat dari posisi terakhirnya hingga lampu menyala bersamaan.",
-    explanation: "Sempurna! Kedua saklar sudah diputar ke ON dan arus listrik mengalir lancar ke seluruh rangkaian seri. Kedua lampu menyala terang bersamaan! Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
+    explanation: "Sempurna! Kedua saklar sudah diputar ke posisi menyala dan kedua lampu menyala bersamaan! Rangkaian seri artinya seluruh komponen disusun berurutan dalam satu jalur tunggal tanpa cabang, sehingga arus listrik yang sama mengalir melewati tiap komponen satu per satu, dan jika satu saklar dimatikan maka seluruh lampu ikut padam. Selamat, kamu berhasil menyelesaikan misi rangkaian seri!",
   },
 ];
 
@@ -454,7 +454,7 @@ const PARALLEL_STEPS: StepDef[] = [
     targetCells: { "E3": "l_cable" },
     expectedRotations: { "E3": [270] },
     hint: "Pasang kabel sudut L di E3 menyambung dari D3 ke arah cabang T di E4.",
-    explanation: "Hebat! Seluruh 12 balok rangkaian paralel telah terpasang di papan. Tapi lampu belum menyala karena kedua saklar masih terbuka atau mati.",
+    explanation: "Hebat! Seluruh 12 balok rangkaian paralel telah terpasang di papan membentuk jalur bercabang. Saat ini lampu belum menyala karena kedua saklar masih dalam posisi terbuka atau mati.",
   },
   {
     instruction: "Langkah 13: Putar Balok Saklar di C4 atau C3 90° dari Posisi Terakhir untuk Menyalakan Lampu",
@@ -462,7 +462,7 @@ const PARALLEL_STEPS: StepDef[] = [
     targetCells: { "C4": "switch", "C3": "switch" },
     validator: (cells, status) => status === "success",
     hint: "Raba balok saklar di C4 atau C3. Putar baloknya 90 derajat dari posisi terakhirnya hingga lampu pada cabangnya menyala.",
-    explanation: "Luar biasa! Lampu berhasil menyala! Di rangkaian paralel, tiap cabang bekerja secara mandiri sehingga lampu bisa dinyalakan dan dimatikan tanpa mempengaruhi cabang lain. Selamat, kamu berhasil menyelesaikan misi rangkaian paralel!",
+    explanation: "Luar biasa! Lampu berhasil menyala! Rangkaian paralel artinya komponen disusun pada beberapa jalur bercabang menggunakan kabel T, sehingga arus listrik terbagi ke tiap cabang secara mandiri, dan jika satu saklar dimatikan maka lampu pada cabang lain tetap menyala. Selamat, kamu berhasil menyelesaikan misi rangkaian paralel!",
   },
 ];
 
@@ -804,7 +804,6 @@ export default function VoiceGuide() {
       onEnd: () => {
         clearTimeout(safetyTimeout);
         lastSpokenTimeRef.current = Date.now();
-        lastClueRef.current = Date.now();
         quizLiftGraceStartRef.current = Date.now();
         lastQuizRemindRef.current = Date.now();
         lastLiftRemindRef.current = Date.now();
@@ -885,10 +884,10 @@ export default function VoiceGuide() {
       if (!isManual && now - lastAITimeRef.current < 16000) return;
       if (!isManual && (isSpeakingRef.current || (window as any).__lenteraSpeaking)) return;
 
-      // Kecualikan balok pintasan di A1 (pemicu AI Tutor) dan E5 (kembali ke menu) agar AI tidak mengira itu bagian sirkuit
+      // Seluruh 25 sel A1-E5 yang berisi balok komponen sirkuit (bukan kartu identitas siswa) dihitung sebagai bagian rangkaian
       const circuitCells: Record<string, any> = {};
       for (const [pos, val] of Object.entries(cells)) {
-        if (val && !isStudentToken(val) && pos !== "A1" && pos !== "E5") {
+        if (val && !isStudentToken(val)) {
           circuitCells[pos] = val;
         }
       }
@@ -907,9 +906,9 @@ export default function VoiceGuide() {
             ? placedEntries
                 .map(([pos, v]) => `${COMPONENT_LABEL[(v as any).component] || (v as any).component} di sel ${pos}`)
                 .join(", ")
-            : "belum ada balok sirkuit di area tengah papan";
+            : "belum ada balok komponen sirkuit yang terpasang di papan";
 
-        let promptMessage = `Siswa bernama ${sName} sedang merakit rangkaian bebas di lab. Komponen terpasang saat ini: ${placedSummary}.`;
+        let promptMessage = `Siswa bernama ${sName} sedang merakit rangkaian bebas di lab dan meminta umpan balik. Komponen terpasang saat ini: ${placedSummary}.`;
         if (status === "polarity_reversed") {
           promptMessage += ` PERINGATAN SENSOR: Polaritas lampu LED terbalik (polarity_reversed). Seluruh lintasan sirkuit baterai dan kabel SEBENARNYA SUDAH TERSAMBUNG DAN TERTUTUP! Hanya kutub lampu LED yang terbalik. Bimbing siswa untuk meraba balok lampu tersebut, lalu memutar posisinya 180 derajat. JANGAN menyuruh menyambung kabel lagi!`;
         } else if (status === "switch_off") {
@@ -983,7 +982,11 @@ export default function VoiceGuide() {
         );
       } else if (mode === "series" || mode === "adaptive_series") {
         speak(
-          "Hebat sekali! Kamu berhasil menyelesaikan Rangkaian Seri dan lampu menyala! Sebelum kita lanjut ke Rangkaian Paralel, silakan angkat terlebih dahulu semua balok dari papan."
+          "Hebat sekali! Kamu telah memahami bahwa pada Rangkaian Seri, seluruh komponen tersusun berurutan dalam satu jalur tunggal tanpa cabang, sehingga jika satu saklar mati maka semua lampu padam. Sebelum kita lanjut ke Rangkaian Paralel, silakan angkat terlebih dahulu semua balok dari papan."
+        );
+      } else if (mode === "parallel" || mode === "adaptive_parallel") {
+        speak(
+          "Hebat sekali! Kamu telah memahami bahwa pada Rangkaian Paralel, komponen disusun pada jalur bercabang sehingga arus listrik mengalir mandiri di tiap cabang dan satu lampu bisa dimatikan tanpa memadamkan cabang lainnya. Sebelum kita lanjut ke Tantangan Detektif Sirkuit, silakan angkat terlebih dahulu semua balok dari papan."
         );
       } else if (mode === "troubleshoot") {
         speak(
@@ -1269,26 +1272,27 @@ export default function VoiceGuide() {
       }
 
       // =========================================================================
-      // KHUSUS MODE EKSPLORASI BEBAS (AUTONOMOUS CONTEXT-AWARE AI LIVE TUTOR)
+      // KHUSUS MODE EKSPLORASI BEBAS (ON-DEMAND AI TUTOR & SELURUH 25 SEL A1-E5 BEBAS)
       // =========================================================================
       if (mode === "free_exploration") {
         latestStatusRef.current = detail?.status || "open";
 
-        // Pintasan Taktil E5: Kembali ke Menu Utama
-        if (cells["E5"] && placedCount === 1 && !isStudentToken(cells["E5"])) {
+        // Pintasan Kartu Identitas Siswa di E1 (Pojok Kanan Bawah): Kembali ke Menu Utama Lab
+        if (isStudentToken(cells["E1"])) {
           playEarcon("click");
-          speak("Kembali ke menu utama LENTERA Lab dari sudut kanan atas E5. Silakan angkat balok dari papan.", () => {
+          speak("Kartu identitas terdeteksi di E1. Kembali ke menu utama LENTERA Lab. Silakan angkat semua balok dari papan.", () => {
             resetGuide();
           });
           return;
         }
 
-        // Pintasan Taktil A1: On-demand AI Live Tutor
-        if (cells["A1"] && !isStudentToken(cells["A1"])) {
+        // Pintasan Kartu Identitas Siswa di A5 (Pojok Kiri Atas): Minta Evaluasi / Bimbingan AI Tutor Sesuai Permintaan Siswa
+        if (isStudentToken(cells["A5"])) {
           const now = Date.now();
           if (now - lastAITimeRef.current > 5000 && !isAILoading) {
             triggerAITutor(cells, detail?.status || "open", true);
           }
+          return;
         }
 
         // 1. Peringatan darurat korsleting (prioritas keamanan tertinggi)
@@ -1314,31 +1318,8 @@ export default function VoiceGuide() {
           hasTriggeredSuccessEarconRef.current = false;
         }
 
-        // 3. Jika rangkaian belum menyala dan ada >= 2 balok sirkuit, jadwalkan pengamatan AI Live Tutor hanya saat susunan balok berubah dan stabil 3.5s
-        const circuitEntries = Object.entries(cells)
-          .filter(([pos, v]) => Boolean(v) && !isStudentToken(v) && pos !== "A1" && pos !== "E5")
-          .sort(([a], [b]) => a.localeCompare(b));
-        const currentCellsSignature = `${detail?.status || "open"}|${circuitEntries
-          .map(([pos, v]) => `${pos}:${(v as any).component}:${normalizeRotation((v as any).rotation)}`)
-          .join(",")}`;
-
-        if (circuitEntries.length >= 2) {
-          if (currentCellsSignature !== lastEvaluatedCellsRef.current) {
-            lastEvaluatedCellsRef.current = currentCellsSignature;
-            if (freeExplorationTimerRef.current) {
-              clearTimeout(freeExplorationTimerRef.current);
-            }
-            freeExplorationTimerRef.current = setTimeout(() => {
-              triggerAITutor(latestCellsRef.current || cells, latestStatusRef.current || detail?.status || "open");
-            }, 3500);
-          }
-        } else {
-          lastEvaluatedCellsRef.current = "";
-          if (freeExplorationTimerRef.current) {
-            clearTimeout(freeExplorationTimerRef.current);
-            freeExplorationTimerRef.current = null;
-          }
-        }
+        // Catatan: Sesuai kebutuhan siswa, AI Tutor TIDAK menyela atau menebak-nebak di tengah proses merangkai.
+        // Seluruh 25 sel (termasuk A1 dan E5) bebas dipakai untuk balok komponen sirkuit (ID 1-7).
         return;
       }
 
@@ -1505,6 +1486,7 @@ export default function VoiceGuide() {
           const praise = praises[currentStep % praises.length];
           const questionPrompt = `${praise} ${step.explanation} Apakah kamu sudah jelas? Jika ingin mendengar penjelasan ulang, cukup putar balok ini di sel C3. Jika sudah paham dan ingin lanjut, silakan angkat baloknya dari sel C3.`;
           speak(questionPrompt, () => {
+            recognitionRotationRef.current = latestCellsRef.current?.["C3"]?.rotation ?? placedC3.rotation ?? 0;
             recognitionPromptReadyRef.current = true;
           });
           return;
@@ -1563,7 +1545,7 @@ export default function VoiceGuide() {
                   // Langsung majukan ke totalSteps agar useEffect([isFinished]) membacakan apresiasi selesai secara utuh
                   setCurrentStep(totalSteps);
                 }
-              }, 2500); // 2.5 detik toleransi saat balok diangkat sejenak atau tertutup tangan ketika memutar
+              }, 900); // 0.9 detik responsif saat balok (termasuk saklar) diangkat dari C3
             }
             return;
           }
@@ -1853,29 +1835,37 @@ export default function VoiceGuide() {
         for (let i = 0; i < currentStep; i++) {
           const prevTargets = steps[i]?.targetCells;
           if (prevTargets) {
-            for (const c of Object.keys(prevTargets)) priorCellsCheck.add(c);
+            for (const [c, expectedComp] of Object.entries(prevTargets)) {
+              if (cells[c]?.component === expectedComp) {
+                priorCellsCheck.add(c);
+              }
+            }
           }
         }
         const hasActiveAttempt = Object.entries(cells).some(
           ([c, d]) => !priorCellsCheck.has(c) && Boolean(d) && !isStudentToken(d)
         );
-        // Hanya reset signature jika papan benar-benar kosong stabil > 5s agar transisi angkat tidak memicu suara ulang
-        if (!hasActiveAttempt && Date.now() - lastClueRef.current > 5000) {
+        // Segera reset signature saat balok percobaan yang salah telah diangkat
+        if (!hasActiveAttempt) {
           lastStepWrongSigRef.current = null;
         }
       }
       if (step.targetCells && !allFound && !stepCompleted && !isFinished && !isAnyAudioSpeaking) {
         const now = Date.now();
-        // Jeda pengaman minimum 6.5s antar-koreksi kesalahan agar audio tidak berulang saat siswa sedang mengangkat/memindahkan balok
-        if (now - lastClueRef.current < 6500) return;
+        // Jeda singkat 1.2s antar-koreksi berbeda (balok yang sama di sel yang sama sudah dikunci oleh lastStepWrongSigRef)
+        if (now - lastClueRef.current < 1200) return;
         let handledClue = false;
 
-        // Kumpulkan sel yang sudah ditempati secara sah pada langkah-langkah sebelumnya (0 .. currentStep-1)
+        // Kumpulkan sel yang sudah ditempati secara SAH (komponen sesuai) pada langkah-langkah sebelumnya (0 .. currentStep-1)
         const priorStepCells = new Set<string>();
         for (let i = 0; i < currentStep; i++) {
           const prevTargets = steps[i]?.targetCells;
           if (prevTargets) {
-            for (const c of Object.keys(prevTargets)) priorStepCells.add(c);
+            for (const [c, expectedComp] of Object.entries(prevTargets)) {
+              if (cells[c]?.component === expectedComp) {
+                priorStepCells.add(c);
+              }
+            }
           }
         }
 
@@ -1915,7 +1905,7 @@ export default function VoiceGuide() {
               playEarcon("clue");
               const compName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
               const dirHint = getRelativeDirection(wrongCell, targetCell);
-              speak(`Balok ${compName} sudah tepat, tetapi berada di kotak ${wrongCell}. Silakan ${dirHint}.`);
+              speak(`Balok ${compName} sudah tepat, tetapi berada di kotak ${wrongCell}. Seharusnya di kotak ${targetCell}. Silakan ${dirHint}.`);
               handledClue = true;
               break;
             }
@@ -1942,11 +1932,11 @@ export default function VoiceGuide() {
           }
         }
 
-        // 3. Siswa meletakkan balok di kotak luar target padahal target masih kosong (abaikan sel dari langkah sebelumnya)
+        // 3. Siswa meletakkan balok di kotak luar target padahal target masih kosong (abaikan sel sah dari langkah sebelumnya)
         if (!handledClue) {
           const missingTarget = Object.entries(step.targetCells).find(([tc, ec]) => !cells[tc] || cells[tc].component !== ec);
           if (missingTarget) {
-            const [targetCell] = missingTarget;
+            const [targetCell, expectedComponent] = missingTarget;
             const extraPlacedEntry = Object.entries(cells).find(
               ([c, d]) => !step.targetCells?.[c] && !priorStepCells.has(c) && Boolean(d) && !isStudentToken(d)
             );
@@ -1955,10 +1945,19 @@ export default function VoiceGuide() {
               lastStepWrongSigRef.current = sig3;
               lastClueRef.current = now;
               const [wrongCell, placedData] = extraPlacedEntry;
-              const placedName = COMPONENT_LABEL[(placedData as any)?.component] || "balok";
+              const placedComp = (placedData as any)?.component;
+              const placedName = COMPONENT_LABEL[placedComp] || "balok";
+              const expectedName = COMPONENT_LABEL[expectedComponent] || expectedComponent;
+              const clue = COMPONENT_TACTILE_HINT[expectedComponent] || "bentuk yang sesuai";
               const dirHint = getRelativeDirection(wrongCell, targetCell);
               playEarcon("wrong");
-              speak(`Kamu meletakkan balok ${placedName} di kotak ${wrongCell}. Kotak langkah ini ada di ${targetCell}. Silakan ${dirHint}.`);
+              if (placedComp && placedComp !== expectedComponent) {
+                speak(
+                  `Kamu meletakkan balok ${placedName} di kotak ${wrongCell}. Untuk langkah ini kita membutuhkan balok ${expectedName} di kotak ${targetCell}. Coba raba balok yang ${clue}, lalu letakkan di kotak ${targetCell}.`
+                );
+              } else {
+                speak(`Kamu meletakkan balok ${placedName} di kotak ${wrongCell}. Kotak langkah ini ada di ${targetCell}. Silakan ${dirHint}.`);
+              }
             }
           }
         }
@@ -2016,13 +2015,13 @@ export default function VoiceGuide() {
 
         if (isLastStep) {
           const finalSpeech = step.explanation || "Luar biasa! Saklar sudah ON dan sirkuit tertutup. Lampu berhasil menyala terang!";
-          const fallbackMs = Math.max(9000, finalSpeech.length * 95 + 2500);
+          const fallbackMs = Math.max(18000, finalSpeech.length * 105 + 4000);
           advanceTimerRef.current = setTimeout(doAdvance, fallbackMs);
           speak(finalSpeech, () => {
             setTimeout(doAdvance, 450);
           });
         } else if (step.explanation) {
-          const fallbackMs = Math.max(8000, step.explanation.length * 95 + 2500);
+          const fallbackMs = Math.max(11000, step.explanation.length * 100 + 3000);
           advanceTimerRef.current = setTimeout(doAdvance, fallbackMs);
           speak(step.explanation, () => {
             setTimeout(doAdvance, 450);
@@ -2125,7 +2124,7 @@ export default function VoiceGuide() {
       setBoardBlockCount(0);
       setIsExpanded(true);
       speak(
-        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Silakan rakit rangkaian apa saja di papan mejamu secara bebas. AI Live Tutor akan otomatis mengamati dan membimbingmu saat sirkuit belum menyala. Kamu juga bisa meletakkan balok di kotak sudut kiri bawah A1 kapan saja untuk memanggil AI Tutor, atau di kotak sudut kanan atas E5 untuk kembali ke menu utama."
+        "Selamat datang di Mode Eksplorasi Bebas LENTERA! Seluruh 25 kotak dari A1 sampai E5 bebas kamu gunakan untuk menyusun balok rangkaian tanpa gangguan. AI Tutor hanya akan memberikan umpan balik ketika kamu memintanya: cukup letakkan kartu identitasmu di sudut kiri atas A5 atau tekan tombol Minta Bimbingan AI kapan saja. Untuk kembali ke menu utama, letakkan kartu identitasmu di sudut kanan bawah E1."
       );
       return;
     }
@@ -2922,10 +2921,10 @@ export default function VoiceGuide() {
                     </div>
                     <div>
                       <h4 className="text-sm font-extrabold text-slate-900 leading-tight">
-                        Eksplorasi Bebas • AI Live Tutor
+                        Eksplorasi Bebas • AI Tutor Sesuai Permintaan
                       </h4>
                       <p className="text-[10.5px] text-emerald-800 font-semibold">
-                        Kamera mengamati papan fisik & menganalisis secara otomatis
+                        Seluruh 25 sel (termasuk A1 & E5) bebas untuk balok sirkuit
                       </p>
                     </div>
                   </div>
@@ -2934,7 +2933,7 @@ export default function VoiceGuide() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
-                    Live Aktif
+                    Siap Diminta
                   </span>
                 </div>
 
@@ -2952,7 +2951,7 @@ export default function VoiceGuide() {
                 <div className="rounded-xl bg-white p-3.5 shadow-2xs border border-emerald-200/80">
                   <div className="flex items-center justify-between gap-2 text-xs mb-2">
                     <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-indigo-600" /> Bimbingan Taktil Terkini
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-600" /> Bimbingan Taktil AI (Saat Diminta)
                     </span>
                     {aiAdvisorEngine && (
                       <span className="text-[9.5px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
@@ -2980,7 +2979,7 @@ export default function VoiceGuide() {
                     </div>
                   ) : (
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      Silakan rakit balok sirkuit sesukamu di papan fisik. Jika rangkaian belum tersambung dan kamu berhenti sejenak, AI Tutor akan otomatis bersuara membimbing rabaan tanganmu.
+                      Rakit balok sirkuit sesukamu di seluruh 25 kotak papan fisik (termasuk A1). AI Tutor tidak akan menyela di tengah proses merangkai dan hanya berbicara saat kamu meminta umpan balik.
                     </p>
                   )}
                 </div>
@@ -2991,25 +2990,25 @@ export default function VoiceGuide() {
                     <button
                       onClick={resetGuide}
                       className="inline-flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shadow-2xs"
-                      title="Kembali ke Menu Utama atau letakkan balok di sel E5"
+                      title="Kembali ke Menu Utama atau letakkan Kartu Identitas di sel E1"
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
                       <span>Menu Utama</span>
-                      <span className="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[9px] font-black border border-slate-200">E5</span>
+                      <span className="font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[9px] font-black border border-slate-200">Kartu E1</span>
                     </button>
                     <button
                       onClick={() => triggerAITutor(latestCellsRef.current, latestStatusRef.current, true)}
                       disabled={isAILoading}
                       className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:from-emerald-700 hover:to-indigo-700 disabled:opacity-50 transition-colors shadow-2xs"
-                      title="Minta evaluasi bimbingan AI Tutor saat ini juga atau letakkan balok di sel A1"
+                      title="Minta evaluasi bimbingan AI Tutor saat ini juga atau letakkan Kartu Identitas di sel A5"
                     >
                       {isAILoading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Bot className="h-3 w-3" />}
                       <span>{isAILoading ? "Menganalisis..." : "Minta Bimbingan AI"}</span>
-                      <span className="font-mono bg-white/20 text-white px-1.5 py-0.5 rounded text-[9px] font-black">A1</span>
+                      <span className="font-mono bg-white/20 text-white px-1.5 py-0.5 rounded text-[9px] font-black">Kartu A5</span>
                     </button>
                   </div>
                   <p className="text-[10.5px] text-slate-500 text-center font-medium">
-                    Pintasan Taktil Mandiri: Letakkan balok di <span className="font-mono font-bold text-emerald-800">A1</span> (sudut kiri bawah) untuk bimbingan tutor, atau di <span className="font-mono font-bold text-slate-800">E5</span> (sudut kanan atas) untuk kembali ke menu.
+                    Pintasan Kartu Identitas: Letakkan kartu identitas di <span className="font-mono font-bold text-emerald-800">A5</span> untuk meminta bimbingan AI, atau di <span className="font-mono font-bold text-slate-800">E1</span> untuk kembali ke menu.
                   </p>
                 </div>
               </div>

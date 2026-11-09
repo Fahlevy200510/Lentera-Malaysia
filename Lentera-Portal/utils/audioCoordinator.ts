@@ -54,6 +54,46 @@ export function isSpeaking(): boolean {
   return Boolean(activeTimer || (window as any).__lenteraSpeaking || window.speechSynthesis.speaking);
 }
 
+function splitIntoSentenceChunks(text: string, maxLen = 170): string[] {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (!normalized) return [];
+  if (normalized.length <= maxLen) return [normalized];
+
+  // Pisahkan berdasarkan akhir kalimat (. ! ?) atau baris baru
+  const rawSentences = normalized.split(/(?<=[.!?])\s+/);
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const sentence of rawSentences) {
+    if (!sentence) continue;
+    if (sentence.length > maxLen) {
+      if (current) {
+        chunks.push(current.trim());
+        current = "";
+      }
+      // Jika satu kalimat sangat panjang, bagi pada koma atau titik koma
+      const subParts = sentence.split(/(?<=[,;:])\s+/);
+      let subCurrent = "";
+      for (const part of subParts) {
+        if ((subCurrent ? subCurrent.length + 1 + part.length : part.length) <= maxLen) {
+          subCurrent = subCurrent ? `${subCurrent} ${part}` : part;
+        } else {
+          if (subCurrent) chunks.push(subCurrent.trim());
+          subCurrent = part;
+        }
+      }
+      if (subCurrent) chunks.push(subCurrent.trim());
+    } else if ((current ? current.length + 1 + sentence.length : sentence.length) <= maxLen) {
+      current = current ? `${current} ${sentence}` : sentence;
+    } else {
+      if (current) chunks.push(current.trim());
+      current = sentence;
+    }
+  }
+  if (current) chunks.push(current.trim());
+  return chunks.length > 0 ? chunks : [normalized];
+}
+
 export function speakNarration(text: string, options: SpeakOptions = {}): void {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
     options.onEnd?.();
@@ -92,19 +132,22 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
     activeTimer = null;
     try {
       const phoneticText = normalizeIndonesianPhonetics(cleanText);
-      const utterance = new SpeechSynthesisUtterance(phoneticText);
+      const chunks = splitIntoSentenceChunks(phoneticText, 170);
+      if (chunks.length === 0) {
+        (window as any).__lenteraSpeaking = false;
+        options.onEnd?.();
+        return;
+      }
 
       const voices = synth.getVoices();
       const idVoice = voices.find(
         (v) => v.lang.toLowerCase().startsWith("id") || v.name.toLowerCase().includes("indonesia")
       );
-      if (idVoice) utterance.voice = idVoice;
-      utterance.lang = idVoice ? idVoice.lang : "id-ID";
-      utterance.rate = options.rate ?? getSavedSpeechRate();
-      utterance.pitch = options.pitch ?? 1.02;
+      const targetRate = options.rate ?? getSavedSpeechRate();
+      const targetPitch = options.pitch ?? 1.02;
 
       let hasEnded = false;
-      const finish = (wasCanceled = false) => {
+      const finishAll = (wasCanceled = false) => {
         if (hasEnded) return;
         hasEnded = true;
         if (mySeq !== currentSpeechSeq) return;
@@ -122,47 +165,54 @@ export function speakNarration(text: string, options: SpeakOptions = {}): void {
         }
       };
 
-      utterance.onstart = () => {
-        if (mySeq === currentSpeechSeq) {
-          (window as any).__lenteraSpeaking = true;
-        }
-      };
-
-      utterance.onend = () => finish(false);
-      utterance.onerror = (err) => {
-        const errType = (err as any)?.error;
-        if (errType === "canceled" || errType === "interrupted") {
-          finish(true);
+      const speakChunkAt = (idx: number) => {
+        if (mySeq !== currentSpeechSeq || hasEnded) return;
+        if (idx >= chunks.length) {
+          finishAll(false);
           return;
         }
-        console.warn("[audioCoordinator] Speech error:", err);
-        finish(false);
-      };
 
-      (window as any).__lenteraActiveUtterance = utterance;
+        const utterance = new SpeechSynthesisUtterance(chunks[idx]);
+        if (idVoice) utterance.voice = idVoice;
+        utterance.lang = idVoice ? idVoice.lang : "id-ID";
+        utterance.rate = targetRate;
+        utterance.pitch = targetPitch;
 
-      // Keepalive khusus voice network/remote di Chrome agar narasi >15s tidak terputus
-      if (idVoice && idVoice.localService === false) {
-        keepAliveTimer = setInterval(() => {
-          if (mySeq !== currentSpeechSeq) {
-            if (keepAliveTimer) {
-              clearInterval(keepAliveTimer);
-              keepAliveTimer = null;
-            }
+        utterance.onstart = () => {
+          if (mySeq === currentSpeechSeq) {
+            (window as any).__lenteraSpeaking = true;
+          }
+        };
+
+        utterance.onend = () => {
+          if (mySeq !== currentSpeechSeq || hasEnded) return;
+          if (idx + 1 < chunks.length) {
+            speakChunkAt(idx + 1);
+          } else {
+            finishAll(false);
+          }
+        };
+
+        utterance.onerror = (err) => {
+          const errType = (err as any)?.error;
+          if (errType === "canceled" || errType === "interrupted") {
+            finishAll(true);
             return;
           }
-          if (!hasEnded && synth.speaking) {
-            synth.pause();
-            synth.resume();
-          } else if (keepAliveTimer) {
-            clearInterval(keepAliveTimer);
-            keepAliveTimer = null;
+          console.warn("[audioCoordinator] Speech chunk error:", err);
+          if (mySeq === currentSpeechSeq && !hasEnded && idx + 1 < chunks.length) {
+            speakChunkAt(idx + 1);
+          } else {
+            finishAll(false);
           }
-        }, 12000);
-      }
+        };
 
-      if (synth.paused) synth.resume();
-      synth.speak(utterance);
+        (window as any).__lenteraActiveUtterance = utterance;
+        if (synth.paused) synth.resume();
+        synth.speak(utterance);
+      };
+
+      speakChunkAt(0);
     } catch (e) {
       console.error("[audioCoordinator] speak failed:", e);
       if (mySeq !== currentSpeechSeq) return;

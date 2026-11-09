@@ -31,7 +31,7 @@ export function normalizeIndonesianPhonetics(text: string): string {
     .replace(/\bAI\b/g, "A-I")
     .replace(/\bA\.I\.\b/g, "A-I")
     .replace(/\bLED\b/g, "el-e-de")
-    .replace(/\bXP\b/g, "ekspe")
+    .replace(/\bXP\b/gi, "eks-pi")
     .replace(/\bWiFi\b/gi, "Wai-Fai")
     .replace(/\bDashboard\b/gi, "Dasbor")
     .replace(/\bLive\b/g, "Laif")

@@ -98,14 +98,14 @@ class GridState:
                 
                 # Buat event sederhana dulu
                 if confirmed_state is None:
-                    # Supress 'removed' narration for switch to avoid double talk when they are just turning it on
                     was_switch = self.cell_history[cell_name] and self.cell_history[cell_name].get("component") == "switch"
+                    evt = {
+                        "type": "component_removed",
+                        "cell": cell_name,
+                    }
                     if not was_switch:
-                        events.append({
-                            "type": "component_removed",
-                            "cell": cell_name,
-                            "narration": f"Komponen di {cell_name} diangkat."
-                        })
+                        evt["narration"] = f"Komponen di {cell_name} diangkat."
+                    events.append(evt)
                 else:
                     comp = confirmed_state["component"]
                     rot = confirmed_state["rotation"]
