@@ -13,8 +13,8 @@ interface StudentReportModalProps {
 }
 
 export default function StudentReportModal({ isOpen, onClose }: StudentReportModalProps) {
-  const student: StudentProfile = getActiveStudent();
-  const progress: StudentProgress = getStudentProgress();
+  const [student, setStudent] = useState<StudentProfile>(() => getActiveStudent());
+  const [progress, setProgress] = useState<StudentProgress>(() => getStudentProgress());
 
   const [isSpeakingReport, setIsSpeakingReport] = useState(false);
   const [isSpeakingNotes, setIsSpeakingNotes] = useState(false);
@@ -26,10 +26,28 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
   });
 
   useEffect(() => {
+    const syncStudent = () => {
+      const currentStudent = getActiveStudent();
+      const currentProgress = getStudentProgress(currentStudent.id);
+      setStudent(currentStudent);
+      setProgress(currentProgress);
+    };
+    window.addEventListener("lentera-active-student-update", syncStudent);
+    window.addEventListener("lentera-progress-update", syncStudent);
+    return () => {
+      window.removeEventListener("lentera-active-student-update", syncStudent);
+      window.removeEventListener("lentera-progress-update", syncStudent);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isOpen) return;
 
     const currentStudent = getActiveStudent();
-    const currentProgress = getStudentProgress();
+    const currentProgress = getStudentProgress(currentStudent.id);
+    setStudent(currentStudent);
+    setProgress(currentProgress);
+    setAiEngineLabel(null);
     setTeacherNotes(
       `Ananda ${currentStudent.name} menunjukkan perkembangan kemandirian taktil yang sangat positif. Siswa membuktikan kepekaan rabaan yang konsisten dalam mengidentifikasi simbol timbul dan menyusun komponen kelistrikan secara mandiri.\n\nUntuk langkah belajar selanjutnya, disarankan penguatan bertahap pada konsep percabangan sirkuit paralel menggunakan kabel T dan analogi aliran arus. Berikan ruang latihan taktil mandiri sebelum menguji rangkaian secara langsung.\n\nSinergi antara guru dan orang tua dalam memberikan apresiasi verbal terbukti efektif meningkatkan kepercayaan diri ananda dalam bereksperimen.`
     );

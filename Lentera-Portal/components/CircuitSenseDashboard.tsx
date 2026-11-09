@@ -8,6 +8,7 @@ import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
 import { getActiveLenteraEndpoint, resolveEndpoints, markTunnelDead } from "@/components/aruco/ArUcoDetector";
 import StudentReportModal from "@/components/StudentReportModal";
+import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
   Battery, Cable, Lightbulb, ToggleRight, Bell, ChevronRight, Play,
@@ -253,9 +254,11 @@ function StudentHome() {
   useEffect(() => {
     const handleUpdate = () => setProgress(getStudentProgress());
     window.addEventListener("lentera-progress-update", handleUpdate);
+    window.addEventListener("lentera-active-student-update", handleUpdate);
     window.addEventListener("storage", handleUpdate);
     return () => {
       window.removeEventListener("lentera-progress-update", handleUpdate);
+      window.removeEventListener("lentera-active-student-update", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };
   }, []);
@@ -600,11 +603,11 @@ const skillRadar = [
   { skill: "Arus", value: 54 }, { skill: "Seri", value: 63 }, { skill: "Paralel", value: 38 },
 ];
 
-interface Student { name: string; level: string; mastery: number; status: [string, string]; }
+interface Student { id?: string; name: string; level: string; mastery: number; status: [string, string]; }
 const students: Student[] = [
-  { name: "Via", level: "Insinyur", mastery: 92, status: ["blue", "Siap naik level"] },
-  { name: "Amira", level: "Teknisi", mastery: 75, status: ["green", "Sesuai target"] },
-  { name: "Ajib", level: "Insinyur", mastery: 85, status: ["blue", "Siap naik level"] },
+  { id: "via", name: "Via", level: "Insinyur", mastery: 92, status: ["blue", "Siap naik level"] },
+  { id: "amira", name: "Amira", level: "Teknisi", mastery: 75, status: ["green", "Sesuai target"] },
+  { id: "ajib", name: "Ajib", level: "Insinyur", mastery: 85, status: ["blue", "Siap naik level"] },
   { name: "Lina W.", level: "Teknisi", mastery: 72, status: ["green", "Sesuai target"] },
   { name: "Kai R.", level: "Teknisi", mastery: 64, status: ["green", "Sesuai target"] },
   { name: "Bagas T.", level: "Penjelajah", mastery: 38, status: ["warn", "Perlu bantuan"] },
@@ -629,7 +632,37 @@ const tStats: Stat[] = [
 function TeacherOverview() {
   const [showAllStudents, setShowAllStudents] = useState(false);
   const [studentQuery, setStudentQuery] = useState("");
-  const filteredStudents = students.filter((st) =>
+  const [, setRefreshTick] = useState(0);
+
+  useEffect(() => {
+    const onUpdate = () => setRefreshTick((t) => t + 1);
+    window.addEventListener("lentera-progress-update", onUpdate);
+    window.addEventListener("lentera-active-student-update", onUpdate);
+    window.addEventListener("storage", onUpdate);
+    return () => {
+      window.removeEventListener("lentera-progress-update", onUpdate);
+      window.removeEventListener("lentera-active-student-update", onUpdate);
+      window.removeEventListener("storage", onUpdate);
+    };
+  }, []);
+
+  const dynamicStudents = students.map((st) => {
+    if (!st.id) return st;
+    const prog = getStudentProgress(st.id);
+    const completedMods = [
+      prog.modules.component_recognition,
+      prog.modules.component_quiz,
+      prog.modules.series_circuit,
+      prog.modules.parallel_circuit,
+      prog.modules.circuit_troubleshoot,
+    ].filter(Boolean).length;
+    const calcMastery = Math.min(100, Math.max(st.mastery, Math.round((prog.xp / 1000) * 85 + completedMods * 3)));
+    const calcLevel = prog.xp >= 1000 ? "Insinyur" : prog.xp >= 500 ? "Teknisi" : "Penjelajah";
+    const calcStatus: [string, string] = calcMastery >= 80 ? ["blue", "Siap naik level"] : calcMastery >= 55 ? ["green", "Sesuai target"] : ["warn", "Perlu bantuan"];
+    return { ...st, level: calcLevel, mastery: calcMastery, status: calcStatus };
+  });
+
+  const filteredStudents = dynamicStudents.filter((st) =>
     st.name.toLowerCase().includes(studentQuery.toLowerCase()) ||
     st.level.toLowerCase().includes(studentQuery.toLowerCase()) ||
     st.status[1].toLowerCase().includes(studentQuery.toLowerCase())
@@ -914,12 +947,15 @@ function TeacherOverview() {
         </div>
         <div style={{ display: "grid", gap: 10 }}>
           {filteredStudents.slice(0, showAllStudents ? filteredStudents.length : 5).map((st) => (
-            <div key={st.name} className="navitem" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 2fr auto", gap: 14, alignItems: "center", padding: "12px 14px", borderRadius: 16, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(139,92,246,0.08)" }}>
+            <div key={st.name} className="navitem" style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 1.8fr auto auto", gap: 12, alignItems: "center", padding: "12px 14px", borderRadius: 16, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(139,92,246,0.08)" }}>
               <div className="flex items-center" style={{ gap: 11 }}>
                 <div style={{ width: 38, height: 38, borderRadius: 12, background: C.primarySoft, display: "grid", placeItems: "center", fontWeight: 800, color: C.primaryDeep, fontFamily: HEAD, fontSize: 14 }}>
                   {st.name[0]}
                 </div>
-                <span style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{st.name}</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{st.name}</div>
+                  {st.id && <div style={{ fontSize: 10.5, color: C.primaryDeep, fontWeight: 700 }}>Kartu Siswa Aktif</div>}
+                </div>
               </div>
               <span style={{ fontSize: 13, color: C.textSoft, fontWeight: 600 }}>{st.level}</span>
               <div className="flex items-center" style={{ gap: 10 }}>
@@ -927,6 +963,34 @@ function TeacherOverview() {
                 <span style={{ fontSize: 13, fontWeight: 800, color: C.text, width: 40, textAlign: "right" }}>{st.mastery}%</span>
               </div>
               <Pill tone={st.status[0]}>{st.status[1]}</Pill>
+              <button
+                onClick={() => {
+                  if (st.id) {
+                    const target = PRESET_STUDENTS.find((p) => p.id === st.id);
+                    if (target) setActiveStudent(target);
+                  }
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("lentera-open-report"));
+                  }
+                }}
+                title={`Buka Rapor Evaluasi AI untuk ${st.name}`}
+                style={{
+                  background: "rgba(16,185,129,0.12)",
+                  color: "#059669",
+                  border: "1px solid rgba(16,185,129,0.28)",
+                  padding: "7px 12px",
+                  borderRadius: 99,
+                  fontWeight: 800,
+                  fontSize: 11.5,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <FileText size={13} /> Rapor AI
+              </button>
             </div>
           ))}
         </div>
@@ -1407,9 +1471,22 @@ function TeacherHandbook() {
               </div>
             </div>
           </div>
-          <button onClick={() => window.print()} style={{ background: "#fff", color: C.primaryDeep, border: "none", padding: "11px 18px", borderRadius: 99, fontWeight: 800, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <Printer size={16} /> Cetak / Unduh
-          </button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              onClick={() => {
+                speakNarration(
+                  `Buku Panduan Guru, bagian ${active + 1} dari ${handbookSections.length}: ${section.title}. ${section.summary} Poin utama: ${section.points.join(" ")} Tips mengajar: ${section.tip}`,
+                  { tag: "handbook-audio", rate: 0.94 }
+                );
+              }}
+              style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", padding: "11px 18px", borderRadius: 99, fontWeight: 800, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0, cursor: "pointer" }}
+            >
+              <Volume2 size={16} /> Dengarkan Materi Ini
+            </button>
+            <button onClick={() => window.print()} style={{ background: "#fff", color: C.primaryDeep, border: "none", padding: "11px 18px", borderRadius: 99, fontWeight: 800, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0, cursor: "pointer" }}>
+              <Printer size={16} /> Cetak / Unduh
+            </button>
+          </div>
         </div>
       </Card>
 
@@ -1727,8 +1804,9 @@ function Sidebar({ view, setView, role, onLogout }: ShellProps) {
   const homeLabel = role === "student" ? "Dashboard Saya" : role === "parent" ? "Progres Anak" : "Ringkasan";
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
     { id: "home", label: homeLabel, icon: LayoutDashboard },
-    ...(role === "teacher" ? [{ id: "handbook", label: "Buku Panduan Guru", icon: BookOpen }] : []),
-    { id: "panduan", label: "Panduan & Modul Ajar", icon: BookOpen, href: "/panduan" },
+    { id: "teacher-report", label: "Laporan & Analitik Guru", icon: GraduationCap },
+    { id: "handbook", label: "Buku Panduan Guru", icon: BookOpen },
+    { id: "panduan", label: "Panduan & Modul Ajar", icon: FileText, href: "/panduan" },
     { id: "lab", label: "Lentera Lab", icon: ScanEye, href: "/aruco" },
   ];
   return (
@@ -1776,9 +1854,10 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const nav: { id: string; label: string; icon: LucideIcon; href?: string }[] = [
-    { id: "home", label: "Beranda", icon: LayoutDashboard },
-    ...(role === "teacher" ? [{ id: "handbook", label: "Panduan Guru", icon: BookOpen }] : []),
-    { id: "panduan", label: "Panduan & Modul", icon: BookOpen, href: "/panduan" },
+    { id: "home", label: "Siswa", icon: LayoutDashboard },
+    { id: "teacher-report", label: "Laporan Guru", icon: GraduationCap },
+    { id: "handbook", label: "Panduan", icon: BookOpen },
+    { id: "panduan", label: "Modul PDF", icon: FileText, href: "/panduan" },
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
   const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Guru";
@@ -1828,6 +1907,9 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
 
       {/* right */}
       <div className="flex items-center" style={{ gap: 12 }}>
+        <div className="hidden sm:block">
+          <StudentProfileSwitcher />
+        </div>
         <div style={{ position: "relative" }}>
           <button
             aria-label="Notifikasi"
@@ -1951,7 +2033,7 @@ export default function CircuitSenseDashboard() {
         if (session?.name && session?.role) {
           setName(session.name);
           setRole(session.role);
-          setView("home");
+          setView(session.role === "teacher" ? "teacher-report" : "home");
           setAuthed(true);
         }
       } else {
@@ -1976,6 +2058,16 @@ export default function CircuitSenseDashboard() {
     } finally {
       setReady(true);
     }
+  }, []);
+
+  // Sinkronkan nama siswa jika diganti lewat StudentProfileSwitcher atau kartu di C5/A1
+  useEffect(() => {
+    const handleStudentSwitch = () => {
+      const active = getActiveStudent();
+      if (active) setName(active.name);
+    };
+    window.addEventListener("lentera-active-student-update", handleStudentSwitch);
+    return () => window.removeEventListener("lentera-active-student-update", handleStudentSwitch);
   }, []);
 
   // Narasi sambutan selamat datang di LENTERA Learn (Adaptif: Guru vs Siswa)
@@ -2008,9 +2100,11 @@ export default function CircuitSenseDashboard() {
   }, [authed, role]);
 
   // Tangible Board Navigation & Report Trigger di LENTERA Learn
-  // - Balok di sel A1 -> Bacakan Laporan Pembelajaran Lengkap
-  // - Balok komponen sirkuit (di luar A1) -> kembali ke /aruco
-  // - Kartu identitas siswa di E5 -> logout ke /
+  // - Balok di sel A1 -> Buka Progres Siswa & Bacakan Laporan Siswa Lengkap (jika kartu siswa ditaruh di A1, ganti ke siswa tsb)
+  // - Balok di sel E1 -> Buka Laporan & Analitik Guru & Bacakan Analisis Kelas Lengkap (Ramah Guru Tunanetra!)
+  // - Balok di sel C5 -> Buka & Bacakan Rapor Evaluasi AI (jika kartu siswa ditaruh di C5, ganti ke siswa tsb)
+  // - Kartu identitas di E5 -> Logout ke /
+  // - Balok komponen sirkuit (di luar A1, E1, C5, E5) -> Kembali ke /aruco
   useEffect(() => {
     if (!authed) return;
 
@@ -2022,11 +2116,21 @@ export default function CircuitSenseDashboard() {
     const mountTime = Date.now();
     let initialSnapshotCells: Record<string, string> | null = null;
     let hasTriggeredA1 = false;
+    let hasTriggeredE1 = false;
     let hasTriggeredC5 = false;
 
     const CIRCUIT_COMPONENTS = new Set([
       "battery", "lamp", "switch", "straight_cable", "l_cable", "t_cable", "resistor"
     ]);
+
+    const STUDENT_TOKEN_MAP: Record<string, string> = {
+      "35": "via",
+      "student_via": "via",
+      "36": "amira",
+      "student_amira": "amira",
+      "37": "ajib",
+      "student_ajib": "ajib",
+    };
 
     const scheduleReconnect = () => {
       if (cancelled || isRedirecting) return;
@@ -2149,57 +2253,72 @@ export default function CircuitSenseDashboard() {
 
               const cellA1 = cells["A1"] as { component?: string; id?: number } | undefined;
               const isA1Unchanged = Boolean(initialSnapshotCells["A1"]);
-              const isA1Student = Boolean(
-                cellA1 &&
-                (String(cellA1.component || "").startsWith("student_") || [35, 36, 37].includes(Number(cellA1.id)))
-              );
 
-              // B. Balok diletakkan di sel A1 -> Bacakan Data Pembelajaran Lengkap! (Edge-triggered)
-              if (cellA1 && !isA1Student && !isA1Unchanged) {
+              // B1. Balok diletakkan di sel A1 -> Buka Progres Siswa & Bacakan Data Pembelajaran Lengkap!
+              if (cellA1 && !isA1Unchanged) {
                 if (!hasTriggeredA1) {
                   hasTriggeredA1 = true;
+                  const a1Id = String(cellA1.id ?? "");
+                  const a1Comp = String(cellA1.component || "");
+                  const matchedA1StudentId = STUDENT_TOKEN_MAP[a1Id] || STUDENT_TOKEN_MAP[a1Comp];
+                  if (matchedA1StudentId) {
+                    const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedA1StudentId);
+                    if (targetStudent) {
+                      setActiveStudent(targetStudent);
+                      setName(targetStudent.name);
+                    }
+                  }
+
+                  setShowReportModal(false);
+                  setView("home");
                   cancelSpeech();
                   playEarcon("step");
-                  if (role === "teacher") {
-                    const teacherNar = buildTeacherClassNarration(name || "Guru");
-                    speakNarration(teacherNar.fullAnalysis, {
-                      tag: "teacher-full-report",
-                      rate: 0.94,
-                      pitch: 1.02,
-                    });
-                  } else {
-                    const active = getActiveStudent();
-                    const prog = getStudentProgress();
-                    const nar = buildStudentLearningNarration(active, prog);
-                    speakNarration(nar.fullReport, {
-                      tag: "full-report",
-                      rate: 0.94,
-                      pitch: 1.02,
-                    });
-                  }
+                  const active = getActiveStudent();
+                  const prog = getStudentProgress(active.id);
+                  const nar = buildStudentLearningNarration(active, prog);
+                  speakNarration(nar.fullReport, {
+                    tag: "full-report",
+                    rate: 0.94,
+                    pitch: 1.02,
+                  });
                 }
                 return;
               } else if (!cellA1) {
                 hasTriggeredA1 = false;
               }
 
+              const cellE1 = cells["E1"] as { component?: string; id?: number } | undefined;
+              const isE1Unchanged = Boolean(initialSnapshotCells["E1"]);
+
+              // B2. Balok diletakkan di sel E1 (Pojok Kanan Depan) -> Buka Laporan & Analitik Guru + Bacakan Analisis Kelas Lengkap!
+              if (cellE1 && !isE1Unchanged) {
+                if (!hasTriggeredE1) {
+                  hasTriggeredE1 = true;
+                  setShowReportModal(false);
+                  setView("teacher-report");
+                  cancelSpeech();
+                  playEarcon("step");
+                  const teacherNar = buildTeacherClassNarration("Bapak atau Ibu Guru");
+                  speakNarration(teacherNar.fullAnalysis, {
+                    tag: "teacher-full-report",
+                    rate: 0.94,
+                    pitch: 1.02,
+                  });
+                }
+                return;
+              } else if (!cellE1) {
+                hasTriggeredE1 = false;
+              }
+
               const cellC5 = cells["C5"] as { component?: string; id?: number } | undefined;
               const isC5Unchanged = Boolean(initialSnapshotCells["C5"]);
-              // Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis) (Edge-triggered)
+              // B3. Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis) (Edge-triggered)
               if (cellC5 && !isC5Unchanged) {
                 if (!hasTriggeredC5) {
                   hasTriggeredC5 = true;
-                  const c5Id = Number(cellC5.id);
+                  const c5Id = String(cellC5.id ?? "");
                   const c5Comp = String(cellC5.component || "");
-                  const studentTokenMap: Record<string, string> = {
-                    "35": "via",
-                    "student_via": "via",
-                    "36": "amira",
-                    "student_amira": "amira",
-                    "37": "ajib",
-                    "student_ajib": "ajib",
-                  };
-                  const matchedStudentId = studentTokenMap[String(c5Id)] || studentTokenMap[c5Comp];
+                  const matchedStudentId = STUDENT_TOKEN_MAP[c5Id] || STUDENT_TOKEN_MAP[c5Comp];
                   if (matchedStudentId) {
                     const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedStudentId);
                     if (targetStudent) {
@@ -2217,9 +2336,9 @@ export default function CircuitSenseDashboard() {
                 hasTriggeredC5 = false;
               }
 
-              // C. Balok komponen sirkuit BARU diletakkan (di luar sel A1 dan C5) -> Kembali ke LENTERA Lab (/aruco)
-              const hasNewCircuitBlockOutsideA1 = Object.entries(cells).some(([cellKey, c]) => {
-                if (!c || cellKey === "A1" || cellKey === "C5" || cellKey === "E5") return false;
+              // C. Balok komponen sirkuit BARU diletakkan (di luar sel A1, E1, C5, E5) -> Kembali ke LENTERA Lab (/aruco)
+              const hasNewCircuitBlockOutsideShortcuts = Object.entries(cells).some(([cellKey, c]) => {
+                if (!c || cellKey === "A1" || cellKey === "E1" || cellKey === "C5" || cellKey === "E5") return false;
                 const obj = c as { component?: string; id?: number };
                 const comp = String(obj.component || "");
                 const id = Number(obj.id);
@@ -2228,7 +2347,7 @@ export default function CircuitSenseDashboard() {
                 return CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
               });
 
-              if (hasNewCircuitBlockOutsideA1) {
+              if (hasNewCircuitBlockOutsideShortcuts) {
                 isRedirecting = true;
                 cancelSpeech();
                 playEarcon("click");
@@ -2338,9 +2457,12 @@ export default function CircuitSenseDashboard() {
     );
   }
 
-  const firstName = name ? name.split(" ")[0] : role === "student" ? "Kai" : role === "parent" ? "Bpk/Ibu" : "Guru";
+  const firstName = name ? name.split(" ")[0] : role === "student" ? "Via" : role === "parent" ? "Bpk/Ibu" : "Guru";
+  const isTeacherView = view === "teacher-report" || (view === "home" && role === "teacher");
   const heading = view === "handbook"
     ? "Buku Panduan Guru"
+    : isTeacherView
+    ? "Laporan & Analitik Kelas"
     : role === "student"
     ? `Halo, ${firstName}`
     : role === "parent"
@@ -2348,6 +2470,8 @@ export default function CircuitSenseDashboard() {
     : `Selamat datang kembali, ${firstName}`;
   const subheading = view === "handbook"
     ? "Panduan mengajar materi rangkaian listrik sederhana untuk siswa tunanetra dan low vision."
+    : isTeacherView
+    ? "Evaluasi perkembangan Kelas 11 SMA, diagnostik papan AI, dan pencetakan Rapor Siswa."
     : role === "student"
     ? "Kamu tinggal satu pelajaran lagi untuk meraih lencana berikutnya."
     : role === "parent"
@@ -2374,8 +2498,8 @@ export default function CircuitSenseDashboard() {
                 <div className="flex items-center" style={{ gap: 8, flexWrap: "wrap" }}>
                   <button
                     onClick={() => {
-                      if (role === "teacher") {
-                        const tNar = buildTeacherClassNarration(name || "Guru");
+                      if (isTeacherView) {
+                        const tNar = buildTeacherClassNarration("Bapak atau Ibu Guru");
                         speakNarration(tNar.fullAnalysis, { tag: "teacher-full-report", rate: 0.94 });
                       } else {
                         const active = getActiveStudent();
@@ -2401,12 +2525,14 @@ export default function CircuitSenseDashboard() {
                     title="Dengarkan seluruh laporan progres melalui suara"
                   >
                     <Volume2 size={14} />
-                    <span>{role === "teacher" ? "Dengar Analisis Kelas Lengkap" : "Dengar Data Progres Lengkap"}</span>
+                    <span>{isTeacherView ? "Dengar Analisis Kelas Lengkap" : "Dengar Data Progres Lengkap"}</span>
                   </button>
 
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 99, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.18)", fontSize: 12, color: C.textSoft }} title="A1: Narasi Laporan Suara | C5: Buka Rapor AI | E5: Kartu Siswa Logout | Sel Lain: Buka Lab Sirkuit">
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 99, background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.18)", fontSize: 12, color: C.textSoft }} title="A1: Progres Siswa | E1: Laporan Analitik Guru | C5: Buka Rapor AI | E5: Kartu Siswa Logout | Sel Lain: Buka Lab Sirkuit">
                     <span style={{ fontWeight: 800, color: C.primaryDeep }}>💡 Pintasan Papan:</span>
-                    <span><strong style={{ color: C.text }}>A1</strong> {role === "teacher" ? "Analisis Kelas" : "Laporan Suara"}</span>
+                    <span><strong style={{ color: C.text }}>A1</strong> Progres Siswa</span>
+                    <span>•</span>
+                    <span><strong style={{ color: C.text }}>E1</strong> Laporan Guru</span>
                     <span>•</span>
                     <span><strong style={{ color: C.text }}>C5</strong> Rapor AI</span>
                     <span>•</span>
@@ -2417,7 +2543,7 @@ export default function CircuitSenseDashboard() {
                 </div>
               </div>
 
-              {view === "handbook" ? <TeacherHandbook /> : role === "student" ? <StudentHome /> : role === "parent" ? <ParentDashboard /> : <TeacherOverview />}
+              {view === "handbook" ? <TeacherHandbook /> : view === "teacher-report" ? <TeacherOverview /> : role === "student" ? <StudentHome /> : role === "parent" ? <ParentDashboard /> : <TeacherOverview />}
             </div>
           </main>
         </div>

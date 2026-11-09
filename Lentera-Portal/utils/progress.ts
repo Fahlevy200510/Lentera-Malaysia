@@ -386,10 +386,10 @@ export function buildStudentLearningNarration(
   }
 
   // Short overview on enter
-  const shortOverview = `Selamat datang di Dashboard LENTERA Learn, ${name}! Kamu berada di ${grade}, berstatus ${levelTitle} dengan perolehan ${xp} XP. Pelajaran fokusmu hari ini adalah ${lessonTitle}. Letakkan balok di sel A1 untuk mendengarkan rincian lengkap capaian belajarmu, atau letakkan balok komponen di papan fisik untuk kembali merakit di LENTERA Lab. Letakkan kartu identitasmu di sel keluar E5 untuk mengakhiri sesi.`;
+  const shortOverview = `Selamat datang di Dashboard LENTERA Learn, ${name}! Kamu berada di ${grade}, berstatus ${levelTitle} dengan perolehan ${xp} XP. Pelajaran fokusmu hari ini adalah ${lessonTitle}. Letakkan balok di sel A1 untuk mendengarkan rincian progres belajarmu, sel E1 bagi Guru untuk membuka dan mendengarkan Laporan Analitik Kelas, sel C5 untuk membuka Rapor Evaluasi AI, atau sel E5 untuk mengakhiri sesi.`;
 
   // Full comprehensive report
-  const fullReport = `Laporan data pembelajaran lengkap untuk ${name}, ${grade}. Pertama, ringkasan tingkatan: Kamu telah mengumpulkan ${xp} XP dan berada di ${levelTitle}, dengan progres ${xpPercent} persen menuju tingkatan berikutnya. Kedua, capaian modul: ${modulesNarration} Ketiga, peta penguasaan keterampilan: ${skillsNarration} Keempat, penghargaan dan pencapaian: ${achievementsNarration} Kelima, rekomendasi belajar hari ini adalah ${lessonTitle}: ${lessonDesc}. Tetap semangat belajar bersama LENTERA! Letakkan balok di papan untuk kembali merakit sirkuit di LENTERA Lab, atau letakkan kartu identitas di sel E5 untuk mengakhiri sesi.`;
+  const fullReport = `Laporan data pembelajaran lengkap untuk ${name}, ${grade}. Pertama, ringkasan tingkatan: Kamu telah mengumpulkan ${xp} XP dan berada di ${levelTitle}, dengan progres ${xpPercent} persen menuju tingkatan berikutnya. Kedua, capaian modul: ${modulesNarration} Ketiga, peta penguasaan keterampilan: ${skillsNarration} Keempat, penghargaan dan pencapaian: ${achievementsNarration} Kelima, rekomendasi belajar hari ini adalah ${lessonTitle}: ${lessonDesc}. Letakkan balok di sel E1 jika Guru ingin mendengarkan Laporan Analitik Kelas, sel C5 untuk membuka Rapor Evaluasi AI, atau letakkan balok komponen di tengah papan untuk kembali merakit di LENTERA Lab.`;
 
   return {
     shortOverview,
@@ -410,7 +410,7 @@ export function buildTeacherClassNarration(teacherName: string = "Bapak atau Ibu
 
   const studentsNarration = `Laporan Capaian Individu Siswa: Tiga siswa teratas berstatus siap naik level, yaitu Via 92 persen, Ajib 85 persen, dan Amira 75 persen. Dua siswa sesuai target yaitu Lina 72 persen dan Kai 64 persen. Satu siswa memerlukan pendampingan khusus yaitu Bagas dengan nilai 38 persen.`;
 
-  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa Kelas 11 SMA, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Anda dapat menekan tombol Rapor Siswa untuk melihat detail grafik tiap anak dan mencetak dokumen PDF.`;
+  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa Kelas 11 SMA, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Untuk melihat dan mendengar Rapor Evaluasi AI per anak, letakkan kartu identitas siswa Via, Amira, atau Ajib di sel C5, atau letakkan balok di sel A1 untuk kembali ke tampilan Progres Siswa.`;
 
   return {
     briefing,
