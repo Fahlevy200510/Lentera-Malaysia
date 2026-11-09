@@ -35,11 +35,14 @@ export default function StudentAvatarBadge({
     normalizedAvatar === "amira" ||
     normalizedAvatar === "graduation-cap" ||
     normalizedName.includes("amira");
-  const isAjib =
+  const isLuthfi =
+    normalizedId === "luthfi" ||
     normalizedId === "ajib" ||
     avatar === "🧑" ||
+    normalizedAvatar === "luthfi" ||
     normalizedAvatar === "ajib" ||
     normalizedAvatar === "sparkles" ||
+    normalizedName.includes("luthfi") ||
     normalizedName.includes("ajib");
   const isGuest =
     normalizedId === "guest" ||
@@ -79,7 +82,7 @@ export default function StudentAvatarBadge({
       theme === "dark"
         ? "bg-violet-500/20 text-violet-300 border-violet-400/30"
         : "bg-[#EAE4FF] text-[#5840BA] border-[#735CDD]/25";
-  } else if (isAjib) {
+  } else if (isLuthfi) {
     IconComponent = Sparkles;
     colorClasses =
       theme === "dark"

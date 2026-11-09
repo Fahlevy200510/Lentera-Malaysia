@@ -50,7 +50,7 @@ export const DEFAULT_PROGRESS: StudentProgress = {
 export const PRESET_STUDENTS: StudentProfile[] = [
   { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" },
   { id: "amira", name: "Amira", grade: "Kelas 11 SMA", avatar: "amira" },
-  { id: "ajib", name: "Ajib", grade: "Kelas 11 SMA", avatar: "ajib" },
+  { id: "luthfi", name: "Luthfi", grade: "Kelas 11 SMA", avatar: "luthfi" },
   { id: "guest", name: "Tamu / Juri Eksplorasi", grade: "Pengamat", avatar: "guest" },
 ];
 
@@ -66,6 +66,12 @@ const PRESET_INITIAL_PROGRESS: Record<string, StudentProgress> = {
     skills: { battery: 3, cable: 2, switch: 2, flow: 2, series: 1, parallel: 0 },
     xp: 250,
     achievements: ["Percikan Terang"],
+  },
+  luthfi: {
+    modules: { component_recognition: true, series_circuit: false, parallel_circuit: false },
+    skills: { battery: 5, cable: 4, switch: 4, flow: 2, series: 2, parallel: 0 },
+    xp: 450,
+    achievements: ["Cahaya Pertama", "Percikan Terang"],
   },
   ajib: {
     modules: { component_recognition: true, series_circuit: false, parallel_circuit: false },
@@ -96,7 +102,7 @@ export function getStudentProfiles(): StudentProfile[] {
     if (Array.isArray(parsed) && parsed.length > 0) {
       // Auto-migrate jika masih ada profil mockup lama
       const hasOldProfiles = parsed.some(
-        (p: any) => p.id === "ahmad" || p.id === "siti" || p.id === "dimas"
+        (p: any) => p.id === "ahmad" || p.id === "siti" || p.id === "dimas" || p.id === "ajib"
       );
       if (hasOldProfiles) {
         localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(PRESET_STUDENTS));
@@ -119,6 +125,11 @@ export function getActiveStudent(): StudentProfile {
       return PRESET_STUDENTS[0];
     }
     const parsed = JSON.parse(raw);
+    if (parsed?.id === "ajib") {
+      const luthfiProfile = PRESET_STUDENTS[2];
+      localStorage.setItem(ACTIVE_STUDENT_KEY, JSON.stringify(luthfiProfile));
+      return luthfiProfile;
+    }
     if (
       !parsed?.id ||
       parsed.id === "ahmad" ||
@@ -408,9 +419,9 @@ export function buildTeacherClassNarration(teacherName: string = "Bapak atau Ibu
 
   const insightsNarration = `Wawasan Diagnostik Cerdas Guru: Pertama, peringatan perangkat fisik, 82 persen siswa salah meletakkan kabel di terminal kanan karena tekstur taktil yang terlalu samar. Kedua, miskonsepsi kutub baterai masih dialami 6 siswa pada konsep aliran arus. Ketiga, tiga siswa telah menguasai rangkaian seri dan siap membuka modul rangkaian paralel.`;
 
-  const studentsNarration = `Laporan Capaian Individu Siswa: Tiga siswa teratas berstatus siap naik level, yaitu Via 92 persen, Ajib 85 persen, dan Amira 75 persen. Dua siswa sesuai target yaitu Lina 72 persen dan Kai 64 persen. Satu siswa memerlukan pendampingan khusus yaitu Bagas dengan nilai 38 persen.`;
+  const studentsNarration = `Laporan Capaian Individu Siswa: Tiga siswa teratas berstatus siap naik level, yaitu Via 92 persen, Luthfi 85 persen, dan Amira 75 persen. Dua siswa sesuai target yaitu Lina 72 persen dan Kai 64 persen. Satu siswa memerlukan pendampingan khusus yaitu Bagas dengan nilai 38 persen.`;
 
-  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa Kelas 11 SMA, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Untuk melihat dan mendengar Rapor Evaluasi AI per anak, letakkan kartu identitas siswa Via, Amira, atau Ajib di sel C5, atau letakkan balok di sel A1 untuk kembali ke tampilan Progres Siswa.`;
+  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa Kelas 11 SMA, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Untuk melihat dan mendengar Rapor Evaluasi AI per anak, letakkan kartu identitas siswa Via, Amira, atau Luthfi di sel C5, atau letakkan balok di sel A1 untuk kembali ke tampilan Progres Siswa.`;
 
   return {
     briefing,

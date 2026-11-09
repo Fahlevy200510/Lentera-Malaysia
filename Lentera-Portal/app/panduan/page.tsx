@@ -88,7 +88,7 @@ const FEATURES: FeatureMapping[] = [
         name: "Sudut Kiri Depan (Progres Siswa)",
         component: "Balok Sirkuit Apa Saja / Kartu Siswa (ID 35–37)",
         arucoId: "ID 1 – 7 / ID 35 – 37",
-        role: "Membuka tab Progres Siswa dan memicu narasi audio capaian XP, level, bintang keterampilan tiap komponen, serta rekomendasi praktikum. Jika yang diletakkan adalah Kartu Siswa (Via/Amira/Ajib), profil siswa aktif otomatis berganti ke kartu tersebut.",
+        role: "Membuka tab Progres Siswa dan memicu narasi audio capaian XP, level, bintang keterampilan tiap komponen, serta rekomendasi praktikum. Jika yang diletakkan adalah Kartu Siswa (Via/Amira/Luthfi), profil siswa aktif otomatis berganti ke kartu tersebut.",
         tactileCue: "Slot pojok kiri paling dekat dengan tubuh pengguna.",
         badge: "Audio Progres Siswa",
         badgeColor: "#7C3AED",
@@ -108,7 +108,7 @@ const FEATURES: FeatureMapping[] = [
         name: "Tengah Belakang (Rapor Evaluasi AI & PDF)",
         component: "Balok Sirkuit Apa Saja / Kartu Siswa (ID 35–37)",
         arucoId: "ID 1 – 7 / ID 35 – 37",
-        role: "Membuka dan membacakan Rapor Hasil Belajar Siswa berbasis AI Pedagogis beserta rekomendasi guru dan fitur cetak PDF A4. Jika Guru meletakkan Kartu Siswa (Via/Amira/Ajib) di C5, sistem otomatis membuka rapor AI milik siswa tersebut.",
+        role: "Membuka dan membacakan Rapor Hasil Belajar Siswa berbasis AI Pedagogis beserta rekomendasi guru dan fitur cetak PDF A4. Jika Guru meletakkan Kartu Siswa (Via/Amira/Luthfi) di C5, sistem otomatis membuka rapor AI milik siswa tersebut.",
         tactileCue: "Slot kolom C (tengah) di baris 5 (paling atas/belakang).",
         badge: "Buka Rapor AI & PDF",
         badgeColor: "#059669",
@@ -151,7 +151,7 @@ const FEATURES: FeatureMapping[] = [
         step: 3,
         cell: "C5",
         text: "Lihat & Dengar Rapor Evaluasi AI (C5)",
-        note: "Letakkan balok atau kartu siswa (Via/Amira/Ajib) di sel C5 untuk membuka rapor AI siswa tersebut.",
+        note: "Letakkan balok atau kartu siswa (Via/Amira/Luthfi) di sel C5 untuk membuka rapor AI siswa tersebut.",
       },
       {
         step: 4,
@@ -171,13 +171,13 @@ const FEATURES: FeatureMapping[] = [
     summary:
       "Siswa tunanetra tidak perlu mengetik username atau password. Cukup sentuh dan letakkan kartu identitas taktil di atas papan fisik LENTERA.",
     audioGuide:
-      "Di Beranda utama LENTERA, Anda dapat masuk secara otomatis tanpa mengetik. Letakkan kartu identitas siswa (Via ID 35, Amira ID 36, atau Ajib ID 37) untuk memilih kecepatan suara dan masuk ke LENTERA Lab.",
+      "Di Beranda utama LENTERA, Anda dapat masuk secara otomatis tanpa mengetik. Letakkan kartu identitas siswa (Via ID 35, Amira ID 36, atau Luthfi ID 37) untuk memilih kecepatan suara dan masuk ke LENTERA Lab.",
     cells: {
       ANY: {
         cell: "A1..E5",
         name: "Sel Mana Saja di Papan 5×5",
         component: "Kartu Identitas Siswa (Token Taktil)",
-        arucoId: "ID 35 (Via), ID 36 (Amira), ID 37 (Ajib)",
+        arucoId: "ID 35 (Via), ID 36 (Amira), ID 37 (Luthfi)",
         role: "Mendeteksi identitas siswa secara otomatis, menyapa nama siswa dengan ramah, menawarkan pengaturan kecepatan suara di baris 2 (A2–E2), lalu mengarahkan ke LENTERA Lab (/aruco).",
         tactileCue: "Kartu berhuruf Braille timbul sesuai inisial nama siswa.",
         badge: "Auto-Login Siswa",
@@ -758,11 +758,11 @@ const ARUCO_MARKERS = [
   },
   {
     id: "ID 37",
-    name: "Kartu Siswa: Ajib",
+    name: "Kartu Siswa: Luthfi",
     category: "Token Identitas",
-    tactile: "Kartu datar dengan inisial Braille 'J' + label Kelas 11 SMA.",
+    tactile: "Kartu datar dengan inisial Braille 'L' + label Kelas 11 SMA.",
     rotation: "Bebas rotasi.",
-    note: "Memicu login otomatis dan rekam jejak keterampilan taktil untuk Ajib.",
+    note: "Memicu login otomatis dan rekam jejak keterampilan taktil untuk Luthfi.",
     color: "#2563EB",
     bg: "#EFF6FF",
     Icon: User,

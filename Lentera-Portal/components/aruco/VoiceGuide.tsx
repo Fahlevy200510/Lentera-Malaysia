@@ -547,7 +547,7 @@ const TROUBLESHOOT_STEPS: StepDef[] = [
 const COMPONENT_LABEL: Record<string, string> = {
   battery: "baterai", straight_cable: "kabel lurus", l_cable: "kabel L", t_cable: "kabel T",
   lamp: "lampu", resistor: "resistor", switch: "saklar",
-  student_via: "kartu identitas Via", student_amira: "kartu identitas Amira", student_ajib: "kartu identitas Ajib",
+  student_via: "kartu identitas Via", student_amira: "kartu identitas Amira", student_luthfi: "kartu identitas Luthfi", student_ajib: "kartu identitas Luthfi",
 };
 
 export const isStudentToken = (cell: any): boolean => {
@@ -564,7 +564,7 @@ export const getStudentNameFromToken = (cell: any): string => {
   if (comp.startsWith("teacher") || id === 38) return "Guru";
   if (comp === "student_via" || id === 35) return "Via";
   if (comp === "student_amira" || id === 36) return "Amira";
-  if (comp === "student_ajib" || id === 37) return "Ajib";
+  if (comp === "student_luthfi" || comp === "student_ajib" || id === 37) return "Luthfi";
   const active = getActiveStudent();
   return active?.name || "Siswa";
 };

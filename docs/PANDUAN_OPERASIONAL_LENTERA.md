@@ -49,7 +49,7 @@
 * **Klik sembarang area layar sekali** agar browser mengaktifkan suara narator.
 
 ### Langkah 5: Login Mandiri & Pengaturan Kecepatan Suara (Baris 2)
-* Siswa meletakkan **Blok Identitas pribadinya** (ID 35: Via, ID 36: Amira, atau ID 37: Ajib) di sel mana saja pada papan grid (misal $A1$).
+* Siswa meletakkan **Blok Identitas pribadinya** (ID 35: Via, ID 36: Amira, atau ID 37: Luthfi) di sel mana saja pada papan grid (misal $A1$).
 * Sistem otomatis menyapa nama siswa dan mengumumkan kecepatan suara aktif saat ini.
 * **Pilihan Kecepatan Suara (Baris 2 $A2–E2$)**:
   * **Tetap memakai kecepatan saat ini**: Biarkan balok diam di tempatnya selama ~3.5 detik untuk langsung masuk ke lab.

@@ -104,7 +104,7 @@ Setiap balok dicetak 3D (*3D-printed PLA*) dengan ukuran modular presisi yang pa
 | **6 & 7**| Saklar (*Rotary Switch*)| Tuas putar dengan *detent* fisik | Pemutus/penghubung arus (0°=OFF, 90°=ON) |
 | **35** | Token Siswa: **Via** | Huruf timbul Braille "VIA" | Kartu identitas login & token speed slider |
 | **36** | Token Siswa: **Amira** | Huruf timbul Braille "AMIRA" | Kartu identitas login & token speed slider |
-| **37** | Token Siswa: **Ajib** | Huruf timbul Braille "AJIB" | Kartu identitas login & token speed slider |
+| **37** | Token Siswa: **Luthfi** | Huruf timbul Braille "LUTHFI" | Kartu identitas login & token speed slider |
 
 ### 3.3 Sistem Pencahayaan Internal (LED Strip USB DC 5V)
 * Menggantikan lampu LED titik konvensional dengan **LED Strip USB DC 5V (tipe SMD 2835/3528, Cool White 6000K–6500K)** yang dipasang melingkar pada dinding samping dalam boks.

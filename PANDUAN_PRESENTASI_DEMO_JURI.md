@@ -42,10 +42,10 @@ Dokumen ini disusun sebagai panduan taktis tim LENTERA untuk menghadapi sesi pen
 > - **Operator:** Duduk di depan alat LENTERA, memperagakan peran "siswa tunanetra" dengan meraba balok sebelum ditaruh.
 
 ### Skenario 1: Login Mandiri Siswa & Tangible Speed Slider (Durasi: ~1 Menit)
-1. Operator mengambil balok identitas siswa (misal: ID Ajib / Via).
+1. Operator mengambil balok identitas siswa (misal: ID Luthfi / Via).
 2. Operator meraba balok, lalu meletakkannya di slot **A1** (atau sel mana saja).
 3. **Respon Alat:**  
-   - Suara AI menyapa: *"Selamat datang, Ajib! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode Normal. Jika ingin tetap menggunakan kecepatan ini, biarkan saja balokmu di tempatnya. Jika ingin mengganti kecepatan, geser balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal."*
+   - Suara AI menyapa: *"Selamat datang, Luthfi! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode Normal. Jika ingin tetap menggunakan kecepatan ini, biarkan saja balokmu di tempatnya. Jika ingin mengganti kecepatan, geser balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal."*
 4. **Momen Interaktif Pameran Inovasi:** Operator menggeser balok dari **A1** ke **E2 (Maksimal 4.0x)**.
    - Suara AI langsung bersuara super kilat 4.0x: *"Mode Maksimal aktif! Membuka LENTERA Lab."*
 5. **Poin untuk Juri:**
@@ -75,7 +75,7 @@ Dokumen ini disusun sebagai panduan taktis tim LENTERA untuk menghadapi sesi pen
 ### Skenario 4: Tampilan Web Portal Guru (Durasi: ~0.5 Menit)
 1. Tunjukkan layar laptop/tablet ke juri:  
    - Live stream status papan 5x5.
-   - Status pencapaian misi sirkuit Ajib tercentang hijau otomatis.
+   - Status pencapaian misi sirkuit Luthfi tercentang hijau otomatis.
    - Grafik riwayat kesalahan tercatat rapi untuk evaluasi guru.
 
 ---

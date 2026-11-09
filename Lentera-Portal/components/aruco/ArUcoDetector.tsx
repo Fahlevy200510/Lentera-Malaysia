@@ -616,7 +616,8 @@ export default function ArUcoDetector() {
                     resistor: "Resistor",
                     student_via: "Kartu Via",
                     student_amira: "Kartu Amira",
-                    student_ajib: "Kartu Ajib",
+                    student_luthfi: "Kartu Luthfi",
+                    student_ajib: "Kartu Luthfi",
                   };
                   const activeEntries = Object.entries(detections.cells || {}).filter(([, v]) => Boolean(v));
                   if (activeEntries.length === 0) {

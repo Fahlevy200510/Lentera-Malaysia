@@ -127,7 +127,7 @@ LENTERA menggunakan kamus marker OpenCV **`cv2.aruco.DICT_4X4_50`**. Stiker mark
 | **6 & 7**| Saklar (*Switch*) | Tuas geser saklar ON/OFF | 4 Sisi (Status ditentukan posisi tuas) |
 | **35** | Kartu Siswa: **Via** | Kartu taktil nama Via | Token Navigasi Khusus (Buka Rapor) |
 | **36** | Kartu Siswa: **Amira** | Kartu taktil nama Amira | Token Navigasi Khusus (Buka Rapor) |
-| **37** | Kartu Siswa: **Ajib** | Kartu taktil nama Ajib | Token Navigasi Khusus (Buka Rapor) |
+| **37** | Kartu Siswa: **Luthfi** | Kartu taktil nama Luthfi | Token Navigasi Khusus (Buka Rapor) |
 
 ## 2.4 Sistem Kamera Bawah Meja & Pencahayaan
 * **Sensor Kamera**: Raspberry Pi Camera Module Wide-Angle (FOV $\ge 120^\circ$) atau lensa fisheye dengan sensor NoIR terkalibrasi matriks distorsi (*undistort*).
@@ -227,14 +227,14 @@ Siswa dapat bertanya secara bebas menggunakan bahasa percakapan sehari-hari.
 Siswa tunanetra **tidak perlu mengetik username atau password** di layar laptop. Setiap siswa dibekali satu **Blok Identitas Fisik** pribadi berstiker ArUco dengan label nama timbul Braille:
 * **Blok ID 35**: Kartu Identitas **Via** (Siswa Kelas 11 SMA)
 * **Blok ID 36**: Kartu Identitas **Amira** (Siswa Kelas 11 SMA)
-* **Blok ID 37**: Kartu Identitas **Ajib** (Siswa Kelas 11 SMA)
+* **Blok ID 37**: Kartu Identitas **Luthfi** (Siswa Kelas 11 SMA)
 
 ```
 [ Bawa Blok Identitas ] ──> [ Letakkan di Papan Grid ] ──> [ Suara Menyapa Personal ] ──> [ Sesi Aktif ]
 ```
 
 ### 1. Cara Login Mandiri di Awal Sesi & Pengaturan Kecepatan Suara Taktil:
-1. Saat tiba di meja lab, siswa memegang blok identitas pribadinya (ID 35: Via, ID 36: Amira, atau ID 37: Ajib).
+1. Saat tiba di meja lab, siswa memegang blok identitas pribadinya (ID 35: Via, ID 36: Amira, atau ID 37: Luthfi).
 2. Siswa **bebas meletakkan blok identitas di mana saja di atas papan grid** (misalnya di sudut kiri atas $A1$).
 3. Kamera bawah meja mendeteksi ID siswa dalam waktu kurang dari 0.5 detik.
 4. Narator suara langsung menyapa secara personal dan memberitahukan opsi kecepatan bicara:
@@ -431,7 +431,7 @@ LENTERA mendukung penggunaan 1 laptop untuk bergantian banyak siswa di kelas ink
    * Guru dapat memilih nama siswa aktif melalui dropdown `StudentProfileSwitcher` di pojok kanan atas layar (Ahmad Fadhil, Siti Rahma, Dimas Putra, atau Tamu/Juri Lomba).
    * Setiap siswa memiliki penyimpanan nilai, capaian XP, lencana, dan riwayat modul yang terisolasi aman di `localStorage`.
 2. **Login Taktil via Kartu Siswa**:
-   * Siswa cukup meletakkan kartu identitas fisiknya (ID 35: Via, ID 36: Amira, ID 37: Ajib) di papan fisik. Sistem otomatis menyapa dan mengaktifkan profil siswa tersebut tanpa perlu disentuh oleh guru.
+   * Siswa cukup meletakkan kartu identitas fisiknya (ID 35: Via, ID 36: Amira, ID 37: Luthfi) di papan fisik. Sistem otomatis menyapa dan mengaktifkan profil siswa tersebut tanpa perlu disentuh oleh guru.
 3. **Pemantauan Sirkuit Real-time**:
    * Visualisasi Grid 5×5 menampilkan posisi balok nyata di meja siswa secara 1:1, status arus (garis bercahaya hijau), dan polaritas kutub.
    * Badge Status Sirkuit: 🟢 Rangkaian Tertutup (Closed Loop), 🟡 Rangkaian Terbuka (Open Loop), 🔴 Korsleting (Short Circuit).

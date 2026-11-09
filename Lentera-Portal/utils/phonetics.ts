@@ -39,5 +39,6 @@ export function normalizeIndonesianPhonetics(text: string): string {
     .replace(/\bROI\b/g, "R-O-I")
     .replace(/\bCSI\b/g, "C-S-I")
     .replace(/\bTroubleshoot(ing)?\b/gi, "Pemecahan Masalah")
-    .replace(/\bFeedback\b/gi, "Umpan balik");
+    .replace(/\bFeedback\b/gi, "Umpan balik")
+    .replace(/\bLuthfi\b/gi, "Lutfi");
 }

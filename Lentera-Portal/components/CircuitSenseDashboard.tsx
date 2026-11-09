@@ -607,7 +607,7 @@ interface Student { id?: string; name: string; level: string; mastery: number; s
 const students: Student[] = [
   { id: "via", name: "Via", level: "Insinyur", mastery: 92, status: ["blue", "Siap naik level"] },
   { id: "amira", name: "Amira", level: "Teknisi", mastery: 75, status: ["green", "Sesuai target"] },
-  { id: "ajib", name: "Ajib", level: "Insinyur", mastery: 85, status: ["blue", "Siap naik level"] },
+  { id: "luthfi", name: "Luthfi", level: "Insinyur", mastery: 85, status: ["blue", "Siap naik level"] },
   { name: "Lina W.", level: "Teknisi", mastery: 72, status: ["green", "Sesuai target"] },
   { name: "Kai R.", level: "Teknisi", mastery: 64, status: ["green", "Sesuai target"] },
   { name: "Bagas T.", level: "Penjelajah", mastery: 38, status: ["warn", "Perlu bantuan"] },
@@ -2128,8 +2128,9 @@ export default function CircuitSenseDashboard() {
       "student_via": "via",
       "36": "amira",
       "student_amira": "amira",
-      "37": "ajib",
-      "student_ajib": "ajib",
+      "37": "luthfi",
+      "student_luthfi": "luthfi",
+      "student_ajib": "luthfi",
     };
 
     const scheduleReconnect = () => {
