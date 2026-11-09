@@ -10,7 +10,6 @@ import time
 import subprocess
 import os
 import sys
-import shutil
 import threading
 
 SWITCH_PIN = 3  # BCM 3 (Pin Fisik 5 - SCL) - terhubung ke Kontak NO saklar
@@ -25,28 +24,6 @@ def run_cmd(cmd):
         subprocess.run(cmd, shell=True, check=True)
     except Exception as e:
         print(f"[SWITCH DAEMON] Gagal eksekusi '{cmd}': {e}")
-
-def set_usb_power(enable: bool):
-    """
-    Mengontrol daya VBUS 5V port USB Raspberry Pi (untuk USB LED Strip & Kamera)
-    menggunakan uhubctl jika tersedia di sistem. Jika uhubctl belum terinstal,
-    fungsi ini dilewati dengan aman tanpa memicu error.
-    """
-    if not shutil.which("uhubctl"):
-        return False
-    action = "1" if enable else "0"
-    try:
-        subprocess.run(
-            f"sudo uhubctl -l 1-1 -a {action}",
-            shell=True,
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        return True
-    except Exception as e:
-        print(f"[SWITCH DAEMON] Gagal set USB power ({action}): {e}")
-        return False
 
 def play_buzzer_pulses(pulses):
     """Memainkan pola pulsa DC murni pada BUZZER_PIN untuk active buzzer SFM-27."""
@@ -102,7 +79,6 @@ def main():
         print("[SWITCH DAEMON] Saklar terdeteksi ON saat boot. Menyalakan LED dan memulai lentera & tunnel service...")
         GPIO.output(LED_PIN, GPIO.HIGH)
         GPIO.output(BOARD_LED_PIN, GPIO.HIGH)
-        set_usb_power(True)
         play_buzzer_async([(0.06, 0.04), (0.14, 0.00)])
         run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
     else:
@@ -112,7 +88,6 @@ def main():
         GPIO.output(BOARD_LED_PIN, GPIO.LOW)
         play_buzzer_async([(0.08, 0.06), (0.08, 0.00)])
         run_cmd("sudo systemctl stop --no-block lentera.service lentera-tunnel.service")
-        set_usb_power(False)
 
     try:
         while True:
@@ -131,8 +106,6 @@ def main():
                         GPIO.output(LED_PIN, GPIO.HIGH)
                         GPIO.output(BOARD_LED_PIN, GPIO.HIGH)
                         play_buzzer_async([(0.06, 0.04), (0.14, 0.00)])
-                        if set_usb_power(True):
-                            time.sleep(1.2)
                         run_cmd("sudo systemctl start --no-block lentera.service lentera-tunnel.service")
                     else:
                         # Saklar ditekan lepas (OFF): LANGSUNG PADAMKAN LED SEKETIKA!
@@ -144,7 +117,6 @@ def main():
                         
                         # 1. Hentikan service lentera & tunnel secara bersih
                         run_cmd("sudo systemctl stop lentera.service lentera-tunnel.service")
-                        set_usb_power(False)
                         
                         # 2. Sinkronkan seluruh data ke kartu microSD (sync)
                         print("[SWITCH DAEMON] Menyinkronkan seluruh data ke microSD (sync)...")
