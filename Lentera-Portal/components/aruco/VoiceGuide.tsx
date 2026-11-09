@@ -665,6 +665,7 @@ export default function VoiceGuide() {
   const checkpointClearSpokenRef = useRef<boolean>(false);
   const checkpointHandledRef = useRef<boolean>(false);
   const ignoreIdleMenuUntilLiftRef = useRef<boolean>(true);
+  const initialCellsRef = useRef<Record<string, string> | null>(null);
   const clearBoardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountTimeRef = useRef<number>(Date.now());
   const idleMenuHandledRef = useRef<boolean>(false);
@@ -1019,6 +1020,35 @@ export default function VoiceGuide() {
       const placedCount = Object.values(cells).filter(Boolean).length;
       setBoardBlockCount(placedCount);
 
+      // Catat snapshot balok/kartu awal saat baru masuk /aruco agar kartu login dari Beranda tidak memicu redirect palsu
+      if (initialCellsRef.current === null) {
+        initialCellsRef.current = {};
+        for (const [k, v] of Object.entries(cells)) {
+          if (v && typeof v === "object") {
+            const obj = v as { component?: string; id?: number };
+            initialCellsRef.current[k] = `${obj.component || ""}_${obj.id ?? ""}`;
+          }
+        }
+      } else {
+        for (const k of Object.keys(initialCellsRef.current)) {
+          if (!cells[k]) {
+            delete initialCellsRef.current[k];
+          }
+        }
+      }
+
+      if (ignoreIdleMenuUntilLiftRef.current && placedCount === 0) {
+        if (!clearBoardTimerRef.current) {
+          clearBoardTimerRef.current = setTimeout(() => {
+            ignoreIdleMenuUntilLiftRef.current = false;
+            clearBoardTimerRef.current = null;
+          }, 500);
+        }
+      } else if (placedCount > 0 && clearBoardTimerRef.current) {
+        clearTimeout(clearBoardTimerRef.current);
+        clearBoardTimerRef.current = null;
+      }
+
       // =========================================================================
       // 1. PRIORITAS TRANSISI MODE: Wajib Papan Bersih untuk Semua Modul
       // =========================================================================
@@ -1073,9 +1103,11 @@ export default function VoiceGuide() {
       ) {
         const cellA1 = cells["A1"];
         const cellE5 = cells["E5"];
+        const isA1Unchanged = Boolean(initialCellsRef.current?.["A1"]);
+        const isE5Unchanged = Boolean(initialCellsRef.current?.["E5"]);
 
         // 1. Kartu identitas siswa / guru di sel A1 -> Pindah ke LENTERA Learn
-        if (isStudentToken(cellA1)) {
+        if (isStudentToken(cellA1) && !isA1Unchanged) {
           isRedirectingRef.current = true;
           cancelSpeech();
           playEarcon("click");
@@ -1111,7 +1143,7 @@ export default function VoiceGuide() {
         }
 
         // 3. Kartu identitas siswa / guru di sel E5 -> Logout / Selesai Sesi
-        if (isStudentToken(cellE5)) {
+        if (isStudentToken(cellE5) && !isE5Unchanged) {
           isRedirectingRef.current = true;
           cancelSpeech();
           playEarcon("clear");

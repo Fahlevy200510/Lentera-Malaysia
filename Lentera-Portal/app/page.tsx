@@ -27,6 +27,7 @@ import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import SpeechSpeedSelector from "@/components/SpeechSpeedSelector";
 import { getActiveStudent, setActiveStudent } from "@/utils/progress";
 import { speakNarration, cancelSpeech, getSavedSpeechRate, setSavedSpeechRate } from "@/utils/audioCoordinator";
+import { playEarcon } from "@/utils/soundEffects";
 
 const SPEED_MODES: Record<string, { name: string; rate: number }> = {
   A2: { name: "Normal", rate: 1.0 },
@@ -615,6 +616,7 @@ export default function PortalHome() {
       targetUrl: string;
     } | null = null;
     let speedTimer: ReturnType<typeof setTimeout> | null = null;
+    let initialSnapshotCells: Record<string, string> | null = null;
 
     let retryAttempt = 0;
 
@@ -756,6 +758,26 @@ export default function PortalHome() {
           try {
             const data = JSON.parse(event.data);
             if (data.type === "grid_state" && data.cells && !redirected) {
+              // Catat posisi balok awal saat baru kembali ke Beranda (misal setelah Logout di E5) agar tidak langsung re-login
+              if (initialSnapshotCells === null) {
+                initialSnapshotCells = {};
+                for (const [k, v] of Object.entries(data.cells)) {
+                  if (v && typeof v === "object") {
+                    const obj = v as { component?: string; id?: number };
+                    initialSnapshotCells[k] = `${obj.component || ""}_${obj.id ?? ""}`;
+                  }
+                }
+                if (Object.keys(initialSnapshotCells).length > 0) {
+                  return;
+                }
+              } else {
+                for (const k of Object.keys(initialSnapshotCells)) {
+                  if (!data.cells[k]) {
+                    delete initialSnapshotCells[k];
+                  }
+                }
+              }
+
               // A. JIKA SEDANG MENUNGGU SISWA MEMILIH KECEPATAN DI BARIS 2 (A2 - E2):
               if (awaitingSpeedStudent) {
                 let chosenSlot: string | null = null;
@@ -772,6 +794,7 @@ export default function PortalHome() {
                   isRedirectingRef.current = true;
                   if (speedTimer) clearTimeout(speedTimer);
                   cancelSpeech();
+                  playEarcon("step");
 
                   setSavedSpeechRate(chosen.rate);
                   setSpeedPrompt({
@@ -816,6 +839,7 @@ export default function PortalHome() {
               } | null = null;
 
               for (const [cellName, cellData] of Object.entries(data.cells)) {
+                if (initialSnapshotCells && initialSnapshotCells[cellName]) continue;
                 if (cellData && typeof cellData === "object") {
                   const cd = cellData as { component?: string; id?: number };
                   const compKey = cd.component || "";
@@ -829,15 +853,16 @@ export default function PortalHome() {
                 }
               }
 
-              const placed = Object.values(data.cells).filter(
-                Boolean
-              ) as Array<{
+              const placed = Object.entries(data.cells)
+                .filter(([cellName, val]) => Boolean(val) && !(initialSnapshotCells && initialSnapshotCells[cellName]))
+                .map(([, val]) => val) as Array<{
                 component: string;
                 rotation: number;
                 id?: number;
               }>;
 
               if (detectedUserMeta || placed.length > 0) {
+                playEarcon("step");
                 // 1. Kartu Identitas Guru: langsung buka Dashboard Guru
                 if (detectedUserMeta && detectedUserMeta.role === "teacher") {
                   redirected = true;
@@ -994,8 +1019,20 @@ export default function PortalHome() {
 
     initBackgroundWS();
 
+    const handleTriggerBuzzer = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const pattern = customEvent.detail?.pattern || "step";
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "command", action: "buzzer", pattern }));
+        } catch {}
+      }
+    };
+    window.addEventListener("lentera-trigger-buzzer", handleTriggerBuzzer);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("lentera-trigger-buzzer", handleTriggerBuzzer);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (speedTimer) clearTimeout(speedTimer);
       if (ws) {

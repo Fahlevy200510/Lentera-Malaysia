@@ -337,16 +337,12 @@ def main():
             # e. Jika ada perubahan status sirkuit, tambahkan ke list event
             if status_code != prev_circuit_status:
                 prev_circuit_status = status_code
-                if status_code == "short_circuit":
-                    try:
-                        buzzer.beep(times=3, duration=0.15, interval=0.08)
-                    except Exception:
-                        pass
-                elif status_code == "success":
-                    try:
-                        buzzer.beep(times=2, duration=0.10, interval=0.07)
-                    except Exception:
-                        pass
+                # Jika tidak ada klien web yang terhubung, bunyikan buzzer fallback dari backend di background thread
+                if not getattr(ws, "clients", None):
+                    if status_code == "short_circuit":
+                        handle_buzzer("short_circuit")
+                    elif status_code == "success":
+                        handle_buzzer("victory")
                 events.append({
                     "type": "circuit_status",
                     "status": status_code,

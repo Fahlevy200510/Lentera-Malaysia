@@ -1,5 +1,6 @@
 import time
 import platform
+import threading
 
 class BuzzerController:
     """
@@ -10,6 +11,7 @@ class BuzzerController:
     """
     def __init__(self, pin=17):
         self.pin = pin
+        self._lock = threading.Lock()
         self.is_pi = platform.machine() in ["armv7l", "armv6l", "aarch64"]
         
         if self.is_pi:
@@ -17,6 +19,7 @@ class BuzzerController:
                 import RPi.GPIO as GPIO
                 GPIO.setwarnings(False)
                 GPIO.setmode(GPIO.BCM)
+                GPIO.setup(self.pin, GPIO.OUT, initial=GPIO.LOW)
                 self.gpio = GPIO
                 print(f"[BUZZER] Driver RPi.GPIO siap untuk pin BCM {self.pin} (Pin Fisik 11).")
             except Exception as e:
@@ -31,43 +34,42 @@ class BuzzerController:
         Menggunakan tegangan DC murni (GPIO.HIGH / LOW) agar active buzzer
         bergetar pada volume maksimal 100% jernih, lantang, dan bebas bunyi seret.
         """
-        if not self.is_pi or not hasattr(self, 'gpio'):
-            pulse_str = " -> ".join([f"ON({int(on*1000)}ms)/OFF({int(off*1000)}ms)" for on, off in pulses])
-            print(f"[BUZZER SIM] Pola Pulsa: {pulse_str}")
+        with self._lock:
+            if not self.is_pi or not hasattr(self, 'gpio'):
+                pulse_str = " -> ".join([f"ON({int(on*1000)}ms)/OFF({int(off*1000)}ms)" for on, off in pulses])
+                print(f"[BUZZER SIM] Pola Pulsa: {pulse_str}")
 
-            if platform.system() == "Windows":
+                if platform.system() == "Windows":
+                    try:
+                        import winsound
+                        for on, off in pulses:
+                            winsound.Beep(2700, int(on * 1000))
+                            if off > 0:
+                                time.sleep(off)
+                        return
+                    except Exception:
+                        pass
+
+                for on, off in pulses:
+                    time.sleep(on + off)
+                return
+
+            try:
+                self.gpio.setwarnings(False)
+                self.gpio.setmode(self.gpio.BCM)
+                self.gpio.setup(self.pin, self.gpio.OUT)
+                for on_time, off_time in pulses:
+                    self.gpio.output(self.pin, self.gpio.HIGH)
+                    time.sleep(on_time)
+                    self.gpio.output(self.pin, self.gpio.LOW)
+                    if off_time > 0:
+                        time.sleep(off_time)
+            except Exception as e:
+                print(f"[BUZZER ERROR] Gagal akses pin {self.pin}: {e}")
                 try:
-                    import winsound
-                    for on, off in pulses:
-                        winsound.Beep(2700, int(on * 1000))
-                        if off > 0:
-                            time.sleep(off)
-                    return
+                    self.gpio.output(self.pin, self.gpio.LOW)
                 except Exception:
                     pass
-
-            for on, off in pulses:
-                time.sleep(on + off)
-            return
-
-        try:
-            self.gpio.setwarnings(False)
-            self.gpio.setmode(self.gpio.BCM)
-            self.gpio.setup(self.pin, self.gpio.OUT)
-            for on_time, off_time in pulses:
-                self.gpio.output(self.pin, self.gpio.HIGH)
-                time.sleep(on_time)
-                self.gpio.output(self.pin, self.gpio.LOW)
-                if off_time > 0:
-                    time.sleep(off_time)
-            self.gpio.cleanup(self.pin)
-        except Exception as e:
-            print(f"[BUZZER ERROR] Gagal akses pin {self.pin}: {e}")
-            try:
-                self.gpio.output(self.pin, self.gpio.LOW)
-                self.gpio.cleanup(self.pin)
-            except Exception:
-                pass
 
     def play_melody(self, notes):
         """Kompatibilitas: mengonversi nada (freq, durasi) ke pola pulsa durasi."""

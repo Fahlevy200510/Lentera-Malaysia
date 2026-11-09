@@ -2381,8 +2381,20 @@ export default function CircuitSenseDashboard() {
 
     initDashboardWS();
 
+    const handleTriggerBuzzer = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const pattern = customEvent.detail?.pattern || "step";
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "command", action: "buzzer", pattern }));
+        } catch {}
+      }
+    };
+    window.addEventListener("lentera-trigger-buzzer", handleTriggerBuzzer);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("lentera-trigger-buzzer", handleTriggerBuzzer);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (ws) ws.close();
     };
