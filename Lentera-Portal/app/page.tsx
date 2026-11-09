@@ -21,6 +21,7 @@ import {
 import {
   resolveEndpoints,
   getActiveLenteraEndpoint,
+  markTunnelDead,
 } from "@/components/aruco/ArUcoDetector";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
 import SpeechSpeedSelector from "@/components/SpeechSpeedSelector";
@@ -130,14 +131,12 @@ function LenteraHeroEmblem({ wsConnected }: { wsConnected: boolean }) {
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-semibold text-white border border-white/20 backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span
-                  className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
-                    wsConnected ? "bg-emerald-300" : "bg-[#FFF3D6]"
-                  }`}
+                  className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${wsConnected ? "bg-emerald-300" : "bg-[#FFF3D6]"
+                    }`}
                 />
                 <span
-                  className={`relative inline-flex h-2 w-2 rounded-full ${
-                    wsConnected ? "bg-emerald-400" : "bg-[#F5B841]"
-                  }`}
+                  className={`relative inline-flex h-2 w-2 rounded-full ${wsConnected ? "bg-emerald-400" : "bg-[#F5B841]"
+                    }`}
                 />
               </span>
               <span>
@@ -617,38 +616,48 @@ export default function PortalHome() {
     } | null = null;
     let speedTimer: ReturnType<typeof setTimeout> | null = null;
 
+    let retryAttempt = 0;
+
     const scheduleReconnect = () => {
       if (cancelled || redirected) return;
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      const delay = Math.min(3000 * Math.pow(1.6, retryAttempt), 10000);
+      retryAttempt += 1;
       reconnectTimer = setTimeout(() => {
         if (!cancelled && !redirected) {
           initBackgroundWS();
         }
-      }, 3000);
+      }, delay);
     };
 
     async function initBackgroundWS() {
       const endpoint = await getActiveLenteraEndpoint();
       if (cancelled || redirected) return;
 
-      const { wsUrl } = resolveEndpoints(endpoint);
+      const { wsUrl, isTunnel } = resolveEndpoints(endpoint);
       console.log("[LENTERA Auto-Redirect WS] Menghubungkan ke:", wsUrl);
 
       try {
         ws = new WebSocket(wsUrl);
+        let opened = false;
         ws.onopen = () => {
+          opened = true;
+          retryAttempt = 0;
           console.log("[LENTERA Auto-Redirect WS] Terhubung ke papan fisik!");
           setWsConnected(true);
         };
         ws.onclose = () => {
           setWsConnected(false);
+          if (!opened && isTunnel) {
+            markTunnelDead(endpoint);
+          }
           scheduleReconnect();
         };
         ws.onerror = () => {
           setWsConnected(false);
           try {
             ws?.close();
-          } catch {}
+          } catch { }
         };
         const USER_TOKENS: Record<
           string,
@@ -974,7 +983,7 @@ export default function PortalHome() {
                 });
               }
             }
-          } catch {}
+          } catch { }
         };
       } catch (err) {
         console.warn("[LENTERA Auto-Redirect WS] Gagal terhubung:", err);
@@ -1000,8 +1009,8 @@ export default function PortalHome() {
     session?.role === "student"
       ? "Siswa"
       : session?.role === "teacher"
-      ? "Guru"
-      : "Orang Tua";
+        ? "Guru"
+        : "Orang Tua";
 
   return (
     <main className="portal-page relative min-h-screen overflow-hidden font-body text-[#1E1938] print:bg-white print:min-h-0 print:p-0">
@@ -1230,11 +1239,10 @@ export default function PortalHome() {
               <button
                 id="btn-voice-guide"
                 onClick={readIntro}
-                className={`portal-secondary-btn flex items-center justify-center gap-2 ${
-                  speaking
+                className={`portal-secondary-btn flex items-center justify-center gap-2 ${speaking
                     ? "!border-[#F5B841] !bg-[#FFF3D6] !text-[#1E1938]"
                     : ""
-                }`}
+                  }`}
                 aria-label={
                   speaking
                     ? "Matikan panduan suara"
@@ -1249,14 +1257,12 @@ export default function PortalHome() {
             <div className="flex items-center gap-3 rounded-2xl border border-[#735CDD]/22 bg-white/88 px-4 py-3 text-xs sm:text-[13px] text-[#1E1938] shadow-xs backdrop-blur-md">
               <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span
-                  className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
-                    wsConnected ? "bg-emerald-500" : "bg-[#735CDD]"
-                  }`}
+                  className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${wsConnected ? "bg-emerald-500" : "bg-[#735CDD]"
+                    }`}
                 />
                 <span
-                  className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-                    wsConnected ? "bg-emerald-600" : "bg-[#735CDD]"
-                  }`}
+                  className={`relative inline-flex h-2.5 w-2.5 rounded-full ${wsConnected ? "bg-emerald-600" : "bg-[#735CDD]"
+                    }`}
                 />
               </span>
               <span>
@@ -1367,13 +1373,12 @@ export default function PortalHome() {
                         setTimeout(() => router.push("/aruco"), 4000);
                       }}
                       title={`Klik untuk memilih Mode ${cfg.name} (${cfg.rate}x)`}
-                      className={`p-2 rounded-2xl text-center border transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${
-                        isSelected
+                      className={`p-2 rounded-2xl text-center border transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${isSelected
                           ? "bg-amber-400 text-slate-900 border-amber-200 font-bold scale-105 shadow-lg ring-2 ring-amber-300"
                           : isCurrent
-                          ? "bg-white/20 text-white border-amber-300/80 font-bold ring-1 ring-amber-300/60"
-                          : "bg-black/25 text-white/90 border-white/20 hover:bg-white/10"
-                      }`}
+                            ? "bg-white/20 text-white border-amber-300/80 font-bold ring-1 ring-amber-300/60"
+                            : "bg-black/25 text-white/90 border-white/20 hover:bg-white/10"
+                        }`}
                     >
                       <div className="text-xs font-mono font-black">{slot}</div>
                       <div className="text-[11px] truncate font-semibold">{cfg.name}</div>
@@ -1399,9 +1404,8 @@ export default function PortalHome() {
       <div
         onClick={() => setOpen(false)}
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-[#1E1938]/45 backdrop-blur-xs transition-opacity duration-300 print:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className={`fixed inset-0 z-40 bg-[#1E1938]/45 backdrop-blur-xs transition-opacity duration-300 print:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
       />
 
       <aside
@@ -1409,9 +1413,8 @@ export default function PortalHome() {
         role="dialog"
         aria-modal="true"
         aria-label="Menu portal LENTERA"
-        className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l-2 border-[#735CDD]/20 bg-[#FAF8F4] p-6 shadow-2xl transition-transform duration-500 print:hidden ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed inset-y-0 right-0 z-50 flex w-[90vw] max-w-md flex-col border-l-2 border-[#735CDD]/20 bg-[#FAF8F4] p-6 shadow-2xl transition-transform duration-500 print:hidden ${open ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

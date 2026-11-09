@@ -42,9 +42,8 @@ function generateLocalTeacherEvaluation(
   if (modules.circuit_troubleshoot) completed.push("Tantangan Detektif Sirkuit");
   else pending.push("Diagnosis Pemecahan Masalah Sirkuit");
 
-  const p1 = `Ananda ${studentName} menunjukkan perkembangan kemandirian taktil yang sangat positif dengan perolehan ${xp} XP. Siswa telah membuktikan kepekaan rabaan yang konsisten dalam mengidentifikasi simbol timbul dan ${
-    completed.length > 0 ? completed.join(", ") : "mempelajari komponen dasar listrik"
-  } secara mandiri tanpa ketergantungan pada persepsi visual.`;
+  const p1 = `Ananda ${studentName} menunjukkan perkembangan kemandirian taktil yang sangat positif dengan perolehan ${xp} XP. Siswa telah membuktikan kepekaan rabaan yang konsisten dalam mengidentifikasi simbol timbul dan ${completed.length > 0 ? completed.join(", ") : "mempelajari komponen dasar listrik"
+    } secara mandiri tanpa ketergantungan pada persepsi visual.`;
 
   const p2 =
     pending.length > 0
@@ -88,12 +87,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const MODULE_NAME_ID: Record<string, string> = {
+      component_recognition: "Pengenalan Bentuk Taktil Komponen",
+      component_quiz: "Kuis Taktil Pemahaman Fungsi",
+      series_circuit: "Perakitan Rangkaian Seri",
+      parallel_circuit: "Perakitan Rangkaian Paralel Bercabang",
+      circuit_troubleshoot: "Tantangan Detektif Sirkuit",
+    };
+
     const completedNames = Object.entries(modules)
       .filter(([_, v]) => Boolean(v))
-      .map(([k]) => k);
+      .map(([k]) => MODULE_NAME_ID[k] || k);
     const pendingNames = Object.entries(modules)
       .filter(([_, v]) => !v)
-      .map(([k]) => k);
+      .map(([k]) => MODULE_NAME_ID[k] || k);
 
     const userPrompt = `Nama Siswa: ${studentName}
 Kelas: ${student?.grade ?? "Kelas 11 SMA"}
@@ -117,7 +124,7 @@ Susunkan 3 paragraf catatan evaluasi & rekomendasi guru pendamping khusus sesuai
             { role: "user", content: userPrompt },
           ],
           temperature: 0.6,
-          max_tokens: 450,
+          max_tokens: 2048,
         }),
       });
 

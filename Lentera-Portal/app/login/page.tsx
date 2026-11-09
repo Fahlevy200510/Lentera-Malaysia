@@ -361,10 +361,11 @@ function LoginFormContent() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label htmlFor="login-email" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   Email / Username
                 </label>
                 <input
+                  id="login-email"
                   type="text"
                   autoComplete="username"
                   value={email}
@@ -375,11 +376,12 @@ function LoginFormContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label htmlFor="login-password" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   Kata Sandi
                 </label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showPw ? "text" : "password"}
                     autoComplete="current-password"
                     value={password}
@@ -390,6 +392,8 @@ function LoginFormContent() {
                   <button
                     type="button"
                     onClick={() => setShowPw(!showPw)}
+                    aria-label={showPw ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                    title={showPw ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                   >
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

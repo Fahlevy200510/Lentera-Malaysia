@@ -76,13 +76,20 @@ export function resolveEndpoints(target: string) {
 }
 
 /**
+ * Daftar domain tunnel yang gagal terhubung di sesi ini agar otomatis fallback ke localhost
+ */
+const deadTunnelsInSession = new Set<string>();
+
+export function markTunnelDead(endpoint: string) {
+  if (endpoint && endpoint !== "localhost" && endpoint !== "127.0.0.1") {
+    deadTunnelsInSession.add(endpoint.replace(/^https?:\/\//, "").replace(/^wss?:\/\//, "").replace(/\/$/, ""));
+  }
+}
+
+/**
  * Temukan endpoint aktif secara otomatis (Cloudflare Tunnel relay / saved localStorage / fallback local)
  */
 export async function getActiveLenteraEndpoint(): Promise<string> {
-  const DEFAULT_TUNNEL =
-    process.env.NEXT_PUBLIC_LENTERA_TUNNEL_DOMAIN || "anchor-scruffy-clerk.ngrok-free.dev";
-  let targetEndpoint = DEFAULT_TUNNEL;
-
   // 1. Prioritas Utama: Auto-discovery Cloudflare Quick Tunnel dari ntfy relay (100% Zero-Config)
   try {
     const controller = new AbortController();
@@ -104,16 +111,19 @@ export async function getActiveLenteraEndpoint(): Promise<string> {
       );
       const latest = validTunnels[validTunnels.length - 1];
       if (latest) {
-        return latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        const cleanLatest = latest.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        if (!deadTunnelsInSession.has(cleanLatest)) {
+          return cleanLatest;
+        }
       }
     }
   } catch { }
 
-  // 2. Fallback jika offline: Cek penyimpanan lokal (hanya jika valid dan bukan domain ngrok lama)
+  // 2. Fallback jika offline: Cek penyimpanan lokal (hanya jika valid dan belum ditandai mati)
   try {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lentera_edge_endpoint") || localStorage.getItem("lentera_endpoint");
-      if (saved && saved !== "edge.lentera.id" && !saved.includes("ngrok")) {
+      if (saved && saved !== "edge.lentera.id" && !saved.includes("ngrok") && !deadTunnelsInSession.has(saved)) {
         return saved;
       }
     }
@@ -157,8 +167,10 @@ export default function ArUcoDetector() {
     try {
       const websocket = new WebSocket(wsUrl);
       wsRef.current = websocket;
+      let opened = false;
 
       websocket.onopen = () => {
+        opened = true;
         setDetections((prev) => ({ ...prev, status: "connected" }));
         manualDisconnectRef.current = false;
         reconnectCountRef.current = 0;
@@ -221,10 +233,13 @@ export default function ArUcoDetector() {
 
       websocket.onclose = () => {
         setDetections((prev) => ({ ...prev, status: "disconnected" }));
-        // Auto-reconnect dengan exponential backoff (maks 5x saat Pi offline agar tidak spam console)
-        if (!manualDisconnectRef.current && reconnectCountRef.current < 5) {
+        if (!opened && isTunnel) {
+          markTunnelDead(targetEndpoint);
+        }
+        // Auto-reconnect tanpa batas mati agar siswa tunanetra tidak perlu klik tombol manual saat Raspi baru menyala
+        if (!manualDisconnectRef.current) {
           if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-          const delay = Math.min(3000 * Math.pow(1.8, reconnectCountRef.current), 15000);
+          const delay = Math.min(3000 * Math.pow(1.6, reconnectCountRef.current), 10000);
           reconnectCountRef.current += 1;
           reconnectTimerRef.current = setTimeout(async () => {
             try {
@@ -233,7 +248,7 @@ export default function ArUcoDetector() {
               setCustomInput(freshEndpoint);
               connectWebSocket(freshEndpoint);
             } catch {
-              connectWebSocket(targetEndpoint);
+              connectWebSocket("localhost");
             }
           }, delay);
         }

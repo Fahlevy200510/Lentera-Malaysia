@@ -1464,16 +1464,18 @@ export default function VoiceGuide() {
             }
 
             // Putar ulang hanya jika audio penjelasan selesai, tidak sedang berbicara, dan diputar sengaja >= 75 derajat
-            if (recognitionPromptReadyRef.current && !isSpeakingRef.current) {
+            if (recognitionPromptReadyRef.current && !isSpeakingRef.current && !isSpeakingAudio()) {
               const curRot = placedC3.rotation ?? 0;
               const lastRot = recognitionRotationRef.current ?? 0;
               const rawDiff = Math.abs(curRot - lastRot);
               const diff = Math.min(rawDiff, 360 - rawDiff);
               const isRotated = diff >= 75; // 75 derajat mencegah jari rabaan memicu replay
               const now = Date.now();
-              if (isRotated && now - lastRecognitionReplayRef.current > 12000 && now - lastSpokenTimeRef.current > 8000) {
+              // Cooldown 3 detik agar siswa punya ruang meraba/memutar tanpa terpicu ganda, tapi tidak kelamaan
+              if (isRotated && now - lastRecognitionReplayRef.current > 3500 && now - lastSpokenTimeRef.current > 3000) {
                 lastRecognitionReplayRef.current = now;
                 recognitionRotationRef.current = curRot;
+                lastSpokenTextRef.current = "";
                 playEarcon("clue");
                 speak(
                   `Memutar balok terdeteksi. ${step.explanation} Jika kamu sudah jelas dan ingin lanjut, silakan angkat baloknya dari sel C3.`
@@ -1504,7 +1506,7 @@ export default function VoiceGuide() {
                   // Langsung majukan ke totalSteps agar useEffect([isFinished]) membacakan apresiasi selesai secara utuh
                   setCurrentStep(totalSteps);
                 }
-              }, 1200);
+              }, 2500); // 2.5 detik toleransi saat balok diangkat sejenak atau tertutup tangan ketika memutar
             }
             return;
           }
@@ -2553,6 +2555,7 @@ export default function VoiceGuide() {
                   ) : (
                     <button
                       onClick={() => startGuide(item.mode)}
+                      aria-label={`${item.isCompleted ? "Ulangi" : "Mulai"} Tahap ${item.stage}: ${item.title}`}
                       className={`inline-flex items-center gap-1 rounded-lg px-3 py-1 text-[11px] font-extrabold transition-all active:scale-95 ${isRecommended
                           ? "bg-[#735CDD] hover:bg-[#5E47C9] text-white shadow-xs"
                           : item.isCompleted

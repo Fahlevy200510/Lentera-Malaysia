@@ -6,7 +6,7 @@ import { getStudentProgress, getActiveStudent, setActiveStudent, PRESET_STUDENTS
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
-import { getActiveLenteraEndpoint, resolveEndpoints } from "@/components/aruco/ArUcoDetector";
+import { getActiveLenteraEndpoint, resolveEndpoints, markTunnelDead } from "@/components/aruco/ArUcoDetector";
 import StudentReportModal from "@/components/StudentReportModal";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
@@ -2015,10 +2015,12 @@ export default function CircuitSenseDashboard() {
     if (!authed) return;
 
     let ws: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let retryAttempt = 0;
     let isRedirecting = false;
     let cancelled = false;
     const mountTime = Date.now();
-    let ignoreUntilLift = true;
+    let initialSnapshotCells: Record<string, string> | null = null;
     let hasTriggeredA1 = false;
     let hasTriggeredC5 = false;
 
@@ -2026,13 +2028,44 @@ export default function CircuitSenseDashboard() {
       "battery", "lamp", "switch", "straight_cable", "l_cable", "t_cable", "resistor"
     ]);
 
+    const scheduleReconnect = () => {
+      if (cancelled || isRedirecting) return;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      const delay = Math.min(3000 * Math.pow(1.6, retryAttempt), 10000);
+      retryAttempt += 1;
+      reconnectTimer = setTimeout(() => {
+        if (!cancelled && !isRedirecting) {
+          initDashboardWS();
+        }
+      }, delay);
+    };
+
     async function initDashboardWS() {
       const endpoint = await getActiveLenteraEndpoint();
-      if (cancelled) return;
+      if (cancelled || isRedirecting) return;
 
-      const { wsUrl } = resolveEndpoints(endpoint);
+      const { wsUrl, isTunnel } = resolveEndpoints(endpoint);
       try {
         ws = new WebSocket(wsUrl);
+        let opened = false;
+
+        ws.onopen = () => {
+          opened = true;
+          retryAttempt = 0;
+        };
+
+        ws.onclose = () => {
+          if (!opened && isTunnel) {
+            markTunnelDead(endpoint);
+          }
+          scheduleReconnect();
+        };
+
+        ws.onerror = () => {
+          try {
+            ws?.close();
+          } catch {}
+        };
 
         ws.onmessage = (event) => {
           if (isRedirecting) return;
@@ -2046,20 +2079,33 @@ export default function CircuitSenseDashboard() {
                 id?: number;
               }>;
 
-              // Wajib tunggu kartu awal terangkat agar tidak memicu re-redirect instan
-              if (ignoreUntilLift) {
-                if (placed.length === 0) {
-                  ignoreUntilLift = false;
+              // Catat posisi balok awal saat pertama masuk dashboard agar rangkaian yang sudah ada di papan tidak memicu redirect palsu
+              if (initialSnapshotCells === null) {
+                initialSnapshotCells = {};
+                for (const [k, v] of Object.entries(cells)) {
+                  if (v && typeof v === "object") {
+                    const obj = v as { component?: string; id?: number };
+                    initialSnapshotCells[k] = `${obj.component || ""}_${obj.id ?? ""}`;
+                  }
                 }
                 return;
+              } else {
+                // Hapus dari daftar snapshot awal jika sel tersebut sudah diangkat oleh siswa
+                for (const k of Object.keys(initialSnapshotCells)) {
+                  if (!cells[k]) {
+                    delete initialSnapshotCells[k];
+                  }
+                }
               }
 
-              // Tahan 2 detik awal sejak masuk dashboard
-              if (Date.now() - mountTime < 2000) return;
+              // Tahan 1.5 detik awal sejak masuk dashboard
+              if (Date.now() - mountTime < 1500) return;
 
               const cellE5 = cells["E5"] as { component?: string; id?: number } | undefined;
+              const isE5Unchanged = Boolean(initialSnapshotCells["E5"]);
               const isE5User = Boolean(
                 cellE5 &&
+                !isE5Unchanged &&
                 (String(cellE5.component || "").startsWith("student_") ||
                  String(cellE5.component || "").startsWith("teacher_") ||
                  [35, 36, 37, 38].includes(Number(cellE5.id)))
@@ -2102,13 +2148,14 @@ export default function CircuitSenseDashboard() {
               }
 
               const cellA1 = cells["A1"] as { component?: string; id?: number } | undefined;
+              const isA1Unchanged = Boolean(initialSnapshotCells["A1"]);
               const isA1Student = Boolean(
                 cellA1 &&
                 (String(cellA1.component || "").startsWith("student_") || [35, 36, 37].includes(Number(cellA1.id)))
               );
 
               // B. Balok diletakkan di sel A1 -> Bacakan Data Pembelajaran Lengkap! (Edge-triggered)
-              if (cellA1 && !isA1Student) {
+              if (cellA1 && !isA1Student && !isA1Unchanged) {
                 if (!hasTriggeredA1) {
                   hasTriggeredA1 = true;
                   cancelSpeech();
@@ -2132,13 +2179,14 @@ export default function CircuitSenseDashboard() {
                   }
                 }
                 return;
-              } else {
+              } else if (!cellA1) {
                 hasTriggeredA1 = false;
               }
 
               const cellC5 = cells["C5"] as { component?: string; id?: number } | undefined;
+              const isC5Unchanged = Boolean(initialSnapshotCells["C5"]);
               // Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis) (Edge-triggered)
-              if (cellC5) {
+              if (cellC5 && !isC5Unchanged) {
                 if (!hasTriggeredC5) {
                   hasTriggeredC5 = true;
                   const c5Id = Number(cellC5.id);
@@ -2165,19 +2213,22 @@ export default function CircuitSenseDashboard() {
                   setShowReportModal(true);
                 }
                 return;
-              } else {
+              } else if (!cellC5) {
                 hasTriggeredC5 = false;
               }
 
-              // C. Balok komponen sirkuit (di luar sel A1 dan C5) -> Kembali ke LENTERA Lab (/aruco)
-              const hasCircuitBlockOutsideA1 = placed.some((c) => {
-                const comp = String(c?.component || "");
-                const id = Number(c?.id);
-                const isCircuit = CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
-                return isCircuit && (!cellA1 || c !== cellA1) && (!cellC5 || c !== cellC5);
+              // C. Balok komponen sirkuit BARU diletakkan (di luar sel A1 dan C5) -> Kembali ke LENTERA Lab (/aruco)
+              const hasNewCircuitBlockOutsideA1 = Object.entries(cells).some(([cellKey, c]) => {
+                if (!c || cellKey === "A1" || cellKey === "C5" || cellKey === "E5") return false;
+                const obj = c as { component?: string; id?: number };
+                const comp = String(obj.component || "");
+                const id = Number(obj.id);
+                const sig = `${comp}_${obj.id ?? ""}`;
+                if (initialSnapshotCells && initialSnapshotCells[cellKey] === sig) return false;
+                return CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
               });
 
-              if (hasCircuitBlockOutsideA1) {
+              if (hasNewCircuitBlockOutsideA1) {
                 isRedirecting = true;
                 cancelSpeech();
                 playEarcon("click");
@@ -2205,6 +2256,7 @@ export default function CircuitSenseDashboard() {
         };
       } catch (err) {
         console.warn("[Dashboard WS] Connection error:", err);
+        scheduleReconnect();
       }
     }
 
@@ -2212,6 +2264,7 @@ export default function CircuitSenseDashboard() {
 
     return () => {
       cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (ws) ws.close();
     };
   }, [authed, name]);
