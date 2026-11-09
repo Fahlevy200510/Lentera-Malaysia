@@ -66,6 +66,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
   const listeningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasResultRef = useRef(false);
+  const webSpeechBufferRef = useRef<string>("");
   const recordStartTimeRef = useRef<number>(0);
   const lastToggleRef = useRef<number>(0);
   const latestCircuitRef = useRef<any>(null);
@@ -231,6 +232,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
     cancelSpeech();
     playEarcon("click");
     hasResultRef.current = false;
+    webSpeechBufferRef.current = "";
     setVoiceStatus(null);
     setRecordSeconds(0);
     recordStartTimeRef.current = Date.now();
@@ -270,7 +272,8 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       setRecordSeconds((prev) => prev + 1);
     }, 1000);
 
-    // 2. Gunakan MediaRecorder + Groq Whisper Large v3 Turbo untuk transkripsi audio akurat
+    // 2. Gunakan MediaRecorder + Groq Whisper Large v3 Turbo untuk transkripsi audio akurat saat balok A1 diangkat / tombol dihentikan
+    const hasMediaRecorder = Boolean(stream && typeof MediaRecorder !== "undefined");
     if (stream && typeof MediaRecorder !== "undefined") {
       audioChunksRef.current = [];
       try {
@@ -302,8 +305,9 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           if (hasResultRef.current) return;
           const duration = Date.now() - recordStartTimeRef.current;
           const chunks = audioChunksRef.current;
+          const fallbackTranscript = webSpeechBufferRef.current.trim();
 
-          if (chunks.length === 0 || duration < 800) {
+          if ((chunks.length === 0 || duration < 800) && fallbackTranscript.length <= 2) {
             setVoiceStatus("Waktu bicara terlalu singkat.");
             playEarcon("clue");
             if (!loadingRef.current) {
@@ -326,22 +330,32 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
               body: formData,
             });
             const data = await res.json();
-            if (data?.silent || !data?.text || data.text.trim().length <= 1) {
-              setVoiceStatus("Suara tidak terdengar jelas. Coba bicara lebih dekat ke mikrofon.");
-              playEarcon("clue");
-              if (!loadingRef.current) {
-                speak("Suara belum terdengar jelas. Coba letakkan balok di A1 dan bicaralah lebih dekat ke mikrofon.");
-              }
+            const whisperText = (data?.text || "").trim();
+
+            if ((!data?.silent && whisperText.length > 1) || fallbackTranscript.length > 2) {
+              const finalText = !data?.silent && whisperText.length > 1 ? whisperText : fallbackTranscript;
+              hasResultRef.current = true;
+              setVoiceStatus(null);
+              setInput(finalText);
+              send(finalText);
               return;
             }
 
-            hasResultRef.current = true;
-            setVoiceStatus(null);
-            setInput(data.text);
-            send(data.text);
+            setVoiceStatus("Suara tidak terdengar jelas. Coba bicara lebih dekat ke mikrofon.");
+            playEarcon("clue");
+            if (!loadingRef.current) {
+              speak("Suara belum terdengar jelas. Coba letakkan balok di A1 dan bicaralah lebih dekat ke mikrofon.");
+            }
           } catch (tErr) {
             console.error("[AITutorLab] Transcribe API error:", tErr);
-            setVoiceStatus("Gagal memproses suara.");
+            if (fallbackTranscript.length > 2) {
+              hasResultRef.current = true;
+              setVoiceStatus(null);
+              setInput(fallbackTranscript);
+              send(fallbackTranscript);
+            } else {
+              setVoiceStatus("Gagal memproses suara.");
+            }
           } finally {
             setIsTranscribing(false);
           }
@@ -353,7 +367,7 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       }
     }
 
-    // 3. Paralel: Web Speech API lokal jika didukung untuk streaming instan
+    // 3. Paralel: Web Speech API lokal mengumpulkan transkrip secara kontinu TANPA memotong rekaman saat siswa jeda bernapas
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -361,16 +375,19 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       try {
         const recognition = new SpeechRecognition();
         recognition.lang = "id-ID";
-        recognition.interimResults = false;
+        recognition.continuous = true;
+        recognition.interimResults = true;
         recognition.maxAlternatives = 1;
 
         recognition.onresult = (event: any) => {
-          const transcript = event.results?.[0]?.[0]?.transcript;
-          if (transcript && transcript.trim().length > 3) {
-            hasResultRef.current = true;
-            stopListening();
-            setInput(transcript);
-            send(transcript);
+          let combined = "";
+          for (let i = 0; i < (event.results?.length || 0); i++) {
+            const piece = event.results[i]?.[0]?.transcript || "";
+            if (piece) combined += (combined ? " " : "") + piece.trim();
+          }
+          if (combined.trim()) {
+            webSpeechBufferRef.current = combined.trim();
+            setInput(combined.trim());
           }
         };
 
@@ -378,8 +395,17 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           console.warn("[AITutorLab] Web Speech warning:", event.error);
         };
 
-        // Jangan hentikan mediaRecorder saat Web Speech selesai otomatis!
-        recognition.onend = () => {};
+        // Jika tidak ada MediaRecorder sama sekali, baru kirim saat recognition berakhir
+        recognition.onend = () => {
+          if (!hasMediaRecorder && !hasResultRef.current && webSpeechBufferRef.current.trim().length > 2) {
+            const finalTxt = webSpeechBufferRef.current.trim();
+            hasResultRef.current = true;
+            setIsListening(false);
+            isListeningRef.current = false;
+            setInput(finalTxt);
+            send(finalTxt);
+          }
+        };
 
         recognitionRef.current = recognition;
         recognition.start();
@@ -395,10 +421,10 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
       return;
     }
 
-    // Otomatis batas maksimal 12 detik mendengarkan
+    // Otomatis batas maksimal 20 detik mendengarkan
     listeningTimeoutRef.current = setTimeout(() => {
       stopListening();
-    }, 12000);
+    }, 20000);
   }, [send, stopListening]);
 
   const toggleListening = useCallback(() => {
