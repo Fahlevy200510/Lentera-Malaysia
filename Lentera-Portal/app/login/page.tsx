@@ -105,7 +105,6 @@ function LoginFormContent() {
       const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
       const navTimer = setTimeout(doNavigate, fallbackDelay);
       speakNarration(speechText, {
-        rate: 0.95,
         onEnd: () => {
           setTimeout(doNavigate, 250);
         },
@@ -132,7 +131,6 @@ function LoginFormContent() {
       const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
       const navTimer = setTimeout(doNavigate, fallbackDelay);
       speakNarration(speechText, {
-        rate: 0.95,
         onEnd: () => {
           setTimeout(doNavigate, 250);
         },
@@ -143,8 +141,7 @@ function LoginFormContent() {
   const playBlindAudioGuide = () => {
     cancelSpeech();
     speakNarration(
-      "Panduan masuk LENTERA untuk Guru dan Siswa Tunanetra. Pertama: Jika Anda berada di depan papan fisik 5 kali 5, Anda dapat menempelkan kartu identitas taktil berhuruf Braille di atas papan tanpa perlu mengetik apapun di layar. ID 38 untuk Kartu Guru, dan ID 35 untuk Kartu Siswa. Kedua: Di halaman web ini, Anda dapat menekan tombol Masuk Guru untuk membuka Dashboard, atau tombol Masuk Siswa untuk membuka Lab Sains.",
-      { rate: 0.94 }
+      "Panduan masuk LENTERA untuk Guru dan Siswa Tunanetra. Pertama: Jika Anda berada di depan papan fisik 5 kali 5, Anda dapat menempelkan kartu identitas taktil berhuruf Braille di atas papan tanpa perlu mengetik apapun di layar. ID 35, 36, dan 37 untuk Kartu Siswa. Kedua: Di halaman web ini, Anda dapat menekan tombol Masuk Guru untuk membuka Dashboard, atau tombol Masuk Siswa untuk membuka Lab Sains."
     );
   };
 

@@ -876,7 +876,6 @@ export default function PanduanPage() {
 
     setSpeaking(true);
     speakNarration(feature.audioGuide, {
-      rate: 0.94,
       pitch: 1.0,
       tag: `panduan-${feature.key}`,
       onEnd: () => setSpeaking(false),

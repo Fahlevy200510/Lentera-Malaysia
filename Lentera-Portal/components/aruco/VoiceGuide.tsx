@@ -630,6 +630,7 @@ export default function VoiceGuide() {
   const [isAILoading, setIsAILoading] = useState<boolean>(false);
   const pendingStartModeRef = useRef<GuideMode | null>(null);
   const pendingTabSwitchRef = useRef<string | null>(null);
+  const pendingPageNavRef = useRef<{ url: string; label: string } | null>(null);
   const pendingNextGuideRef = useRef<GuideMode | null>(null);
   const lastLiftRemindRef = useRef<number>(0);
   const lastAITimeRef = useRef<number>(0);
@@ -1094,6 +1095,28 @@ export default function VoiceGuide() {
       }
 
       // =========================================================================
+      // 3. PRIORITAS TRANSISI PINDAH HALAMAN (Wajib Papan Kosong Sebelum Pindah!)
+      // =========================================================================
+      if (pendingPageNavRef.current) {
+        const { url, label } = pendingPageNavRef.current;
+        if (placedCount === 0) {
+          if (isCurrentlySpeaking) return;
+          pendingPageNavRef.current = null;
+          isRedirectingRef.current = true;
+          playEarcon("clear");
+          window.location.href = url;
+        } else {
+          const now = Date.now();
+          if (now - lastLiftRemindRef.current > 7500 && !isSpeakingRef.current && !isCurrentlySpeaking) {
+            lastLiftRemindRef.current = now;
+            playEarcon("clue");
+            speak(`Silakan angkat semua balok dari papan fisik agar papan bersih sebelum ${label}.`);
+          }
+        }
+        return;
+      }
+
+      // =========================================================================
       // TANGIBLE NAVIGATION KARTU IDENTITAS SISWA (A1 -> Learn, E5 -> Selesai / Logout)
       // Berlaku kapan saja saat kartu siswa diletakkan (setelah papan terangkat dari sesi sebelumnya)
       // =========================================================================
@@ -1106,10 +1129,8 @@ export default function VoiceGuide() {
         const isA1Unchanged = Boolean(initialCellsRef.current?.["A1"]);
         const isE5Unchanged = Boolean(initialCellsRef.current?.["E5"]);
 
-        // 1. Kartu identitas siswa / guru di sel A1 -> Pindah ke LENTERA Learn
+        // 1. Kartu identitas siswa / guru di sel A1 -> Pindah ke LENTERA Learn (setelah balok diangkat agar papan kosong)
         if (isStudentToken(cellA1) && !isA1Unchanged) {
-          isRedirectingRef.current = true;
-          cancelSpeech();
           playEarcon("click");
           const sName = getStudentNameFromToken(cellA1);
           const isTeacher = String((cellA1 as any)?.component || "").startsWith("teacher") || Number((cellA1 as any)?.id) === 38;
@@ -1119,57 +1140,33 @@ export default function VoiceGuide() {
               JSON.stringify({ name: "Guru", role: "teacher", grade: "Guru Fisika" })
             );
           }
-          const speechText = isTeacher
-            ? `Kartu identitas guru terdeteksi di sel A1. Membuka Dashboard Guru LENTERA Learn.`
-            : `Kartu identitas ${sName} terdeteksi di sel A1. Membuka LENTERA Learn untuk melihat nilai, materi, dan progres belajarmu.`;
-
-          let navigated = false;
-          const doNavigate = () => {
-            if (navigated) return;
-            navigated = true;
-            clearTimeout(navTimer);
-            window.location.href = "/dashboard";
+          pendingPageNavRef.current = {
+            url: "/dashboard",
+            label: "membuka LENTERA Learn",
           };
-
-          const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
-          const navTimer = setTimeout(doNavigate, fallbackDelay);
-
-          speakNarration(speechText, {
-            onEnd: () => {
-              setTimeout(doNavigate, 250);
-            },
-          });
+          lastLiftRemindRef.current = Date.now();
+          const speechText = isTeacher
+            ? `Kartu identitas guru terdeteksi di sel A1. Silakan angkat semua balok dari papan untuk membuka Dashboard Guru LENTERA Learn.`
+            : `Kartu identitas ${sName} terdeteksi di sel A1. Silakan angkat semua balok dari papan untuk membuka LENTERA Learn.`;
+          speak(speechText);
           return;
         }
 
-        // 3. Kartu identitas siswa / guru di sel E5 -> Logout / Selesai Sesi
+        // 3. Kartu identitas siswa / guru di sel E5 -> Logout / Selesai Sesi (setelah balok diangkat agar papan kosong)
         if (isStudentToken(cellE5) && !isE5Unchanged) {
-          isRedirectingRef.current = true;
-          cancelSpeech();
           playEarcon("clear");
           const sName = getStudentNameFromToken(cellE5);
           const isTeacher = String((cellE5 as any)?.component || "").startsWith("teacher") || Number((cellE5 as any)?.id) === 38;
           localStorage.removeItem("lentera-session");
-          const speechText = isTeacher
-            ? `Kartu identitas guru terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
-            : `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`;
-
-          let navigated = false;
-          const doNavigate = () => {
-            if (navigated) return;
-            navigated = true;
-            clearTimeout(navTimer);
-            window.location.href = "/";
+          pendingPageNavRef.current = {
+            url: "/",
+            label: "keluar ke Beranda utama",
           };
-
-          const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
-          const navTimer = setTimeout(doNavigate, fallbackDelay);
-
-          speakNarration(speechText, {
-            onEnd: () => {
-              setTimeout(doNavigate, 250);
-            },
-          });
+          lastLiftRemindRef.current = Date.now();
+          const speechText = isTeacher
+            ? `Kartu identitas guru terdeteksi di sel keluar E5. Sesi mengajar selesai. Silakan angkat semua balok dari papan untuk keluar ke Beranda.`
+            : `Kartu identitas ${sName} terdeteksi di sel keluar E5. Sesi belajar ${sName} selesai. Silakan angkat semua balok dari papan untuk keluar ke Beranda.`;
+          speak(speechText);
           return;
         }
       }

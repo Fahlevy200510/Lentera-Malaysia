@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Printer, X, Award, CheckCircle2, AlertCircle, FileText, Sparkles, UserCheck, Volume2, VolumeX, Bot, RefreshCw, Edit3 } from "lucide-react";
 import { getActiveStudent, getStudentProgress, buildStudentLearningNarration, type StudentProfile, type StudentProgress } from "@/utils/progress";
 import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
@@ -24,6 +24,11 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
   const [teacherNotes, setTeacherNotes] = useState<string>(() => {
     return `Ananda ${student.name} menunjukkan perkembangan kemandirian taktil yang sangat positif. Siswa membuktikan kepekaan rabaan yang konsisten dalam mengidentifikasi simbol timbul dan menyusun komponen kelistrikan secara mandiri.\n\nUntuk langkah belajar selanjutnya, disarankan penguatan bertahap pada konsep percabangan sirkuit paralel menggunakan kabel T dan analogi aliran arus. Berikan ruang latihan taktil mandiri sebelum menguji rangkaian secara langsung.\n\nSinergi antara guru dan orang tua dalam memberikan apresiasi verbal terbukti efektif meningkatkan kepercayaan diri ananda dalam bereksperimen.`;
   });
+
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const syncStudent = () => {
@@ -54,12 +59,11 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
 
     // Auto-narasi ramah untuk guru & siswa tunanetra saat rapor dibuka
     const nar = buildStudentLearningNarration(currentStudent, currentProgress);
-    const welcome = `Rapor Hasil Belajar untuk ${currentStudent.name}, ${currentStudent.grade}. Total perolehan ${currentProgress.xp} XP. ${nar.modulesNarration} Silakan dengarkan rincian lengkap atau tekan Escape untuk menutup rapor.`;
+    const welcome = `Rapor Hasil Belajar untuk ${currentStudent.name}, ${currentStudent.grade}. Total perolehan ${currentProgress.xp} XP. ${nar.modulesNarration} Setelah selesai mendengarkan, silakan angkat balok dari kotak C5 agar papan bersih. Tekan Escape untuk menutup rapor.`;
 
     setIsSpeakingReport(true);
     speakNarration(welcome, {
       tag: "modal-intro",
-      rate: 0.94,
       pitch: 1.02,
       onEnd: () => setIsSpeakingReport(false),
     });
@@ -67,7 +71,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         cancelSpeech();
-        onClose();
+        onCloseRef.current();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -78,7 +82,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
       setIsSpeakingReport(false);
       setIsSpeakingNotes(false);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -93,7 +97,6 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
     playEarcon("step");
     speakNarration(nar.fullReport, {
       tag: "modal-full-report",
-      rate: 0.94,
       pitch: 1.02,
       onEnd: () => setIsSpeakingReport(false),
     });
@@ -133,7 +136,6 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
     playEarcon("step");
     speakNarration(`Catatan Evaluasi Guru untuk ${student.name}. ${teacherNotes}`, {
       tag: "modal-teacher-notes",
-      rate: 0.94,
       pitch: 1.02,
       onEnd: () => setIsSpeakingNotes(false),
     });

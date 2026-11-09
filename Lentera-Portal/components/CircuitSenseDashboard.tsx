@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useState, useRef, useEffect, type ReactNode, type CSSProperties } from "react";
 import { getStudentProgress, getActiveStudent, setActiveStudent, PRESET_STUDENTS, buildStudentLearningNarration, buildTeacherClassNarration, type StudentProgress } from "@/utils/progress";
 import { normalizeIndonesianPhonetics } from "@/utils/phonetics";
-import { speakNarration, cancelSpeech } from "@/utils/audioCoordinator";
+import { speakNarration, cancelSpeech, isSpeaking } from "@/utils/audioCoordinator";
 import { playEarcon } from "@/utils/soundEffects";
 import { getActiveLenteraEndpoint, resolveEndpoints, markTunnelDead } from "@/components/aruco/ArUcoDetector";
 import StudentReportModal from "@/components/StudentReportModal";
 import StudentProfileSwitcher from "@/components/StudentProfileSwitcher";
+import SpeechSpeedSelector from "@/components/SpeechSpeedSelector";
 import {
   ScanEye, Zap, CircuitBoard, LayoutDashboard, Sparkles, Trophy, Award, Flame,
   Battery, Cable, Lightbulb, ToggleRight, Bell, ChevronRight, Play,
@@ -320,7 +321,6 @@ function StudentHome() {
   const readLesson = () => {
     speakNarration(`Pelajaran hari ini tentang ${currentLessonTitle}. ${currentLessonDesc}`, {
       tag: "lesson-overview",
-      rate: 0.94,
     });
   };
 
@@ -336,7 +336,6 @@ function StudentHome() {
     playEarcon("step");
     speakNarration(nar.fullReport, {
       tag: "full-report",
-      rate: 0.94,
       pitch: 1.02,
       onEnd: () => setIsReadingReport(false),
     });
@@ -493,7 +492,6 @@ function StudentHome() {
                   const summary = weekly.map((w) => `${w.day} ${w.min} menit`).join(", ");
                   speakNarration(`Grafik durasi praktik di papan minggu ini: ${summary}. Seluruh waktu tercatat otomatis oleh sensor LENTERA.`, {
                     tag: "chart-weekly",
-                    rate: 0.94,
                   });
                 }}
                 title="Dengarkan data durasi belajar per hari"
@@ -699,7 +697,7 @@ function TeacherOverview() {
                 <button
                   onClick={() => {
                     const tNar = buildTeacherClassNarration();
-                    speakNarration(tNar.trendNarration, { tag: "chart-trend", rate: 0.94 });
+                    speakNarration(tNar.trendNarration, { tag: "chart-trend" });
                   }}
                   title="Dengarkan narasi grafik kurva tren penguasaan kelas"
                   style={{
@@ -766,7 +764,7 @@ function TeacherOverview() {
               <button
                 onClick={() => {
                   const tNar = buildTeacherClassNarration();
-                  speakNarration(tNar.radarNarration, { tag: "chart-radar", rate: 0.94 });
+                  speakNarration(tNar.radarNarration, { tag: "chart-radar" });
                 }}
                 title="Dengarkan narasi radar profil keterampilan konsep"
                 style={{
@@ -827,7 +825,7 @@ function TeacherOverview() {
               <button
                 onClick={() => {
                   const tNar = buildTeacherClassNarration();
-                  speakNarration(tNar.insightsNarration, { tag: "chart-insights", rate: 0.94 });
+                  speakNarration(tNar.insightsNarration, { tag: "chart-insights" });
                 }}
                 title="Dengarkan temuan diagnostik AI untuk guru"
                 style={{
@@ -883,7 +881,7 @@ function TeacherOverview() {
               <button
                 onClick={() => {
                   const tNar = buildTeacherClassNarration();
-                  speakNarration(tNar.studentsNarration, { tag: "students-status", rate: 0.94 });
+                  speakNarration(tNar.studentsNarration, { tag: "students-status" });
                 }}
                 style={{
                   background: "rgba(139,92,246,0.12)",
@@ -1476,7 +1474,7 @@ function TeacherHandbook() {
               onClick={() => {
                 speakNarration(
                   `Buku Panduan Guru, bagian ${active + 1} dari ${handbookSections.length}: ${section.title}. ${section.summary} Poin utama: ${section.points.join(" ")} Tips mengajar: ${section.tip}`,
-                  { tag: "handbook-audio", rate: 0.94 }
+                  { tag: "handbook-audio" }
                 );
               }}
               style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)", padding: "11px 18px", borderRadius: 99, fontWeight: 800, fontSize: 13.5, display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0, cursor: "pointer" }}
@@ -1906,7 +1904,10 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
       </div>
 
       {/* right */}
-      <div className="flex items-center" style={{ gap: 12 }}>
+      <div className="flex items-center" style={{ gap: 10 }}>
+        <div className="hidden sm:block">
+          <SpeechSpeedSelector compact />
+        </div>
         <div className="hidden sm:block">
           <StudentProfileSwitcher />
         </div>
@@ -1964,6 +1965,14 @@ export default function CircuitSenseDashboard() {
   const [name, setName] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
+  const nameRef = useRef(name);
+  const roleRef = useRef(role);
+  const hasSpokenWelcomeRef = useRef(false);
+
+  useEffect(() => {
+    nameRef.current = name;
+    roleRef.current = role;
+  }, [name, role]);
 
   // Scroll reveal pop-up observer for LENTERA Learn cards
   useEffect(() => {
@@ -2070,9 +2079,10 @@ export default function CircuitSenseDashboard() {
     return () => window.removeEventListener("lentera-active-student-update", handleStudentSwitch);
   }, []);
 
-  // Narasi sambutan selamat datang di LENTERA Learn (Adaptif: Guru vs Siswa)
+  // Narasi sambutan selamat datang di LENTERA Learn (Hanya 1x saat masuk halaman, mengikuti kecepatan suara pengguna)
   useEffect(() => {
-    if (!authed) return;
+    if (!authed || hasSpokenWelcomeRef.current) return;
+    hasSpokenWelcomeRef.current = true;
     let textToSpeak = "";
 
     if (role === "teacher") {
@@ -2087,37 +2097,36 @@ export default function CircuitSenseDashboard() {
 
     const timer = setTimeout(() => {
       speakNarration(textToSpeak, {
-        rate: 0.94,
         pitch: 1.02,
         tag: "dashboard-overview",
       });
-    }, 700);
+    }, 600);
 
     return () => {
       clearTimeout(timer);
-      cancelSpeech();
     };
-  }, [authed, role]);
+  }, [authed, role, name]);
 
   // Tangible Board Navigation & Report Trigger di LENTERA Learn
-  // - Balok di sel A1 -> Buka Progres Siswa & Bacakan Laporan Siswa Lengkap (jika kartu siswa ditaruh di A1, ganti ke siswa tsb)
-  // - Balok di sel E1 -> Buka Laporan & Analitik Guru & Bacakan Analisis Kelas Lengkap (Ramah Guru Tunanetra!)
-  // - Balok di sel C5 -> Buka & Bacakan Rapor Evaluasi AI (jika kartu siswa ditaruh di C5, ganti ke siswa tsb)
-  // - Kartu identitas di E5 -> Logout ke /
-  // - Balok komponen sirkuit (di luar A1, E1, C5, E5) -> Kembali ke /aruco
+  // ATURAN WAJIB BERSIH PAPAN:
+  // - Setiap kali selesai memilih pintasan (A1, E1, C5) atau baru pindah halaman, papan terkunci (waitingBoardClear = true)
+  //   sampai seluruh balok diangkat dari papan hingga kosong stabil (>= 850ms).
+  // - Ini menjamin narasi A1/E1/C5 TIDAK PERNAH terpotong atau mengulang sendiri meskipun balok dibiarkan lama di papan.
+  // - Untuk berpindah ke LENTERA Lab (/aruco) atau Keluar (E5 -> /), siswa juga wajib mengangkat balok dari papan terlebih dahulu.
   useEffect(() => {
     if (!authed) return;
 
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let clearBoardTimer: ReturnType<typeof setTimeout> | null = null;
     let retryAttempt = 0;
     let isRedirecting = false;
     let cancelled = false;
     const mountTime = Date.now();
-    let initialSnapshotCells: Record<string, string> | null = null;
-    let hasTriggeredA1 = false;
-    let hasTriggeredE1 = false;
-    let hasTriggeredC5 = false;
+    let initializedFirstFrame = false;
+    let waitingBoardClear = false;
+    let pendingNav: { url: string; label: string } | null = null;
+    let lastRemindTime = 0;
 
     const CIRCUIT_COMPONENTS = new Set([
       "battery", "lamp", "switch", "straight_cable", "l_cable", "t_cable", "resistor"
@@ -2184,191 +2193,182 @@ export default function CircuitSenseDashboard() {
                 id?: number;
               }>;
 
-              // Catat posisi balok awal saat pertama masuk dashboard agar rangkaian yang sudah ada di papan tidak memicu redirect palsu
-              if (initialSnapshotCells === null) {
-                initialSnapshotCells = {};
-                for (const [k, v] of Object.entries(cells)) {
-                  if (v && typeof v === "object") {
-                    const obj = v as { component?: string; id?: number };
-                    initialSnapshotCells[k] = `${obj.component || ""}_${obj.id ?? ""}`;
-                  }
-                }
-                return;
-              } else {
-                // Hapus dari daftar snapshot awal jika sel tersebut sudah diangkat oleh siswa
-                for (const k of Object.keys(initialSnapshotCells)) {
-                  if (!cells[k]) {
-                    delete initialSnapshotCells[k];
-                  }
+              // 1. Inisialisasi frame pertama saat masuk LENTERA Learn:
+              // Jika masih ada balok tertinggal di papan saat masuk, kunci sampai papan dibersihkan dulu!
+              if (!initializedFirstFrame) {
+                initializedFirstFrame = true;
+                if (placed.length > 0) {
+                  waitingBoardClear = true;
+                  lastRemindTime = Date.now();
+                  return;
                 }
               }
 
-              // Tahan 1.5 detik awal sejak masuk dashboard
-              if (Date.now() - mountTime < 1500) return;
+              // 2. Jika sedang menunggu siswa mengangkat balok untuk pindah halaman (E5 Logout atau Buka LENTERA Lab)
+              if (pendingNav) {
+                if (placed.length === 0) {
+                  if (isSpeaking()) return;
+                  const targetUrl = pendingNav.url;
+                  pendingNav = null;
+                  isRedirecting = true;
+                  playEarcon("clear");
+                  window.location.href = targetUrl;
+                } else {
+                  const now = Date.now();
+                  if (now - lastRemindTime > 8000 && !isSpeaking()) {
+                    lastRemindTime = now;
+                    playEarcon("clue");
+                    speakNarration(`Silakan angkat semua balok dari papan agar papan bersih sebelum ${pendingNav.label}.`);
+                  }
+                }
+                return;
+              }
+
+              // 3. Jika sedang menunggu papan dibersihkan (setelah memilih A1/E1/C5 atau balok sisa dari halaman sebelumnya)
+              // Papan baru dianggap bersih jika kosong stabil selama >= 850ms (kebal terhadap kedipan kamera!)
+              if (waitingBoardClear) {
+                if (placed.length === 0) {
+                  if (!clearBoardTimer) {
+                    clearBoardTimer = setTimeout(() => {
+                      waitingBoardClear = false;
+                      clearBoardTimer = null;
+                    }, 850);
+                  }
+                } else {
+                  if (clearBoardTimer) {
+                    clearTimeout(clearBoardTimer);
+                    clearBoardTimer = null;
+                  }
+                }
+                return;
+              }
+
+              // Tahan 1.2 detik awal sejak masuk dashboard
+              if (Date.now() - mountTime < 1200) return;
+              if (placed.length === 0) return;
 
               const cellE5 = cells["E5"] as { component?: string; id?: number } | undefined;
-              const isE5Unchanged = Boolean(initialSnapshotCells["E5"]);
               const isE5User = Boolean(
                 cellE5 &&
-                !isE5Unchanged &&
                 (String(cellE5.component || "").startsWith("student_") ||
                  String(cellE5.component || "").startsWith("teacher_") ||
                  [35, 36, 37, 38].includes(Number(cellE5.id)))
               );
 
-              // A. Kartu identitas siswa / guru di E5 -> Logout / Selesai Sesi
+              // A. Kartu identitas siswa / guru di E5 -> Logout / Selesai Sesi (Wajib angkat balok dulu)
               if (isE5User) {
-                isRedirecting = true;
+                waitingBoardClear = true;
                 cancelSpeech();
                 playEarcon("clear");
                 const isTeacher =
-                  role === "teacher" ||
+                  roleRef.current === "teacher" ||
                   String(cellE5?.component || "").startsWith("teacher_") ||
                   Number(cellE5?.id) === 38;
                 const displayName = isTeacher
-                  ? (name || "Guru")
-                  : (getActiveStudent()?.name || name || "Siswa");
+                  ? (nameRef.current || "Guru")
+                  : (getActiveStudent()?.name || nameRef.current || "Siswa");
                 localStorage.removeItem("lentera-session");
+                pendingNav = { url: "/", label: "keluar ke Beranda utama" };
+                lastRemindTime = Date.now();
                 const speechText = isTeacher
-                  ? `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi mengajar telah selesai. Terima kasih telah membimbing siswa bersama LENTERA! Sampai jumpa.`
-                  : `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi belajar ${displayName} selesai. Terima kasih telah belajar bersama LENTERA! Sampai jumpa.`;
+                  ? `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi mengajar selesai. Silakan angkat semua balok dari papan untuk kembali ke Beranda.`
+                  : `Kartu identitas ${displayName} terdeteksi di sel keluar E5. Sesi belajar ${displayName} selesai. Silakan angkat semua balok dari papan untuk kembali ke Beranda.`;
 
-                let navigated = false;
-                const doNavigate = () => {
-                  if (navigated) return;
-                  navigated = true;
-                  clearTimeout(navTimer);
-                  window.location.href = "/";
-                };
-
-                const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
-                const navTimer = setTimeout(doNavigate, fallbackDelay);
-
-                speakNarration(speechText, {
-                  onEnd: () => {
-                    setTimeout(doNavigate, 250);
-                  },
-                });
+                speakNarration(speechText, { tag: "logout-e5" });
                 return;
               }
 
               const cellA1 = cells["A1"] as { component?: string; id?: number } | undefined;
-              const isA1Unchanged = Boolean(initialSnapshotCells["A1"]);
 
               // B1. Balok diletakkan di sel A1 -> Buka Progres Siswa & Bacakan Data Pembelajaran Lengkap!
-              if (cellA1 && !isA1Unchanged) {
-                if (!hasTriggeredA1) {
-                  hasTriggeredA1 = true;
-                  const a1Id = String(cellA1.id ?? "");
-                  const a1Comp = String(cellA1.component || "");
-                  const matchedA1StudentId = STUDENT_TOKEN_MAP[a1Id] || STUDENT_TOKEN_MAP[a1Comp];
-                  if (matchedA1StudentId) {
-                    const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedA1StudentId);
-                    if (targetStudent) {
-                      setActiveStudent(targetStudent);
-                      setName(targetStudent.name);
-                    }
+              if (cellA1) {
+                waitingBoardClear = true;
+                const a1Id = String(cellA1.id ?? "");
+                const a1Comp = String(cellA1.component || "");
+                const matchedA1StudentId = STUDENT_TOKEN_MAP[a1Id] || STUDENT_TOKEN_MAP[a1Comp];
+                if (matchedA1StudentId) {
+                  const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedA1StudentId);
+                  if (targetStudent) {
+                    setActiveStudent(targetStudent);
+                    setName(targetStudent.name);
                   }
-
-                  setShowReportModal(false);
-                  setView("home");
-                  cancelSpeech();
-                  playEarcon("step");
-                  const active = getActiveStudent();
-                  const prog = getStudentProgress(active.id);
-                  const nar = buildStudentLearningNarration(active, prog);
-                  speakNarration(nar.fullReport, {
-                    tag: "full-report",
-                    rate: 0.94,
-                    pitch: 1.02,
-                  });
                 }
+
+                setShowReportModal(false);
+                setView("home");
+                cancelSpeech();
+                playEarcon("step");
+                const active = getActiveStudent();
+                const prog = getStudentProgress(active.id);
+                const nar = buildStudentLearningNarration(active, prog);
+                speakNarration(
+                  `${nar.fullReport} Setelah selesai mendengarkan, silakan angkat balok dari kotak A1 agar papan bersih sebelum memilih menu lain.`,
+                  {
+                    tag: "full-report",
+                    pitch: 1.02,
+                  }
+                );
                 return;
-              } else if (!cellA1) {
-                hasTriggeredA1 = false;
               }
 
               const cellE1 = cells["E1"] as { component?: string; id?: number } | undefined;
-              const isE1Unchanged = Boolean(initialSnapshotCells["E1"]);
 
               // B2. Balok diletakkan di sel E1 (Pojok Kanan Depan) -> Buka Laporan & Analitik Guru + Bacakan Analisis Kelas Lengkap!
-              if (cellE1 && !isE1Unchanged) {
-                if (!hasTriggeredE1) {
-                  hasTriggeredE1 = true;
-                  setShowReportModal(false);
-                  setView("teacher-report");
-                  cancelSpeech();
-                  playEarcon("step");
-                  const teacherNar = buildTeacherClassNarration("Bapak atau Ibu Guru");
-                  speakNarration(teacherNar.fullAnalysis, {
+              if (cellE1) {
+                waitingBoardClear = true;
+                setShowReportModal(false);
+                setView("teacher-report");
+                cancelSpeech();
+                playEarcon("step");
+                const teacherNar = buildTeacherClassNarration("Bapak atau Ibu Guru");
+                speakNarration(
+                  `${teacherNar.fullAnalysis} Setelah selesai mendengarkan, silakan angkat balok dari kotak E1 agar papan bersih sebelum memilih menu lain.`,
+                  {
                     tag: "teacher-full-report",
-                    rate: 0.94,
                     pitch: 1.02,
-                  });
-                }
+                  }
+                );
                 return;
-              } else if (!cellE1) {
-                hasTriggeredE1 = false;
               }
 
               const cellC5 = cells["C5"] as { component?: string; id?: number } | undefined;
-              const isC5Unchanged = Boolean(initialSnapshotCells["C5"]);
-              // B3. Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis) (Edge-triggered)
-              if (cellC5 && !isC5Unchanged) {
-                if (!hasTriggeredC5) {
-                  hasTriggeredC5 = true;
-                  const c5Id = String(cellC5.id ?? "");
-                  const c5Comp = String(cellC5.component || "");
-                  const matchedStudentId = STUDENT_TOKEN_MAP[c5Id] || STUDENT_TOKEN_MAP[c5Comp];
-                  if (matchedStudentId) {
-                    const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedStudentId);
-                    if (targetStudent) {
-                      setActiveStudent(targetStudent);
-                      setName(targetStudent.name);
-                    }
+              // B3. Balok diletakkan di sel C5 -> Buka Rapor Hasil Belajar Siswa (AI Pedagogis)
+              if (cellC5) {
+                waitingBoardClear = true;
+                const c5Id = String(cellC5.id ?? "");
+                const c5Comp = String(cellC5.component || "");
+                const matchedStudentId = STUDENT_TOKEN_MAP[c5Id] || STUDENT_TOKEN_MAP[c5Comp];
+                if (matchedStudentId) {
+                  const targetStudent = PRESET_STUDENTS.find((s) => s.id === matchedStudentId);
+                  if (targetStudent) {
+                    setActiveStudent(targetStudent);
+                    setName(targetStudent.name);
                   }
-
-                  cancelSpeech();
-                  playEarcon("click");
-                  setShowReportModal(true);
                 }
+
+                cancelSpeech();
+                playEarcon("click");
+                setShowReportModal(true);
                 return;
-              } else if (!cellC5) {
-                hasTriggeredC5 = false;
               }
 
-              // C. Balok komponen sirkuit BARU diletakkan (di luar sel A1, E1, C5, E5) -> Kembali ke LENTERA Lab (/aruco)
+              // C. Balok komponen sirkuit BARU diletakkan (di luar sel A1, E1, C5, E5) -> Kembali ke LENTERA Lab (/aruco) (Wajib angkat balok dulu)
               const hasNewCircuitBlockOutsideShortcuts = Object.entries(cells).some(([cellKey, c]) => {
                 if (!c || cellKey === "A1" || cellKey === "E1" || cellKey === "C5" || cellKey === "E5") return false;
                 const obj = c as { component?: string; id?: number };
                 const comp = String(obj.component || "");
                 const id = Number(obj.id);
-                const sig = `${comp}_${obj.id ?? ""}`;
-                if (initialSnapshotCells && initialSnapshotCells[cellKey] === sig) return false;
                 return CIRCUIT_COMPONENTS.has(comp) || (id >= 1 && id <= 7);
               });
 
               if (hasNewCircuitBlockOutsideShortcuts) {
-                isRedirecting = true;
+                waitingBoardClear = true;
                 cancelSpeech();
                 playEarcon("click");
-                const speechText = "Balok komponen terdeteksi di papan. Membuka kembali LENTERA Lab untuk melanjutkan perakitan sirkuit.";
-                let navigated = false;
-                const doNavigate = () => {
-                  if (navigated) return;
-                  navigated = true;
-                  clearTimeout(navTimer);
-                  window.location.href = "/aruco";
-                };
-
-                const fallbackDelay = Math.max(10000, speechText.length * 95 + 3500);
-                const navTimer = setTimeout(doNavigate, fallbackDelay);
-
-                speakNarration(speechText, {
-                  onEnd: () => {
-                    setTimeout(doNavigate, 250);
-                  },
-                });
+                pendingNav = { url: "/aruco", label: "membuka kembali LENTERA Lab" };
+                lastRemindTime = Date.now();
+                const speechText = "Balok komponen terdeteksi di papan. Silakan angkat semua balok dari papan untuk membuka kembali LENTERA Lab.";
+                speakNarration(speechText, { tag: "return-to-lab" });
                 return;
               }
             }
@@ -2397,9 +2397,10 @@ export default function CircuitSenseDashboard() {
       cancelled = true;
       window.removeEventListener("lentera-trigger-buzzer", handleTriggerBuzzer);
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (clearBoardTimer) clearTimeout(clearBoardTimer);
       if (ws) ws.close();
     };
-  }, [authed, name]);
+  }, [authed]);
 
   const logout = () => {
     cancelSpeech();
@@ -2513,12 +2514,12 @@ export default function CircuitSenseDashboard() {
                     onClick={() => {
                       if (isTeacherView) {
                         const tNar = buildTeacherClassNarration("Bapak atau Ibu Guru");
-                        speakNarration(tNar.fullAnalysis, { tag: "teacher-full-report", rate: 0.94 });
+                        speakNarration(tNar.fullAnalysis, { tag: "teacher-full-report" });
                       } else {
                         const active = getActiveStudent();
                         const prog = getStudentProgress();
                         const nar = buildStudentLearningNarration(active, prog);
-                        speakNarration(nar.fullReport, { tag: "student-full-report", rate: 0.94 });
+                        speakNarration(nar.fullReport, { tag: "student-full-report" });
                       }
                     }}
                     style={{
