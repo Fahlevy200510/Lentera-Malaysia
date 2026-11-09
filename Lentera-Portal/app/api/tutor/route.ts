@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
           model: "openai/gpt-oss-120b",
           messages,
           temperature: 0.7,
-          max_tokens: 450,
+          max_tokens: 1500,
         }),
       });
 
@@ -256,9 +256,11 @@ export async function POST(req: NextRequest) {
       }
 
       const data = await groqRes.json();
+      const rawContent: string = data?.choices?.[0]?.message?.content?.trim() || "";
+      const cleanContent = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
       const text: string =
-        data?.choices?.[0]?.message?.content?.trim() ||
-        "Coba raba lagi komponen di papanmu. Apa yang kamu rasakan?";
+        cleanContent ||
+        generateCLEFallbackResponse(message, mode, circuitState).text;
 
       let note = `Mode: ${mode.toUpperCase()}`;
       if (circuitState) {

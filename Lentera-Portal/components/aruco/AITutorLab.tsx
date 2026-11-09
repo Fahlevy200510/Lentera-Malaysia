@@ -136,6 +136,16 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
 
     try {
       const activeCircuit = latestCircuitRef.current;
+      const filteredCells: Record<string, any> = {};
+      if (activeCircuit?.cells) {
+        for (const [pos, val] of Object.entries(activeCircuit.cells)) {
+          // Abaikan balok pintasan push-to-talk di A1, bantuan di A5, atau keluar di E5
+          if (val && !isStudentToken(val) && pos !== "A1" && pos !== "A5" && pos !== "E5") {
+            filteredCells[pos] = val;
+          }
+        }
+      }
+      const cStatus = String(activeCircuit?.status || "open");
       const res = await fetch("/api/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,11 +154,12 @@ export default function AITutorLab({ onBack }: AITutorLabProps = {}) {
           mode: "troubleshooting",
           circuitState: activeCircuit
             ? {
-                status: activeCircuit.status,
-                circuit_closed: activeCircuit.status === "closed",
-                polarity_correct: activeCircuit.status !== "short",
+                status: cStatus,
+                circuit_closed: cStatus === "success" || cStatus === "polarity_reversed",
+                polarity_correct: cStatus !== "polarity_reversed",
+                switch_state: cStatus === "switch_off" ? "off" : "on",
                 graph_type: activeCircuit.graph_type,
-                cells: activeCircuit.cells,
+                cells: filteredCells,
               }
             : null,
           history: messages.slice(-6).map((m) => ({ role: m.role, text: m.text })),

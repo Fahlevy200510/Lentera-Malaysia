@@ -883,7 +883,14 @@ export default function VoiceGuide() {
       if (!isManual && now - lastAITimeRef.current < 16000) return;
       if (!isManual && (isSpeakingRef.current || (window as any).__lenteraSpeaking)) return;
 
-      const placedEntries = Object.entries(cells).filter(([_, v]) => v && !isStudentToken(v));
+      // Kecualikan balok pintasan di A1 (pemicu AI Tutor) dan E5 (kembali ke menu) agar AI tidak mengira itu bagian sirkuit
+      const circuitCells: Record<string, any> = {};
+      for (const [pos, val] of Object.entries(cells)) {
+        if (val && !isStudentToken(val) && pos !== "A1" && pos !== "E5") {
+          circuitCells[pos] = val;
+        }
+      }
+      const placedEntries = Object.entries(circuitCells);
       if (placedEntries.length < 2 && !isManual) return;
 
       lastAITimeRef.current = now;
@@ -893,9 +900,12 @@ export default function VoiceGuide() {
       try {
         const activeStudent = getActiveStudent();
         const sName = activeStudent?.name || "Siswa";
-        const placedSummary = placedEntries
-          .map(([pos, v]) => `${COMPONENT_LABEL[(v as any).component] || (v as any).component} di sel ${pos}`)
-          .join(", ");
+        const placedSummary =
+          placedEntries.length > 0
+            ? placedEntries
+                .map(([pos, v]) => `${COMPONENT_LABEL[(v as any).component] || (v as any).component} di sel ${pos}`)
+                .join(", ")
+            : "belum ada balok sirkuit di area tengah papan";
 
         let promptMessage = `Siswa bernama ${sName} sedang merakit rangkaian bebas di lab. Komponen terpasang saat ini: ${placedSummary}.`;
         if (status === "polarity_reversed") {
@@ -917,8 +927,10 @@ export default function VoiceGuide() {
             mode: "exploration",
             message: promptMessage,
             circuitState: {
-              cells,
+              cells: circuitCells,
               status,
+              circuit_closed: ["success", "polarity_reversed"].includes(status),
+              polarity_correct: status !== "polarity_reversed",
               placedCount: placedEntries.length,
             },
           }),
@@ -1273,14 +1285,30 @@ export default function VoiceGuide() {
           hasTriggeredSuccessEarconRef.current = false;
         }
 
-        // 3. Jika rangkaian belum menyala dan ada >= 2 balok, jadwalkan pengamatan AI Live Tutor saat papan stabil 3.5s
-        if (placedCount >= 2) {
+        // 3. Jika rangkaian belum menyala dan ada >= 2 balok sirkuit, jadwalkan pengamatan AI Live Tutor hanya saat susunan balok berubah dan stabil 3.5s
+        const circuitEntries = Object.entries(cells)
+          .filter(([pos, v]) => Boolean(v) && !isStudentToken(v) && pos !== "A1" && pos !== "E5")
+          .sort(([a], [b]) => a.localeCompare(b));
+        const currentCellsSignature = `${detail?.status || "open"}|${circuitEntries
+          .map(([pos, v]) => `${pos}:${(v as any).component}:${normalizeRotation((v as any).rotation)}`)
+          .join(",")}`;
+
+        if (circuitEntries.length >= 2) {
+          if (currentCellsSignature !== lastEvaluatedCellsRef.current) {
+            lastEvaluatedCellsRef.current = currentCellsSignature;
+            if (freeExplorationTimerRef.current) {
+              clearTimeout(freeExplorationTimerRef.current);
+            }
+            freeExplorationTimerRef.current = setTimeout(() => {
+              triggerAITutor(latestCellsRef.current || cells, latestStatusRef.current || detail?.status || "open");
+            }, 3500);
+          }
+        } else {
+          lastEvaluatedCellsRef.current = "";
           if (freeExplorationTimerRef.current) {
             clearTimeout(freeExplorationTimerRef.current);
+            freeExplorationTimerRef.current = null;
           }
-          freeExplorationTimerRef.current = setTimeout(() => {
-            triggerAITutor(cells, detail?.status || "open");
-          }, 3500);
         }
         return;
       }
