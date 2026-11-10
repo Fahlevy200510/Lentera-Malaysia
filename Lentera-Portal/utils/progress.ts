@@ -48,9 +48,9 @@ export const DEFAULT_PROGRESS: StudentProgress = {
 };
 
 export const PRESET_STUDENTS: StudentProfile[] = [
-  { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" },
-  { id: "amira", name: "Amira", grade: "Kelas 11 SMA", avatar: "amira" },
-  { id: "luthfi", name: "Luthfi", grade: "Kelas 11 SMA", avatar: "luthfi" },
+  { id: "via", name: "Via", grade: "Siswa", avatar: "via" },
+  { id: "amira", name: "Amira", grade: "Siswa", avatar: "amira" },
+  { id: "luthfi", name: "Luthfi", grade: "Siswa", avatar: "luthfi" },
   { id: "guest", name: "Tamu / Juri Eksplorasi", grade: "Pengamat", avatar: "guest" },
 ];
 
@@ -100,9 +100,14 @@ export function getStudentProfiles(): StudentProfile[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Auto-migrate jika masih ada profil mockup lama
+      // Auto-migrate jika masih ada profil mockup lama atau label SMA
       const hasOldProfiles = parsed.some(
-        (p: any) => p.id === "ahmad" || p.id === "siti" || p.id === "dimas" || p.id === "ajib"
+        (p: any) =>
+          p.id === "ahmad" ||
+          p.id === "siti" ||
+          p.id === "dimas" ||
+          p.id === "ajib" ||
+          String(p.grade || "").toUpperCase().includes("SMA")
       );
       if (hasOldProfiles) {
         localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(PRESET_STUDENTS));
@@ -139,6 +144,10 @@ export function getActiveStudent(): StudentProfile {
       localStorage.setItem(ACTIVE_STUDENT_KEY, JSON.stringify(PRESET_STUDENTS[0]));
       return PRESET_STUDENTS[0];
     }
+    if (String(parsed?.grade || "").toUpperCase().includes("SMA")) {
+      parsed.grade = "Siswa";
+      localStorage.setItem(ACTIVE_STUDENT_KEY, JSON.stringify(parsed));
+    }
     return parsed;
   } catch {
     return PRESET_STUDENTS[0];
@@ -168,7 +177,7 @@ export function setActiveStudent(student: StudentProfile): void {
   }
 }
 
-export function addStudentProfile(name: string, grade: string = "Kelas 11 SMA"): StudentProfile {
+export function addStudentProfile(name: string, grade: string = "Siswa"): StudentProfile {
   const cleanName = name.trim();
   const id = `student_${cleanName.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${Date.now().toString().slice(-4)}`;
   const newProfile: StudentProfile = {
@@ -322,7 +331,6 @@ export function buildStudentLearningNarration(
   progress: StudentProgress
 ): LearningNarration {
   const name = student?.name || "Siswa";
-  const grade = student?.grade || "Kelas 11 SMA";
 
   // Level & XP
   const xp = progress.xp;
@@ -397,10 +405,10 @@ export function buildStudentLearningNarration(
   }
 
   // Short overview on enter
-  const shortOverview = `Selamat datang di Dashboard LENTERA Learn, ${name}! Kamu berada di ${grade}, berstatus ${levelTitle} dengan perolehan ${xp} XP. Pelajaran fokusmu hari ini adalah ${lessonTitle}. Letakkan balok di sel A1 untuk mendengarkan rincian progres belajarmu, sel E1 bagi Guru untuk membuka dan mendengarkan Laporan Analitik Kelas, sel C5 untuk membuka Rapor Evaluasi AI, atau sel E5 untuk mengakhiri sesi.`;
+  const shortOverview = `Selamat datang di Dashboard LENTERA Learn, ${name}! Kamu berstatus ${levelTitle} dengan perolehan ${xp} XP. Pelajaran fokusmu hari ini adalah ${lessonTitle}. Letakkan balok di sel A1 untuk mendengarkan rincian progres belajarmu, sel E1 bagi Guru untuk membuka dan mendengarkan Laporan Analitik Kelas, sel C5 untuk membuka Rapor Evaluasi AI, atau sel E5 untuk mengakhiri sesi.`;
 
   // Full comprehensive report
-  const fullReport = `Laporan data pembelajaran lengkap untuk ${name}, ${grade}. Pertama, ringkasan tingkatan: Kamu telah mengumpulkan ${xp} XP dan berada di ${levelTitle}, dengan progres ${xpPercent} persen menuju tingkatan berikutnya. Kedua, capaian modul: ${modulesNarration} Ketiga, peta penguasaan keterampilan: ${skillsNarration} Keempat, penghargaan dan pencapaian: ${achievementsNarration} Kelima, rekomendasi belajar hari ini adalah ${lessonTitle}: ${lessonDesc}. Letakkan balok di sel E1 jika Guru ingin mendengarkan Laporan Analitik Kelas, sel C5 untuk membuka Rapor Evaluasi AI, atau letakkan balok komponen di tengah papan untuk kembali merakit di LENTERA Lab.`;
+  const fullReport = `Laporan data pembelajaran lengkap untuk ${name}. Pertama, ringkasan tingkatan: Kamu telah mengumpulkan ${xp} XP dan berada di ${levelTitle}, dengan progres ${xpPercent} persen menuju tingkatan berikutnya. Kedua, capaian modul: ${modulesNarration} Ketiga, peta penguasaan keterampilan: ${skillsNarration} Keempat, penghargaan dan pencapaian: ${achievementsNarration} Kelima, rekomendasi belajar hari ini adalah ${lessonTitle}: ${lessonDesc}. Letakkan balok di sel E1 jika Guru ingin mendengarkan Laporan Analitik Kelas, sel C5 untuk membuka Rapor Evaluasi AI, atau letakkan balok komponen di tengah papan untuk kembali merakit di LENTERA Lab.`;
 
   return {
     shortOverview,
@@ -413,7 +421,7 @@ export function buildStudentLearningNarration(
 export function buildTeacherClassNarration(teacherName: string = "Bapak atau Ibu Guru") {
   const briefing = `Selamat datang di Dashboard Guru LENTERA Learn, ${teacherName}. Ringkasan kelas hari ini: 19 dari 24 siswa aktif praktikum dengan rata-rata penguasaan materi kelas mencapai 68 persen. Tren pemahaman kelas terus meningkat positif sebesar 26 persen. Tekan tombol Analisis Kelas atau letakkan balok di sel A1 untuk mendengarkan rincian lengkap grafik kurva tren, profil radar keterampilan, dan status tiap siswa.`;
 
-  const trendNarration = `Analisis Grafik Tren Penguasaan Kelas: Pemahaman kelas 11 SMA menunjukkan tren kenaikan stabil sebesar 26 persen selama 6 minggu terakhir. Dimulai dari 42 persen pada Minggu 1, naik menjadi 48 persen di Minggu 2, 55 persen di Minggu 3, 61 persen di Minggu 4, 65 persen di Minggu 5, dan mencapai 68 persen pada Minggu 6. Arah kurva berstatus positif dan konsisten naik.`;
+  const trendNarration = `Analisis Grafik Tren Penguasaan Kelas: Pemahaman siswa menunjukkan tren kenaikan stabil sebesar 26 persen selama 6 minggu terakhir. Dimulai dari 42 persen pada Minggu 1, naik menjadi 48 persen di Minggu 2, 55 persen di Minggu 3, 61 persen di Minggu 4, 65 persen di Minggu 5, dan mencapai 68 persen pada Minggu 6. Arah kurva berstatus positif dan konsisten naik.`;
 
   const radarNarration = `Analisis Radar Profil Keterampilan Kelas: Kemampuan tertinggi siswa berada pada konsep Baterai dengan nilai 90 persen dan Kabel 82 persen. Saklar berada di 76 persen dan Rangkaian Seri di 63 persen. Namun, konsep Aliran Arus berada di 54 persen karena miskonsepsi kutub, serta Rangkaian Paralel berada di angka terendah yaitu 38 persen. Topik rangkaian paralel sangat disarankan menjadi fokus bimbingan tatap muka berikutnya.`;
 
@@ -421,7 +429,7 @@ export function buildTeacherClassNarration(teacherName: string = "Bapak atau Ibu
 
   const studentsNarration = `Laporan Capaian Individu Siswa: Tiga siswa teratas berstatus siap naik level, yaitu Via 92 persen, Luthfi 85 persen, dan Amira 75 persen. Dua siswa sesuai target yaitu Lina 72 persen dan Kai 64 persen. Satu siswa memerlukan pendampingan khusus yaitu Bagas dengan nilai 38 persen.`;
 
-  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa Kelas 11 SMA, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Untuk melihat dan mendengar Rapor Evaluasi AI per anak, letakkan kartu identitas siswa Via, Amira, atau Luthfi di sel C5, atau letakkan balok di sel A1 untuk kembali ke tampilan Progres Siswa.`;
+  const fullAnalysis = `Laporan Lengkap Pembelajaran Kelas untuk ${teacherName}. Pertama, aktivitas kelas: Dari 24 siswa terdaftar, 19 siswa aktif praktikum hari ini dengan rata-rata penguasaan 68 persen, dan 142 sesi pelajaran telah tuntas minggu ini. Kedua, ${trendNarration} Ketiga, ${radarNarration} Keempat, ${studentsNarration} Kelima, ${insightsNarration} Untuk melihat dan mendengar Rapor Evaluasi AI per anak, letakkan kartu identitas siswa Via, Amira, atau Luthfi di sel C5, atau letakkan balok di sel A1 untuk kembali ke tampilan Progres Siswa.`;
 
   return {
     briefing,

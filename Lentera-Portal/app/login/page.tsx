@@ -91,7 +91,7 @@ function LoginFormContent() {
         email: "teacher@lentera.demo",
         name: "Guru",
         role: "teacher" as const,
-        grade: "Guru Fisika · Kelas 11 SMA",
+        grade: "Guru Fisika",
       };
       localStorage.setItem("lentera-session", JSON.stringify(session));
       const speechText = "Masuk sebagai Guru Fisika. Membuka Dashboard Guru LENTERA Learn.";
@@ -110,7 +110,7 @@ function LoginFormContent() {
         },
       });
     } else {
-      const student = PRESET_STUDENTS[0] || { id: "via", name: "Via", grade: "Kelas 11 SMA", avatar: "via" };
+      const student = PRESET_STUDENTS[0] || { id: "via", name: "Via", grade: "Siswa", avatar: "via" };
       setActiveStudent(student);
       const session = {
         id: "student-via",
@@ -120,7 +120,7 @@ function LoginFormContent() {
         grade: student.grade,
       };
       localStorage.setItem("lentera-session", JSON.stringify(session));
-      const speechText = `Masuk sebagai ${student.name}, siswa kelas 11 SMA. Membuka ruang praktikum LENTERA Lab.`;
+      const speechText = `Masuk sebagai ${student.name}. Membuka ruang praktikum LENTERA Lab.`;
       let navigated = false;
       const doNavigate = () => {
         if (navigated) return;

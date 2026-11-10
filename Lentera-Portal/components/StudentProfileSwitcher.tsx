@@ -18,7 +18,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
   const [isOpen, setIsOpen] = useState(false);
   const [showAddInput, setShowAddInput] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newGrade, setNewGrade] = useState("Kelas 11 SMA");
+  const [newGrade, setNewGrade] = useState("Siswa");
   const [toast, setToast] = useState<string | null>(null);
   const [openUpward, setOpenUpward] = useState(false);
   const [alignLeft, setAlignLeft] = useState(false);
@@ -116,7 +116,7 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
             ? "flex w-full max-w-full items-center justify-between gap-2 rounded-xl border border-[#735CDD]/25 bg-white px-2.5 py-2 text-xs font-semibold text-[#1D1836] shadow-sm transition-all hover:border-[#735CDD]/50 hover:bg-[#FAF8FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
             : "flex w-full max-w-full items-center justify-between gap-2 rounded-full border border-[#735CDD]/25 bg-[#F4F1FF] px-3 py-1.5 text-xs font-semibold text-[#1D1836] shadow-sm transition-all hover:border-[#735CDD]/50 hover:bg-[#EAE4FF] focus:outline-none focus:ring-2 focus:ring-[#735CDD]/30"
         }
-        title={`Ganti Siswa Aktif (${active.name} - ${active.grade})`}
+        title={`Ganti Siswa Aktif (${active.name})`}
       >
         <div className="flex min-w-0 items-center gap-2 flex-1">
           <StudentAvatarBadge
@@ -130,9 +130,6 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
           <div className="text-left min-w-0 flex-1 truncate leading-tight">
             <span className="font-extrabold text-xs text-[#1D1836]">
               {active.name}
-            </span>{" "}
-            <span className="text-[10px] font-medium text-[#5E548E]">
-              ({active.grade})
             </span>
           </div>
         </div>
@@ -206,8 +203,6 @@ export default function StudentProfileSwitcher({ compact = false }: { compact?: 
                         )}
                       </div>
                       <div className="text-[10px] text-[#5E548E] flex items-center gap-1">
-                        <span className="truncate">{p.grade}</span>
-                        <span>•</span>
                         <span className="text-[#5840BA] font-extrabold shrink-0">
                           {prog.xp} XP
                         </span>

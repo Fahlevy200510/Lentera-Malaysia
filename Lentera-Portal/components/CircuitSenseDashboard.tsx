@@ -621,7 +621,7 @@ const insights: Insight[] = [
 
 interface Stat { label: string; value: string; icon: LucideIcon; color: string; sub: string; }
 const tStats: Stat[] = [
-  { label: "Siswa", value: "24", icon: GraduationCap, color: C.primary, sub: "di Kelas 11 SMA" },
+  { label: "Siswa", value: "24", icon: GraduationCap, color: C.primary, sub: "terdaftar aktif" },
   { label: "Rata-rata penguasaan", value: "68%", icon: Target, color: C.green, sub: "+6% bulan ini" },
   { label: "Aktif hari ini", value: "19", icon: Zap, color: C.blue, sub: "dari 24 siswa" },
   { label: "Pelajaran selesai", value: "142", icon: CheckCircle2, color: C.pink, sub: "minggu ini" },
@@ -875,7 +875,7 @@ function TeacherOverview() {
         <SectionTitle
           icon={GraduationCap}
           title="Siswa"
-          sub="Kelas 11 SMA · Kelistrikan"
+          sub="Praktikum Kelistrikan"
           right={
             <div className="flex items-center" style={{ gap: 8 }}>
               <button
@@ -1465,7 +1465,7 @@ function TeacherHandbook() {
             <div>
               <div style={{ fontFamily: HEAD, fontWeight: 800, fontSize: 19 }}>Buku Panduan Guru Digital</div>
               <div style={{ fontSize: 13, opacity: 0.9, marginTop: 3, maxWidth: 480 }}>
-                Materi rangkaian listrik sederhana yang dirancang sebagai panduan mengajar untuk siswa tunanetra dan low vision di tingkat SMPLB.
+                Materi rangkaian listrik sederhana yang dirancang sebagai panduan mengajar untuk siswa tunanetra dan low vision.
               </div>
             </div>
           </div>
@@ -1681,7 +1681,7 @@ function LoginPage({ onLogin }: { onLogin: (role: "student" | "teacher" | "paren
               Pendamping lab sains adaptif — belajar melalui sentuhan, suara, dan AI yang memahami.
             </div>
             <p style={{ fontSize: 12.5, opacity: 0.88, lineHeight: 1.55, maxWidth: 560, position: "relative" }}>
-              LENTERA menghadirkan Smart Tactile Experiment Board dan Context-Aware Learning Engine untuk siswa tunanetra dan low vision di tingkat SMPLB, dirancang untuk siswa, guru, dan orang tua.
+              LENTERA menghadirkan Smart Tactile Experiment Board dan Context-Aware Learning Engine untuk siswa tunanetra dan low vision, dirancang untuk siswa, guru, dan orang tua.
             </p>
             <div className="flex items-center" style={{ gap: 8, marginTop: 18, fontSize: 11.5, fontWeight: 700, opacity: 0.9, position: "relative" }}>
               <ShieldCheck size={15} /> Dibuat untuk semua pembelajar — dukungan Braille &amp; suara
@@ -1859,7 +1859,7 @@ function TopBar({ view, setView, role, name, onLogout }: ShellProps) {
     { id: "lab", label: "Lab", icon: ScanEye, href: "/aruco" },
   ];
   const fallbackName = role === "student" ? "Via" : role === "parent" ? "Orang Tua / Wali" : "Guru";
-  const tag = role === "student" ? "Teknisi · Lv 2" : role === "parent" ? "Orang tua siswa" : "Kelas 11 SMA · Guru";
+  const tag = role === "student" ? "Teknisi · Lv 2" : role === "parent" ? "Orang tua siswa" : "Guru Pendamping";
   const person = { name: name || fallbackName, tag };
   return (
     <header
@@ -2485,12 +2485,12 @@ export default function CircuitSenseDashboard() {
   const subheading = view === "handbook"
     ? "Panduan mengajar materi rangkaian listrik sederhana untuk siswa tunanetra dan low vision."
     : isTeacherView
-    ? "Evaluasi perkembangan Kelas 11 SMA, diagnostik papan AI, dan pencetakan Rapor Siswa."
+    ? "Evaluasi perkembangan siswa, diagnostik papan AI, dan pencetakan Rapor Siswa."
     : role === "student"
     ? "Kamu tinggal satu pelajaran lagi untuk meraih lencana berikutnya."
     : role === "parent"
     ? "Berikut progres belajar anak Anda minggu ini."
-    : "Berikut perkembangan Kelas 11 SMA hari ini.";
+    : "Berikut perkembangan belajar siswa hari ini.";
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", fontFamily: BODY, color: C.text, position: "relative" }}>

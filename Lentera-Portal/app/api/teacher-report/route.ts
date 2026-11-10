@@ -103,7 +103,6 @@ export async function POST(req: NextRequest) {
       .map(([k]) => MODULE_NAME_ID[k] || k);
 
     const userPrompt = `Nama Siswa: ${studentName}
-Kelas: ${student?.grade ?? "Kelas 11 SMA"}
 Total XP: ${xp}
 Modul Selesai: ${completedNames.length > 0 ? completedNames.join(", ") : "Dalam tahap awal pengenalan"}
 Modul Belum Selesai / Sedang Ditempuh: ${pendingNames.length > 0 ? pendingNames.join(", ") : "Semua modul tuntas"}

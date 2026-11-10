@@ -59,7 +59,7 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
 
     // Auto-narasi ramah untuk guru & siswa tunanetra saat rapor dibuka
     const nar = buildStudentLearningNarration(currentStudent, currentProgress);
-    const welcome = `Rapor Hasil Belajar untuk ${currentStudent.name}, ${currentStudent.grade}. Total perolehan ${currentProgress.xp} XP. ${nar.modulesNarration} Setelah selesai mendengarkan, silakan angkat balok dari kotak C5 agar papan bersih. Tekan Escape untuk menutup rapor.`;
+    const welcome = `Rapor Hasil Belajar untuk ${currentStudent.name}. Total perolehan ${currentProgress.xp} XP. ${nar.modulesNarration} Setelah selesai mendengarkan, silakan angkat balok dari kotak C5 agar papan bersih. Tekan Escape untuk menutup rapor.`;
 
     setIsSpeakingReport(true);
     speakNarration(welcome, {
@@ -376,9 +376,9 @@ export default function StudentReportModal({ isOpen, onClose }: StudentReportMod
                     </p>
                   </td>
                   <td className="w-1/2 pb-1.5 pl-2 align-top">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Kelas / Kelompok:</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Status Peserta:</span>
                     <p className="font-heading text-sm font-extrabold text-slate-900 mt-0.5">
-                      {student.grade}
+                      Siswa Praktikum LENTERA
                     </p>
                   </td>
                 </tr>
