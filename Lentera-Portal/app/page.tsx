@@ -1076,13 +1076,13 @@ export default function PortalHome() {
                     onEnd: () => {
                       promptFinishedForDefaultSpeed = true;
                       if (!redirected && !awaitingLiftTarget) {
-                        // Berikan jeda 8.5 detik agar siswa sempat mencerna narasi & berpikir selagi balok masih di kotak asal
+                        // Berikan jeda 5 detik agar siswa sempat mencerna narasi & berpikir selagi balok masih di kotak asal
                         if (speedTimer) clearTimeout(speedTimer);
                         speedTimer = setTimeout(() => {
                           if (!redirected && !awaitingLiftTarget) {
                             promptLiftForDefaultSpeed();
                           }
-                        }, 8500);
+                        }, 5000);
                       }
                     },
                   });
