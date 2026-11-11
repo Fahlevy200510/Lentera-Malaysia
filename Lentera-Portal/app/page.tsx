@@ -804,6 +804,33 @@ export default function PortalHome() {
 
               // 0. JIKA SEDANG MENUNGGU BALOK DIANGKAT AGAR PAPAN BERSIH SEBELUM MASUK LAB / LEARN:
               if (awaitingLiftTarget) {
+                // Jaring pengaman: Jika saat menunggu angkat balok ke Lab siswa ternyata meletakkan balok di baris 2 (A2 - E2),
+                // tetap terima dan ubah kecepatan suara sesuai keinginan siswa!
+                if (awaitingLiftTarget.url === "/aruco") {
+                  let overrideSlot: string | null = null;
+                  for (const slot of Object.keys(SPEED_MODES)) {
+                    if (data.cells[slot]) {
+                      overrideSlot = slot;
+                      break;
+                    }
+                  }
+                  if (overrideSlot) {
+                    const chosen = SPEED_MODES[overrideSlot];
+                    cancelSpeech();
+                    playEarcon("step");
+                    setSavedSpeechRate(chosen.rate);
+                    setSpeedPrompt({
+                      active: true,
+                      studentName: getActiveStudent().name,
+                      selectedMode: chosen.name,
+                      selectedSlot: overrideSlot,
+                    });
+                    const confirmText = `Mode ${chosen.name} aktif! Silakan angkat balok dari papan agar papan bersih sebelum masuk ke LENTERA Lab.`;
+                    requestLiftThenNavigate("/aruco", "LENTERA Lab", confirmText, chosen.rate);
+                    return;
+                  }
+                }
+
                 if (allPlacedCount === 0) {
                   if (isSpeaking()) return;
                   redirected = true;
@@ -875,12 +902,15 @@ export default function PortalHome() {
                 }
 
                 // Jika siswa mengangkat balok (baik untuk memindahkannya ke A2-E2 maupun mengangkatnya dari papan):
-                // JANGAN langsung mengunci kecepatan lama! Berikan waktu 4 detik penuh sejak balok diangkat
-                // agar tangan siswa leluasa meraba dan meletakkan balok ke A2-E2.
+                // JANGAN langsung mengunci kecepatan lama! Balok terangkat berarti siswa sedang bergerak.
                 if (allPlacedCount === 0) {
-                  if (!wasBoardEmptyDuringSpeedChoice && promptFinishedForDefaultSpeed && !isSpeaking()) {
+                  if (!wasBoardEmptyDuringSpeedChoice) {
                     wasBoardEmptyDuringSpeedChoice = true;
+                    // Balok sudah diangkat dari kotak asal! Segera batalkan timer konfirmasi kotak asal.
                     if (speedTimer) clearTimeout(speedTimer);
+
+                    // Berikan waktu leluasa 10 detik bagi tangan siswa untuk meraba dan meletakkan balok di A2-E2.
+                    // Jika selama 10 detik papan tetap kosong (tidak ditaruh di A2-E2), barulah masuk Lab dengan kecepatan saat ini.
                     const savedRate = getSavedSpeechRate();
                     const savedEntry = Object.entries(SPEED_MODES).find(
                       ([, cfg]) => Math.abs(cfg.rate - savedRate) < 0.05
@@ -903,7 +933,7 @@ export default function PortalHome() {
                         );
                         setTimeout(() => router.push("/aruco"), 3200);
                       }
-                    }, 4000);
+                    }, 10000);
                   }
                 } else {
                   wasBoardEmptyDuringSpeedChoice = false;
@@ -1046,18 +1076,18 @@ export default function PortalHome() {
                     onEnd: () => {
                       promptFinishedForDefaultSpeed = true;
                       if (!redirected && !awaitingLiftTarget) {
-                        // Beri waktu 4.5 detik setelah suara selesai agar siswa sempat mengangkat & memindahkan balok ke A2-E2
+                        // Berikan jeda 8.5 detik agar siswa sempat mencerna narasi & berpikir selagi balok masih di kotak asal
                         if (speedTimer) clearTimeout(speedTimer);
                         speedTimer = setTimeout(() => {
                           if (!redirected && !awaitingLiftTarget) {
                             promptLiftForDefaultSpeed();
                           }
-                        }, 4500);
+                        }, 8500);
                       }
                     },
                   });
 
-                  const maxTimeout = Math.max(24000, promptText.length * 110 + 6000);
+                  const maxTimeout = Math.max(30000, promptText.length * 110 + 10000);
                   speedTimer = setTimeout(promptLiftForDefaultSpeed, maxTimeout);
                   return;
                 }
