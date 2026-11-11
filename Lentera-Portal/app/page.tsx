@@ -621,6 +621,7 @@ export default function PortalHome() {
     let lastLiftRemindTime = 0;
     let latestPlacedTotal = 0;
     let promptFinishedForDefaultSpeed = false;
+    let wasBoardEmptyDuringSpeedChoice = false;
 
     let retryAttempt = 0;
 
@@ -873,23 +874,41 @@ export default function PortalHome() {
                   return;
                 }
 
-                // Jika siswa langsung mengangkat kartu identitasnya (papan sudah kosong) untuk mempertahankan kecepatan saat ini:
-                if (allPlacedCount === 0 && promptFinishedForDefaultSpeed && !isSpeaking()) {
-                  if (speedTimer) clearTimeout(speedTimer);
-                  redirected = true;
-                  isRedirectingRef.current = true;
-                  const savedRate = getSavedSpeechRate();
-                  playEarcon("clear");
-                  speakNarration("Papan sudah bersih. Membuka LENTERA Lab.", {
-                    rate: savedRate,
-                    pitch: 1.02,
-                    tag: "speed-default-clear",
-                    onEnd: () => router.push("/aruco"),
-                  });
-                  setTimeout(() => router.push("/aruco"), 2200);
-                  return;
+                // Jika siswa mengangkat balok (baik untuk memindahkannya ke A2-E2 maupun mengangkatnya dari papan):
+                // JANGAN langsung mengunci kecepatan lama! Berikan waktu 4 detik penuh sejak balok diangkat
+                // agar tangan siswa leluasa meraba dan meletakkan balok ke A2-E2.
+                if (allPlacedCount === 0) {
+                  if (!wasBoardEmptyDuringSpeedChoice && promptFinishedForDefaultSpeed && !isSpeaking()) {
+                    wasBoardEmptyDuringSpeedChoice = true;
+                    if (speedTimer) clearTimeout(speedTimer);
+                    const savedRate = getSavedSpeechRate();
+                    const savedEntry = Object.entries(SPEED_MODES).find(
+                      ([, cfg]) => Math.abs(cfg.rate - savedRate) < 0.05
+                    );
+                    const savedModeName = savedEntry ? savedEntry[1].name : "Normal";
+                    speedTimer = setTimeout(() => {
+                      if (redirected || awaitingLiftTarget) return;
+                      if (latestPlacedTotal === 0) {
+                        redirected = true;
+                        isRedirectingRef.current = true;
+                        playEarcon("clear");
+                        speakNarration(
+                          `Kecepatan Mode ${savedModeName} dipertahankan. Papan sudah bersih, membuka LENTERA Lab.`,
+                          {
+                            rate: savedRate,
+                            pitch: 1.02,
+                            tag: "speed-default-clear",
+                            onEnd: () => router.push("/aruco"),
+                          }
+                        );
+                        setTimeout(() => router.push("/aruco"), 3200);
+                      }
+                    }, 4000);
+                  }
+                } else {
+                  wasBoardEmptyDuringSpeedChoice = false;
                 }
-                return; // Masih menunggu gerakan siswa atau timeout
+                return; // Masih menunggu gerakan siswa ke A2-E2 atau timeout
               }
 
               // B. DETEKSI IDENTITAS DI PAPAN
@@ -978,6 +997,7 @@ export default function PortalHome() {
                   // Jika ditaruh di sel lain: Tawarkan pilihan kecepatan di Baris 2
                   awaitingSpeedStudent = detectedUserMeta;
                   promptFinishedForDefaultSpeed = false;
+                  wasBoardEmptyDuringSpeedChoice = false;
                   const currentRate = getSavedSpeechRate();
                   const currentEntry = Object.entries(SPEED_MODES).find(
                     ([, cfg]) => Math.abs(cfg.rate - currentRate) < 0.05
@@ -990,7 +1010,7 @@ export default function PortalHome() {
                     currentMode: currentMode,
                   });
 
-                  const promptText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode ${currentMode}. Jika ingin mengganti kecepatan, geser balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal. Jika ingin tetap menggunakan kecepatan ini, silakan angkat balokmu dari papan untuk masuk ke LENTERA Lab.`;
+                  const promptText = `Selamat datang, ${detectedUserMeta.name}! Kartu identitasmu terdeteksi. Kecepatan suaramu saat ini adalah Mode ${currentMode}. Jika ingin mengganti kecepatan, pindahkan balokmu ke baris kedua: A2 untuk Normal, B2 Sedang, C2 Cepat, D2 Sangat Cepat, atau E2 Maksimal. Jika ingin tetap menggunakan kecepatan ini, biarkan saja balokmu di tempatnya.`;
 
                   const promptLiftForDefaultSpeed = () => {
                     if (redirected || awaitingLiftTarget) return;
@@ -999,13 +1019,16 @@ export default function PortalHome() {
                       redirected = true;
                       isRedirectingRef.current = true;
                       playEarcon("clear");
-                      speakNarration("Papan sudah bersih. Membuka LENTERA Lab.", {
-                        rate: currentRate,
-                        pitch: 1.02,
-                        tag: "speed-default-clear",
-                        onEnd: () => router.push("/aruco"),
-                      });
-                      setTimeout(() => router.push("/aruco"), 2200);
+                      speakNarration(
+                        `Kecepatan Mode ${currentMode} dipertahankan. Papan sudah bersih, membuka LENTERA Lab.`,
+                        {
+                          rate: currentRate,
+                          pitch: 1.02,
+                          tag: "speed-default-clear",
+                          onEnd: () => router.push("/aruco"),
+                        }
+                      );
+                      setTimeout(() => router.push("/aruco"), 3200);
                     } else {
                       requestLiftThenNavigate(
                         "/aruco",
@@ -1023,15 +1046,13 @@ export default function PortalHome() {
                     onEnd: () => {
                       promptFinishedForDefaultSpeed = true;
                       if (!redirected && !awaitingLiftTarget) {
-                        if (latestPlacedTotal === 0) {
-                          promptLiftForDefaultSpeed();
-                        } else {
-                          speedTimer = setTimeout(() => {
-                            if (!redirected && !awaitingLiftTarget) {
-                              promptLiftForDefaultSpeed();
-                            }
-                          }, 3500);
-                        }
+                        // Beri waktu 4.5 detik setelah suara selesai agar siswa sempat mengangkat & memindahkan balok ke A2-E2
+                        if (speedTimer) clearTimeout(speedTimer);
+                        speedTimer = setTimeout(() => {
+                          if (!redirected && !awaitingLiftTarget) {
+                            promptLiftForDefaultSpeed();
+                          }
+                        }, 4500);
                       }
                     },
                   });
