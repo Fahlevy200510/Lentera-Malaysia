@@ -1041,16 +1041,9 @@ export default function VoiceGuide() {
         }
       }
 
+      // Papan kosong (sudah di-debounce backend) langsung membuka kunci menu, agar siswa yang memindah balok cepat ke menu baru tetap terbaca
       if (ignoreIdleMenuUntilLiftRef.current && placedCount === 0) {
-        if (!clearBoardTimerRef.current) {
-          clearBoardTimerRef.current = setTimeout(() => {
-            ignoreIdleMenuUntilLiftRef.current = false;
-            clearBoardTimerRef.current = null;
-          }, 500);
-        }
-      } else if (placedCount > 0 && clearBoardTimerRef.current) {
-        clearTimeout(clearBoardTimerRef.current);
-        clearBoardTimerRef.current = null;
+        ignoreIdleMenuUntilLiftRef.current = false;
       }
 
       // =========================================================================
@@ -1181,18 +1174,12 @@ export default function VoiceGuide() {
         if (Date.now() - mountTimeRef.current < 2500) return;
 
         if (ignoreIdleMenuUntilLiftRef.current) {
-          if (placedCount === 0) {
-            if (!clearBoardTimerRef.current) {
-              clearBoardTimerRef.current = setTimeout(() => {
-                ignoreIdleMenuUntilLiftRef.current = false;
-                clearBoardTimerRef.current = null;
-              }, 800);
-            }
-          } else {
-            if (clearBoardTimerRef.current) {
-              clearTimeout(clearBoardTimerRef.current);
-              clearBoardTimerRef.current = null;
-            }
+          // Masih ada balok sisa sesi sebelumnya: ingatkan angkat semua balok (sekali tiap 7.5s)
+          const now = Date.now();
+          if (now - lastLiftRemindRef.current > 7500 && !isCurrentlySpeaking) {
+            lastLiftRemindRef.current = now;
+            playEarcon("clue");
+            speak("Silakan angkat semua balok dari papan terlebih dahulu, lalu letakkan satu balok di pilihan menu yang kamu inginkan.");
           }
           return;
         }
@@ -2258,6 +2245,20 @@ export default function VoiceGuide() {
     }
   };
 
+  // Dipakai tombol Berhenti / Menu Utama oleh operator: reset lalu beri tahu siswa langkah berikutnya lewat suara
+  const stopGuideByOperator = () => {
+    resetGuide();
+    lastSpokenTextRef.current = "";
+    lastLiftRemindRef.current = Date.now();
+    const placed = Object.values(latestCellsRef.current || {}).filter(Boolean).length;
+    playEarcon("click");
+    speak(
+      placed > 0
+        ? "Panduan dihentikan, kembali ke menu utama. Silakan angkat semua balok dari papan, lalu letakkan satu balok di pilihan menu yang kamu inginkan."
+        : "Panduan dihentikan, kembali ke menu utama. Papan sudah bersih, silakan letakkan satu balok di pilihan menu yang kamu inginkan."
+    );
+  };
+
   const skipStep = () => {
     stopSpeaking();
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
@@ -2900,7 +2901,7 @@ export default function VoiceGuide() {
               ) : (
                 <div className="pt-2">
                   <button
-                    onClick={resetGuide}
+                    onClick={stopGuideByOperator}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-4 py-2 text-xs font-bold text-cs-text hover:bg-slate-200 transition-colors"
                   >
                     <RotateCcw className="h-3.5 w-3.5" /> Menu Utama
@@ -2988,7 +2989,7 @@ export default function VoiceGuide() {
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center justify-between gap-2">
                     <button
-                      onClick={resetGuide}
+                      onClick={stopGuideByOperator}
                       className="inline-flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors shadow-2xs"
                       title="Kembali ke Menu Utama atau letakkan Kartu Identitas di sel E1"
                     >
@@ -3155,7 +3156,7 @@ export default function VoiceGuide() {
                     Lewati <SkipForward className="h-3 w-3" />
                   </button>
                   <button
-                    onClick={resetGuide}
+                    onClick={stopGuideByOperator}
                     className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-3 py-1.5 text-[11px] font-bold text-rose-400 hover:bg-rose-100 hover:text-rose-500 transition-colors"
                   >
                     <RotateCcw className="h-3 w-3" /> Berhenti
