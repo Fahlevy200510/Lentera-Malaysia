@@ -2252,10 +2252,12 @@ export default function VoiceGuide() {
     lastLiftRemindRef.current = Date.now();
     const placed = Object.values(latestCellsRef.current || {}).filter(Boolean).length;
     playEarcon("click");
+    const menuOptionsText =
+      "Pilihan fitur di baris bawah: letakkan balok di A1 untuk Pengenalan Komponen, B1 Kuis Taktil, C1 Rangkaian Seri, D1 Rangkaian Paralel, atau E1 Detektif Sirkuit. Di baris atas: A5 untuk Tanya AI Tutor, dan C5 untuk Eksplorasi Bebas.";
     speak(
       placed > 0
-        ? "Panduan dihentikan, kembali ke menu utama. Silakan angkat semua balok dari papan, lalu letakkan satu balok di pilihan menu yang kamu inginkan."
-        : "Panduan dihentikan, kembali ke menu utama. Papan sudah bersih, silakan letakkan satu balok di pilihan menu yang kamu inginkan."
+        ? `Panduan dihentikan, kembali ke menu utama. Silakan angkat semua balok dari papan terlebih dahulu. ${menuOptionsText}`
+        : `Panduan dihentikan, kembali ke menu utama. Papan sudah bersih. ${menuOptionsText}`
     );
   };
 
